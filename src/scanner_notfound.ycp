@@ -239,17 +239,32 @@ manually (you must be \"root\" to do this). ") );
 		      return `again;
 		  }
 
-		  ret = `manual;
 
-                  // TO DO: get ptal device name
-		  
-		  // scanimage -L does NOT work here !!! because hpoj driver is not yet activated
-		  // # scanimage -L
-		  // device `hpoj:mlc:usb:PSC_2200_Series' is a Hewlett-Packard PSC 2200 Series multi-function peripheral
+		  list ptal_scanner = SCR::Read(.scanner.ptal);
+		  y2milestone( "HP all-in-one devices: %1", ptal_scanner );
 
-		  // create the entry for the PTAL scanner
-		  CreateScannerEntry( $["bus":"PTAL", "dev_name":"mlc:usb:PSC_2200_Series"]);
-		  y2milestone ( "RET: %1", ret );
+		  // we support only ONE PTAL scanner
+		  if ( size (ptal_scanner) > 1 )
+		  {
+		      // text part 1 of the warning popup - disconnect unused scanners
+		      Popup::Warning(_("YaST2 has detected several HP all-in-one devices, 
+but you can only use ONE of them.\n
+Please disconnect all unwanted scanners
+and restart the scanner configuration."));
+		      ret = `cancel;
+		  }
+		  else if ( size (ptal_scanner) == 1 )
+		  {
+		      CreateScannerEntry( ptal_scanner[0]:[]);
+		      ret = `manual;
+		  }
+		  else
+		  {
+		     Popup::Error(_("Could not detect a HP all-in-one device. 
+Please make sure that the device is switched on
+and start the scanner configuration again."));
+		      ret = `cancel;  
+		  }
 	      }
 	      else
 	      {
