@@ -23,6 +23,7 @@
  *
  * Authors:
  *   Gabriele Strattner <gs@suse.de>
+ *   Klaas Freitag <freitag@suse.de>
  *
  * String corrections by Christian Steinruecken <cstein@suse.de>, 2001/07/27
  *
@@ -59,6 +60,7 @@
   // creates the table widget from scanner map
   global define CreateScannerTable (map scanner_map) ``{
     list scanner_table = [];
+    string vendor_prefix = "";
     foreach (`key, `value, scanner_map, ``{
 	if ( lookup(value, "scanner_status", `emtpy) == "installed" )
 	{
@@ -66,12 +68,16 @@
 	    if( lookup( value, "bus", "") == "Net" ) 
 	    {
 		suffix = " (" + lookup( value, "host", "localhost" ) + ") ";
-	    } 
+	    }
 	    scanner_table = add(scanner_table,
 				`item(`id(key),
 				      lookup(value, "vendor", ""),
 				      lookup(value, "device", ""),
 				      lookup(value, "bus", "") + suffix));
+	}
+	else
+	{
+	    y2debug( "Found scanner, but it is not installed" );
 	}
     });
 

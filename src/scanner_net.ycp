@@ -10,6 +10,7 @@
  *
  * Authors:
  *   Gabriele Strattner <gs@suse.de>
+ *   Klaas Freitag <freitag@suse.de>
  *
  * String corrections by Christian Steinruecken <cstein@suse.de>, 2001/07/28
  *
@@ -76,22 +77,35 @@ can be found in the SuSE support database.</p>") );
 	      string host = CutBlanks( UI(`QueryWidget(`id(`host), `Value )) );
 
 	      list net_scanner = SCR(`Read(.sane.netscannerinfo, $["bus":"Net", "host":host] ) );
-
+	      map new_net_scanner = $[];
+	      
 	      if ( net_scanner != [] )
 	      {
 		  string devices = "";
 		  string vendors = "";
+
+		  boolean do_comma = false;
 		  
 		  foreach( `one_scanner, net_scanner, ``{
-		      devices = devices + " " + lookup( one_scanner, "device", "" );
-		      vendors = vendors + " " + lookup( one_scanner, "vendor", "" );
+		      if( do_comma == true )
+		      {
+			  new_net_scanner = change( new_net_scanner, "device",
+						    lookup( new_net_scanner, "device", "" )+", "+
+						    lookup( one_scanner, "device", "" ) );
+			  new_net_scanner = change( new_net_scanner, "vendor",
+						    lookup( new_net_scanner, "vendor", "" )+", "+
+						    lookup( one_scanner, "vendor" ) );
+		      }
+		      else
+		      {
+			  new_net_scanner = add( one_scanner, "scanner_status", "installed" );
+			  do_comma = true;
+		      }
 		  });
 		  y2milestone("Net Scanner: %1", net_scanner );
-		  y2debug( "Net Scanner device: %1", devices );
 		  
 		  // Create the entry for the Network scanner
-		  CreateScannerEntry( $["bus":"Net", "host":host, "device":devices,
-				       "scanner_status":"installed", "vendor":vendors] );
+		  CreateScannerEntry( new_net_scanner );
 	      }
 	      else
 	      {
