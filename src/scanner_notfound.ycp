@@ -11,7 +11,7 @@
  * Authors:
  *   Gabriele Strattner <gs@suse.de>
  *
- * String corrections by Christian Steinruecken <cstein@suse.de>
+ * String corrections by Christian Steinruecken <cstein@suse.de> 2001/07/28
  *
  * $Id$
  * 
@@ -58,28 +58,32 @@ manual configuration is required.")),
  */
   global define ScannerNotFoundDialog()``{
       string help = "";
-      // help part 1 of Manual Scanner configuration 
+      // help of Manual Scanner Configuration (start)
       string help1    = UI(_("<p>Please make sure your scanner is
 properly connected and switched on.</p> "));
-       // help part 2 of Manual Scanner configuration 
-      string help2    = UI(_("<p>USB scanners may be plugged in and switched on
-while the system is running. In case you haven't done that yet, do so now before you proceed.<br>
-<i><b>Attention!</b></i> Do NOT connect or disconnect SCSI scanners
+
+       // help of Manual Scanner Configuration (continued)
+      string help2    = UI(_("<p><i><b>Attention!</b></i> Do NOT connect or disconnect SCSI scanners
 on a running system - if you want to connect a SCSI scanner, choose
-<b>Abort</b> and shutdown your system first.
+<b>Abort</b> and shutdown your system first.</p>"));
+
+      // help of Manual Scanner Configuration (continued)
+      string help3    = UI(_("<p>USB scanners may be plugged in and switched on
+while the system is running. If you have not yet connected your USB scanner, do so right now.<br>
 </p>"));
-      // help part 3 of Manual Scanner configuration 
-      string help3    = UI(_("<p>YaST2 provides assistance for manual
+
+      // help of Manual Scanner Configuration (continued)
+      string help4    = UI(_("<p>YaST2 provides assistance for manual
 USB and SCSI scanner configuration. You can also use
-a scanner from a network scan station. Select the corresponding button
-and click on <b>Next</b>.</p>"));
+a scanner from a network scan station.</p>"));
+
        // Note for translators: YaST2 does not yet provide the functionality to
        // configure more than one USB scanner. In theory, however, it *is* possible.
-       // help part 4 of Manual Scanner configuration
-       string help4    = UI(_("<p>Please note: you cannot configure or use more than <i>one</i> USB
+       // help of Manual Scanner configuration (continued)
+       string help5    = UI(_("<p>Please note: you cannot configure or use more than <i>one</i> USB
 scanner at the same time.</p>"));
 
-      help = help1 + help2 + help3 + help4;
+      help = help1 + help2 + help3 + help4 + help5;
       
       string caption = UI(_("Manual scanner configuration"));
       term contents  = ScannerNotFoundDialog_UI();
@@ -115,7 +119,7 @@ scanner at the same time.</p>"));
 		      // text of a warning popup
 		      UI(`WarningPopup(_("YaST2 has detected several USB scanners, 
 but you can only use ONE of them.
-Please disconnect all unwanted USB scanner(s)
+Please disconnect all unwanted USB scanners
 and restart the scanner configuration.")));
 		      go_on = false;
 		      ret = `abort;
