@@ -93,7 +93,7 @@
       string help1    = UI(_("<p>All required scanner data
 were detected. Please check whether the vendor and model
 settings are correct and proceed with the installation if 
-the data are <b>OK</b>.</p>"));
+the data are <i>OK</i>.</p>"));
 
       // part 2 of helptext of dialog scanner installation
       string help2 = UI(_("<p>If you press <b>Next</b>, YaST2 will install the
