@@ -292,7 +292,7 @@
 				       `next      :   "scanner_new"],
 		   "scanner_install":   $[
 					  `abort     :   "abort",
-					  `cancel	  :   `cancel,
+					  `cancel    :   `cancel,
 					  `next      :   "scanner_overview"],
 		   "abort"      :   $[
 				      `yes 	  :   `abort ]
@@ -310,9 +310,15 @@
 
       y2milestone("FINISH the scanner installation - confirm all changes." );
 
-      any ret = ScannerWrite(lookup(user_settings, "scannerInfo", $[]));
+      boolean success = ScannerWrite(lookup(user_settings, "scannerInfo", $[]));
 
+      if ( !success )
+	  ret = `cancel;
+      
+      UI::CloseDialog();
   }
 
   UI::CloseDialog();
+
+  return ret;
 }
