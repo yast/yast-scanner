@@ -11,6 +11,8 @@
  * Authors:
  *   Gabriele Strattner <gs@suse.de>
  *
+ * String corrections by Christian Steinruecken <cstein@suse.de>, 2001/07/28
+ *
  * $Id$
  *
  * 
@@ -75,7 +77,7 @@
 				 `HWeight(1, `Empty())
 				 ),
 			  `VSpacing(0.6),
-			  `Left( `Label (`opt (`hstretch), _("shall be installed as:")) ),
+			  `Left( `Label (`opt (`hstretch), _("will be installed as:")) ),
 			  `VSpacing (0.3),
 			  `HBox(`HSpacing(0.5),
 				`HBox (`SelectionBox (`id (`vendor), `opt (`notify),
@@ -95,25 +97,23 @@
  */
   global define ScannerManualDialog()``{
       string help	= "";
-      // helptext1 for dialog Manual scanner selection
+      // help text1 for dialog Manual scanner selection
       // - don't translate SANE (Scanner Access Now Easy) - 
       string help1    	= UI(_("<p>This dialog shows all scanners which are supported
-by SANE (Scanner Access Now Easy) library.</p> "));
-      // helptext2 for dialog Manual scanner selection
-      string help2    	= UI(_("<p>If one of the vendor/model pairs fits
-to your scanner select the list entries and go on with installation.</p>"));
-      // helptext3 for dialog Manual scanner selection
+by the SANE library (Scanner Access Now Easy).</p> "));
+      // help text2 for dialog Manual scanner selection
+      string help2    	= UI(_("<p>If one of the vendor/model pairs matches
+your scanner, select the corresponding entries and proceed with the installation.</p>"));
+      // help text3 for dialog Manual scanner selection
       // - don't translate SANE -
       string help3    	= UI(_("<p>If your scanner model is not
-yet contained in the lists but you know for sure 
-which SANE driver will work, select \"Generic\" in the vendor list
-and the driver in model list.</p>"));
+contained in the list but you know a SANE driver which works for your scanner,
+take \"Generic\" in the vendor list and select the driver manually.</p>"));
       // helptext4 for dialog Manual scanner selection
-      string help4    	= UI(_("<p><b>Attention</b>: only do the manual
-selection if you are absolutely sure. Wrong data may cause a hardware
-failure.</p>"));
+      string help4    	= UI(_("<p><b>Attention</b>: only select the driver manually
+if you are absolutely sure. Wrong data may cause hardware failures.</p>"));
       // helptext5 for dialog Manual scanner selection
-      string help5    	= UI(_("<p>Informations can be found on
+      string help5    	= UI(_("<p>More information can be found on
 http://mostang.com/sane and http://sdb.suse.de.</p>"));
       help = help1 + help2 + help3 + help4 + help5;
 
