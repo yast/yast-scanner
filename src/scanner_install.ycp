@@ -11,9 +11,11 @@
  * Authors:
  *   Gabriele Strattner <gs@suse.de>
  *
+ * String corrections by Christian Steinruecken <cstein@suse.de>, 2001/07/27
+ *
  * $Id$
  *
- * Installation of the scanner . 
+ * Installation of the scanner.
  * 
  *
  */
@@ -63,21 +65,22 @@
   global define ScannerInstallDialog()``{
       string help    = "";
       
-      // part 1 of helptext of dialog scanner test
+      // help part 1 of dialog scanner test
       string help1    = _("<p>Your new scanner was installed
 successfully.</p>");
-      // part 2 of helptext of dialog scanner test
+      // help part 2 of dialog scanner test
       string help2    = _("<p>You can test the scanner now.
-Insert a test page and click on button <b>Test</b>.
+Insert a test page and click on the <b>Test</b> button.
 Press <b>Next</b> to finish the installation.</p>");
-      // part 3 of helptext of dialog scanner test
+      // help part 3 of dialog scanner test
       string help3    = _("<p>The program <b>xscanimage</b>
 from package <i>sane</i> (already installed) provides
 basic functionality for scanning.</p>");
-      string help4 = _("<p><b>xsane</b>
+      // help part 4 of dialog scanner test
+      string help help4 = _("<p><b>xsane</b>
 (requires installation of the package <i>xsane</i>)
 offers more scan- and image processing functionality.
-The <b>Gimp</b> also provides scan support now.</p>");
+The <b>Gimp</b> also provides scan support.</p>");
       
       help = help1 + help2 + help3 + help4;
       
