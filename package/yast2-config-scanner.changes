@@ -1,4 +1,14 @@
 -------------------------------------------------------------------
+Tue Sep 18 16:59:58 CEST 2001 - freitag@suse.de
+
+- write /etc/hotplug/usr.map for scanners not automatically detected.
+  Makes the correct module loaded and unloaded on mounting or 
+  unmounting of the device.
+- better recognition of scanners by whitespace insensitive pattern match.
+- added config-template for USB-mustek scanners, they were accidential 
+  missing. 
+
+-------------------------------------------------------------------
 Fri Sep 14 15:33:02 CEST 2001 - freitag@suse.de
 
 - manual USB scanner install works for Scanners not reporting a 
