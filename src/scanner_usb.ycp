@@ -91,8 +91,7 @@ and '<i>Model:</i>' entries and take the digits in front, e.g. 010c).
       // help part 1 of dialog manual USB Scanner configuration
       string help1    = _("<p>YaST2 shows a list of USB devices which are not
 clearly identified. If you find your scanner,
-please select the corresponding list entry.</p>"
- );
+please select the corresponding list entry.</p>");
 
       // help part 2 of dialog manual USB Scanner configuration
       string help2 = _("<p>Also select the USB module (usually 'scanner')
@@ -104,8 +103,8 @@ USB kernel module.</p> ");
 
       // help part 4 of dialog manual USB Scanner configuration
       string help4    = _("<p>If the scanner module loaded
-successfully you can proceed to the
-\"Manual scanner selection\" dialog by clicking on <b>Next</b>.</p>");
+successfully, proceed to 
+manual scanner selection by clicking <b>Next</b>.</p>");
 
       help = help1 + help2 + help3 + help4;
 

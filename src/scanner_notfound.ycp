@@ -209,11 +209,14 @@ USB scanner, because only ONE is supported.") + "\n" + msg);
 			   // connected devices (if switched on). If connected to JetDirect
 			   // the user has to do the configuration manually.
 			   _("No HP all-in-one device detected.
-Make sure that the device is switched on and try again.\n
-In case of a JetDirect connection abort the scanner
+Make sure the device is switched on and try again.
+
+In the case of a JetDirect connection, abort the scanner
 configuration and call 'ptal-init setup' manually.
 Configure the scanner by enabling the 'hpoj' driver in
-'/etc/sane.d/dll.conf' (you must be \"root\" to do this).\n\n"),
+'/etc/sane.d/dll.conf' (you must be root to do this).
+
+"),
 							Label::RetryButton(),
 							Label::AbortButton(),
 							`focus_yes );
@@ -240,7 +243,7 @@ Configure the scanner by enabling the 'hpoj' driver in
 			  no = no+1;
 		      }	);
 		      // headline for a popup
-		      integer id = DisplayScannerList( scanners, _("List of HP all-in-one devices") );
+		      integer id = DisplayScannerList( scanners, _("List of HP All-in-One Devices") );
 		      CreateScannerEntry( scanners[id]:$[] );
 		      ret = `manual;
 		  }

@@ -143,12 +143,15 @@ offers more scan and image processing functionality.
 	    if ( firmware_req == "some" )
 	    {
 		// text of an info popup
-		msg_str = _("Some SnapScan scanner require a firmware upload.
-You shouldn't test the scanner now.\n
+		msg_str = _("Some SnapScan scanners require a firmware upload.
+You should not test the scanner now.
+
 Finish the scanner installation first.
-After that check 'http://snapscan.sourceforge.net'
-whether an upload is required.
-'man sane-snapscan' also provides detailed information.\n\n");
+After that, check 'http://snapscan.sourceforge.net'
+to see whether an upload is required.
+'man sane-snapscan' also provides detailed information.
+
+");
 	    }
 	    else if ( firmware_req == "all" )
 	    {
