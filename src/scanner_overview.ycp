@@ -37,7 +37,10 @@
   textdomain "scanner";
 
   import "Label";
-import "Scanner";
+  import "Scanner";
+
+  import "Wizard";
+  import "Popup";
   
   define term ScannerOverviewDialog_UI( term table ) ``{
 

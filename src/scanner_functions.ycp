@@ -27,6 +27,9 @@
   import "Service";
   import "Label";
 
+  import "Scanner";
+  import "Popup";
+
 /**
  * Get the value to the given key of the scanner currently in work.
  * @param string key

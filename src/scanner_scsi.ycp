@@ -33,8 +33,11 @@
   textdomain "scanner";
 
   import "Label";
-import "Scanner";
+  import "Scanner";
     
+  import "Wizard";
+  import "Popup";
+
   /**
    * ScannerSCSIDialog Layout	
    */

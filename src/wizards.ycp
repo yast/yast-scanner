@@ -14,6 +14,9 @@ textdomain "scanner";
 import "Wizard";
 import "Sequencer";
 
+import "Scanner";
+import "Label";
+
 include "scanner/dialogs.ycp";
 
 /**
@@ -152,7 +155,7 @@ symbol ScannerSequence() {
  * For use with autoinstallation.
  * @return sequence result
  */
-any ScannerAutoSequence() {
+symbol ScannerAutoSequence() {
 
     /* Initialization dialog caption */
     string caption = _("Scanner Configuration");
