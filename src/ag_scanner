@@ -36,7 +36,6 @@ my @scanners;
 while ( <STDIN> )
 {
     ycpDoVerboseLog();
-    ycpInit( $_ );
 
     if( /result/i )
     {
@@ -44,14 +43,13 @@ while ( <STDIN> )
 	exit(0);
     }
 
-    my $action = ycpGetPath();
-    y2debug( " vvv starting in ag_scanner vvv" );
+    my ($action, $path, $argument) = ycp::ParseCommand ($_);
 
-    y2debug( "Got Action = ycpPath = <$action>");
-    
-    if ( ycpCommandIsRead() ) {
+    y2debug( " vvv starting ag_scanner with <$action> <$path> vvv" );
 
-      if ( $action =~ /scsi/i ) {
+    if ( $action eq "Read" ) {
+
+      if ( $path =~ /scsi/i ) {
 	y2debug( "Performing scsi bus scan for scanners!" );
 	my $cmd = "/usr/X11R6/bin/sane-find-scanner -s";
 	@scanners = ();
@@ -113,37 +111,37 @@ while ( <STDIN> )
 	  # '
 	  close CMD;
 	} else {
-	  y2debug( "ERROR: Could not open sane-find-scanner!" );
+	  y2error( "ERROR: Could not open sane-find-scanner!" );
 	}
-      } elsif ( $action =~ /configured/i ) {
+      } elsif ( $path =~ /configured/i ) {
         y2debug( "Handling action <configured>" );
         @scanners = performScanimage();
-      } elsif ( $action =~ /net/i ) {
+      } elsif ( $path =~ /net/i ) {
         y2debug( "Handling action <net>" );
         @scanners = performScanimage( 1 );
       } else {
-        y2debug( "ERROR: Unspecified action !" );
+        y2error( "ERROR: Unspecified action !" );
       }
       y2debug (" ^^^ Leaving ag_scanner - goodbye ^^^" );
 
-      ycpReturn( \@scanners );
+      ycp::Return( \@scanners );
     }
     
     # Dir command
-    elsif ( ycpCommandIsDir() ) {
+    elsif ( $action eq "Dir" ) {
 	my @paths = ("scsi","net","configured");
-	ycpReturn( \@paths );
+	ycp::Return( \@paths );
       }
     
     # Result
-    elsif ( ycpCommandIsResult() ) {
+    elsif ( $action eq "result" ) {
 	exit;
     }
 
     # Unknown
     else {
-        y2debug ("Unknown instruction ", ycpGetCommand, " or argument: ", ycpGetArgType);
-        ycpReturnSkalarAsBoolean (0);
+        y2error ("Unknown instruction ", ycpGetCommand, " or argument: ", ycpGetArgType);
+        ycp::Return ( "false" );
     }
 }
 

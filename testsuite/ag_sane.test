@@ -20,3 +20,6 @@ Execute(.sane.revertall,  $["bus":"SCSI", "class_id":268, "dev_name":"/dev/sg0",
 Execute(.sane.scanimage, $["bus":"SCSI", "class_id":268, "dev_name":"/dev/sg0", "device":"UMAX S-12G", "driver":"sym53c8xx", "model":"UMAX S-12G", "old_unique_key":"YDhk.qd5JwUXxpXF", "rev":"V2.1", "scanner_driver":"umax", "sub_class_id":0, "unique_key":"YM6w.bLjPHOVjCz6", "vendor":"Umax"])
 
 Dir(.sane)
+
+Read (.sane.unknown, $["bus":"Net", "host":"10.10.0.159"])
+
