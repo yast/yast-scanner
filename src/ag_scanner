@@ -9,6 +9,18 @@
 # $Id$
 #
 
+# ag_scanner provides two different functions, selected through the
+# ycp 'path', which is mapped to the perl var $action in this script. 
+# 
+# The first action, 'scsi', queries the system for know SCSI scanners.
+# This is a kind of hardware detection, the devices  need not to be configured
+#  in SANE but are also found if they are.
+#
+# The second action, 'configured', returns all scan devices configured in SANE.
+# This is done by calling scanimage -s (a patched version) which returns the
+# sane configured scanners, even network accessible scanners.
+#
+
 BEGIN { unshift @INC, "/usr/lib/YaST2/agents_non_y2/"; }
 
 use strict;
@@ -117,10 +129,27 @@ while ( <STDIN> )
 		$name =~ s/\"//g;
 		$name =~ s/^\s+|\s+$//g;
 	    
-		# split up a name-string like umax:/dev/scanner to driver and device
-		my ($driver, $devfile) = split( /:/, $name );
-
+		my ($driver, $devfile);
+		# bus defaults to SCSI, switched later
 		my $bus = "SCSI";
+		my $host = uc "localhost";
+
+		if( $name =~ /(\S+):(\S+):(\S+):(\S+)/ )
+		{
+                    # A Network scanner was found with a name like 
+                    # net:d213.suse.de:umax:/dev/sg0
+		    $bus = uc $1;
+		    $host =  $2;
+		    $driver =  $3;
+		    $devfile =  $4;
+		    y2debug( "Found network scanner: $bus:$host:$driver:$devfile" );
+		}
+		else
+		{
+		    # split up a name-string like umax:/dev/scanner to driver and device
+		    ($driver, $devfile) = split( /:/, $name );
+		}
+
 		if( $devfile =~ /dev.+usb/i )
 		{
 		    $bus = "USB";
@@ -144,7 +173,9 @@ while ( <STDIN> )
 			 vendor_id => "",
 			 device_file => trim($devfile),
 			 class => trim($class),
-			 driver => trim($driver) } );
+			 driver => trim($driver),
+			 host => $host 
+			 } );
 		$cnt++;
 	    }
 	    close CMD;
