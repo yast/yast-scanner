@@ -16,15 +16,8 @@
  * 0. is package "sane" installed?
  *    if NOT -> call sw_single
  * 1. Hardware probing
- *    1a) .probe.scanner (USB)	
- *    1b)  SCSI: sane-find-scanner
- *         if (scsi_scanner_found)
- *		inform user that a script is started at boot time
- *			if (user_yes)
- *				install boot script (check/reset permissions of /dev/sg_)
- *			else
- *				exit
- *    1c)	set permission of /dev/sg_ to 666
+ *    1a) USB: SCR(.probe.scanner)	
+ *    1b) SCSI: sane-find-scanner
  * 2. Check already installed scanner (perl script)
  * 3. Decide whether the detected scanner(s) is (are) installed
  * 4. Decide which dialog is called next
@@ -112,12 +105,10 @@ with YaST2 module 'Install/Remove Software'.\n")));
       sleep(100);
 
       list connected_scanner = [];
-    
       if ( !test_mode )
       {
 	  // probe USB ports
 	  connected_scanner = SCR(`Read(.probe.scanner));
-
 	  if ( size(connected_scanner) > 1 ) 
 	  {
 	      // only one USB scanner is supported by scanner library SANE
@@ -132,15 +123,14 @@ and restart the scanner configuration.")));
 	    
 	  }
 	  // check SCSI ports
-	  connected_scanner = add(connected_scanner, SCR(`Execute(.target.bash, "get_scsi_scanner" )));
-	  y2debug("Connected Scanner: %1", connected_scanner);
+	  connected_scanner = union(connected_scanner, SCR(`Read(.scanner.scsi)));
       }
       else
       {
 	  connected_scanner = lookup( user_settings, "test_connected", [] );
       }
+      y2debug("Connected Scanner: %1", connected_scanner);
 
-    
       UI(`ProgressMilestoneUI( 300, _("Checking for already installed scanner"), 2 ));
       sleep(100);
 
@@ -148,7 +138,7 @@ and restart the scanner configuration.")));
     
       if ( !test_mode )
       {
-	  list installed_scanner = SCR(`Execute(.target.bash, "get_configured_scanner" ));
+	  installed_scanner = SCR(`Read(.scanner.configured));
 	  y2debug("Configured scanner: %1", installed_scanner );
       }
       else
@@ -166,24 +156,34 @@ and restart the scanner configuration.")));
       boolean new = false;
     
       integer no = 1;
-      foreach( `scanner, connected_scanner, ``{
-	  foreach ( `scan, installed_scanner, ``{
-	      if ( (lookup( scan, "vendor", "") == lookup( scanner, "vendor", "")) &&
-		   (lookup( scan, "device", "") == lookup( scanner, "device", "")) &&
-		   (lookup( scan, "bus", "") )  == lookup( scanner, "bus", "") &&
-		   (lookup( scan, "devicefile", "") == lookup( scan, "devicefile", "")) )
-	      {
-		  scanner_info = add(scanner_info, no, add( scan, "new_scanner", false));
-		  installed = true;
-	      }
-	      else
-	      {
-		  scanner_info = add(scanner_info, no, add( scan, "new_scanner", true));
-		  new = true;
-	      }
-	  });
+      foreach ( `scanner, connected_scanner, ``{
+	  if ( installed_scanner == [] )
+	  {
+	      scanner = add( scanner, "new_scanner", true);
+	      new = true;    
+	  }
+	  else
+	  {
+	      foreach ( `scan, installed_scanner, ``{
+		  if ( (lookup( scan, "vendor", "") == lookup( scanner, "vendor", "")) &&
+		       (lookup( scan, "device", "") == lookup( scanner, "device", "")) &&
+		       (lookup( scan, "bus", "") )  == lookup( scanner, "bus", "") &&
+		       (lookup( scan, "devicefile", "") == lookup( scan, "devicefile", "")) )
+		  {
+		      scanner = add( scanner, "new_scanner", false);
+		      installed = true;
+		  }
+		  else
+		  {
+		      scanner = add( scanner, "new_scanner", true);
+		      new = true;
+		  }
+	      });
+	  }
+	  scanner_info = add(scanner_info, no, scanner);
 	  no = no+1;
       });
+      
       if ( new )
       {
 	  ret = `new;
@@ -201,6 +201,7 @@ and restart the scanner configuration.")));
       {
 	  // write scanner data to user_settings
 	  user_settings = add( user_settings, "scannerInfo", scanner_info );
+	  y2debug( "Writing SCANNER INFO: %1", scanner_info );
       }
 
       return ret;

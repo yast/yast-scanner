@@ -6,15 +6,26 @@
  *   Configuration of scanner
  *
  * Summary:
- *   
+ *   This dialog is shown at the begin of the workflow, if an already configured
+ *   scanner is found AND at the end when a new scanner is configured.
+ *   Leaving the dialog with Finish means: confirm the installation, Abort means
+ *   reset all changes.
+ *
+ *  	if (user_click_on_finish)
+ *	   - let all changes made on system
+ *	   - maybe additional changes necessary?
+ *         - if (scsi_scanner_installed)
+ *		install boot script (check/reset permissions of /dev/sg_)
+ *    		(because permissions of /dev/sg_ are set to 666)   
+ *
+ *	if (user_click_on_abort)
+ *	   - reset all changes
  *
  * Authors:
  *   Gabriele Strattner <gs@suse.de>
  *
  * $Id$
  *
- * Shows the overview of configured scanners. 
- * 
  *
  */
 

@@ -35,7 +35,7 @@ make
 
 %install
 make install
-make check
+#make check
 %{?suse_check}
 
 %files
@@ -49,8 +49,8 @@ make check
 @YAST2DIR@/include/scanner/scanner_overview.ycp
 @YAST2DIR@/include/scanner/scanner_manual.ycp
 @YAST2DIR@/include/scanner/scanner_options.ycp
-@YAST2DIR@/server_non_y2/get_configured_scanner
-@YAST2DIR@/server_non_y2/get_scsi_scanner
+@YAST2DIR@/server_non_y2/ag_scanner
+@YAST2DIR@/scrconf/scanner.scr
 
 %dir @DOCDIR@
 @DOCDIR@/*

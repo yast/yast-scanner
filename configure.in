@@ -34,5 +34,6 @@ AC_OUTPUT(Makefile
 	package/$RPMNAME.spec:$RPMNAME.spec.in
 	src/Makefile
 	doc/Makefile
+	conf/Makefile
 	doc/autodocs/Makefile
 	testsuite/Makefile)
