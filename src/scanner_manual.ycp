@@ -27,10 +27,18 @@
   global define CreateVendorList( ) ``{
       list list_input = [];
       list vlist = SCR(`Read(.sane.vendorlist, GetCurrentScanner()));
+      //used to preselect first entry
+      boolean isfirst = true;
       y2debug( "Vendorlist: %1", vlist );
       
       foreach( `vendor, vlist, ``{
-		  list_input = add( list_input, `item(`id(vendor), vendor));
+		  if(isfirst)
+		  {
+		    list_input = add( list_input, `item(`id(vendor), vendor, true));
+		    isfirst = false;
+		  }
+		  else
+		    list_input = add( list_input, `item(`id(vendor), vendor));
 	      });
 
       return list_input; 

@@ -35,7 +35,7 @@
 
   textdomain "scanner";
   
-  global define ScannerOverviewDialog_UI( list table_contents ) ``{
+  global define ScannerOverviewDialog_UI( term table ) ``{
 
       term layout = `Empty();
 
@@ -43,11 +43,7 @@
 		     `VSpacing( 0.2 ),
 		     `Left(`Label(_("List of installed / configured scanners"))),
 		     `VSpacing( 0.2 ),
-		     `Table(`id(`scanner_table),`opt(`notify, `hvstretch), 
-			    `header( _("Vendor"), _("Model"), _("Connected to") ),
-			    table_contents
-			    ),
-		     `VSpacing(2.0),
+		     `ReplacePoint(`id(`scanner_table_rp),table),		     
 		     `HBox(
 			   //`HWeight(1, `PushButton(`id(`edit), _("&Edit"))),
 			   `HWeight(1, `PushButton(`id(`delete), _("&Delete"))),
@@ -60,13 +56,32 @@
       return layout;
   };
 
+  // creates the table widget from scanner map
+  global define CreateScannerTable (map scanner_map) ``{
+    list scanner_table = [];
+    foreach (`key, `value, scanner_map, ``{
+	if ( lookup(value, "scanner_status", `emtpy) == "installed" )
+	{
+	    scanner_table = add(scanner_table,
+				`item(`id(key),
+				      lookup(value, "vendor", ""),
+				      lookup(value, "device", ""),
+				      lookup(value, "bus", "")));
+	}
+    });
+
+    return `Table(`id(`scanner_table),`opt(`notify, `hvstretch), 
+			    `header( _("Vendor"), _("Model"), _("Connected to") ),
+			    scanner_table
+			    );
+  }
+
   /**
    * OverviewDialog dialog
    */
    
   global define ScannerOverviewDialog()``{
       map  scanner_map 	= lookup( user_settings, "scannerInfo", $[] );
-      list scanner_table = [];
       
       string help = "";
       // help part1 of scanner overview dialog
@@ -90,20 +105,10 @@ will be discarded and your system will be reverted to the previous state.
 </p>"));
       help = help1 + help2 + help3 + help4;
       
-      foreach (`key, `value, scanner_map, ``{
-	  if ( lookup(value, "scanner_status", `emtpy) == "installed" )
-	  {
-	      scanner_table = add(scanner_table,
-				  `item(`id(key),
-					lookup(value, "vendor", ""),
-					lookup(value, "device", ""),
-					lookup(value, "bus", "")));
-	  }
-      });
-	       
+       
       string caption = UI(_("Scanner Overview"));
 
-      term contents = ScannerOverviewDialog_UI( scanner_table );
+      term contents = ScannerOverviewDialog_UI( CreateScannerTable(scanner_map) );
 
       UI(`SetWizardContentsButtons(caption,contents,help,
 				   BackButtonLabel(),
@@ -138,8 +143,16 @@ will be discarded and your system will be reverted to the previous state.
 configuration of the scanner %1, %2 ?\n")), GetCurrentScannerValue("vendor"),
 					    GetCurrentScannerValue("device") );   
 
-		  UI(`YesNoHeadlinePopup( WarningMsg(), message) );
-		  
+		  boolean yesnoret = UI(`YesNoHeadlinePopup( WarningMsg(), message) );
+		  if(yesnoret==true)
+		  {
+		    // remove scanner_id form scannerInfo
+		    DeleteScannerEntry(scanner_id);
+		    // get new scanner_map
+		    scanner_map = lookup( user_settings, "scannerInfo", $[] );
+		    // update widget
+		    UI(`ReplaceWidget(`id(`scanner_table_rp),CreateScannerTable(scanner_map)));
+		  }
 	      }
 	  }
 	  else if ( ret == `finish )
