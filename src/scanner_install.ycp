@@ -32,7 +32,6 @@
       string scanner = lookup( installed_scanner, "vendor", "" ) + " - " + lookup(installed_scanner, "device", "" );
 
       term contents = `VBox (
-			     `VSpacing (1),
 			     `Left(`Label (`opt (`hstretch), _("The scanner"))),
 			     `VSpacing(0.3),
 			     `HBox (`HSpacing(2.5),
@@ -49,7 +48,7 @@
 				    ),
 			     `VSpacing (1),
 			     `HBox (
-				    `HSpacing (1.0),
+				    `ReplacePoint(`id(`replace), `Empty() ),
 				    `PushButton (`id (`test), _("&Test")),
 				    `HSpacing (1.0)
 				    ),
@@ -89,10 +88,24 @@ The <b>Gimp</b> also provides scan support.</p>");
       term contents  = ScannerInstallDialog_UI( GetCurrentScanner() );
 
       UI(`SetWizardContentsButtons(caption,contents,help,BackButtonLabel(),NextButtonLabel()));
-     
-      any ret = UI(`UserInput());
 
+      any ret = nil;
+      
+      repeat {
 
+	  ret = UI(`UserInput());
+
+	  //term image = `Image(  image_data, "" );
+
+	  if ( ret == `test )
+	  {
+	      // label string
+	      term image = `Label(_("Test page"));
+	      UI( `ReplaceWidget(`id(`replace), image ));
+	  }
+	  
+      } until ( ret == `next || ret == `back || ret == `abort );
+      
       return ret;
   }
 
