@@ -6,7 +6,13 @@
  *   Configuration scanner
  *
  * Summary:
- *   
+ *
+ * This dialog is shown very rarely because the SANE library usually finds
+ * all connected SCSI scanner.
+ * Only for some (don't no exactly which reasons) is can be useful to
+ * enter the SCSI device manually.
+ * For security reasons we show a ComboBox containig only /dev/sg. entries
+ * (not an inputfield for free text).
  *
  * Authors:
  *   Gabriele Strattner <gs@suse.de>
@@ -15,7 +21,6 @@
  *
  * String corrections by Christian Steinruecken <cstein@suse.de>, 2001/07/28
  * 
- * Overview SCSI devices. 
  * 
  *
  */
@@ -30,17 +35,21 @@
   
   global define ScannerSCSIDialog_UI( )``{
 
+      list scsi_devices = [ "/dev/sg0", "/dev/sg1", "/dev/sg2", "/dev/sg3", "/dev/sg4", "/dev/sg5",
+			  "/dev/sg6", "/dev/sg7", "/dev/sg8", "/dev/sg9", "/dev/sg10", "/dev/sg12" ];
+      
       term layout = `VBox (
 			   // This is a label, i.e. the line length should not exceed 50 characters.
 			   `Left(`Label (`opt (`hstretch), _("You must supply the device file name before
 the scanner installation can proceed.\n
-Please enter the name of the SCSI device, e.g. /dev/sg0.\n"))),
+Please select the name of the SCSI device, e.g. /dev/sg0.\n"))),
 			   `VSpacing (1),
 			   `HBox (
-				  `HWeight(4, `TextEntry(`id(`device),
-							 // Input field label for device file
+				  // SCSI device input 
+				  `HWeight(4, `ComboBox(`id(`device),
+							 // Combo box label for device file selection
 							 _("&SCSI device file"),
-							 "" )),
+							 scsi_devices )),
 				  `HWeight(1, `Empty())
 				  ),
 			   `VSpacing (1)
@@ -60,22 +69,19 @@ Please enter the name of the SCSI device, e.g. /dev/sg0.\n"))),
       string help = "";
       
       // helptext of dialog SCSI scanner configuration
-      string help1    = UI(_("<p>Please enter the device file
+      string help1    = UI(_("<p>Please select the device file
 name of your SCSI scanner (e.g. /dev/sg0 ).
 </p>"));
 
       // helptext of dialog SCSI scanner configuration (continued)
       string help2 = UI(_("<p>Information on 
-your SCSI devices can be obtained by issuing the command <b>hwinfo --scsi</b>
-(you must be 'root' to do this).</p>"));
+your SCSI devices can be obtained by issuing the command
+<b>/usr/sbin/hwinfo --scsi</b>.</p>"));
 
       // helptext of dialog SCSI scanner configuration (continued)
       // Translators: do not translate 'Device File'
-      string help3 = UI(_("<p>You will find the <i>Device File</i> of your scanner in the
+      string help3 = UI(_("<p>You will find the <i>'Device File'</i> of your scanner in the
 respective section of the hwinfo output.</p>"));
-
-      // remark by cstein@suse.de: incidentally, you do not even have to be root
-      // to call hwinfo! "$ /usr/sbin/hwinfo" - works fine ;-)
 
       help = help1 + help2 + help3;
       
