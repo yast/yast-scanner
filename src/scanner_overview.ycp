@@ -31,7 +31,7 @@
 
 {
 
-  testdomain "scanner";
+  textdomain "scanner";
   
   global define ScannerOverviewDialog_UI( list table_contents ) ``{
 
