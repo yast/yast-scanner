@@ -6,7 +6,7 @@
  *   Configuration of scanner
  *
  * Summary:
- *   This dialog is shown at the begin of the workflow, if an already configured
+ *   This dialog is shown at the begin of the workflow, if an already installed
  *   scanner is found AND at the end when a new scanner is configured.
  *   Leaving the dialog with Finish means: confirm the installation, Abort means
  *   reset all changes.
@@ -43,10 +43,10 @@
       term layout = `Empty();
 
       layout = `VBox(
-		     `VSpacing( 0.2 ),
-		     // headline of a list showing installed / configured scanners
-		     `Left(`Label(_("List of installed / configured scanners"))),
-		     `VSpacing( 0.2 ),
+		     `VSpacing( 0.8 ),
+		     // headline of a list showing installed scanners
+		     `Left(`Label(_("List of installed scanners"))),
+		     `VSpacing( 0.4 ),
 		     `ReplacePoint(`id(`scanner_table_rp),table),		     
 		     `HBox(
 			   //`HWeight(1, `PushButton(`id(`edit), _("&Edit"))),
@@ -103,24 +103,29 @@
       string help = "";
       // help part1 of scanner overview dialog
       string help1    = _("<p>This overview dialog shows the
- currently configured and/or installed scanners.</p>"
+ already installed scanners.</p>"
 			     );
        // help part2 of scanner overview dialog
-      string help2 = _("<p>
-If you want to remove a scanner configuration,
+      string help2 = _("<p>If you want to remove a scanner configuration,
 select the corresponding entry from the list and press <b>Delete</b>.
-If you want to install a new scanner,
-press the <b>Add</b> button.
 </p>");
+
        // help part3 of scanner overview dialog
-      string help3 = _("<p>Press the <b>Finish</b> button to save the
-new configuration.</p>");
-      // help part4 of scanner overview dialog
-      string help4 = _("<p>
+      string help3 = _("<p> 
+If you want to install a new scanner, press the <b>Add</b> button.
+At the end of the configuration the new scanner will appear in this list.
+</p>");
+      
+       // help part4 of scanner overview dialog
+      string help4 = _("<p>Press the <b>Finish</b> button to save the
+settings.</p>");
+      
+      // help part5 of scanner overview dialog
+      string help5 = _("<p>
 If you leave this dialog with <b>Abort</b>, all changes made in this dialog
 will be discarded and your system will be reverted to the previous state.
 </p>");
-      help = help1 + help2 + help3 + help4;
+      help = help1 + help2 + help3 + help4 + help5;
       
       // headline of the dialog
       string caption = _("Scanner Overview");

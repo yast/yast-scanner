@@ -66,7 +66,7 @@ of that computer and click on <b>Next</b>.
 can be found in the SuSE support database.</p>");
       help = help1 + help2 + help3;
 
-      // headline of the dialog
+      // headline of the Network scan dialog
       string caption = _("Network scan station client");
       term contents  = ScannerNetDialog_UI();
 
@@ -116,15 +116,16 @@ can be found in the SuSE support database.</p>");
 	      else
 	      {
 		  y2milestone( "NO network scanner available." );
-		  any r = Popup::ContinueCancel(sformat("No network scanner found on host %1
-(or the scanner is switched off)", host));
+		  // popup text
+		  any r = Popup::ContinueCancel(sformat(_("No network scanner found on host %1
+(or the scanner is switched off)"), host));
 		  if ( r )
 		  {
 		      ret = `again;
 		  }
 		  else
 		  {
-		      ret = `abort;
+		      ret = `back;
 		  }
 	      }
 	  }
