@@ -21,6 +21,7 @@ import "Summary";
 import "Popup";
 import "Package";
 import "Label";
+import "Service";
 
 /**
  * Something was committed to the system?
@@ -374,9 +375,9 @@ boolean DetermineActiveScanners()
     return false;
   }
   if( -1 == SCR::Read( .target.size, active_scanners_filename ) )
-  { y2milestone( "Error: Active scanners file %1 does not exist.", active_scanners_filename );
+  { y2milestone( "Error: %1: file does not exist.", active_scanners_filename );
     Report::Error( sformat( // Message of a Report::Error where %1 will be replaced by the file name:
-                            _("Active scanners file %1 does not exist."),
+                            _("%1: file does not exist."),
                             active_scanners_filename
                           )
                  );
@@ -384,9 +385,9 @@ boolean DetermineActiveScanners()
   }
   active_scanners = (list< map< string, string > >)SCR::Read( .target.ycp, active_scanners_filename );
   if( nil == active_scanners )
-  { y2milestone( "Error: Failed to read the active scanners file %1", active_scanners_filename );
+  { y2milestone( "Error: Failed to read %1", active_scanners_filename );
     Report::Error( sformat( // Message of a Report::Error where %1 will be replaced by the file name:
-                            _("Failed to read the active scanners file %1"),
+                            _("Failed to read %1"),
                             active_scanners_filename
                           )
                  );
@@ -407,14 +408,14 @@ boolean DetermineActiveScanners()
 boolean DetermineActiveBackends()
 { if( ! ExecuteBashCommand( determine_active_scanner_backends_commandline ) )
   { Report::Error( // Message of a Report::Error:
-                   _("Failed to determine the active backends.")
+                   _("Failed to determine the active drivers.")
                  );
     return false;
   }
   if( -1 == SCR::Read( .target.size, active_backends_filename ) )
-  { y2milestone( "Error: Active backends file %1 does not exist.", active_backends_filename );
+  { y2milestone( "Error: %1: file does not exist.", active_backends_filename );
     Report::Error( sformat( // Message of a Report::Error where %1 will be replaced by the file name:
-                            _("Active backends file %1 does not exist."),
+                            _("%1: file does not exist."),
                             active_backends_filename
                           )
                  );
@@ -422,9 +423,9 @@ boolean DetermineActiveBackends()
   }
   active_backends = (list< string >)SCR::Read( .target.ycp, active_backends_filename );
   if( nil == active_backends )
-  { y2milestone( "Error: Failed to read the active backends file %1", active_backends_filename );
+  { y2milestone( "Error: Failed to read %1", active_backends_filename );
     Report::Error( sformat( // Message of a Report::Error where %1 will be replaced by the file name:
-                            _("Failed to read the active backends file %1"),
+                            _("Failed to read %1"),
                             active_backends_filename
                           )
                  );
@@ -450,9 +451,9 @@ boolean AutodetectScanners()
     return false;
   }
   if( -1 == SCR::Read( .target.size, autodetected_scanners_filename ) )
-  { y2milestone( "Error: Autodetected scanners file %1 does not exist.", autodetected_scanners_filename );
+  { y2milestone( "Error: %1: file does not exist.", autodetected_scanners_filename );
     Report::Error( sformat( // Message of a Report::Error where %1 will be replaced by the file name:
-                            _("Autodetected scanners file %1 does not exist."),
+                            _("%1: file does not exist."),
                             autodetected_scanners_filename
                           )
                  );
@@ -460,9 +461,9 @@ boolean AutodetectScanners()
   }
   autodetected_scanners = (list< map< string, string > >)SCR::Read( .target.ycp, autodetected_scanners_filename );
   if( nil == autodetected_scanners )
-  { y2milestone( "Error: Failed to read the autodetected scanners file %1", autodetected_scanners_filename );
+  { y2milestone( "Error: Failed to read %1", autodetected_scanners_filename );
     Report::Error( sformat( // Message of a Report::Error where %1 will be replaced by the file name:
-                            _("Failed to read the autodetected scanners file %1"),
+                            _("Failed to read %1"),
                             autodetected_scanners_filename
                           )
                  );
@@ -477,8 +478,8 @@ boolean AutodetectScanners()
  * Search the active_scanners list for possible SCSI scanners ("/dev/" in SANE device)
  * and if at least one possible SCSI scanner was found,
  * then run /etc/init.d/sane-dev (using "restart" to be safe that outdated permissions are reset)
- *      and activate it for reboot ("insserv")
- * otherwise stop it and deactivate it for reboot ("insserv -r")
+ *      and enable it for reboot ("insserv")
+ * otherwise stop it and disable it for reboot ("insserv -r")
  * @return true on success
  */
 boolean SetScsiScannerAccessPermissions()
@@ -491,19 +492,23 @@ boolean SetScsiScannerAccessPermissions()
            }
          );
   if( run_and_activate_sane_dev )
-  { if( ! ExecuteBashCommand( "/etc/init.d/sane-dev restart &>/dev/null" ) )
-    { return false;
+  { if( ! Service::Restart( "sane-dev" ) )
+    { y2milestone( "Service::Restart('sane-dev') failed." );
+      return false;
     }
-    if( ! ExecuteBashCommand( "/sbin/insserv sane-dev &>/dev/null" ) )
-    { return false;
+    if( ! Service::Enable( "sane-dev" ) )
+    { y2milestone( "Service::Enable('sane-dev') failed." );
+      return false;
     }
   }
   else
-  { if( ! ExecuteBashCommand( "/etc/init.d/sane-dev stop &>/dev/null" ) )
-    { return false;
+  { if( ! Service::Stop( "sane-dev" ) )
+    { y2milestone( "Service::Stop('sane-dev') failed." );
+      return false;
     }
-    if( ! ExecuteBashCommand( "/sbin/insserv -r sane-dev &>/dev/null" ) )
-    { return false;
+    if( ! Service::Disable( "sane-dev" ) )
+    { y2milestone( "Service::Disable('sane-dev') failed." );
+      return false;
     }
   }
   return true;
@@ -535,7 +540,7 @@ global boolean Read()
                    // 3. stage description of a Progress::New:
                    _("Determine active scanners"),
                    // 4. stage description of a Progress::New:
-                   _("Determine active backends"),
+                   _("Determine active drivers"),
                    // 5. stage description of a Progress::New:
                    _("Try to autodetect USB and SCSI scanners")
                  ],
@@ -546,7 +551,7 @@ global boolean Read()
                    // 3. stage work in progress message of a Progress::New:
                    _("Determining active scanners..."),
                    // 4. stage work in progress message of a Progress::New:
-                   _("Determining active backends..."),
+                   _("Determining active drivers..."),
                    // 5. stage work in progress message of a Progress::New:
                    _("Trying to autodetect USB and SCSI scanners..."),
                    // Last work in progress message of a Progress::New:
@@ -609,9 +614,9 @@ global boolean Read()
   }
   database = (list< map< string, string > >)SCR::Read( .target.ycp, database_filename );
   if( database == nil )
-  { y2milestone( "Aborting: Failed to read the scanner database %1", database_filename );
+  { y2milestone( "Aborting: Failed to read %1", database_filename );
     Report::Error( sformat( // Message of a Report::Error where %1 will be replaced by the file name:
-                            _("Aborting: Failed to read the scanner database %1"),
+                            _("Aborting: Failed to read %1"),
                             database_filename
                           )
                  );
@@ -747,7 +752,7 @@ global list Summary()
   summary_text = summary_text
                  + "<p>"
                  // Last sub-header of the configuration summary text:
-                 + _("Active Backends:");
+                 + _("Active Drivers:");
   foreach( string active_backend,
            active_backends,
            { if( "" != active_backend )
@@ -830,7 +835,7 @@ global list ModelItems( string filter_string )
                                            // %6 will be replaced by an optional model dependent comment
                                            //    which is only available in English
                                            //    and therefore the comment is included in brackets
-                                           _("%1 %2 : Firmware upload required. Backend '%3' (package '%4') provides '%5' functionality. %6"),
+                                           _("%1 %2 : Firmware upload required. Driver '%3' (package '%4') provides '%5' functionality. %6"),
                                            manufacturer,
                                            model,
                                            backend,
@@ -852,7 +857,7 @@ global list ModelItems( string filter_string )
                                            // %6 will be replaced by an optional model dependent comment
                                            //    which is only available in English
                                            //    and therefore the comment is included in brackets
-                                           _("%1 %2 : Backend '%3' (package '%4') provides '%5' functionality. %6"),
+                                           _("%1 %2 : Driver '%3' (package '%4') provides '%5' functionality. %6"),
                                            manufacturer,
                                            model,
                                            backend,
@@ -996,13 +1001,13 @@ Alternatively, it may be possible to download it from the manufacturer's Web sit
 Ask the manufacturer how to get the firmware file for your particular scanner.
 Find additional useful information on the SANE Web site:
 http://www.sane-project.org/\n
-After you get the firmware file, you must configure the backend manually.
-The man page of the backend describes how to configure it for firmware upload.
-The following command shows the man page for your backend:"
+After you get the firmware file, you must configure the driver manually.
+The man page of the driver describes how to configure it for firmware upload.
+The following command shows the man page for your driver:"
 );
   string hpaio_message =
   // The message of a Popup::YesNo for scanners which should be set up with the hpaio backend:
-_("The hpaio backend requires the hplip service to be up and running.
+_("The hpaio driver requires the hplip service to be up and running.
 Additionally the hplip service should be activated to be started when booting.
 The hplip service and the PTAL system exclude each other.
 Therefore a running PTAL system would be stopped and deactivated
@@ -1014,7 +1019,7 @@ Should the hplip service be activated and started now?"
 );
   string hpoj_message =
   // The message of a Popup::YesNo for scanners which should be set up with the hpoj backend:
-_("The hpoj back-end requires the PTAL system be set up and running.
+_("The hpoj driver requires the PTAL system be set up and running.
 In particular, the ptal service must be up and running.\n
 Before the ptal service can be started, the PTAL system must be initialized.
 Additionally, the ptal service should be activated for start when booting.
@@ -1062,7 +1067,7 @@ Should the PTAL system for USB be initialized, activated, and started now?"
                          // Body of a Popup::AnyMessage where
                          // %1 will be replaced by the backend name
                          // %2 will be replaced by the package name
-                         sformat( _("The backend %1 requires the package %2."), backend_name, package_name )
+                         sformat( _("The driver %1 requires the package %2."), backend_name, package_name )
                        );
       return false;
     }
@@ -1097,7 +1102,7 @@ Should the PTAL system for USB be initialized, activated, and started now?"
       // Regardless of the state of the hplip service the backend can be activated in /etc/sane.d/dll.conf
       Report::Warning(
                        // Message of a Report::Warning for scanners which should be set up with the hpaio backend:
-                       _("If the hplip service is not running, the hpaio backend cannot work.")
+                       _("If the hplip service is not running, the scanner cannot work.")
                      );
     }
     else
@@ -1128,7 +1133,7 @@ Should the PTAL system for USB be initialized, activated, and started now?"
       // Regardless of the state of the PTAL system the backend can be activated in /etc/sane.d/dll.conf
       Report::Warning(
                        // Message of a Report::Warning for scanners which should be set up with the hpoj backend:
-                       _("If the ptal service is not running, the hpoj backend cannot work.")
+                       _("If the ptal service is not running, the scanner cannot work.")
                      );
     }
     else
@@ -1245,7 +1250,7 @@ global boolean DeactivateBackend( string backend_name, integer database_index, b
   // Deactivate the backend via bash script:
   if( ! ExecuteBashCommand( deactivate_backend_commandline + " " + backend_name ) )
   { Report::Error( sformat( // Message of a Report::Error where %1 will be replaced by the backend name:
-                            _("Failed to deactivate backend %1."), backend_name ) );
+                            _("Failed to deactivate %1."), backend_name ) );
     return false;
   }
   // Determine active scanners and active backends anew
@@ -1310,9 +1315,9 @@ global boolean TestBackend( string backend_name )
   // it is no error when there is no active scanner for the backend:
   if( size( scanners_to_be_tested ) < 1 )
   { Report::ShowText( sformat( // Header of a Report::ShowText where %1 will be replaced by the backend name:
-                               _("No Scanner for the Backend %1"), backend_name ),
+                               _("No Scanner for %1"), backend_name ),
                                // Body of a Report::ShowText:
-                               _("It is not possible to test a backend without a matching active scanner.") );
+                               _("It is not possible to test without a matching active scanner.") );
     return true;
   }
   // If there is more than one active scanner for the backend
@@ -1320,7 +1325,7 @@ global boolean TestBackend( string backend_name )
   // If there is exactly one active scanner for the backend
   // then don't ask because sane_device is already set to this one.
   if( size( scanners_to_be_tested ) > 1 )
-  { UI::OpenDialog( `VBox( `HSpacing(50),
+  { UI::OpenDialog( `VBox( `HSpacing(60),
                            `SelectionBox( `id(`device_selection),
                                           // Header of a SelectionBox with a list of scanners:
                                           _("&Scanner to Test:"),
@@ -1343,7 +1348,7 @@ global boolean TestBackend( string backend_name )
   // Test the device:
   y2milestone( "sane_device which will be tested: %1", sane_device );
   Popup::ShowFeedback( sformat( // Header of a Popup::ShowFeedback where %1 will be replaced by the backend name:
-                                _("Testing backend %1"), backend_name ),
+                                _("Testing %1"), backend_name ),
                                 // Body of a Popup::ShowFeedback where %1 will be replaced by the SANE device identifier:
                        sformat( _("Testing with 'scanimage -d %1 -T'\n\nPlease wait..."),
                                 sane_device
@@ -1365,7 +1370,7 @@ global boolean TestBackend( string backend_name )
   }
   Popup::ClearFeedback();
   Report::ShowText( sformat( // Header of a Report::ShowText where %1 will be replaced by the backend name:
-                             _("Successfully tested backend %1"), backend_name
+                             _("Successfully tested %1"), backend_name
                            ),
                     sformat( // Body of a Report::ShowText where
                              // %1 will be replaced by the SANE device identifier
@@ -1429,14 +1434,14 @@ global list Overview()
 global boolean DetermineNetworkScanningConfig()
 { if( ! ExecuteBashCommand( determine_network_scanning_config_commandline ) )
   { Report::Error( // Message of a Report::Error:
-                   _("Failed to determine the network scanning config.")
+                   _("Failed to determine the config for scanning via network.")
                  );
     return false;
   }
   if( -1 == SCR::Read( .target.size, network_scanning_config_filename ) )
-  { y2milestone( "Error: Network scanning config file %1 does not exist.", network_scanning_config_filename );
+  { y2milestone( "Error: %1: file does not exist.", network_scanning_config_filename );
     Report::Error( sformat( // Message of a Report::Error where %1 will be replaced by the file name:
-                            _("Network scanning config file %1 does not exist."),
+                            _("%1: file does not exist."),
                             network_scanning_config_filename
                           )
                  );
@@ -1444,9 +1449,9 @@ global boolean DetermineNetworkScanningConfig()
   }
   network_scanning_config = (map< string, string >)SCR::Read( .target.ycp, network_scanning_config_filename );
   if( nil == network_scanning_config )
-  { y2milestone( "Error: Failed to read the network scanning config file %1", network_scanning_config_filename );
+  { y2milestone( "Error: Failed to read %1", network_scanning_config_filename );
     Report::Error( sformat( // Message of a Report::Error where %1 will be replaced by the file name:
-                            _("Failed to read the network scanning config file %1"),
+                            _("Failed to read %1"),
                             network_scanning_config_filename
                           )
                  );
@@ -1476,7 +1481,7 @@ global boolean SetupNetworkScanningConfig()
                        + "'";
   if( ! ExecuteBashCommand( commandline ) )
   { Report::Error( // Message of a Report::Error:
-                   _("Failed to setup the network scanning config.")
+                   _("Failed to set up scanning via network.")
                  );
     return false;
   }

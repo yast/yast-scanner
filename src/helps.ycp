@@ -56,37 +56,31 @@ Parallel port scanners cannot be configured with YaST.
 These devices must be configured manually.</p>") +
 // Summary dialog help 6/7:
 _("<p><b><big>Configuration Summary:</big></b><br>
-The configuration summary shows the active scanners and the active backends (scanner drivers).
-If a backend is active but your corresponding scanner is not shown,
-the backend cannot communicate with the scanner and scanning will not work.
-For more information, see our support database articles regarding scanner configuration,
-for example:<br>
-http://portal.suse.com/sdb/en/2004/10/jsmeix_scanner-setup-92.html</p>") +
+The configuration summary shows the active scanners.</p>") +
 // Summary dialog help 7/7:
-_("<p><b><big>Changing or Testing Existing Configurations and Set Up Network Scanning:</big></b><br>
+_("<p><b><big>Changing or Testing Existing Configurations and Set Up Scanning Via Network:</big></b><br>
 If you press <b>Change</b>, an additional dialog opens
-in which to edit the configuration, test active scanners, or set up network scanning.</p>"),
+in which to edit the configuration, test active scanners, or set up scanning via network.</p>"),
 
 "overview" :
 // Overview dialog help 1/5:
 _("<p><b><big>Scanner Overview</big></b><br>
-Obtain an overview of the setup scanner backends (scanner drivers) and the associated scanners.
+Obtain an overview of the setup.
 Additionally change or test the configuration.</p>") +
 // Overview dialog help 2/5:
 _("<p><b><big>Setting Up a New Scanner:</big></b><br>
-Press <b>Add</b> to configure a new scanner backend.</p>") +
+Press <b>Add</b> to configure a new scanner.</p>") +
 // Overview dialog help 3/5:
 _("<p><b><big>Change the Configuration:</big></b><br>
-Select a scanner backend to modify.
-Then press <b>Edit</b> to select another backend
-or <b>Delete</b> to deactivate the backend.</p>") +
+Select a scanner to modify.
+Then press <b>Edit</b> or <b>Delete</b>.</p>") +
 // Overview dialog help 4/5:
 _("<p><b><big>Testing the Configuration:</big></b><br>
-Select a scanner back-end and the associated scanner to test.
+Select a scanner to test.
 Then press <b>Test</b>.</p>") +
 // Overview dialog help 5/5:
-_("<p><b><big>Set Up Network Scanning:</big></b><br>
-To set up network scanning press <b>Network Scanning</b>.</p>"),
+_("<p><b><big>Set Up Scanning Via Network:</big></b><br>
+Press <b>Scanning Via Network</b>.</p>"),
 
 "select_model" :
 // SelectModel dialog help 1/4:
@@ -98,12 +92,11 @@ http://www.sane-project.org/</p>") +
 // SelectModel dialog help 2/4:
 _("<p><b><big>Supported Models:</big></b><br>
 A model is supported if there is at least one appropriate scanner driver available.
-A scanner driver is called a 'backend' or, more precisely, a 'SANE backend'
-because most scanner drivers are provided by the 'sane' package.
+Most scanner drivers are provided by the 'sane' package.
 The support status varies from minimal to complete.</p>") +
 // SelectModel dialog help 3/4:
 _("<p><b><big>Unsupported Models:</big></b><br>
-Even if there is no appropriate backend available, the manufacturer might have a driver.
+Even if there is no driver available, the manufacturer might have a driver.
 Therefore, you should ask the scanner manufacturer for a driver.</p>") +
 // SelectModel dialog help 4/4:
 _("<p><b><big>Additional Comments:</big></b><br>
@@ -112,18 +105,16 @@ Such comments are only available in English.</p>"),
 
 "configure_backend" :
 // ConfigureBackend dialog help 1/4:
-_("<p><b><big>Scanner Backend Configuration</big></b><br>
-Most backends (scanner drivers) do not need a special configuration.
-In this case, the following is done:<br>
-The backend is activated and the associated scanners are probed.
+_("<p><b><big>Scanner and Driver Set Up</big></b><br>
+The driver is activated and the associated scanners are probed.
 This may take a few seconds, so you must wait until you can press <b>Next</b>.<br>
-If you press <b>Back</b>, the backend is deactivated.</p>") +
+If you press <b>Back</b>, the driver is deactivated.</p>") +
 // ConfigureBackend dialog help 2/4:
-_("<p><b><big>Special Packages:</big></b><br>
-Particular backends may require installation of additional packages.
-In this case, an appropriate dialog is shown.
+_("<p><b><big>Additional Packages:</big></b><br>
+If the package which provides the driver is not yet installed,
+an appropriate dialog is shown to install the package.
 Such packages may not be available for all architectures
-(for example the 'iscan' package which provides the 'epkowa' backend).</p>") +
+(for example the 'iscan' package is only available for i386 architectures).</p>") +
 // ConfigureBackend dialog help 3/4:
 _("<p><b><big>Firmware Upload:</big></b><br>
 Some models require a firmware upload.
@@ -136,24 +127,21 @@ Otherwise the scanner does not work.
 In this case, an appropriate dialog is shown.
 There are two software packages which provide support for HP all-in-one devices:<br>
 The old HPOJ software (package 'hp-officeJet')
-which provides the PTAL system (with the 'ptal' service) to access HP all-in-one devices
-and the 'hpoj' backend which is the actual scanner driver.<br>
+which provides the PTAL system (with the 'ptal' service) to access HP all-in-one devices.<br>
 The new HPLIP software (package 'hplip')
-which provides the 'hplip' service to access HP all-in-one devices
-and the 'hpaio' backend which is the actual scanner driver.<br>
+which provides the 'hplip' service to access HP all-in-one devices.<br>
 Both software packages can be installed at the same time
 but both services ('ptal' and 'hplip') exclude each other
 because both services cannot run at the same time.
-As a running service is required by the associated backend
-to access the device, the consequence is that only one
-backend (either 'hpoj' or 'hpaio') can be used.</p>"),
+As a running service is required to access the device,
+the consequence is that for all HP all-in-one devices
+either 'ptal' or 'hplip' must be used.</p>"),
 
 "configure_network_scanning" :
 // ConfigureNetworkScanning dialog help 1/4:
-_("<p><b><big>Network Scanning Configuration</big></b><br>
-Set up network scanning here.
+_("<p><b><big>Set Up Scanning Via Network</big></b><br>
 Enter the appropriate information or use <b>Propose</b>
-and press <b>Next</b> to set up the configuration.</p>") +
+and press <b>Next</b> to set up scanning via network.</p>") +
 // ConfigureNetworkScanning dialog help 2/4:
 _("<p><b><big>Server Configuration:</big></b><br>
 If you have local connected scanners and want to make them accessible via network,
@@ -162,17 +150,17 @@ Enter which client hosts are permitted to access the 'saned' on your server.
 If no client hosts are permitted, the 'saned' will not be activated.</p>") +
 // ConfigureNetworkScanning dialog help 3/4:
 _("<p><b><big>Client Configuration:</big></b><br>
-If you want to access scanners which are connected to other hosts in the network,
-set up the 'net' backend to access them via the 'saned' running on the other host.
-Each of those 'saned' must permit access.
-Enter which hosts should be used by the 'net' backend.
-If no hosts should be used, the 'net' backend will not be activated.</p>") +
+If you want to access scanners which are connected to other hosts (servers) in the network,
+set up the 'net' meta-driver to access them via the 'saned' running on the servers.
+The 'saned' on the servers must permit the access.
+Enter which servers should be used.
+If no servers should be used, 'net' will not be activated.</p>") +
 // ConfigureNetworkScanning dialog help 4/4:
 _("<p><b><big>Localhost Configuration:</big></b><br>
 By using the loopback network the above is useful even only on your local host.
 In this case server and client are the same machine 'localhost'.
 Some scanners (e.g. parallel port scanners) require root privileges.
-When you enter 'localhost' for both the 'saned' and the 'net' backend,
+When you enter 'localhost' for both the server and the client,
 you can access such a scanner even as normal user on your local host.</p>")
 
 ];
