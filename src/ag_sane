@@ -109,7 +109,7 @@ while ( <STDIN> )
     my $bus    = findInHash( "bus", \%scanner  );
     my $model  = findInHash( "device", \%scanner );
 
-    if( $action =~ /^\s+driver\s*$/i )
+    if( $action =~ /^\s*\.*driver\s*$/i )
     {
 	#
 	# This action queries for the correct driver for one scanner
