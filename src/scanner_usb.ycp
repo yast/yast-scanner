@@ -79,7 +79,7 @@ and press the <b>Load</b> button.</p>");
       // Translators: Please DO NOT translate 'Vendor:' and 'Model:'!
       string help2_unused    = _("<p>The information on the IDs can be obtained
 by issuing the command <b>hwinfo --usb</b> (look for the '<i>Vendor:</i>'
-and '<i>Model:</i>' entries and take the digits in front, e.g. 010c).
+and '<i>Model:</i>' entries and take the digits in front, such as 010c).
 </p> ");
 
       // help part 1 of dialog manual USB Scanner configuration

@@ -58,8 +58,9 @@ Please enter the requested information.\n"))),
   define symbol ScannerNetDialog()``{
       string help = "";
       // help text part1 of the Network scan station dialog
-      string help1    = _("<p>It is possible to use a scanner which
-is connected to a different computer, if the computer is configured as network scan station.</p> ");
+      string help1    = _("<p>It is possible to use a scanner
+connected to a different computer if the computer is configured as a network scan station.</p> 
+");
        // help text part2 of the Network scan station dialog
       string help2    = _("<p>Enter the IP address or hostname
 of that computer and click on <b>Next</b>.

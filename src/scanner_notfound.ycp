@@ -76,8 +76,9 @@ manual configuration is required.")),
   define symbol ScannerNotFoundDialog()``{
       string help = "";
       // help of Manual Scanner Configuration (start)
-      string help1    = _("<p>Please make sure your scanner is
-properly connected and switched on.</p> ");
+      string help1    = _("<p>Make sure your scanner is
+properly connected and switched on.</p> 
+");
 
        // help of Manual Scanner Configuration (continued)
       string help2    = _("<p><b>Attention!</b> Do NOT connect or disconnect SCSI scanners
