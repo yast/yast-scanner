@@ -63,7 +63,7 @@
   };
 
   // creates the table widget from scanner map
-  define term CreateScannerTable (map scanner_map) ``{
+  define term CreateScannerTable (map<any, map> scanner_map) ``{
     list scanner_table = [];
     string vendor_prefix = "";
     foreach (any key, map value, scanner_map, ``{
@@ -97,8 +97,8 @@
    * OverviewDialog dialog
    */
    
-  global define any ScannerOverviewDialog()``{
-      map  scanner_map 	= lookup( user_settings, "scannerInfo", $[] );
+  define any ScannerOverviewDialog()``{
+      map<any, map> scanner_map	= lookup( user_settings, "scannerInfo", $[] );
       
       string help = "";
       // help part1 of scanner overview dialog
