@@ -1,7 +1,8 @@
 -------------------------------------------------------------------
 Tue Sep  9 15:57:57 CEST 2003 - gs@suse.de
 
-- activate services hotplug (instead of hotplug_usb) 
+- V 2.8.13
+- activate service hotplug (instead of hotplug_usb) 
 
 -------------------------------------------------------------------
 Mon Sep  8 09:39:48 CEST 2003 - gs@suse.de
