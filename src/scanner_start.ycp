@@ -122,7 +122,9 @@ with the YaST2 module 'Install/Remove Software'.\n"));
       {
 	  // pobe USB and SCSI ports; command is hwinfo --scanner
 	  connected_scanner = SCR::Read(.probe.scanner);
-
+	  // PTAL devices are not yet detected by hwlib
+	  connected_scanner = connected_scanner + SCR::Read(.scanner.ptal);
+	  
 	  foreach (`scanner, connected_scanner, ``{
 	      if ( lookup( scanner, "bus", "" ) == "USB" )
 	      {
