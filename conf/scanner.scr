@@ -12,7 +12,7 @@
  *   libscr
  * Example:
  *   Read(.scanner.scsci)
- *   Read(.scanner.installed)
+ *   Read(.scanner.configured)
  *
  * $Id$
  *
