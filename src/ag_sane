@@ -61,7 +61,7 @@ use scannerDB;
 # adds one backend to the system wide driver list for sane in /etc/sane.d/dll.conf
 # and writes the individual config file in /etc/sane.d/{backend}.conf
 # 
-# returns nothing (yet)
+# returns a ycp boolean
 # 
 # scanimage
 # =========
@@ -165,6 +165,8 @@ while ( <STDIN> )
     elsif( $action =~ /writeconfig/ )
     {
 	y2debug( "Handling action writeconfig" );
+	my @cfg_backends = readDllconf( );
+	my $ok = 0;
 	
 	if( $bus =~ /net/i )
 	{
@@ -179,16 +181,22 @@ while ( <STDIN> )
 	    }
 	    writeNetConf( \@already_conf );
 	    
+	    # Add net to dll.conf
+	    $ok = 1;
+	    unless( grep ( /net/i, @cfg_backends ))
+	    {
+		push @cfg_backends, "net";
+		$ok = writeDllconf( \@cfg_backends );
+	    }
+	    # ATTENTION: Return here :(
+	    ycpReturnSkalarAsBoolean( $ok );
 	}
 
 
+	# Not net !
 	my $driver = findInHash( "driver", \%scanner );
 	my $devicefile = findInHash( "devicefile", \%scanner );
 	y2debug( "Installing driver <$driver> for scanner <$vendor/$model>" );
-	
-	my $ok = 0;
-
-	my @cfg_backends = readDllconf( );
 
 	if( grep( /$driver/, @cfg_backends ) )
 	{
