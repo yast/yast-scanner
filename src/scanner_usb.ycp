@@ -221,12 +221,15 @@ successfully you can proceed to the
 		  string options = sformat("vendor=%1 product=%2",
 					   tohexstring(vendor_id),
 					   tohexstring(product_id) );
+		  string usb_usermap = sformat("%1  %2", tohexstring(vendor_id), tohexstring(product_id) );
+		  
 		  boolean success = false;
 
 		  if ( vendor_id != 0 && product_id != 0 )
 		  {
 		      SetCurrentScannerValue("usb_module", module_name);
 		      SetCurrentScannerValue("usb_options", options);
+		      SetCurrentScannerValue("usb_usermap", usb_usermap );
 		      
 		      success = SCR::Execute(.target.modprobe, module_name, options );
 		  }
