@@ -98,7 +98,6 @@ while ( <STDIN> )
 
     y2debug( " vvv starting in ag_sane with action <$action> vvv" );
 
-    # $action = "driver";  # TEST 
     y2debug( "Got Action = ycpPath = <$action>");
 
     unless( ycpArgIsMap() )
@@ -110,7 +109,7 @@ while ( <STDIN> )
     my $bus    = findInHash( "bus", \%scanner  );
     my $model  = findInHash( "device", \%scanner );
 
-    if( $action =~ /driver\s*$/i )
+    if( $action =~ /^\s+driver\s*$/i )
     {
 	#
 	# This action queries for the correct driver for one scanner
@@ -216,6 +215,47 @@ while ( <STDIN> )
     {
 	y2debug( "Handling action revert all" );
 	revertAll();
+    }
+    elsif( $action =~ /removeDriver/ )
+    {
+	my $ok = 0;
+	my $driver = findInHash( "driver", \%scanner );
+
+	y2debug( "Handling action removeDriver" );
+
+	if( defined $driver )
+	{
+	    my @existing  = readDllconf();
+	    my $driver_found = 0;
+
+	    my @writeDll = ();
+	    foreach my $exist_driver ( @existing )
+	    {
+		if( $driver =~ /$exist_driver/i )
+		{
+		    y2debug( "Removing <$driver> from existing list" );
+		    $driver_found++;
+		    next; # continue in loop
+		}
+		push @writeDll,  $exist_driver;
+	    }
+	    if( $driver_found > 0 )
+	    {
+		$ok = writeDllconf( \@writeDll );
+	    }
+	    else
+	    {
+		y2debug("Driver to remove was not found in existing list!" );
+		# but return true :)
+		$ok = 1;
+	    }
+	}
+	else
+	{
+	    y2debug( "ERR: Driver was not given but is a required argument for removeDriver!" );
+	}
+	ycpReturnSkalarAsBoolean( $ok );
+
     }
     elsif( $action =~ /scanimage/ )
     {
