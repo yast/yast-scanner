@@ -225,7 +225,7 @@ while ( <STDIN> )
 	    $ok = 0;
 	  }
 	  # ATTENTION: Return here :(
-	  ycp::Return( $ok );
+	  $ok?ycp::Return( "true" ):ycp::Return( "false" );
 	}
 
 
