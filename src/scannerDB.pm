@@ -1624,7 +1624,7 @@ sub findInHash( $$ )
 
     if( defined $hkey )
     {
-	$entry = %$hashref->{ $hkey };
+	$entry = $$hashref{ $hkey };
 	# y2debug( "Found key <$searchkey> entry <$entry>" );
     }
     else
@@ -2370,7 +2370,7 @@ sub getNetInfo( $ )
     # Sort out which scanners are connected to the required station
     foreach my $scanref ( @scanners )
     {
-	my $referto = %$scanref->{host};
+	my $referto = $$scanref{host};
 
 	y2debug( "Found scanner on host <$referto>" );
 
@@ -2505,6 +2505,7 @@ sub performScanimage( ;$ )
 	my $cnt = 0;
 	while( <CMD> )
 	{
+ 	    next if( /^\s*$/ );
 	    chomp;
 	    my ($name, $vendor, $model, $class ) = split( /"\s+"/ );
 	    $name =~ s/\"//g;
