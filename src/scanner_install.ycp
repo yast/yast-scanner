@@ -43,7 +43,7 @@
 			     `VSpacing(0.3),
 			     `HBox (`HSpacing(2.5),
 				    `HWeight(5, `Label (`opt (`outputField, `hstretch),
-							lookup(installed_scanner, "devicefile", "")) ),
+							lookup(installed_scanner, "dev_name", "")) ),
 				    `HWeight(1, `Empty())
 				    ),
 			     `VSpacing (1),

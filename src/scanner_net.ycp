@@ -76,7 +76,7 @@ can be found in the SuSE support database.</p>") );
 	      string host = CutBlanks( UI(`QueryWidget(`id(`host), `Value )) );
 
 	      // Create the entry for the Network scanner
-	      CreateScannerEntry( $["bus":"Net", "devicefile":host] ); 
+	      CreateScannerEntry( $["bus":"Net", "dev_name":host] ); 
 	  }
 	  
       } until ( ret == `next || ret == `back || ret == `abort );

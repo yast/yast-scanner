@@ -8,13 +8,16 @@
  * Summary:
  *
  * This dialog is called only if the USB scanner is not detected by hw-library.
- * All scanners from driver source files /usr/src/linux-<kernel-version>.
- * SuSE/drivers/usb/ scanner.c or microtek.c are listed in dynamically created
+ * All scanners from driver source files /usr/src/linux-<kernel-version>.SuSE/
+ * drivers/usb/ scanner.c or microtek.c are listed in dynamically created
  * file /lib/modules/<kernel-version>/modules.usbmap.
  * In case the scanner is known the USB module will be loaded automatically
- * (hotplugin).
+ * (hotplug).
  * Otherwise the module must be loaded with: modprobe ID ID <module name>
  * The options must be added to /etc/modules.conf.    
+ *
+ * Remark: Up to verion 7.2 the USB manager had an own, hand made config file
+ *         /etc/usbmgr/usbmgr.conf which is obsleted by the hotplug script.
  *
  * Authors:
  *   Gabriele Strattner <gs@suse.de>
@@ -103,6 +106,7 @@ successfully you can proceed to the
 
       help = help1 + help2 + help3 + help4;
 
+      // get a list of USB devices
       list usb_devices = SCR(`Read(.probe.bybus.usb));
       y2milestone( "USB devices: %1", usb_devices );
 
@@ -128,7 +132,7 @@ successfully you can proceed to the
        *
        * The result map of an USB device doesn't contain a "module" entry if the device is unknown.
        */
-
+      
       if ( lookup (user_settings, "test_mode", false ) )
       {
 	  usb_devices = [
@@ -146,7 +150,8 @@ successfully you can proceed to the
 
       integer no = 1;
       string list_entry = "";
-      
+
+      // get all unknown USB devices
       foreach ( `device, usb_devices, ``{
 	  if ( lookup( device, "module", $[] ) == $[] )
 	  {
@@ -186,7 +191,7 @@ successfully you can proceed to the
 	      }
 	      else
 	      {
-		  map device 	= lookup( usb_unknown, UI(`QueryWidget(`id(`sel_usb), `CurrentItem)) );
+		  map device 	= lookup( usb_unknown, usb_device );
 		  modprobe = sformat("modprobe %1 vendor=0x%2 product=0x%3",
 				     UI(`QueryWidget(`id(`module), `Value)),
 				     lookup( device, "vendor_id", ""),

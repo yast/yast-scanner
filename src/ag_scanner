@@ -101,7 +101,7 @@ while ( <STDIN> )
 		      unique_key => "",
 		      vendor => $vendor,
 		      vendor_id => "",
-		      devicefile => $devfile } );
+		      dev_name => $devfile } );
 		$cnt ++;
 	    }
 	    close CMD;
@@ -171,7 +171,7 @@ while ( <STDIN> )
 			 unique_key => "",
 			 vendor => trim($vendor),
 			 vendor_id => "",
-			 devicefile => trim($devfile),
+			 dev_name => trim($devfile),
 			 class => trim($class),
 			 driver => trim($driver),
 			 host => $host 
