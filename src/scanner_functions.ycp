@@ -1,0 +1,53 @@
+/**
+ * File:
+ *   io.ycp
+ *
+ * Module:
+ *   Configuration of scanner
+ *
+ * Summary:
+ *   Input and output functions.
+ *
+ * Authors:
+ *   Gabriele Strattner <gs@suse.de>
+ *
+ * $Id$
+ *
+ * Input and output routines.
+ * 
+ */
+
+{
+
+textdomain "scanner";
+
+/**
+ * Fill the map of all scanner settings from the SCR
+ * @return map all scanner settings
+ */
+global define ScannerRead() ``{
+    /* TODO: your code here ... */
+    return $[];
+}
+
+/**
+ * Update the SCR from the map of all scanner settings
+ * @param m a map of all scanner settings
+ * @return boolean success of operation
+ */
+global define ScannerWrite(map settings) ``{
+    /* TODO your code here ... */
+    return true;
+}
+
+/**
+ * Write the scanner data from SCR to the disk
+ * @return list success of operation
+ */
+global define ScannerFinish() ``{
+    /* TODO your code here ... */
+    sleep(1500);
+    return true;
+}
+
+}

@@ -1,0 +1,138 @@
+/**
+ * File:
+ *   scanner.ycp
+ *
+ * Module:
+ *   Configuration of scanner
+ *
+ * Summary:
+ *   Main file
+ *
+ * Authors:
+ *   Gabriele Strattner <gs@suse.de>
+ *
+ * $Id$
+ *
+ * Main file for scanner configuration. Uses all other files.
+ * 
+ */
+
+{
+
+/***
+ * <h3>Configuration of the scanner</h3>
+ */
+
+  textdomain "scanner";
+
+  include "wizard/sequencer.ycp";
+  include "ui/wizard_dialog.ycp";
+  include "ui/common_popups.ycp";
+  include "ui/common_messages.ycp";
+
+  include "scanner/scanner_functions.ycp";
+
+  include "scanner/scanner_start.ycp";
+  include "scanner/scanner_new.ycp";
+  include "scanner/scanner_overview.ycp";
+  include "scanner/scanner_install.ycp";
+  include "scanner/scanner_manual.ycp";
+  include "scanner/scanner_options.ycp";
+
+  boolean test_mode = false;
+
+
+/* The main() */
+  y2debug("Scanner module started");
+
+
+
+// NOT USED
+  map settings = ScannerRead();
+
+  map user_settings = $[];
+
+
+
+  if ( test_mode )
+  {
+      map test_info = $["vendor": "HP",
+		       "model" :  "567U"];
+      user_settings = add( user_settings, "test_mode", true ); 
+      user_settings = add( user_settings, "scannerInfo", test_info);
+  }
+
+
+  y2debug("settings=%1",settings);
+
+/**
+ * Abort dialog
+ */
+  global define AbortDialog() ``{
+      any ret = UI(`ReallyAbortPopup(true));
+      if(ret==true) return `yes;
+      return `back;
+  }
+
+
+  UI(`CreateWizardDialog());
+
+  map aliases = $[
+		  "scanner_start"      :   ``(ScannerStartDialog(user_settings)),
+		  "scanner_overview"   :   ``(ScannerOverviewDialog()),
+		  "scanner_new"	:   ``(ScannerNewDialog()),
+		  "scanner_install"    :   ``(ScannerInstallDialog()),
+		  "scanner_options"	:   ``(ScannerOptionsDialog()),
+		  "scanner_notfound"	:   ``(ScannerNotFoundDialog()),
+		  "abort"              :   ``(AbortDialog())
+  ];
+    
+    
+  map sequence = $[
+		   "ws_start"     :   "scanner_start",
+		   "scanner_start":   $[
+					`abort     :   "abort",
+					`cancel	  :   `cancel,
+					`overview  :   "scanner_overview",
+					`new	  :   "scanner_new",
+					`manual    :   "scanner_notfound",
+					`next      :   "scanner_overview"],
+		   "scanner_overview":   $[
+					   `abort     :   "abort",
+					   `edit	  :   "scanner_options",
+					   `new       :   "scanner_new",	// `new: scanner recognised
+					   `manual    :   "scanner_notfound",	// `manual: try manual
+					   `next	  :   `ok,
+					   `finish	  :   `ok ],	// finish
+		   "scanner_new" :   $[
+				       `abort     :   "abort",
+				       `next      :   "scanner_install"],
+		   "scanner_install":   $[
+					  `abort     :   "abort",
+					  `next      :   "scanner_overview"],
+		   "abort"      :   $[
+				      `yes 	  :   `abort ]
+  ];
+    
+    
+
+  any ret = WizardSequencer(aliases, sequence);
+
+  if ( ret == `ok )
+  {
+      /* info text shown at the end of module */
+      string message = UI(_("Please wait while updating configuration files."));
+      UI(`OpenDialog(`opt(`decorated), `Label(message)));
+
+      any ret = ScannerWrite(settings);
+
+      y2debug("Scanner write=%1", ret );
+
+      y2debug("Scanner finish=%1",ScannerFinish());
+      UI(`CloseDialog());
+  }
+
+/* Finish */
+  y2debug("Scanner module finished");
+
+}

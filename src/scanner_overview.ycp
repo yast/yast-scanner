@@ -1,0 +1,44 @@
+/**
+ * File:
+ *   scanner_overview.ycp
+ *
+ * Module:
+ *   Configuration of scanner
+ *
+ * Summary:
+ *   
+ *
+ * Authors:
+ *   Gabriele Strattner <gs@suse.de>
+ *
+ * $Id$
+ *
+ * Shows the overview of configured scanners. 
+ * 
+ *
+ */
+
+{
+
+  include "scanner/scanner_overview_ui.ycp";
+
+  /**
+   * OverviewDialog dialog
+   */
+   
+  global define ScannerOverviewDialog()``{
+      string help    = UI(_("OverviewDialog help..."));
+      string caption = UI(_("OverviewDialog ..."));
+      term contents  = ScannerOverviewDialog_UI();
+
+      //UI(`SetWizardContentsButtons(caption,contents,help,BackButtonLabel()),NextButtonLabel());
+      UI(`SetWizardContentsButtons(caption,contents,help,"Back","Next"));
+
+      any ret = UI(`UserInput());
+
+      /* your code ... */
+
+      return ret;
+  }
+
+}

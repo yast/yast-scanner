@@ -1,0 +1,16 @@
+{
+/**
+ * NewScanner_UI dialog
+ */
+global define ScannerOptionsDialog_UI()``{
+     return `Empty ();
+
+
+};
+/**
+ * DialogEditorMap dialog
+ */
+global define DialogEditorMap()``{
+     return $[`call:"NewScanner"];
+};
+}

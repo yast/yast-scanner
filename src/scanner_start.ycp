@@ -1,0 +1,130 @@
+/**
+ * File:
+ *   scanner_start.ycp
+ *
+ * Module:
+ *   Configuration of scanner
+ *
+ * Summary:
+ *   
+ *
+ * Authors:
+ *   Gabriele Strattner <gs@suse.de>
+ *
+ * $Id$
+ *
+ * 0. is package "sane" installed?
+ *    if NOT -> call sw_single
+ * 1. Hardware probing
+ *    .probe.scanner / scsi (perl)
+ * 2. Check already installed scanner (perl)
+ * 3. Decide whether the detected scanner(s) is (are) installed
+ * 4. Decide which dialog is called next
+ *    - at least one new scanner detected/no scanner configured
+ *      -> go to dialog scanner_new (show first detected scanner)
+ *    - at least one new scanner detected/at least one scanner configured
+ *	-> show dialog scanner_overview AND a popup
+ *	   "New scanner - configuration wanted?"
+ *    - nothing new, but at least one scanner configured
+ *      -> show dialog overview
+ *    - nothing detected at all
+ *	-> go to dialog scanner_manual_1
+ * 
+ * Shows the progress of hardware probing and scanner checking. 
+ * 
+ *
+ */
+
+{
+  textdomain "general";
+  include "ui/progress.ycp";
+
+
+/**
+ * ScannerStartDialog
+ */
+  global define ScannerStartDialog( map user_settings )``{
+
+      any ret = nil;
+      map scannerInfo = lookup( user_settings, "scannerInfo", $[]);
+      
+   // Help text for last dialog of base installation
+      string help_text = UI(_("<p>
+YaST2 starts the hardware probing, i.e. checks the 'USB' and/or
+the 'SCSI' port(s) for connected scanner(s).
+If a new scanner is detected the next dialog allows you to
+configure easily the scanner.
+If the automatic detection fails you have the possibility to continue
+with manual installation in following dialogs.
+</p>"));
+	
+
+    UI(`ProgressSetupUI(
+			// Headline for start dialog of scanner configuration
+			_("Initialising scanner module ..."),
+			"",	// progress_title
+			1000,	// length
+			[
+			 _("Checking whether SANE library is installed"),
+			 _("Hardware probing - looking for connected scanner(s)"),
+			 _("Checking for already installed scanner")
+			 ],
+			help_text )
+       );
+
+    UI(`ProgressMilestoneUI( 10, _("Checking for SANE"), 0 ));
+
+    // check whether 'sane' is installed
+    if ( SCR (`Execute (.target.bash, "/bin/rpm -q sane")) != 0 )
+    {
+	string tmpdir = SCR (`Read (.target.tmpdir));
+        string filename = tmpdir + "/sw_single_input";
+        SCR (`Write (.target.ycp, filename, $["install":["sane"], "userInput" : false ]));
+        CallFunction (`sw_single (filename));
+    }
+
+    // SANE should be installed by now - if not notify the user and exit
+    if ( SCR (`Execute (.target.bash, "/bin/rpm -q sane")) != 0 )
+    {
+	UI( `ErrorPopup(_("Package 'sane' is not installed correctly.
+This package is mandatory for the scanner installation.
+Please make sure that you have the SuSE CD set available
+and start scanner installation again - or install the package
+with YaST2 module 'Install/Remove Software'.\n")));
+
+	return `cancel;
+    }
+
+    UI(`ProgressMilestoneUI( 20, _("Hardware probing"), 0 ));
+
+    // probe USB ports
+    list connected_scanner = SCR(`Read(.probe.scanner));
+    y2debug("USB Scanner: %1", connected_scanner);
+
+    // check SCSI ports
+    //connected_scanner = add( connected_scanner, SCR(`Execute(.target.bash, "check_scsi" )));
+    y2debug("SCSI Scanner: %1", connected_scanner);
+  
+    UI(`ProgressMilestoneUI( 30, _("Checking for already installed scanner"), 0 ));
+
+    //map installed_scanner = SCR(`Execute(.target.bash, "check_installed" ));
+
+    if ( lookup(user_settings, "test_mode", false) )
+    {
+	if ( lookup( scannerInfo, "test_new", false))
+	    ret = `new;
+	else
+	    ret = `manual;
+    }
+
+    // find out which scanner is already installed/which is new
+
+    
+    // ret = UI(`UserInput());
+
+    ret = `next;
+				
+    return ret;
+  }
+
+}

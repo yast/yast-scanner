@@ -1,0 +1,18 @@
+{
+
+
+/**
+ * OverviewDialog_UI dialog
+ */
+global define ScannerOverviewDialog_UI()``{
+     return `Empty ();
+
+
+};
+/**
+ * DialogEditorMap dialog
+ */
+global define DialogEditorMap()``{
+     return $[`call:"OverviewDialog"];
+};
+}

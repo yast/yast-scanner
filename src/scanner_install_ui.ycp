@@ -1,0 +1,16 @@
+{
+/**
+ * InstallScanner_UI dialog
+ */
+global define ScannerInstallDialog_UI()``{
+     return `Empty ();
+
+
+};
+/**
+ * DialogEditorMap dialog
+ */
+global define DialogEditorMap()``{
+     return $[`call:"InstallScanner"];
+};
+}

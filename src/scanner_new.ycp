@@ -1,0 +1,46 @@
+/**
+ * File:
+ *   scanner_start.ycp
+ *
+ * Module:
+ *   Configuration of scanner
+ *
+ * Summary:
+ *   
+ *
+ * Authors:
+ *   Gabriele Strattner <gs@suse.de>
+ *
+ * $Id$
+ *
+ * 
+ * Installation of a new scanner. 
+ * 
+ *
+ */
+
+{
+  include "scanner/scanner_new_ui.ycp";
+
+
+/**
+ * ScannerStartDialog
+ */
+  global define ScannerNewDialog()``{
+      string help    = UI(_("BeginDialog help..."));
+
+     
+      string caption = UI(_("New Sanner found"));
+      term contents  = ScannerNewDialog_UI();
+
+      //UI(`SetWizardContentsButtons(caption,contents,help,BackButtonLabel(),NextButtonLabel()));
+      UI(`SetWizardContentsButtons(caption,contents,help,"Back", "Next"));
+     
+      any ret = UI(`UserInput());
+
+      /* your code ... */
+
+      return ret;
+  }
+
+}
