@@ -33,6 +33,7 @@ use English;
 		      writeIndividualConf
 		      acquireTestImage 
 		      performScanimage 
+		      probePtalDevice
 		      getNetInfo 
 		      revertAll
 		      enableNetScan 
@@ -1402,7 +1403,7 @@ sub storeDevice($$)
 	    # HP all-in-one devices: 
 	    if ( $interface =~ /Parport\(ECP\) USB JetDirect/ )
 	    {
-		storeEntry( "USB", $device->{mfg},
+		storeEntry( "PTAL", $device->{mfg},
 			    $device->{model},
 			    $backend->{name} );	
 	    }
@@ -2275,6 +2276,18 @@ The full filename of the image.
 =cut
 
 # ################################################################################
+
+sub probePtalDevice()
+{
+    y2debug( "Probing ptal device" );
+
+    my $cmd = sprintf( "/usr/X11R6/bin/scanimage -L > %s", "/tmp/tmpfile" );
+
+    y2debug( "Executing command <$cmd>" );
+ 
+    system( $cmd );  
+
+}
 
 sub acquireTestImage( $$ )
 {
