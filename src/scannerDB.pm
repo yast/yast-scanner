@@ -720,6 +720,7 @@ umax
 umax_pp
 umax1220u
 v4l
+hpoj
 EndOfConf
 
 $config{agfafocus} = <<"EndOfConf";
@@ -2034,7 +2035,7 @@ sub writeDllconf( $ )
     createBackup( $fi );
 
     y2debug( "Try to open <$fi>" );
-
+ 
     if( open( F, "> $fi" ) )
     {
 	my $t = localtime;
