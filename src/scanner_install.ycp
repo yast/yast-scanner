@@ -122,7 +122,7 @@ offers more scan and image processing functionality.
 	map installed = GetCurrentScanner();
 
 	byteblock logo =  #[00000001];
-	logo = (byteblock) SCR::Read( .local.byte,
+	logo = (byteblock) WFM::Read( .local.byte,
 				      "/usr/share/doc/packages/sane/sane-backends/umax/sane-logo2.jpg");
 	if ( logo == nil )
 	     logo = #[00000001];
