@@ -16,7 +16,7 @@
  * $Id$
  *
  * Main file for scanner configuration. Uses all other files.
- * 
+ *
  */
 
 {
@@ -32,8 +32,6 @@
   import "Popup";
   import "Label";
 
-  include "ui/common_functions.ycp";
-  
   include "scanner/scanner_functions.ycp";
 
   include "scanner/scanner_start.ycp";
@@ -60,9 +58,9 @@
   integer arg_n = size(WFM::Args()) - 1;
 
   symbol test_status = `installed;
-  
+
   list arg_list = [];
-  
+
   while (arg_n >= 0) {
       if (WFM::Args(arg_n) == .test)
       {
@@ -84,7 +82,7 @@
       }
       arg_n = arg_n - 1;
   }
-  
+
   if ( test_mode )
   {
       y2debug("Scanner TESTMODE");
@@ -131,7 +129,7 @@
 				"sub_vendor":"EPSON",
 				"unique_key":"PTVH.9Hr5DGWrbRF",
 				"vendor":"Epson",
-				"vendor_id":197816] ];  
+				"vendor_id":197816] ];
       }
       else
       {
@@ -197,14 +195,14 @@
 				   "vendor":"Epson",
 				   "vendor_id":197816
 				   ]];
-      }  
-      user_settings = add( user_settings, "test_mode", true ); 
+      }
+      user_settings = add( user_settings, "test_mode", true );
       user_settings = add( user_settings, "test_connected", connected_scanner );
-      user_settings = add( user_settings, "test_installed", installed_scanner ); 
+      user_settings = add( user_settings, "test_installed", installed_scanner );
   }
   else
   {
-      user_settings = add( user_settings, "test_mode", false ); 
+      user_settings = add( user_settings, "test_mode", false );
   }
 
 
@@ -243,8 +241,8 @@
 		  "scanner_manual"	:   ``( ScannerManualDialog() ),
 		  "abort"              	:   ``( AbortDialog() )
   ];
-    
-    
+
+
   map sequence = $[
 		   "ws_start"     :   "scanner_start",
 		   "scanner_start":   $[
@@ -299,8 +297,8 @@
 		   "abort"      :   $[
 				      `yes 	  :   `abort ]
   ];
-    
-    
+
+
 
   any ret = WizardSequencer(aliases, sequence);
 
@@ -311,7 +309,7 @@
       UI::OpenDialog(`opt(`decorated), `Label(message));
 
       y2milestone("FINISH the scanner installation - confirm all changes." );
-      
+
       any ret = ScannerWrite(lookup(user_settings, "scannerInfo", $[]));
 
   }

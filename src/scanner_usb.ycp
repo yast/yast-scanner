@@ -14,7 +14,7 @@
  * In case the scanner is known the USB module will be loaded automatically
  * (hotplug).
  * Otherwise the module must be loaded with: modprobe <module name> ID ID
- * The options must be added to /etc/modules.conf.    
+ * The options must be added to /etc/modules.conf.
  *
  * Remark: Up to verion 7.2 the USB manager had an own, manually created config file
  *         /etc/usbmgr/usbmgr.conf which is obsleted by the hotplug script now.
@@ -26,22 +26,22 @@
  *
  * $Id$
  *
- * 
+ *
  */
 
 {
-
   textdomain "scanner";
 
-  import "Label";  
+  import "Label";
+  import "String";
 
   global define ScannerUSBDialog_UI( list device_list ) ``{
 
       list module_list = ["scanner", "microtek"];
       term layout = `Empty();
-      
+
       layout = `VBox(`VSpacing(1.0),
-// This is a label, i.e. the line length should not exceed 50 characters.		     
+// This is a label, i.e. the line length should not exceed 50 characters.
 		     `Label(`opt (`hstretch), _("YaST2 could not load the USB scanner
 module automatically.\n
 Please select your scanner from the list below.")),
@@ -60,7 +60,7 @@ Please select your scanner from the list below.")),
 				      )),
 			    `VBox(
 				  `VSpacing(1.0),
-                                  // button label 
+                                  // button label
 				  `HCenter(`PushButton (`id (`load), _("&Load"))),
 				  `VSpacing(0.2)
 				  )
@@ -97,13 +97,13 @@ please select the corresponding list entry.</p>"
       // help part 2 of dialog manual USB Scanner configuration
       string help2 = _("<p>Also select the USB module (usually 'scanner')
 and press the <b>Load</b> button.</p>");
-      
+
       // help part 3 of dialog manual USB Scanner configuration
       string help3    = _("<p>YaST2 will try to load the
 USB kernel module.</p> ");
 
       // help part 4 of dialog manual USB Scanner configuration
-      string help4    = _("<p>If the scanner module loaded 
+      string help4    = _("<p>If the scanner module loaded
 successfully you can proceed to the
 \"Manual scanner selection\" dialog by clicking on <b>Next</b>.</p>");
 
@@ -135,7 +135,7 @@ successfully you can proceed to the
        *
        * The result map does NOT contain a "drivers" entry if the device is unknown.
        */
-      
+
       if ( lookup (user_settings, "test_mode", false ) )
       {
 	  usb_devices = [
@@ -163,12 +163,12 @@ successfully you can proceed to the
 	      string device_str = lookup( device, "device", "");
 	      if ( device_str == "" )
 	      {
-		  device_str = lookup( device, "sub_device", "");  
+		  device_str = lookup( device, "sub_device", "");
 	      }
 	      string vendor_str = lookup( device, "vendor", "");
 	      if ( vendor_str == "" )
 	      {
-		  vendor_str = lookup( device, "sub_vendor", "");  
+		  vendor_str = lookup( device, "sub_vendor", "");
 	      }
 	      if ( vendor_str != "" && device_str != "" )
 	      {
@@ -193,7 +193,7 @@ successfully you can proceed to the
       while ( go_on )
       {
 	  go_on = true;
-	  
+
 	  ret = UI::UserInput();
 
 	  if ( ret == `next || ret == `abort || ret == `back || ret == `cancel )
@@ -230,27 +230,27 @@ successfully you can proceed to the
 					   tohexstring(vendor_id),
 					   tohexstring(product_id) );
 		  string usb_usermap = sformat("%1  %2", tohexstring(vendor_id), tohexstring(product_id) );
-		  
+
 		  //boolean success = false;
 		  boolean success = true;
-		  
+
 		  if ( vendor_id != 0 && product_id != 0 )
 		  {
 		      SetCurrentScannerValue("usb_module", module_name);
 		      SetCurrentScannerValue("usb_options", $["vendor" : tohexstring(vendor_id),
 							      "product": tohexstring(product_id)]);
 		      SetCurrentScannerValue("usb_usermap", usb_usermap );
-		      
+
 		      success = SCR::Execute(.target.modprobe, module_name, options );
 		  }
 
-		  y2milestone( "Loading USB: modprobe %1 %2, exit status: %3", module_name, options, success );  
+		  y2milestone( "Loading USB: modprobe %1 %2, exit status: %3", module_name, options, success );
 
 		  if ( !success )
 		  {
-		    
+
 		      any cont = Popup::ContinueCancelHeadline( Label::ErrorMsg(),
-// text of an error popup: loading the module failed			  
+// text of an error popup: loading the module failed
 _("The USB module is NOT loaded successfully.
 Do you want to have another try or
 exit the scanner configuration?"));
@@ -266,10 +266,10 @@ exit the scanner configuration?"));
 		  }
 		  else
 		  {
-		      // the USB module is loaded successfully - 
+		      // the USB module is loaded successfully -
 		      // add the options to /etc/modules.conf if the user Finish the installation
 		      // -> ScannerWrite
-		      
+
 		      // Add vendor and device to scanner info
 		      if ( lookup(device, "device", "") != "" )
 		      {
@@ -277,7 +277,7 @@ exit the scanner configuration?"));
 		      }
 		      else
 		      {
-			  SetCurrentScannerValue( "device", CutBlanks(lookup(device, "sub_device", "")) );
+			  SetCurrentScannerValue( "device", String::CutBlanks(lookup(device, "sub_device", "")) );
 		      }
 		      if ( lookup(device, "vendor", "") != "" )
 		      {
@@ -285,7 +285,7 @@ exit the scanner configuration?"));
 		      }
 		      else
 		      {
-			  SetCurrentScannerValue( "vendor", CutBlanks(lookup(device, "sub_vendor", "")) ); 
+			  SetCurrentScannerValue( "vendor", String::CutBlanks(lookup(device, "sub_vendor", "")) );
 		      }
 		      if ( ret == `load )
 		      {
@@ -293,13 +293,13 @@ exit the scanner configuration?"));
 			  Popup::Notify(_("The USB module is loaded successfully.
 You may proceed by clicking Next."));
 		      }
-		  }  
+		  }
 	      }
 	  }
       }
 
       return ret;
-      
+
   }
 
 }
