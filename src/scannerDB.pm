@@ -439,8 +439,8 @@ $driver{SCSI}{Nikon}{"AX-210"} = "umax";
 
 my @all_drivers = ("abaton","agfafocus","apple","artec","avision","bh","canon",
 		   "coolscan","dc210","dc240","dc25","dll","dmc","epson","hp",
-		   "m3096g","microtek","microtek2","mustek","mustek_pp","nec",
-		   "net","pie","plustek","qcam","ricoh","s9036","saned","sharp",
+		   "m3096g","microtek","microtek2","mustek_pp", "mustek_usb", "mustek", 
+		   "nec", "net","pie","plustek","qcam","ricoh","s9036","saned","sharp",
 		   "snapscan","sp15c","st400","tamarack","umax","umax_pp","v4l"
 		   );
 # Here starts the configuration database.
@@ -1197,7 +1197,7 @@ sub createBackup( $ )
 	y2debug("File <$file> does not exists, but who cares, creating it !" ) ;
 	unless( open (FILE, $file) )
 	{
-	    y2error( "Could not create file <$file>" );
+	    y2debug( "Could not create file <$file>" );
 	    return "";
 	}
 	print FILE "";
@@ -1255,10 +1255,20 @@ sub modify_rc_cmdfile( $ )
     }
     $line .= " $dev" if( ! $already_known );
 
+    # Check if directory exists and create if neccessary.
+    unless( -e "$prefix/var/lib/sane" )
+    {
+	system( "/bin/mkdir -p $prefix/var/lib/sane" );
+    }
+
     if( open( FILE, ">$prefix/var/lib/sane/devices" ))
     {
 	print FILE "$line\n";
 	close FILE;
+    }
+    else
+    {
+	y2debug("ERR: Directory <$prefix/var/lib/sane/devices> does not exist and could not be created !" );
     }
 }
 
@@ -1682,7 +1692,13 @@ sub writeIndividualConf( $$$ )
 		    }
 		}
 	    }
-	    $cfg_line =~ s/YAST2_DEVICE/$device/im;
+
+	    # The device line may not contain a comment
+	    if( $cfg_line =~ /YAST2_DEVICE/ )
+	    {
+		# This avoids comments
+		$cfg_line = $device;
+	    }
 	    $cfg_line =~ s/YAST2_BUS/$bus/im;
 	    
 	    print F "$cfg_line\n";
@@ -1706,8 +1722,8 @@ sub writeIndividualConf( $$$ )
 		push @devicesToReset, $device;
 		my $mode = 0666;
 		chmod $mode, $device;
-
-		# In case, everything is fine, add the device to /var/lib/sane/devices.
+	    
+		# In case it is an scsi device, add it to /var/lib/sane/devices.
 		modify_rc_cmdfile( $device );
 	    }
 	    else
@@ -1716,7 +1732,6 @@ sub writeIndividualConf( $$$ )
 	    }
 	}
     }
-
     return $res;
 }
 # ################################################################################
@@ -1969,11 +1984,11 @@ sub revertAll
     y2debug( "Reverted $countfiles configuration-files" );
     
     # look in /var/lib/sane for to restore things
-    $path = "$prefix/var/log/sane/devices.yast2-$PID";
+    $path = "$prefix/var/lib/sane/devices.yast2-$PID";
     if( -e $path )
     {
 	y2debug("Restoring devices-file in <$path>");
-	move ( $path, "$prefix/var/log/sane/devices" );
+	move ( $path, "$prefix/var/lib/sane/devices" );
     }
     
 
