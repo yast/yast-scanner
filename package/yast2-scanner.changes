@@ -1,4 +1,11 @@
 -------------------------------------------------------------------
+Thu Jul  1 12:23:43 CEST 2004 - jsrain@suse.cz
+
+- modified the code layout to use YCP module for storing data, added
+  clients for autoinstallation and proposal (not working because of
+  further needed changes in the Scanner.ycp module)
+
+-------------------------------------------------------------------
 Fri Jun 18 13:47:15 CEST 2004 - gs@suse.de
 
 - V 2.10.0

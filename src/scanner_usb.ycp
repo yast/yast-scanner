@@ -37,6 +37,7 @@
 
   import "Label";
   import "String";
+import "Scanner";
 
   define term ScannerUSBDialog_UI( list device_list ) ``{
 
@@ -119,7 +120,7 @@ Make sure that the data entered in next dialog is correct.</p>");
        * The result map does NOT contain a "drivers" entry if the device is unknown.
        */
 
-      if ( lookup (user_settings, "test_mode", false ) )
+      if ( lookup (Scanner::user_settings, "test_mode", false ) )
       {
 	  usb_devices = [
 			 $["bus":"USB", "class_id":268, "device":"Perfection 640",
@@ -226,28 +227,28 @@ Make sure that the data entered in next dialog is correct.</p>");
 
 		  if ( vendor_id != 0 && product_id != 0 )
 		  {
-		      SetCurrentScannerValue("usb_options", $["vendor" : tohexstring(vendor_id),
+		      Scanner::SetCurrentScannerValue("usb_options", $["vendor" : tohexstring(vendor_id),
 							      "product": tohexstring(product_id)]);
-		      SetCurrentScannerValue("usb_usermap", usb_usermap );
+		      Scanner::SetCurrentScannerValue("usb_usermap", usb_usermap );
 
 		  }
 
 		  // Add vendor and device to scanner info
 		  if ( lookup(device, "device", "") != "" )
 		  {
-		      SetCurrentScannerValue( "device", lookup(device, "device", "") );
+		      Scanner::SetCurrentScannerValue( "device", lookup(device, "device", "") );
 		  }
 		  else
 		  {
-		      SetCurrentScannerValue( "device", String::CutBlanks(lookup(device, "sub_device", "")) );
+		      Scanner::SetCurrentScannerValue( "device", String::CutBlanks(lookup(device, "sub_device", "")) );
 		  }
 		  if ( lookup(device, "vendor", "") != "" )
 		  {
-		      SetCurrentScannerValue( "vendor", lookup(device, "vendor", "") );
+		      Scanner::SetCurrentScannerValue( "vendor", lookup(device, "vendor", "") );
 		  }
 		  else
 		  {
-		      SetCurrentScannerValue( "vendor", String::CutBlanks(lookup(device, "sub_vendor", "")) );
+		      Scanner::SetCurrentScannerValue( "vendor", String::CutBlanks(lookup(device, "sub_vendor", "")) );
 		  }
 	      }
 	  }

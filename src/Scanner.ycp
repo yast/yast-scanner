@@ -1,21 +1,99 @@
 /**
- * File:
- *   scanner_start.ycp
- *
- * Module:
- *   Configuration of scanner
- *
- * Summary:
- *
- *
- * Authors:
- *   Gabriele Strattner <gs@suse.de>
- *   Klaas Freitag <freitag@suse.de>
- *
- *
+ * File:	modules/Scanner.ycp
+ * Package:	Configuration of scanner
+ * Summary:	Scanner settings, input and output functions
+ * Authors:	Jiri Srain <jsrain@suse.cz>
  *
  * $Id$
  *
+ * Representation of the configuration of scanner.
+ * Input and output routines.
+ */
+
+{
+
+module "Scanner";
+textdomain "scanner";
+
+import "Progress";
+import "Report";
+import "String";
+import "Summary";
+import "Popup";
+
+
+global map user_settings = $[];
+
+/**
+ * Prototypes
+ */
+global boolean Modified();
+
+/**
+ * Data was modified?
+ */
+global boolean modified = false;
+
+/**
+ */
+global boolean proposal_valid = false;
+
+/**
+ * Write only, used during autoinstallation.
+ * Don't run services and SuSEconfig, it's all done at one place.
+ */
+global boolean write_only = false;
+
+
+// includes - may use variables
+
+include "scanner/scanner_functions.ycp";
+
+
+/**
+ * Abort function
+ * return boolean return true if abort
+ */
+global boolean() AbortFunction = Modified;
+
+/**
+ * Abort function
+ * @return boolean return true if abort
+ */
+global define boolean Abort() ``{
+    if(AbortFunction != nil)
+    {
+	return AbortFunction () == true;
+    }
+    return false;
+}
+
+/**
+ * Data was modified?
+ * @return true if modified
+ */
+global boolean Modified() {
+    y2debug("modified=%1",modified);
+    return modified;
+}
+
+// Settings: Define all variables needed for configuration of scanner
+// TODO FIXME: Define all the variables necessary to hold
+// TODO FIXME: the configuration here (with the appropriate
+// TODO FIXME: description)
+// TODO FIXME: For example:
+//   /**
+//    * List of the configured cards.
+//    */
+//   list cards = [];
+//
+//   /**
+//    * Some additional parameter needed for the configuration.
+//    */
+//   boolean additional_parameter = true;
+
+/**
+ * Read all scanner settings
  * 0. is package "sane" installed?
  *    if NOT -> call sw_single
  * 1. Hardware probing
@@ -25,25 +103,14 @@
  * 4. Decide which dialog is called next
  *
  * Shows the progress of hardware probing and scanner checking.
- *
+  * @return true on success
  */
-
-{
-  textdomain "scanner";
-
-  import "Progress";
-  import "Label";
-  import "String";
-  import "Scanner";
-
-/**
- * ScannerStartDialog
- */
-  define any ScannerStartDialog( )``{
+global boolean Read() {
 
       symbol ret = `next;
 
       boolean test_mode = lookup( Scanner::user_settings, "test_mode", false );
+    y2milestone ("Reading: Test mode: %1", test_mode);
 
       // Help text for start dialog (checking and probing)
       string help_text = _("<p>YaST2 is doing some checks, such as the
@@ -108,7 +175,7 @@ Make sure you have the SUSE CD set available
 and restart the scanner installation. Alternatively, install the package
 with the YaST2 module 'Install and Remove Software'.
 "));
-	      return `cancel;
+	      return false;
 	  }
 	  else
 	  {
@@ -201,7 +268,7 @@ your computer. At the moment only one USB scanner can
 be configured, so please decide which one you want.\n
 Disconnect all unwanted USB scanners and restart
 the scanner configuration\n."));
-	      return `cancel;
+	      return false;
 	  }
 
 	  y2milestone( "Connected Scanner: %1", connected_scanner);
@@ -310,7 +377,9 @@ the scanner configuration\n."));
       // Thus we have to sort out and count scanners per station.
 
       // Get all scanners on the stations
-      list<map> net_scanner = (list<map>) SCR::Read(.scanner.net);
+      list<map> net_scanner = [];
+    if (! test_mode)
+	net_scanner = (list<map>) SCR::Read(.scanner.net);
       list<map> net_stations = [];
       foreach(map one_scanner, net_scanner, ``{
 
@@ -380,9 +449,139 @@ the scanner configuration\n."));
       Scanner::user_settings = add( Scanner::user_settings, "scannerInfo", scanner_info );
       y2debug( "Writing SCANNER INFO: %1", scanner_info );
 
-      ret = DecideDialog( `start );
+    return true;
+}
+
+/**
+ * Write all scanner settings
+ * @return true on success
+ */
+global boolean Write() {
+      boolean ret = true;
+
+      foreach( any key, map scanner, scanner_info, ``{
+
+	  string usb_usermap = lookup( scanner, "usb_usermap", "" );
+	  string bus = lookup( scanner, "bus", "" );
+	  string scanner_driver = lookup( scanner, "scanner_driver", "" );
+	  string is_installed = lookup( scanner, "scanner_status", "" );
+	  string unique_key =  lookup( scanner, "unique_key", "" );
+
+	  if( is_installed == "installed" )
+	  {
+	      boolean success = false;
+
+	      SCR::Write(.probe.status.configured, unique_key, `yes);
+	      y2milestone ( "Mark scanner %1 as configured",  unique_key );
+
+	      if ( bus == "USB"
+		   && usb_usermap != ""
+		   && scanner_driver != "" )
+	      {
+		  // kernel 2.6: writing modules.conf is obsolete (scanner module is gone)
+
+		  integer exitcode = 0;
+
+		  // append USB IDs to /etc/sane.d/<driver>.conf
+		  exitcode = (integer)SCR::Execute(.target.bash, sformat("echo \"usb %1\" >> /etc/sane.d/%2.conf",
+							       usb_usermap, scanner_driver) );
+
+		  if ( exitcode == 0 )
+		  {
+	      		  string user_entry = sformat ("desktopdev  0x0003  %1  0x0000       0x0000       0x00         0x00            0x00            0x00            0x00            0x00            0x00000000", usb_usermap );
+		      // Write /etc/hotplug/usb/sane.usermap (using pseudo module name "desktopdev")
+		      exitcode = (integer)SCR::Execute(.target.bash, sformat("echo \"%1\" >> /etc/hotplug/usb/sane.usermap", user_entry ) );
+		  }
+		  if ( exitcode != 0 )
+		  {
+		      y2error( "ERROR: Manual USB configuration failed" );
+		      ret = false;
+		  }
+		  else
+		  {
+		      y2milestone( "Writing /etc/sane.d/%1.conf and /etc/hotplug/usb/sane.usermap" );
+		  }
+	      }
+	      else if ( bus == "SCSI" )
+	      {
+		  // set the link in /etc/init.d/rc3.d to start the script /usr/sbin/rcsane
+		  // (which sets and resets the permissions 666 on /dev/sg0 )
+		  success = Service::Enable("sane");
+		  y2milestone( "ServiceAdjust( sane, enable ) returns: %1", success );
+		  if ( !success )
+		      ret = false;
+	      }
+	      else if ( bus == "PTAL" )
+	      {
+		  // enable PTAL service and hotplug
+		  success = Service::Enable("hotplug");
+		  if ( success )
+		  {
+		      success = Service::Enable("ptal");
+		  }
+		  if ( !success )
+		      ret = false;
+
+		  y2milestone ( "PTAL service %1", success?"enabled":"NOT enabled" );
+	      }
+	  }
+      });
 
       return ret;
-  }
 
 }
+
+/**
+ * Get all scanner settings from the first parameter
+ * (For use by autoinstallation.)
+ * @param settings The YCP structure to be imported.
+ * @return boolean True on success
+ */
+global boolean Import (map settings) {
+    // TODO FIXME: your code here (fill the above mentioned variables)...
+    return true;
+}
+
+/**
+ * Dump the scanner settings to a single map
+ * (For use by autoinstallation.)
+ * @return map Dumped settings (later acceptable by Import ())
+ */
+global map Export () {
+    // TODO FIXME: your code here (return the above mentioned variables)...
+    return $[];
+}
+
+/**
+ * Create a textual summary and a list of unconfigured cards
+ * @return summary of the current configuration
+ */
+global list Summary() {
+    // TODO FIXME: your code here...
+    /* Configuration summary text for autoyast */
+    return [ _("Configuration summary ..."), [] ];
+}
+
+/**
+ * Create an overview table with all configured cards
+ * @return table items
+ */
+global list Overview() {
+    // TODO FIXME: your code here...
+    return [];
+}
+
+/**
+ * Return packages needed to be installed and removed during
+ * Autoinstallation to insure module has all needed software
+ * installed.
+ * @return map with 2 lists.
+ */
+global map AutoPackages() {
+    // TODO FIXME: your code here...
+    return $[ "install":[], "remove":[] ];
+}
+
+/* EOF */
+}
+

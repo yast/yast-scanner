@@ -110,7 +110,7 @@ can be found in the SuSE support database.</p>");
 		  y2milestone("Net Scanner: %1", net_scanner );
 
 		  // Create the entry for the Network scanner
-		  CreateScannerEntry( new_net_scanner );
+		  Scanner::CreateScannerEntry( new_net_scanner );
 	      }
 	      else
 	      {

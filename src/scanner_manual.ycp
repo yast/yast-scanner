@@ -25,10 +25,11 @@
   textdomain "scanner";
 
   import "Label";
+  import "Scanner";
     
   define list<term> CreateVendorList( ) ``{
       list<term> list_input = [];
-      list<string> vlist = (list<string>) SCR::Read(.sane.vendorlist, GetCurrentScanner());
+      list<string> vlist = (list<string>) SCR::Read(.sane.vendorlist, Scanner::GetCurrentScanner());
       //used to preselect first entry
       boolean isfirst = true;
 
@@ -52,8 +53,8 @@
 
   define list<term> CreateModelList( string vendor ) ``{
       list<term> list_input = [];
-      SetCurrentScannerValue( "vendor", vendor );
-      list<string> mlist = (list<string>) SCR::Read(.sane.modellist, GetCurrentScanner());
+      Scanner::SetCurrentScannerValue( "vendor", vendor );
+      list<string> mlist = (list<string>) SCR::Read(.sane.modellist, Scanner::GetCurrentScanner());
       
       //sort list alphabetically
       mlist=sort( string a, string b,mlist,``(a<b));
@@ -142,7 +143,7 @@ http://mostang.com/sane and http://sdb.suse.de.</p>");
 
       // headline of the dialog
       string caption = _("Manual scanner selection");
-      term contents  = ScannerManualDialog_UI( GetCurrentScanner() );
+      term contents  = ScannerManualDialog_UI( Scanner::GetCurrentScanner() );
 
       Wizard::SetContentsButtons(caption,contents,help,Label::BackButton(),Label::NextButton());
 
@@ -169,11 +170,11 @@ http://mostang.com/sane and http://sdb.suse.de.</p>");
 
 	      if ( vendor != nil && model != nil )
 	      {
-		  SetCurrentScannerValue( "vendor", vendor );
-		  SetCurrentScannerValue( "device", model );
+		  Scanner::SetCurrentScannerValue( "vendor", vendor );
+		  Scanner::SetCurrentScannerValue( "device", model );
 		  // get driver for current scanner
-		  string driver = (string) SCR::Read(.sane.driver, GetCurrentScanner() );
-		  SetCurrentScannerValue( "scanner_driver", driver );
+		  string driver = (string) SCR::Read(.sane.driver, Scanner::GetCurrentScanner() );
+		  Scanner::SetCurrentScannerValue( "scanner_driver", driver );
 	      }
 	      else
 	      {
@@ -183,8 +184,8 @@ http://mostang.com/sane and http://sdb.suse.de.</p>");
 	      }
 	  }
 
-	  y2milestone("MANUAL scanner selection: %1 - %2", GetCurrentScannerValue("vendor"),
-		      GetCurrentScannerValue("device"));
+	  y2milestone("MANUAL scanner selection: %1 - %2", Scanner::GetCurrentScannerValue("vendor"),
+		      Scanner::GetCurrentScannerValue("device"));
 	  
       
       } until ( ret == `next || ret == `back || ret == `abort || ret == `cancel );

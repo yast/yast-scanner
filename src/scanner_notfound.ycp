@@ -24,6 +24,7 @@
   textdomain "scanner";
 
   import "Label";
+import "Scanner";
     
   define term ScannerNotFoundDialog_UI() ``{
 
@@ -145,7 +146,7 @@ and restart the scanner configuration.");
 but you can only use ONE of them.") + "\n" + msg);
 		      ret = `back;
 		  }
-		  else if ( CheckUSBScanner() )
+		  else if ( Scanner::CheckUSBScanner() )
 		  {
 		      // text of a warning popup
 		      Popup::Warning(_("There is already an USB scanner in use.
@@ -181,7 +182,7 @@ or abort the scanner configuration now?
 	      else if ( type == `ptal )
 	      {
 		  // check whether the package hp-officeJet is installed
-		  boolean installed = CheckOfficeJet();
+		  boolean installed = Scanner::CheckOfficeJet();
 		  if ( !installed )
 		  {
 		      ret = `cancel;
@@ -235,13 +236,13 @@ configuration manually.
 			  no = no+1;
 		      }	);
 		      // headline for a popup
-		      integer id = (integer) DisplayScannerList( scanners, _("List of HP All-in-One Devices") );
-		      CreateScannerEntry( scanners[id]:$[] );
+		      integer id = (integer) Scanner::DisplayScannerList( scanners, _("List of HP All-in-One Devices") );
+		      Scanner::CreateScannerEntry( scanners[id]:$[] );
 		      ret = `manual;
 		  }
 		  else if ( size (ptal_scanner) == 1 )
 		  {
-		      CreateScannerEntry( ptal_scanner[0]:$[]);
+		      Scanner::CreateScannerEntry( ptal_scanner[0]:$[]);
 		      ret = `manual;
 		  }
 		  else

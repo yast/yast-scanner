@@ -25,6 +25,7 @@
    textdomain "scanner";
 
    import "Label";
+   import "Scanner";
 
    /**
    * ScannerNewDialog Layout	
@@ -44,7 +45,7 @@
 	  if ( driver == "" )
 	  {
 	      driver = (string) SCR::Read(.sane.driver, new_scanner);
-	      SetCurrentScannerValue( "scanner_driver", driver );
+	      Scanner::SetCurrentScannerValue( "scanner_driver", driver );
 	  }
       }
       
@@ -97,7 +98,7 @@
  */
   define symbol ScannerNewDialog( )``{
 
-      boolean test_mode = lookup( user_settings, "test_mode", false );
+      boolean test_mode = lookup( Scanner::user_settings, "test_mode", false );
 
       string help = "";
       
@@ -126,10 +127,10 @@ a manual configuration.
       // headline of the dialog
       string caption = _("Scanner installation");
 
-      y2debug( "New scanner: %1, %2", GetCurrentScannerValue( "vendor" ),
-	       GetCurrentScannerValue( "device" ));
+      y2debug( "New scanner: %1, %2", Scanner::GetCurrentScannerValue( "vendor" ),
+	       Scanner::GetCurrentScannerValue( "device" ));
 
-      term contents  = ScannerNewDialog_UI( GetCurrentScanner() );
+      term contents  = ScannerNewDialog_UI( Scanner::GetCurrentScanner() );
 
       Wizard::SetContentsButtons(caption,contents,help,Label::BackButton(),Label::NextButton());
 
@@ -149,14 +150,14 @@ a manual configuration.
 	      {
 		  if ( !test_mode )
 		  {
-		      map scanner = GetCurrentScanner();
+		      map scanner = Scanner::GetCurrentScanner();
 
                       //  *do* the scanner configuration
 		      boolean configure_ok = SCR::Write(.sane.writeconfig, scanner );
 		      
 		      if ( configure_ok )
 		      {
-			  SetCurrentScannerValue( "scanner_status", "installed" );
+			  Scanner::SetCurrentScannerValue( "scanner_status", "installed" );
 
 			  if ( lookup( scanner, "bus", "" ) == "USB" )
 			  {
@@ -178,7 +179,7 @@ a manual configuration.
 			      y2milestone( "WROTE /etc/sane.d/%1.conf", lookup(scanner, "scanner_driver", "") );
 
 			      // TODO get libusb device name
-			      // SetCurrentScannerValue( "dev_name", device );
+			      // Scanner::SetCurrentScannerValue( "dev_name", device );
 			  }
 		      }
 		      else
