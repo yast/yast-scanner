@@ -146,12 +146,13 @@ The <b>Gimp</b> also provides scan support.</p>");
 		  image = `Image(  image_data, _("Test picture"));
 
 		  UI( `ReplaceWidget(`id(`replace), image ));
-		  SCR::Execute( .target.bash, "/bin/rm -rf " + tmpdir );
 	      }
 	  }
 	  
       } until ( ret == `next || ret == `back || ret == `abort );
-      
+
+      SCR::Execute( .target.bash, "/bin/rm -rf " + tmpdir );
+
       return ret;
   }
 
