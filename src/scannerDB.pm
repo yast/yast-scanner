@@ -20,6 +20,7 @@ use ycp;
 
 @ISA            = qw(Exporter);
 @EXPORT         = qw( getModel 
+		      getVendorList
 		      findInHash
 		      trim);
 
@@ -399,7 +400,7 @@ sub findInHash( $$ )
 
     my $entry = "";
     my ($hkey) = grep( /$searchkey/i, @hkeys );
-    y2debug("HKey: $hkey" );
+    y2debug("HKey: $hkey" ) if( defined $hkey );
 
     if( defined $hkey )
     {
@@ -479,6 +480,45 @@ sub getModel( $$ )
 	y2debug( "Can not find scanner for bus " . uc $vendor );
     }
     return %foundscanner;
+}
+
+
+=head1 NAME
+
+getVendorList - return a list of scanner vendors
+
+=head1 SYNOPSIS
+
+    my @vendors = getVendorList( 'SCSI' );
+
+=head1 DESCRIPTION
+
+returns a list of the vendors for which sane provides a driver for
+the specific bus.
+
+=head1 PRARMETER
+
+the string naming the bus, eg. SCSI or USB
+
+=head1 RETURN VALUE
+
+a list of strings
+
+=cut
+
+sub getVendorList( $ )
+{
+    my ($bus) = @_;
+    
+    y2debug( "Searching vendors providing for <$bus>" );
+    
+    my $bus_scanners = $driver{ uc $bus };
+
+    my @vendorlist = keys %$bus_scanners;
+    unshift @vendorlist, 'Generic';
+
+    return @vendorlist;
+
 }
 
 
