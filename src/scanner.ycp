@@ -28,7 +28,7 @@
   textdomain "scanner";
 
   include "wizard/sequencer.ycp";
-  include "ui/wizard_dialog.ycp";
+  import "Wizard";
   include "ui/common_popups.ycp";
   include "ui/common_messages.ycp";
   include "ui/common_functions.ycp";
@@ -212,14 +212,14 @@
  */
   global define AbortDialog() ``{
 
-      any ret = UI(`ReallyAbortPopup(true));
+      any ret = UI::ReallyAbortPopup(true);
       if ( ret==true )
       {
 	  y2milestone("ABORT the scanner installation - undo all changes.");
 	  boolean ok = SCR::Read(.sane.revertall);
 	  if(!ok)
 	  {
-	    UI(`MessagePopup(_("It was not possible to revert the already made changes")));
+	    UI::MessagePopup(_("It was not possible to revert the already made changes"));
 	  }
 	  return `yes;
       }
@@ -227,7 +227,7 @@
   }
 
 
-  UI(`CreateWizardDialog());
+  Wizard::CreateDialog();
 
   map aliases = $[
 		  "scanner_start"	:   ``( ScannerStartDialog() ),
@@ -306,8 +306,8 @@
   if ( ret == `ok )
   {
       /* info text shown at the end of module */
-      string message = UI(_("Please wait while the configuration files are updated..."));
-      UI(`OpenDialog(`opt(`decorated), `Label(message)));
+      string message = _("Please wait while the configuration files are updated...");
+      UI::OpenDialog(`opt(`decorated), `Label(message));
 
       y2milestone("FINISH the scanner installation - confirm all changes." );
       
@@ -315,5 +315,5 @@
 
   }
 
-  UI(`CloseDialog());
+  UI::CloseDialog();
 }

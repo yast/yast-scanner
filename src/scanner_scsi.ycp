@@ -71,35 +71,35 @@ Please select your scanner from the list below."))),
       string help = "";
       
       // helptext part1 of dialog SCSI scanner configuration
-      string help1    = UI(_("<p>Please select your scanner
+      string help1    = _("<p>Please select your scanner
 from the list of SCSI devices (the list contains only SCSI
 devices which are connected to /dev/s<b>g</b>? device files).
-</p>"));
+</p>");
 
       // helptext part2 of dialog SCSI scanner configuration
       // German: Um die Scanner-Daten zu vervollstaendigen..
-      string help2 = UI(_("<p>To complete the scanner data 
+      string help2 = _("<p>To complete the scanner data 
 proceed with the \"Manual scanner selection\"
-dialog by clicking on <b>Next</b>.</p>"));
+dialog by clicking on <b>Next</b>.</p>");
 
       // helptext part3 of dialog SCSI scanner configuration
-      string help3 = UI(_("<p>If your scanner is not in the list and
+      string help3 = _("<p>If your scanner is not in the list and
 you added a new SCSI controller to your computer, you will probably
 have to load the SCSI kernel module (driver) first.
 Press <b>Abort</b> to exit the scanner installation and follow the
 steps described in chapter 'Scanning in Linux'
 of the SuSE Configuration Manual.</p>
-"));
+");
       
       // helptext of dialog SCSI scanner configuration (continued)
-      string help4 = UI(_("<p>Information on your SCSI storage controller
+      string help4 = _("<p>Information on your SCSI storage controller
 can be obtained by issuing the command <b>/usr/sbin/hwinfo --storage_ctrl</b>
-.</p>"));
+.</p>");
 
       help = help1 + help2 + help3 + help4;
 
       // get a list of all SCSI devices
-      list scsi_devices = SCR(`Read(.probe.bybus.scsi));
+      list scsi_devices = SCR::Read(.probe.bybus.scsi);
 
       if ( lookup (user_settings, "test_mode", false ) )
       {
@@ -143,32 +143,32 @@ can be obtained by issuing the command <b>/usr/sbin/hwinfo --storage_ctrl</b>
 	  }
       } );
 
-      string caption = UI(_("Manual SCSI Scanner configuration"));
+      string caption = _("Manual SCSI Scanner configuration");
 
       term contents  = ScannerSCSIDialog_UI( scsi_selbox );
 
-      UI(`SetWizardContentsButtons(caption,contents,help,BackButtonLabel(),NextButtonLabel()));
+      Wizard::SetContentsButtons(caption,contents,help,BackButtonLabel(),NextButtonLabel());
 
       any ret = nil;
 
       if( size( scsi_selbox ) == 0 )
       {		      
-	  UI(`WarningPopup(_("\nThere were no SCSI scanner found.\n")));
+	  UI::WarningPopup(_("\nThere were no SCSI scanner found.\n"));
 	  return (`back);
       }
       
       repeat {
 	  
-	  ret = UI(`UserInput());
+	  ret = UI::UserInput();
 
 	  if ( ret == `next )
 	  {
-	      any scsi_device = UI( `QueryWidget(`id(`sel_scsi), `CurrentItem) );
+	      any scsi_device = UI::QueryWidget(`id(`sel_scsi), `CurrentItem);
 	      map device = $[];
 	      
 	      if ( scsi_device == nil )
 	      {
-		  UI(`NotifyPopup(_("Please select a scanner from the list.")));
+		  UI::NotifyPopup(_("Please select a scanner from the list."));
 		  ret = `again;
 	      }
 	      else

@@ -73,47 +73,47 @@ Please select your scanner from the list below.")),
       string help = "";
 
       // help part 1 of dialog manual USB Scanner configuration
-      string help1_unused    = UI(_("<p>Please enter the product (model) ID,
+      string help1_unused    = _("<p>Please enter the product (model) ID,
 the vendor ID and the USB module name (usually 'scanner')
-and press the <b>Load</b> button.</p>"));
+and press the <b>Load</b> button.</p>");
 
       // help part 2 of dialog manual USB Scanner configuration
       // Translators: Please DO NOT translate 'Vendor:' and 'Model:'!
-      string help2_unused    = UI(_("<p>The information on the IDs can be obtained
+      string help2_unused    = _("<p>The information on the IDs can be obtained
 by issuing the command <b>hwinfo --usb</b> (look for the '<i>Vendor:</i>'
 and '<i>Model:</i>' entries and take the digits in front, e.g. 010c).
-</p> "));
+</p> ");
 
       // help part 1 of dialog manual USB Scanner configuration
-      string help1    = UI(_("<p>YaST2 shows a list of USB devices which are not
+      string help1    = _("<p>YaST2 shows a list of USB devices which are not
 clearly identified. If you find your scanner,
 please select the corresponding list entry.</p>"
- ));
+ );
 
       // help part 2 of dialog manual USB Scanner configuration
-      string help2 = UI(_("Also select the USB module (usually 'scanner')
-and press the <b>Load</b> button.</p>"));
+      string help2 = _("Also select the USB module (usually 'scanner')
+and press the <b>Load</b> button.</p>");
       
       // help part 3 of dialog manual USB Scanner configuration
-      string help3    = UI(_("<p>YaST2 will try to load the
-USB kernel module.</p> "));
+      string help3    = _("<p>YaST2 will try to load the
+USB kernel module.</p> ");
 
       // help part 4 of dialog manual USB Scanner configuration
-      string help4    = UI(_("<p>If the scanner module loaded 
+      string help4    = _("<p>If the scanner module loaded 
 successfully you can proceed to the
-\"Manual scanner selection\" dialog by clicking on <b>Next</b>.</p>"));
+\"Manual scanner selection\" dialog by clicking on <b>Next</b>.</p>");
 
       help = help1 + help2 + help3 + help4;
 
       // get a list of USB devices
-      list usb_devices = SCR(`Read(.probe.bybus.usb));
+      list usb_devices = SCR::Read(.probe.bybus.usb);
       y2milestone( "USB devices: %1", usb_devices );
 
       map usb_unknown = $[];
       list usb_selbox = [];
 
       /*
-       * SCR(`Read(.probe.bybus.usb))
+       * SCR::Read(.probe.bybus.usb)
        * ----------------------------
        * [$["bus":"USB",
        * "class_id":268,
@@ -173,10 +173,10 @@ successfully you can proceed to the
       } );
 
       // title of the dialog manual USB configuration
-      string caption = UI(_("Manual USB scanner configuration for Experts"));
+      string caption = _("Manual USB scanner configuration for Experts");
       term contents  = ScannerUSBDialog_UI( usb_selbox );
 
-      UI(`SetWizardContentsButtons(caption,contents,help,BackButtonLabel(),NextButtonLabel()));
+      Wizard::SetContentsButtons(caption,contents,help,BackButtonLabel(),NextButtonLabel());
 
       any ret = nil;
       boolean go_on = true;
@@ -187,7 +187,7 @@ successfully you can proceed to the
       {
 	  go_on = true;
 	  
-	  ret = UI(`UserInput());
+	  ret = UI::UserInput();
 
 	  if ( ret == `next || ret == `abort || ret == `back )
 	  {
@@ -197,16 +197,16 @@ successfully you can proceed to the
 	  {
 	      // try to load the USB module
 
-	      any usb_device = UI( `QueryWidget(`id(`sel_usb), `CurrentItem) );
+	      any usb_device = UI::QueryWidget(`id(`sel_usb), `CurrentItem);
 
 	      if ( usb_device == nil )
 	      {
-		  UI(`NotifyPopup(_("Please select a scanner from the list.")));
+		  UI::NotifyPopup(_("Please select a scanner from the list."));
 		  go_on = true;
 	      }
 	      else
 	      {
-		  string module_name = UI(`QueryWidget(`id(`module), `Value));
+		  string module_name = UI::QueryWidget(`id(`module), `Value);
 		  map device 	= lookup( usb_unknown, usb_device, $[] );
 		  integer vendor_id = lookup( device, "vendor_id", 0 );
 		  if (vendor_id != 0 )
@@ -240,10 +240,10 @@ successfully you can proceed to the
 		  if ( !success )
 		  {
 		      // text of an error popup: loading the module failed
-		      any cont = UI(`ContinueCancelHeadlinePopup( ErrorMsg(),
+		      any cont = UI::ContinueCancelHeadlinePopup( ErrorMsg(),
 "The USB module is NOT loaded successfully.
 Do you want to have another try or
-exit the scanner configuration?"));
+exit the scanner configuration?");
 
 		      if ( cont )
 		      {
@@ -280,8 +280,8 @@ exit the scanner configuration?"));
 		      if ( ret == `load )
 		      {
 			  // text of a notify popup: the loading was successful
-			  UI(`NotifyPopup(_("The USB module is loaded successfully.
-You may proceed by clicking Next.")));
+			  UI::NotifyPopup(_("The USB module is loaded successfully.
+You may proceed by clicking Next."));
 		      }
 		  }  
 	      }

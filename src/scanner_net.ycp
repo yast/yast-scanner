@@ -52,31 +52,31 @@ Please enter the requested information.\n"))),
  */
   global define ScannerNetDialog()``{
       string help = "";
-      string help1    = UI(_("<p>It is possible to use a scanner which
-is connected to a different computer, if the computer is configured as network scan station.</p> "));
-      string help2    = UI(_("<p>Enter the IP address or hostname
+      string help1    = _("<p>It is possible to use a scanner which
+is connected to a different computer, if the computer is configured as network scan station.</p> ");
+      string help2    = _("<p>Enter the IP address or hostname
 of that computer and click on <b>Next</b>.
-</p>") );
-      string help3    = UI(_("<p>More information on setting up network scan stations
-can be found in the SuSE support database.</p>") );
+</p>");
+      string help3    = _("<p>More information on setting up network scan stations
+can be found in the SuSE support database.</p>");
       help = help1 + help2 + help3;
       
-      string caption = UI(_("Network scan station client"));
+      string caption = _("Network scan station client");
       term contents  = ScannerNetDialog_UI();
 
-      UI(`SetWizardContentsButtons(caption,contents,help,BackButtonLabel(),NextButtonLabel()));
+      Wizard::SetContentsButtons(caption,contents,help,BackButtonLabel(),NextButtonLabel());
 
       any ret = nil;
 
       repeat {
 	  
-	  ret = UI(`UserInput());
+	  ret = UI::UserInput();
 
 	  if ( ret == `next )
 	  {
-	      string host = CutBlanks( UI(`QueryWidget(`id(`host), `Value )) );
+	      string host = CutBlanks( UI::QueryWidget(`id(`host), `Value ) );
 
-	      list net_scanner = SCR(`Read(.sane.netscannerinfo, $["bus":"Net", "host":host] ) );
+	      list net_scanner = SCR::Read(.sane.netscannerinfo, $["bus":"Net", "host":host] );
 	      map new_net_scanner = $[];
 	      
 	      if ( net_scanner != [] )
@@ -110,7 +110,7 @@ can be found in the SuSE support database.</p>") );
 	      else
 	      {
 		  y2milestone( "NO network scanner available." );
-		  any r = UI(`ContinueCancelPopup(sformat("No network scanner found on host %1", host)));
+		  any r = UI::ContinueCancelPopup(sformat("No network scanner found on host %1", host));
 		  if ( r )
 		  {
 		      ret = `again;

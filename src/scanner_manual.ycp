@@ -26,7 +26,7 @@
 
   global define CreateVendorList( ) ``{
       list list_input = [];
-      list vlist = SCR(`Read(.sane.vendorlist, GetCurrentScanner()));
+      list vlist = SCR::Read(.sane.vendorlist, GetCurrentScanner());
       //used to preselect first entry
       boolean isfirst = true;
 
@@ -51,7 +51,7 @@
   global define CreateModelList( string vendor ) ``{
       list list_input = [];
       SetCurrentScannerValue( "vendor", vendor );
-      list mlist = SCR(`Read(.sane.modellist, GetCurrentScanner()));
+      list mlist = SCR::Read(.sane.modellist, GetCurrentScanner());
       
       //sort list alphabetically
       mlist=sort(`a,`b,mlist,``(a<b));
@@ -117,50 +117,50 @@
       string help	= "";
       // help text1 for dialog Manual scanner selection
       // - don't translate SANE (Scanner Access Now Easy) - 
-      string help1    	= UI(_("<p>This dialog shows all scanners which are supported
-by the SANE library (Scanner Access Now Easy).</p> "));
+      string help1    	= _("<p>This dialog shows all scanners which are supported
+by the SANE library (Scanner Access Now Easy).</p> ");
       // help text2 for dialog Manual scanner selection
-      string help2    	= UI(_("<p>If one of the vendor/model pairs matches
-your scanner, select the corresponding entries and proceed with the installation.</p>"));
+      string help2    	= _("<p>If one of the vendor/model pairs matches
+your scanner, select the corresponding entries and proceed with the installation.</p>");
       // helptext3 for dialog Manual scanner selection
-      string help3    	= UI(_("<p><b>Attention</b>: only do a manual
+      string help3    	= _("<p><b>Attention</b>: only do a manual
 selection if you are absolutely sure. Wrong data may cause hardware
-failures.</p>"));
+failures.</p>");
       // help text4 for dialog Manual scanner selection
       // - don't translate SANE -
-      string help4    	= UI(_("<p>If your scanner model is not
+      string help4    	= _("<p>If your scanner model is not
 contained in the list but you know a SANE driver which works for your scanner,
-take \"Generic\" in the vendor list and select the driver manually.</p>"));
+take \"Generic\" in the vendor list and select the driver manually.</p>");
       // helptext5 for dialog Manual scanner selection
-      string help5    	= UI(_("<p>More information can be found on
-http://mostang.com/sane and http://sdb.suse.de.</p>"));
+      string help5    	= _("<p>More information can be found on
+http://mostang.com/sane and http://sdb.suse.de.</p>");
       help = help1 + help2 + help3 + help4 + help5;
 
-      string caption = UI(_("Manual scanner selection"));
+      string caption = _("Manual scanner selection");
       term contents  = ScannerManualDialog_UI( GetCurrentScanner() );
 
-      UI(`SetWizardContentsButtons(caption,contents,help,BackButtonLabel(),NextButtonLabel()));
+      Wizard::SetContentsButtons(caption,contents,help,BackButtonLabel(),NextButtonLabel());
 
       any ret = nil;
       string vendor = "";
       string model = "";
       
       repeat {
-	  ret = UI(`UserInput());
+	  ret = UI::UserInput();
 
 	  if ( ret == `vendor )
 	  {
-	      vendor = UI(`QueryWidget(`id(`vendor), `CurrentItem));
+	      vendor = UI::QueryWidget(`id(`vendor), `CurrentItem);
 
-	      UI(`ReplaceWidget(`id(`model_rep), `SelectionBox (`id (`model),
+	      UI::ReplaceWidget(`id(`model_rep), `SelectionBox (`id (`model),
 								`opt (`notify),
 								// selection box label
-								_("Select &model:"), CreateModelList(vendor))));
+								_("Select &model:"), CreateModelList(vendor)));
 	  }
 	  else if ( ret == `next )
 	  {
-	      vendor = UI( `QueryWidget( `id(`vendor), `CurrentItem) );
-	      model  = UI( `QueryWidget( `id(`model ), `CurrentItem) );
+	      vendor = UI::QueryWidget( `id(`vendor), `CurrentItem);
+	      model  = UI::QueryWidget( `id(`model ), `CurrentItem);
 
 	      if ( vendor != nil && model != nil )
 	      {
@@ -169,7 +169,7 @@ http://mostang.com/sane and http://sdb.suse.de.</p>"));
 	      }
 	      else
 	      {
-		  UI(`NotifyPopup(_("Please select a vendor AND a model from the lists.")));
+		  UI::NotifyPopup(_("Please select a vendor AND a model from the lists."));
 		  ret = `again; 
 	      }
 	  }

@@ -44,11 +44,11 @@
       boolean test_mode = lookup( user_settings, "test_mode", false );
 
       // Help text for start dialog (checking and probing)
-      string help_text = UI(_("<p>YaST2 is doing some checks, e.g. the 
+      string help_text = _("<p>YaST2 is doing some checks, e.g. the 
 hardware probing of 'USB' and/or the 'SCSI' port(s).
-</p>"));
+</p>");
 	
-      UI(`ProgressSetupUI(
+      UI::ProgressSetupUI(
 			  // Headline for start dialog of scanner configuration
 			  _("Initializing scanner module ..."),
 			  "",	// progress_title
@@ -59,10 +59,9 @@ hardware probing of 'USB' and/or the 'SCSI' port(s).
 			   _("Probing hardware - looking for connected scanners..."),
 			   _("Checking already installed scanners...")
 			  ],
-			  help_text )
-	 );
+			  help_text );
 
-      UI(`ProgressMilestoneUI( 100, _("Checking SANE library..."), 0 ));
+      UI::ProgressMilestoneUI( 100, _("Checking SANE library..."), 0 );
       //sleep(100);
     
       if ( !test_mode )
@@ -103,12 +102,12 @@ ImageMagick is needed.");
 Do you want to install the package(s) now ?
 ");
 
-	      boolean cont = UI ( `YesNoPopup(mesg) );
+	      boolean cont = UI::YesNoPopup(mesg);
 	      if ( cont )
 	      {
-		  string tmpdir = SCR (`Read (.target.tmpdir));
+		  string tmpdir = SCR::Read (.target.tmpdir);
 		  string filename = tmpdir + "/sw_single_input";
-		  SCR (`Write (.target.ycp, filename, $["install":packs_to_install, "userInput" : false ]));
+		  SCR::Write (.target.ycp, filename, $["install":packs_to_install, "userInput" : false ]);
 		  CallFunction (`sw_single (filename));
 	      }
 	      else
@@ -118,27 +117,27 @@ Do you want to install the package(s) now ?
 	  }
 
 	  // SANE should be installed by now - if not inform the user and exit
-	  if ( SCR (`Execute (.target.bash, "/bin/rpm -q sane")) != 0 )
+	  if ( SCR::Execute (.target.bash, "/bin/rpm -q sane") != 0 )
 	  {
               // Translators: Please do not translate 'SANE'!
-	      UI( `ErrorPopup(_("The package 'SANE' is not installed correctly.
+	      UI::ErrorPopup(_("The package 'SANE' is not installed correctly.
 This package is mandatory for the scanner installation.
 Please make sure that you have the SuSE CD set available
 and restart the scanner installation - or install the package
-with the YaST2 module 'Install/Remove Software'.\n")));
+with the YaST2 module 'Install/Remove Software'.\n"));
 	      return `cancel;
 	  }
       }
     
       // Progress bar (1)
-      UI(`ProgressMilestoneUI( 200, _("Probing hardware"), 1 ));
+      UI::ProgressMilestoneUI( 200, _("Probing hardware"), 1 );
       //sleep(100);
       
       list connected_scanner = [];
       if ( !test_mode )
       {
 	  // pobe USB ports; command is hwinfo --scanner
-	  connected_scanner = SCR(`Read(.probe.scanner));
+	  connected_scanner = SCR::Read(.probe.scanner);
 	  
 	  if ( size(connected_scanner) > 1 ) 
 	  {
@@ -147,11 +146,11 @@ with the YaST2 module 'Install/Remove Software'.\n")));
 	      // -> only *one* USB scanner is allowed
 
 	      // text of an error popup "only one USB scanner allowed" 
-	      UI(`ErrorPopup(_("YaST2 has detected several USB scanners connected to
+	      UI::ErrorPopup(_("YaST2 has detected several USB scanners connected to
 your computer. At the moment only one USB scanner can
 be configured, so please decide which one you want.\n
 Disconnect all unwanted USB scanners and restart
-the scanner configuration\n.")));
+the scanner configuration\n."));
 	      return `cancel;
 	    
 	  }
@@ -165,11 +164,11 @@ the scanner configuration\n.")));
 	  }
 	  y2milestone( "USB Scanner: %1", connected_scanner);
           // check SCSI ports
-	  list scsi_scanner = SCR(`Read(.scanner.scsi));
+	  list scsi_scanner = SCR::Read(.scanner.scsi);
 	  connected_scanner = union(connected_scanner, scsi_scanner);
           y2milestone( "SCSI Scanner: %1", scsi_scanner );
 
-	  // add net scanner/call SCR(`Read(.scanner.net) -> see below
+	  // add net scanner/call SCR::Read(.scanner.net) -> see below
 
       }
       else
@@ -177,13 +176,13 @@ the scanner configuration\n.")));
 	  connected_scanner = lookup( user_settings, "test_connected", [] );
       }
 
-      UI(`ProgressMilestoneUI( 300, _("Checking already installed scanners"), 2 ));
+      UI::ProgressMilestoneUI( 300, _("Checking already installed scanners"), 2 );
       //sleep(100);
 
       list installed_scanner = [];
       if ( !test_mode )
       {
-	  installed_scanner = SCR(`Read(.scanner.configured));
+	  installed_scanner = SCR::Read(.scanner.configured);
 	  y2debug("Configured scanner: %1", installed_scanner );
       }
       else
@@ -191,7 +190,7 @@ the scanner configuration\n.")));
 	  installed_scanner = lookup( user_settings, "test_installed", [] );	
       }
       
-      UI(`ProgressMilestoneUI( 1000, _("Finishing the check procedure"), 2 ));
+      UI::ProgressMilestoneUI( 1000, _("Finishing the check procedure"), 2 );
       sleep(300);
 
       // find out which scanner is already installed / which is new / which is supported
@@ -208,7 +207,7 @@ the scanner configuration\n.")));
 	  if ( !test_mode )
 	  {
 	      // try to get SANE scanner driver
-	      driver = SCR(`Read(.sane.driver, scanner));
+	      driver = SCR::Read(.sane.driver, scanner);
 	  }
 	  else
 	  {
@@ -271,7 +270,7 @@ the scanner configuration\n.")));
       // Thus we have to sort out and count scanners per station.
 
       // Get all scanners on the stations
-      list net_scanner = SCR(`Read(.scanner.net));
+      list net_scanner = SCR::Read(.scanner.net);
       list net_stations = [];
       foreach( `one_scanner, net_scanner, ``{
 

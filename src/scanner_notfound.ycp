@@ -59,36 +59,36 @@ manual configuration is required.")),
   global define ScannerNotFoundDialog()``{
       string help = "";
       // help of Manual Scanner Configuration (start)
-      string help1    = UI(_("<p>Please make sure your scanner is
-properly connected and switched on.</p> "));
+      string help1    = _("<p>Please make sure your scanner is
+properly connected and switched on.</p> ");
 
        // help of Manual Scanner Configuration (continued)
-      string help2    = UI(_("<p><i><b>Attention!</b></i> Do NOT connect or disconnect SCSI scanners
+      string help2    = _("<p><i><b>Attention!</b></i> Do NOT connect or disconnect SCSI scanners
 on a running system - if you want to connect a SCSI scanner, choose
-<b>Abort</b> and shutdown your system first.</p>"));
+<b>Abort</b> and shutdown your system first.</p>");
 
       // help of Manual Scanner Configuration (continued)
-      string help3    = UI(_("<p>USB scanners may be plugged in and switched on
+      string help3    = _("<p>USB scanners may be plugged in and switched on
 while the system is running. If you have not yet connected your USB scanner, do so right now.
-</p>"));
+</p>");
 
       // help of Manual Scanner Configuration (continued)
-      string help4    = UI(_("<p>YaST2 provides assistance for manual
+      string help4    = _("<p>YaST2 provides assistance for manual
 USB and SCSI scanner configuration. You can also use
-a scanner from a network scan station.</p>"));
+a scanner from a network scan station.</p>");
 
        // Note for translators: YaST2 does not yet provide the functionality to
        // configure more than one USB scanner. In theory, however, it *is* possible.
        // help of Manual Scanner configuration (continued)
-       string help5    = UI(_("<p>Please note: you cannot configure or use more than <i>one</i> USB
-scanner at the same time.</p>"));
+       string help5    = _("<p>Please note: you cannot configure or use more than <i>one</i> USB
+scanner at the same time.</p>");
 
       help = help1 + help2 + help3 + help4 + help5;
       
-      string caption = UI(_("Manual scanner configuration"));
+      string caption = _("Manual scanner configuration");
       term contents  = ScannerNotFoundDialog_UI();
 
-      UI(`SetWizardContentsButtons(caption,contents,help,BackButtonLabel(),NextButtonLabel()));
+      Wizard::SetContentsButtons(caption,contents,help,BackButtonLabel(),NextButtonLabel());
 
       any ret = nil;
       boolean go_on = true;
@@ -97,7 +97,7 @@ scanner at the same time.</p>"));
       {
 	  go_on = true;
 	  
-	  ret = UI(`UserInput());
+	  ret = UI::UserInput();
 
 	  if ( ret == `next || ret == `abort || ret == `back )
 	  {
@@ -106,13 +106,13 @@ scanner at the same time.</p>"));
 	  
 	  if ( ret == `next )
 	  {
-	      symbol type = UI(`QueryWidget(`id(`scanner), `CurrentButton));
+	      symbol type = UI::QueryWidget(`id(`scanner), `CurrentButton);
 	      y2milestone("Selected Scanner type: %1", type );
 
 	      if ( type == `usb )
 	      {
                   // try again to detect an USB scanner (maybe it is switched on now)
-		  list connected_scanner = SCR(`Read(.probe.scanner));
+		  list connected_scanner = SCR::Read(.probe.scanner);
 
 		  string msg = _("Please disconnect all unwanted USB scanners
 and restart the scanner configuration.");
@@ -121,16 +121,16 @@ and restart the scanner configuration.");
 		  if ( size (connected_scanner) > 1 )
 		  {
 		      // text of a warning popup
-		      UI(`WarningPopup(_("YaST2 has detected several USB scanners, 
-but you can only use ONE of them.") + "\n" + msg));
+		      UI::WarningPopup(_("YaST2 has detected several USB scanners, 
+but you can only use ONE of them.") + "\n" + msg);
 		      ret = `back;
 		  }
 		  else if ( CheckUSBScanner() )
 		  {
 		      // text of a warning popup
-		      UI(`WarningPopup(_("There is already an USB scanner in use.
+		      UI::WarningPopup(_("There is already an USB scanner in use.
 It is not possible to configure an additional
-USB scanner, because only ONE is supported.") + "\n" + msg));
+USB scanner, because only ONE is supported.") + "\n" + msg);
 		      ret = `back;
 		  }
 		  else if ( size (connected_scanner) == 1 )
@@ -148,7 +148,7 @@ USB scanner, because only ONE is supported.") + "\n" + msg));
 		      integer exit_status = 1;
 
 		      // check first, whether an USB scanner module is already loaded
-		      exit_status = SCR (`Execute (.target.bash, "/sbin/lsmod | /bin/egrep 'scanner|microtek'"));
+		      exit_status = SCR::Execute (.target.bash, "/sbin/lsmod | /bin/egrep 'scanner|microtek'");
 		      
 		      if ( exit_status != 0 )
 		      {
