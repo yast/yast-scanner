@@ -1,4 +1,11 @@
 -------------------------------------------------------------------
+Wed Mar 24 16:32:40 CET 2004 - gs@suse.de
+
+- V 2.9.12
+- scannerDB.pm: config file editing improved (maintained copies of
+  the /etc/sane.d/<driver>.conf files are not necessary any longer)
+
+-------------------------------------------------------------------
 Mon Mar 22 17:07:39 CET 2004 - gs@suse.de
 
 - V 2.9.11
