@@ -256,6 +256,13 @@ $driver{SCSI}{Mustek}{"ScanExpress A3 SP"} = "mustek";
 $driver{SCSI}{Mustek}{"Paragon 1200 SP Pro"} = "mustek";
 $driver{SCSI}{Mustek}{"Paragon 1200 A3 Pro"} = "mustek";
 
+$driver{USB}{Mustek}{"1200 UB"} = "mustek_usb";
+$driver{USB}{Mustek}{"1200 CU"} = "mustek_usb";
+$driver{USB}{Mustek}{"1200 CU Plus"} = "mustek_usb";
+
+
+
+
 $driver{SCSI}{Trust}{"Imagery 1200 SP"} = "mustek";
 $driver{SCSI}{Trust}{"Imagery 4800 SP"} = "mustek";
 $driver{SCSI}{Trust}{"SCSI Connect 19200"} = "mustek";
@@ -1139,6 +1146,43 @@ sub findInHash( $$ )
 }
 
 
+sub createBackup( $ )
+{
+    my( $file ) = @_;
+
+    if( !defined( $file ) || $file eq "" )
+    {
+	y2debug( "WRN: Can not backup empty file" );
+	return "";
+    }
+
+    unless( -e $file )
+    {
+	y2debug("File <$file> does not exists, but who cares, creating it !" ) ;
+	unless( open (FILE, $file) )
+	{
+	    y2error( "Could not create file <$file>" );
+	    return "";
+	}
+	print FILE "";
+	close FILE;
+    }
+
+    my $backupfile = $file . ".yast2-$PID";
+
+    if( -e $backupfile )
+    {
+	y2debug( "backupfile for PID $PID already exists. Not overwriting" );
+    }
+    else
+    {
+	y2debug( "Copying to Backupfile: <$backupfile>" );
+	copy( $file, $backupfile );
+    }
+    return( $backupfile );
+}
+
+
 
 =head1 NAME
 
@@ -1342,14 +1386,9 @@ sub writeNetConf( $ )
     my ($net_stations) = @_;
     my $res = 0;
 
-    if( -e "$prefix/etc/sane.d/net.conf" )
-    {
-	my $backupfile = "$prefix/etc/sane.d/net.conf.yast2-$PID";
-	move ( "$prefix/etc/sane.d/net.conf", $backupfile);
-	y2debug( "Backup file of previous net.conf is $backupfile" );
-    }	
-    
     my $fi = "$prefix/etc/sane.d/net.conf";
+    createBackup( $fi );
+    
     y2debug( "Try to open <$fi>" );
 
     if( open( F, "> $fi" ) )
@@ -1451,15 +1490,9 @@ sub writeDllconf( $ )
     my ($be_ref) = @_;
     my $res = 0;
 
-    if( -e "$prefix/etc/sane.d/dll.conf" )
-    {
-	my $backupfile = "$prefix/etc/sane.d/dll.conf.yast2-$PID";
-	move ( "$prefix/etc/sane.d/dll.conf", $backupfile );
-	      
-	y2debug( "Backup file of previous dll.conf in dll.conf.yast2save" );
-    }	
-    
     my $fi = "$prefix/etc/sane.d/dll.conf";
+    createBackup( $fi );
+
     y2debug( "Try to open <$fi>" );
 
     if( open( F, "> $fi" ) )
@@ -1543,52 +1576,43 @@ sub writeIndividualConf( $$$ )
     
     my $cfg_file = "$prefix/etc/sane.d/$vendor.conf";
 
-    if( -e $cfg_file )
-    {
-	my $backupfile = $cfg_file . ".yast2-$PID";
-	copy ( $cfg_file , $backupfile );
-	y2debug( "<$cfg_file> already exists, copying to <$backupfile>" );
-
-	# $res = patchConfigFile( $cfg_file, $bus, $device );
-    }
+    createBackup( $cfg_file );
     
+    if( open( F, ">$cfg_file" ) )
     {
-	if( open( F, ">$cfg_file" ) )
+	foreach my $cfg_line ( @cfg )
 	{
-	    foreach my $cfg_line ( @cfg )
+	    y2debug( "Handling line <$cfg_line> from cfg-template" );
+	    if( $cfg_line =~ /^IF\s+(.+)\s*=\s*(\w+?)\s+(.+)\s*/ )
 	    {
-		y2debug( "Handling line <$cfg_line> from cfg-template" );
-		if( $cfg_line =~ /^IF\s+(.+)\s*=\s*(\w+?)\s+(.+)\s*/ )
+		my $tag = $1;
+		my $val = $2;
+		my $line = $3;
+		y2debug( "If-condition found: <$tag> = <$val> ? <$line>" );
+		if( $tag =~ /bus/i )
 		{
-		    my $tag = $1;
-		    my $val = $2;
-		    my $line = $3;
-		    y2debug( "If-condition found: <$tag> = <$val> ? <$line>" );
-		    if( $tag =~ /bus/i )
+		    # The tag is BUS. Print the line if val equal to our bus variable
+		    unless( lc $val eq lc $bus )
 		    {
-                        # The tag is BUS. Print the line if val equal to our bus variable
-			unless( lc $val eq lc $bus )
-			{
-			    next;
-			}
-			else
-			{
-			    $cfg_line = $line;
-			}
+			next;
+		    }
+		    else
+		    {
+			$cfg_line = $line;
 		    }
 		}
-		$cfg_line =~ s/YAST2_DEVICE/$device/im;
-		$cfg_line =~ s/YAST2_BUS/$bus/im;
-		
-		print F "$cfg_line\n";
 	    }
-	    $res = close F;
+	    $cfg_line =~ s/YAST2_DEVICE/$device/im;
+	    $cfg_line =~ s/YAST2_BUS/$bus/im;
+	    
+	    print F "$cfg_line\n";
 	}
-	else
-	{
-	    y2debug( "ERROR: Could not write config: $!" );
-	    $res = 0;
-	}
+	$res = close F;
+    }
+    else
+    {
+	y2debug( "ERROR: Could not write config: $!" );
+	$res = 0;
     }
     return $res;
 }
