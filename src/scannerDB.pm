@@ -1345,6 +1345,8 @@ sub storeBackend($)
 sub storeEntry( $$$$ )
 {
     my ($interface, $mfg, $model, $backend) = @_;
+    my $manu = lc $mfg;
+    $mfg = ucfirst $manu;
 
     $knownIFaces{$interface} = 1 unless exists $knownIFaces{$interface};
 
@@ -1514,6 +1516,12 @@ sub populateDriverInfo( $ )
 	    }
 	    elsif( $tag eq "mfg" )
 	    {
+		storeDevice( \%backend, \%device ) if( exists $device{model});
+                delete  $device{model};
+                delete  $device{interface};
+                delete  $device{status};
+                delete  $device{desc};
+
 		$device{mfg} = $val;
 	    }
 
@@ -1541,6 +1549,7 @@ sub populateDriverInfo( $ )
 		$device{ $tag } = $val;
 	    }
 	}
+        storeDevice( \%backend, \%device ) if( exists $device{model});
     }
 
     my @v = values %driver;
