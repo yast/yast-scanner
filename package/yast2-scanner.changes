@@ -1,4 +1,13 @@
 -------------------------------------------------------------------
+Mon Aug 23 16:40:57 CEST 2004 - jsmeix@suse.de
+
+- V 2.10.4
+- Define a fallback scanner (in scanner_manual.ycp)
+  so that the vendor and model list is not empty
+  even if no scanner was autodetected and
+  show a warning popup which defaults to abort.
+ 
+-------------------------------------------------------------------
 Fri Aug 13 09:46:49 CEST 2004 - jsmeix@suse.de
 
 - V 2.10.3
