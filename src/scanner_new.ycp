@@ -160,7 +160,8 @@ a manual configuration.
 
 			  if ( lookup( scanner, "bus", "" ) == "USB" )
 			  {
-			      // write USB IDs
+			      // workaround for 9.1: write USB IDs to /etc/sane.d/<driver>.conf
+			      // (not yet all IDs are added to the <driver>.conf files, see bug #35454)
 			      integer vendor_id = lookup( scanner, "vendor_id", 0 );
 			      if (vendor_id != 0 )
 			      {
