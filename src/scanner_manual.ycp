@@ -105,9 +105,9 @@ by the SANE library (Scanner Access Now Easy).</p> "));
       string help2    	= UI(_("<p>If one of the vendor/model pairs matches
 your scanner, select the corresponding entries and proceed with the installation.</p>"));
       // helptext3 for dialog Manual scanner selection
-      string help3    	= UI(_("<p><b>Attention</b>: only do the manual
-selection if you are absolutely sure. Wrong data may cause a hardware
-failure.</p>"));
+      string help3    	= UI(_("<p><b>Attention</b>: only do a manual
+selection if you are absolutely sure. Wrong data may cause hardware
+failures.</p>"));
       // help text4 for dialog Manual scanner selection
       // - don't translate SANE -
       string help4    	= UI(_("<p>If your scanner model is not
