@@ -146,8 +146,7 @@
 				"sub_vendor":"EPSON",
 				"unique_key":"PTVH.9Hr5DGWrbRF",
 				"vendor":"UMAX",
-				"vendor_id":197816
-			       ]
+				"vendor_id":197816]
 	  ];  
       }
       else
@@ -161,10 +160,25 @@
 				"resource":$["baud":[$["speed":1500000]]],
 				"rev":"0.01", "sub_class_id":0,
 				"sub_device":"Perfection640  ",
+				"devicefile":"/dev/usbscanner",
 				"sub_vendor":"EPSON",
 				"unique_key":"PTVH.9Hr5DGWrbRF",
 				"vendor":"Epson",
-				"vendor_id":197816]];
+				"vendor_id":197816],
+			       $["bus":"Net",		// this is a network scan station
+				"class_id":268,
+				"device":"Perfection 640",
+				"device_id":196876,
+				"scanner_status":test_status,
+				"devicefile":"d142",		// hostname of the scan station	
+				"resource":$["baud":[$["speed":1500000]]],
+				"rev":"0.01", "sub_class_id":0,
+				"sub_device":"Perfection640  ",
+				"sub_vendor":"EPSON",
+				"unique_key":"PTVH.9Hr5DGWrbRF",
+				"vendor":"Epson",
+				"vendor_id":197816]
+	  ];
       }
 
       list installed_scanner = [];
@@ -273,7 +287,7 @@
 				       `next      :   "scanner_manual"],
 		   "scanner_net"   : $[
 				       `abort     :   "abort",
-				       `next      :   "scanner_new"],
+				       `next      :   "scanner_install"],
 		   "scanner_manual"   : $[
 				       `abort     :   "abort",
 				       `next      :   "scanner_new"],

@@ -7,11 +7,12 @@
  *
  * Summary:
  *
- * This dialog is called only if the USB scanner is not detected by hw-library (
- * All scanners from driver source files /usr/src/linux-<kernel-version>.SuSE/drivers/usb/
- * scanner.c or microtek.c are listed in dynamically created file /lib/modules/<kernel-version>/
- * modules.usbmap.
- * In case the scanner is known the USB module will be loaded automatically (hotplugin).
+ * This dialog is called only if the USB scanner is not detected by hw-library.
+ * All scanners from driver source files /usr/src/linux-<kernel-version>.
+ * SuSE/drivers/usb/ scanner.c or microtek.c are listed in dynamically created
+ * file /lib/modules/<kernel-version>/modules.usbmap.
+ * In case the scanner is known the USB module will be loaded automatically
+ * (hotplugin).
  * Otherwise the module must be loaded with: modprobe ID ID <module name>
  * The options must be added to /etc/modules.conf.    
  *
@@ -27,26 +28,22 @@
 
 {
 
-  global define ScannerUSBDialog_UI() ``{
+  global define ScannerUSBDialog_UI( list device_list ) ``{
 
       // the available modules for USB scanner support are listed in /etc/usbmgr/usbmgr.conf
       list module_list = ["scanner", "microtek"];
       term layout = `Empty();
+      
       // This is a label, i.e. the line length should not exceed 50 characters.
-      layout = `VBox( `Label(`opt (`hstretch), _("YaST2 could not load the USB scanner
+      layout = `VBox(`VSpacing(1.0),
+		     `Label(`opt (`hstretch), _("YaST2 could not load the USB scanner
 module automatically.\n
-Please enter the required scanner data.")),
+Please select your scanner from the list below.")),
 		      `VSpacing(0.3),
-		      `HBox( `HWeight( 4, `TextEntry(`id(`model),
-						     // Input field label for the product ID
-						     _("&Product-ID"),
-						     "" )),
-			     `HWeight(1, `Empty())
-			     ),
-		      `HBox( `HWeight( 4, `TextEntry(`id(`vendor),
-						     // Input field label for the vendor ID
-						     _("&Vendor-ID"),
-						     "" ) ),
+		      `HBox( `HWeight(6, `SelectionBox(`id(`sel_usb),
+						     // label for a list of USB devices
+						     _("&USB devices"),
+						     device_list )),
 			     `HWeight(1, `Empty())
 			     ),
 		      `VSpacing(1.0),
@@ -56,10 +53,10 @@ Please enter the required scanner data.")),
 				      module_list
 				      )),
 			    `VBox(
-				  `VSpacing(0.3),
+				  `VSpacing(1.0),
                                   // button label 
-				  `Left(`PushButton (`id (`test), _("&Load"))),
-				  `VSpacing(0.3)
+				  `HCenter(`PushButton (`id (`load), _("&Load"))),
+				  `VSpacing(0.2)
 				  )
 			    ),
 		      `VSpacing(1.0)
@@ -106,24 +103,97 @@ successfully you can proceed to the
 
       help = help1 + help2 + help3 + help4;
 
+      list usb_devices = SCR(`Read(.probe.bybus.usb));
+      y2milestone( "USB devices: %1", usb_devices );
+
+      map usb_unknown = $[];
+      list usb_selbox = [];
+
+      /*
+       * SCR(`Read(.probe.bybus.usb))
+       * ----------------------------
+       * [$["bus":"USB",
+       * "class_id":268,
+       * "device":"Perfection 640",
+       * "device_id":196876,
+       * "module":[$["active":false, "modprobe":true, "name":"scanner"]],
+       * "resource":$["baud":[$["speed":1500000]]],
+       * "rev":"0.01",
+       * "sub_class_id":0,
+       * "sub_device":"Perfection640  ",
+       * "sub_vendor":"EPSON",
+       * "unique_key":"ldbq.9Hr5DGWrbRF",
+       * "vendor":"Epson",
+       * "vendor_id":197816]]
+       *
+       * The result map of an USB device doesn't contain a "module" entry if the device is unknown.
+       */
+
+      if ( lookup (user_settings, "test_mode", false ) )
+      {
+	  usb_devices = [
+			 $["bus":"USB", "class_id":268, "device":"Perfection 640",
+			  "device_id":196876, "module":[$["active":false, "modprobe":true, "name":"scanner"]],
+			  "resource":$["baud":[$["speed":1500000]]],
+			  "rev":"0.01", "sub_class_id":0, "sub_device":"Perfection640  ", "sub_vendor":"EPSON",
+			  "unique_key":"ldbq.9Hr5DGWrbRF", "vendor":"Epson", "vendor_id":197816],
+			 $["bus":"USB", "class_id":268, "device":"Perfection 649",
+			  "device_id":196876,
+			  "resource":$["baud":[$["speed":1500000]]],
+			  "rev":"0.01", "sub_class_id":0, "sub_device":"Perfection640  ", "sub_vendor":"EPSON",
+			  "unique_key":"ldbq.9Hr5DGWrbRF", "vendor":"Epson", "vendor_id":197816]  ];
+      }
+
+      integer no = 1;
+      string list_entry = "";
+      
+      foreach ( `device, usb_devices, ``{
+	  if ( lookup( device, "module", $[] ) == $[] )
+	  {
+	      usb_unknown = add( usb_unknown, no, device );
+	      list_entry = sformat( "%1 - %2", lookup( device, "vendor", ""), lookup( device, "device", ""));
+	      usb_selbox = add( usb_selbox, `item(`id(no), list_entry ));
+	      no = no+1;
+	  }
+      } );
+
       // title of the dialog manual USB configuration
-      string caption = UI(_("Manual USB scanner configuration"));
-      term contents  = ScannerUSBDialog_UI();
+      string caption = UI(_("Manual USB scanner configuration for Experts"));
+      term contents  = ScannerUSBDialog_UI( usb_selbox );
 
       UI(`SetWizardContentsButtons(caption,contents,help,BackButtonLabel(),NextButtonLabel()));
 
       any ret = nil;
       boolean load_ok = false;
 
-
+      // main
 
       repeat {
 	  ret = UI(`UserInput());
 
 	  if ( ret == `load || ret == `next )
 	  {
-	      // get data and try to load the module
+	      // try to load the USB module
 
+	      string modprobe = "";
+
+	      any usb_device = UI( `QueryWidget(`id(`sel_usb), `CurrentItem) );
+
+	      if ( usb_device == nil )
+	      {
+		  UI(`NotifyPopup(_("Please select a scanner from the list.")));
+		  ret = `again;
+	      }
+	      else
+	      {
+		  map device 	= lookup( usb_unknown, UI(`QueryWidget(`id(`sel_usb), `CurrentItem)) );
+		  modprobe = sformat("modprobe %1 vendor=0x%2 product=0x%3",
+				     UI(`QueryWidget(`id(`module), `Value)),
+				     lookup( device, "vendor_id", ""),
+				     lookup( device, "device_id", ""));
+	      
+		  y2milestone( "Loading USB: %1", modprobe );  
+	      }
 	      // if ( load_ok )
 	      // {
 	      //   popup OK -> you can go on
