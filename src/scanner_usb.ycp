@@ -11,6 +11,8 @@
  * Authors:
  *   Gabriele Strattner <gs@suse.de>
  *
+ * String corrections by Christian Steinruecken <cstein@suse.de>, 2001/07/31
+ *
  * $Id$
  *
  * 
@@ -24,11 +26,11 @@
       // This is a label, i.e. the line length should not exceed 50 characters.
       layout = `VBox( `Label(`opt (`hstretch), _("YaST2 could not load the USB scanner
 module automatically.\n
-Please enter the required scanner data.")),
+Please enter the required scanner data into the fields below.")),
 		      `VSpacing(0.3),
 		      `HBox( `HWeight( 4, `TextEntry(`id(`model),
-						     // Input field label for the produkt ID
-						     _("&Produkt-ID"),
+						     // Input field label for the product ID
+						     _("&Product-ID"),
 						     "" )),
 			     `HWeight(1, `Empty())
 			     ),
@@ -39,7 +41,7 @@ Please enter the required scanner data.")),
 			     `HWeight(1, `Empty())
 			     ),
 		      `HBox( `HWeight( 4, `TextEntry(`id(`mod),
-						     // Input field label for name of the USB module
+						     // Input field label for the name of the USB module
 						     _("&USB module name"),
 						     "" ) ),
 			     `HWeight(1, `Empty())
@@ -59,20 +61,23 @@ Please enter the required scanner data.")),
 
       // help part 1 of dialog manual USB Scanner configuration
       string help1    = UI(_("<p>Please enter the product (model) ID,
-the vendor ID and the USB module name (usually named
-'scanner') and press button <b>Load</b>.</p>"));
-        // help part 2 of dialog manual USB Scanner configuration
-      string help2    = UI(_("<p>You can get the information about
-the IDs with command <b>hwinfo --usb</b> (look for <i>Vendor:</i>
-and <i>Model:</i> and take the digits in front, e.g. 010c).
+the vendor ID and the USB module name (usually 'scanner')
+and press the <b>Load</b> button.</p>"));
+
+      // help part 2 of dialog manual USB Scanner configuration
+      string help2    = UI(_("<p>The information on the IDs can be obtained
+by issuing the command <b>hwinfo --usb</b> (look for the '<i>Vendor:</i>'
+and '<i>Model:</i>' entries and take the digits in from, e.g. 010c).
 </p> "));
-       // help part 3 of dialog manual USB Scanner configuration
-      string help3    = UI(_("<p>YaST2 will try to load the
-kernel module for USB support.</p> "));
+
       // help part 3 of dialog manual USB Scanner configuration
-      string help4    = UI(_("<p>If the loading of the scanner
-module was successful you can go <b>Next</b> to dialog
-\"Manual scanner selection\".</p>"));
+      string help3    = UI(_("<p>YaST2 will try to load the
+USB kernel module.</p> "));
+
+      // help part 4 of dialog manual USB Scanner configuration
+      string help4    = UI(_("<p>If the scanner module loaded 
+successfully you can proceed to the
+\"Manual scanner selection\" dialog by clicking on <b>Next</b>.</p>"));
 
       help = help1 + help2 + help3 + help4;
 
