@@ -186,10 +186,9 @@ configuration.")));
 	  while ( !found && m < size(installed_scanner) )
 	  {
 	      scan = select( installed_scanner, m );
-	      y2debug ("SCAN: %1", scan );
-	      y2debug ("SCANNER: %1", scanner );
 	      if ( (lookup( scan, "vendor", "") == lookup( scanner, "vendor", "")) &&
-		   (lookup( scan, "device", "") == lookup( scanner, "device", "")) &&
+		   ((lookup( scan, "device", "") == lookup( scanner, "device", "")) ||
+		    (CutBlanks((lookup( scan, "sub_device", "")) == CutBlanks(lookup( scanner, "sub_device", "")))) )  &&
 		   (lookup( scan, "bus", "") )  == lookup( scanner, "bus", "") &&
 		   (lookup( scan, "dev_name", "") == lookup( scanner, "dev_name", "")) )
 	      {
