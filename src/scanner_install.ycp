@@ -31,20 +31,42 @@
   global define ScannerInstallDialog_UI( map installed_scanner, byteblock image ) ``{
 
       string scanner = "";
+      string info = "";
+      string label = "";
       
       if ( lookup( installed_scanner, "bus", "" ) == "Net" )
       {
-	  string devices = "";
-	  foreach ( `product, lookup(installed_scanner, "device", []), ``{
-	      devices = devices + lookup( product, "device", "" ) + " ";
+	  list net_scanner = lookup(installed_scanner, "device", []);
+	  integer n = 1;
+	  foreach ( `product, net_scanner, ``{
+	      scanner = scanner + lookup( product, "device", "" );
+	      if ( n < size(net_scanner) )
+	      {
+		  scanner = scanner + ",  ";
+	      }
+	      n = n+1;
 	  });
-	  // this is part a text which lists the network scanners, e.g.
-	  // Umax 12-G, Epson 1234 on host: 10.10.100.142
-	  scanner = devices + " " + _("on host:") + " " + lookup( installed_scanner, "host", "" );
+	  info = lookup(installed_scanner, "host", "");
+	  
+	  // This is the label of an outfield showing the IP address of the scanstation, e.g.
+	  // the dailog looks like that:
+	  // The scanner
+	  //   UMAX 12-g
+	  // is connected to
+	  //  10.10.100.142
+	  label = _("is connected to");
       }
       else
       {
+	  // This is the label of an outfield showing the device file, e.g.
+	  // the dailog looks like that:
+	  // The scanner
+	  //   UMAX 12-g
+	  // was installed on
+	  //  /dev/sg0
+	  label = _("was installed on");
 	  scanner = lookup( installed_scanner, "vendor", "" ) + " - " + lookup(installed_scanner, "device", "" );
+	  info = lookup(installed_scanner, "dev_name", "");
       }
 	   
 	  
@@ -57,11 +79,11 @@
 				    `HWeight(1, `Empty())
 				    ),
 			     `VSpacing(0.5),
-			     `Left(`Label (`opt (`hstretch), _("was installed on"))),
+			     `Left(`Label (`opt (`hstretch), label)),
 			     `VSpacing(0.3),
 			     `HBox (`HSpacing(2.5),
 				    `HWeight(5, `Label (`opt (`outputField, `hstretch),
-							lookup(installed_scanner, "dev_name", "")) ),
+							info )),
 				    `HWeight(1, `Empty())
 				    ),
 			     `VSpacing (1),

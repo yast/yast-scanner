@@ -94,7 +94,7 @@ can be found in the SuSE support database.</p>") );
 		  }
 		  else
 		  {
-		      ret == `abort;
+		      ret = `abort;
 		  }
 	      }
 	  }
