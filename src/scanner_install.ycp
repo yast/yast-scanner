@@ -54,22 +54,6 @@
 			     `VSpacing (3.0)
 			     );
 
-/*
-      string summary = "";
-      string scanner = GetCurrentScannerValue( "vendor" ) + " - " + GetCurrentScannerValue( "device" );
-      summary = summaryAddSimpleSection( summary,  _( "The scanner" ), scanner );
-      string devicefile = GetCurrentScannerValue( "devicefile" );
-      summary = summaryAddSimpleSection( summary, _( "was installed on device" ), devicefile );
-
-      term contents = `VBox(`VSpacing( 0.5 ),
-			    `HBox(
-				  `HSpacing( 0.5 ),
-				  `RichText(`id(`summary), summary ),
-				  `HSpacing( 0.5 )
-				  ),
-			    `VSpacing( 0.5 )
-			    );
-*/
       return contents;
   }
 
@@ -85,8 +69,16 @@ successfully.</p>");
       // part 2 of helptext of dialog scanner test
       string help2    = _("<p>You can test your scanner now.
 Insert a test page and click on button <b>Test</b>.</p>");
+      // part 3 of helptext of dialog scanner test
+      string help3    = _("<p>The program <b>xscanimage</b>
+from package <i>sane</i> (already installed) provides
+basic functionality for scanning.</p>");
+      string help4 = _("<p><b>xsane</b>
+(requires installation of the package <i>xsane</i>)
+offers more scan- and image processing functionality.
+The <b>Gimp</b> also provide scan support now.</p>");
       
-      help = help1 + help2;
+      help = help1 + help2 + help3;
       
       string caption = _("Scanner Test");
 
