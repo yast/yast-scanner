@@ -32,7 +32,7 @@
 {
   textdomain "scanner";
   import "Progress";
-
+  import "Label";
 
 /**
  * ScannerStartDialog
@@ -92,7 +92,7 @@ hardware probing of 'USB' and/or the 'SCSI' port(s).
 Do you want to install the package(s) now ?
 ");
 
-	      boolean cont = UI::YesNoPopup(mesg);
+	      boolean cont = Popup::YesNo(mesg);
 	      if ( cont )
 	      {
 		  WFM::CallFunction (`sw_single (packs_to_install));
@@ -107,7 +107,7 @@ Do you want to install the package(s) now ?
 	  if ( SCR::Execute (.target.bash, "/bin/rpm -q sane") != 0 )
 	  {
               // Translators: Please do not translate 'SANE'! (it's a package name)
-	      UI::ErrorPopup(_("The package 'SANE' is not installed correctly.
+	      Popup::Error(_("The package 'SANE' is not installed correctly.
 This package is mandatory for the scanner installation.
 Please make sure that you have the SuSE CD set available
 and restart the scanner installation - or install the package
@@ -142,7 +142,7 @@ with the YaST2 module 'Install/Remove Software'.\n"));
 	      // -> only *one* USB scanner is allowed
 
 	      // text of an error popup "only one USB scanner allowed" 
-	      UI::ErrorPopup(_("YaST2 has detected several USB scanners connected to
+	      Popup::Error(_("YaST2 has detected several USB scanners connected to
 your computer. At the moment only one USB scanner can
 be configured, so please decide which one you want.\n
 Disconnect all unwanted USB scanners and restart

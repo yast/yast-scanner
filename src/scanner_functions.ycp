@@ -25,6 +25,7 @@
   textdomain "scanner";
 
   import "Runlevel";
+  import "Label";
   
 /**
  *  ------- UNUSED ---------
@@ -186,7 +187,7 @@
 							      // This are the column headers of a list with several scanners.
 							      `header( _("Vendor"), _("Model"), _("Bus") ),
 							      table_contents )),
-					 `VWeight( 1, `HCenter(`PushButton( `id(`ok), `opt(`default), OKButtonLabel() )
+					 `VWeight( 1, `HCenter(`PushButton( `id(`ok), `opt(`default), Label::OKButton() )
 							       ))
 					 )
 				  )
@@ -376,7 +377,7 @@
     if(!ok)
     {
       //TRANSLATOR: %1 stands for the driver name
-      UI::MessagePopup(sformat(_("It was not possible to deactive the driver %1"), driver));
+      Popup::Message(sformat(_("It was not possible to deactive the driver %1"), driver));
     }
 
 //    SCR::Write(.dumpto.tmp.newscanner_info, newscanner_info );

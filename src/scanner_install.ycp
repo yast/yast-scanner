@@ -23,6 +23,8 @@
 
 {
   textdomain "scanner";
+
+  import "Label";
   
 /**
  * ScannerInstallDialog
@@ -123,7 +125,7 @@ offers more scan and image processing functionality.
 						Read( .local.byte,
 						      "/usr/share/doc/packages/sane/sane-backends/umax/sane-logo2.jpg"));
 
-      Wizard::SetContentsButtons(caption,contents,help,BackButtonLabel(),NextButtonLabel());
+      Wizard::SetContentsButtons(caption,contents,help,Label::BackButton(),Label::NextButton());
 
       // Check if tool convert exists, otherwise do disable test button.
       // -> we do not need this any longer - the `Image widget does all the work 

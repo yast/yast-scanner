@@ -24,6 +24,8 @@
 {
   textdomain "scanner";
 
+  import "Label";
+    
   global define CreateVendorList( ) ``{
       list list_input = [];
       list vlist = SCR::Read(.sane.vendorlist, GetCurrentScanner());
@@ -142,7 +144,7 @@ http://mostang.com/sane and http://sdb.suse.de.</p>");
       string caption = _("Manual scanner selection");
       term contents  = ScannerManualDialog_UI( GetCurrentScanner() );
 
-      Wizard::SetContentsButtons(caption,contents,help,BackButtonLabel(),NextButtonLabel());
+      Wizard::SetContentsButtons(caption,contents,help,Label::BackButton(),Label::NextButton());
 
       any ret = nil;
       string vendor = "";
@@ -173,7 +175,7 @@ http://mostang.com/sane and http://sdb.suse.de.</p>");
 	      else
 	      {
 		  // text of a popup
-		  UI::NotifyPopup(_("Please select a vendor AND a model from the lists."));
+		  Popup::Notify(_("Please select a vendor AND a model from the lists."));
 		  ret = `again; 
 	      }
 	  }

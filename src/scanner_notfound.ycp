@@ -23,6 +23,8 @@
 {
   textdomain "scanner";
 
+  import "Label";
+    
   global define ScannerNotFoundDialog_UI() ``{
 
       term layout = `Empty();
@@ -95,7 +97,7 @@ scanner at the same time.</p>");
       string caption = _("Manual scanner configuration");
       term contents  = ScannerNotFoundDialog_UI();
 
-      Wizard::SetContentsButtons(caption,contents,help,BackButtonLabel(),NextButtonLabel());
+      Wizard::SetContentsButtons(caption,contents,help,Label::BackButton(),Label::NextButton());
 
       any ret = nil;
       boolean go_on = true;
@@ -131,14 +133,14 @@ and restart the scanner configuration.");
 		  if ( size (usb_scanner) > 1 )
 		  {
 		      // text part 1 of the warning popup - disconnect unused scanners
-		      UI::WarningPopup(_("YaST2 has detected several USB scanners, 
+		      Popup::Warning(_("YaST2 has detected several USB scanners, 
 but you can only use ONE of them.") + "\n" + msg);
 		      ret = `back;
 		  }
 		  else if ( CheckUSBScanner() )
 		  {
 		      // text of a warning popup
-		      UI::WarningPopup(_("There is already an USB scanner in use.
+		      Popup::Warning(_("There is already an USB scanner in use.
 It is not possible to configure an additional
 USB scanner, because only ONE is supported.") + "\n" + msg);
 		      ret = `back;

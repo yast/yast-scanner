@@ -35,6 +35,8 @@
 {
 
   textdomain "scanner";
+
+  import "Label";
   
   global define ScannerOverviewDialog_UI( term table ) ``{
 
@@ -126,10 +128,10 @@ will be discarded and your system will be reverted to the previous state.
       term contents = ScannerOverviewDialog_UI( CreateScannerTable(scanner_map) );
 
       Wizard::SetContentsButtons(caption,contents,help,
-				   BackButtonLabel(),
-				   NextButtonLabel());
+				   Label::BackButton(),
+				   Label::NextButton());
 
-      term finish_button = `PushButton(`id(`finish), FinishButtonLabel() );
+      term finish_button = `PushButton(`id(`finish), Label::FinishButton() );
       Wizard::ReplaceNextButton( finish_button );
       
       any ret = nil;
@@ -148,7 +150,7 @@ will be discarded and your system will be reverted to the previous state.
 	      if ( scanner_id == nil )
 	      {
 		  // text of a popup
-		  UI::NotifyPopup(_("Please select a scanner from the list."));
+		  Popup::Notify(_("Please select a scanner from the list."));
 	      }
 	      else
 	      {
@@ -161,7 +163,7 @@ will be discarded and your system will be reverted to the previous state.
 configuration of the scanner %1, %2 ?\n"), GetCurrentScannerValue("vendor"),
 					    GetCurrentScannerValue("device") );   
 
-		  boolean yesnoret = UI::YesNoHeadlinePopup( WarningMsg(), message);
+		  boolean yesnoret = Popup::YesNoHeadline( Label::WarningMsg(), message);
 		  if(yesnoret==true)
 		  {
 		    // remove scanner_id form scannerInfo
@@ -176,7 +178,7 @@ configuration of the scanner %1, %2 ?\n"), GetCurrentScannerValue("vendor"),
 	  else if ( ret == `finish )
 	  {
 	      // text of a popup with Yes/No button 
-	      any ret = UI::YesNoPopup(_("Save all settings and exit?"));
+	      any ret = Popup::YesNo(_("Save all settings and exit?"));
 	      if ( ret )
 	      {
 		  y2debug( "FINISH scanner workflow" );
@@ -198,7 +200,7 @@ configuration of the scanner %1, %2 ?\n"), GetCurrentScannerValue("vendor"),
       }
 
       // restore Next button
-      term next_button = `PushButton(`id(`next), NextButtonLabel() );
+      term next_button = `PushButton(`id(`next), Label::NextButton() );
       Wizard::ReplaceNextButton( next_button );
 
       return ret;
