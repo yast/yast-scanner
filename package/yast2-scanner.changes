@@ -1,4 +1,10 @@
 -------------------------------------------------------------------
+Mon Sep  8 09:39:48 CEST 2003 - gs@suse.de
+
+- V 2.8.12
+- merge texts from proof read, remove non UTF-8 letter from comment
+
+-------------------------------------------------------------------
 Tue Sep  2 10:46:38 CEST 2003 - gs@suse.de
 
 - V 2.8.11
