@@ -73,7 +73,7 @@
 		      // -> scanner module will be loaded automatically
 		      //    with options set in /etc/modules.conf
 		      string user_entry = sformat ("%1  0x0003  %2  0x0000       0x0000       0x00         0x00            0x00            0x00            0x00            0x00            0x00000000", usb_module, usb_usermap );
-		      SCR::Execute(.target.bash, sformat("echo \"%1\" >> /etc/hotplug/usb.usermap", user_entry ) );
+		      SCR::Execute(.target.bash, sformat("echo \"%1\" >> /etc/hotplug/usb/sane.usermap", user_entry ) );
 		  }
 	      }
 	      if( bus == "SCSI" )
