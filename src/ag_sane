@@ -17,18 +17,6 @@ use strict;
 use scannerDB;
 
 
-#
-# Simple sub to cut off whitespaces in front and at the end of
-# of a string.
-#
-sub trim( $ )
-{
-    my ($str) = @_;
-    $str =~ s/^\s+//;
-    $str =~ s/\s+$//;
-    y2debug("Trim: Trimmed string to <$str>");
-    return( $str );
-}
 
 # ##############################################################################
 
@@ -53,9 +41,9 @@ while ( <STDIN> )
 
     if( $action =~ /driver/i )
     {
-	my $vendor = findKeyInHash( "vendor", \%scanner );
-	my $bus = findKeyInHash( "bus", \%scanner  );
-	my $model = findKeyInHash( "model", \%scanner );
+	my $vendor = findInHash( "vendor", \%scanner );
+	my $bus = findInHash( "bus", \%scanner  );
+	my $model = findInHash( "model", \%scanner );
 
 	y2debug( "Bus is $bus" );
 	y2debug( "Model is $model" );
@@ -69,7 +57,7 @@ while ( <STDIN> )
 	}
 
 	my $use_driver = "";
-	$use_driver = findKeyInHash( $model, \%models );
+	$use_driver = findInHash( $model, \%models );
 
 	y2debug( "Returning <$use_driver>" );
 
