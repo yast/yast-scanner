@@ -33,7 +33,7 @@
    $[
      ////////////////////////////////////////////////////////////////////////////////
      // name of the entry, shon in curses menu and ycc                             //
-     `menuentry    : UI(_("scanner modul")),
+     `menuentry    : UI(_("Scanner")),
      
      ////////////////////////////////////////////////////////////////////////////////
      //leave blank,  experts only ;-)
@@ -41,7 +41,7 @@
      
       ////////////////////////////////////////////////////////////////////////////////
       // group (one of the groups in /usr/lib/YaST2/etc/y2contolcenter.conf         //
-     `group        : "Misc", 
+     `group        : "Hardware", 
    
      ////////////////////////////////////////////////////////////////////////////////
      // Icon used in y2contolcenter                                                //
