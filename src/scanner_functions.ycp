@@ -50,27 +50,27 @@ global define ScannerFinish() ``{
     return true;
 }
 
-global define GetActualScannerValue( string key ) ``{
+global define GetCurrentScannerValue( string key ) ``{
     string value = "";
-    integer actual_id = lookup( user_settings, "scannerInWork", 0 );
+    integer current_id = lookup( user_settings, "scannerInWork", 0 );
     map scanner_info = lookup( user_settings, "scannerInfo", $[] );
     
-    if ( actual_id != 0 )
+    if ( current_id != 0 )
     {
-	value = lookup( lookup(scanner_info, actual_id, $[]), key, ""); 
+	value = lookup( lookup(scanner_info, current_id, $[]), key, ""); 
     }
-    y2debug( "GET actual value: %1", value );
+    y2debug( "GET current value: %1", value );
     return value;
 }
 
-global define GetActualScanner(  ) ``{
+global define GetCurrentScanner(  ) ``{
     string value = "";
-    integer actual_id = lookup( user_settings, "scannerInWork", 0 );
+    integer current_id = lookup( user_settings, "scannerInWork", 0 );
     map scanner_info = lookup( user_settings, "scannerInfo", $[] );
 
-    if ( actual_id != 0 && scanner_info != $[] )
+    if ( current_id != 0 && scanner_info != $[] )
     {
-	return ( lookup(scanner_info, actual_id, $[]) );
+	return ( lookup(scanner_info, current_id, $[]) );
     }
     else
     {
@@ -78,15 +78,15 @@ global define GetActualScanner(  ) ``{
     }
 }
 
-global define SetActualScannerValue( string key, string value ) ``{
-    integer actual_id 	= lookup( user_settings, "scannerInWork", 0 );
+global define SetCurrentScannerValue( string key, string value ) ``{
+    integer current_id 	= lookup( user_settings, "scannerInWork", 0 );
     map scanner_info 	= lookup( user_settings, "scannerInfo", $[] );
-    map actual_scanner 	= lookup( scanner_info, actual_id, $[] );
+    map current_scanner = lookup( scanner_info, current_id, $[] );
 
-    if ( actual_id != 0 && actual_scanner != $[] )
+    if ( current_id != 0 && current_scanner != $[] )
     {
-	actual_scanner = add( actual_scanner, key, value );
-	scanner_info = add( scanner_info, actual_id, actual_scanner );
+	current_scanner = add( current_scanner, key, value );
+	scanner_info = add( scanner_info, current_id, current_scanner );
 	y2debug( "SET scannerInfo: %1", scanner_info );
 	user_settings = add( user_settings, "scannerInfo", scanner_info );
 	return true;

@@ -27,7 +27,7 @@
  */
 
 {
-  textdomain "general";
+  textdomain "scanner";
   include "ui/progress.ycp";
 
 
@@ -44,7 +44,7 @@
       string help_text = UI(_("<p>YaST2 starts the hardware probing,
 i.e. checks the 'USB' and/or the 'SCSI' port(s) for connected scanner(s).
 If a new scanner is detected the next dialog allows you to
-configure easily the scanner.
+configure the scanner easily.
 If the automatic detection fails you have the possibility to continue
 with manual installation in following dialogs.
 </p>"));
@@ -80,11 +80,11 @@ with manual installation in following dialogs.
 	  // SANE should be installed by now - if not notify the user and exit
 	  if ( SCR (`Execute (.target.bash, "/bin/rpm -q sane")) != 0 )
 	  {
-	      UI( `ErrorPopup(_("Package 'sane' is not installed correctly.
+	      UI( `ErrorPopup(_("The package 'sane' is not installed correctly.
 This package is mandatory for the scanner installation.
 Please make sure that you have the SuSE CD set available
-and start scanner installation again - or install the package
-with YaST2 module 'Install/Remove Software'.\n")));
+and start the scanner installation again - or install the package
+with the YaST2 module 'Install/Remove Software'.\n")));
 
 	      return `cancel;
 	  }
@@ -152,10 +152,7 @@ and restart the scanner configuration.")));
 	  string driver = "";
 	  if ( !test_mode )
 	  {
-	      /*
-		driver = SCR(`Read(.sane.driver, scanner));
-	      */
-	      driver = "testdriver";
+	      driver = SCR(`Read(.sane.driver, scanner));
 	  }
 	  if ( installed_scanner == [] )
 	  {

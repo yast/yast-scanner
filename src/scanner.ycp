@@ -36,12 +36,12 @@
   include "scanner/scanner_new.ycp";
   include "scanner/scanner_overview.ycp";
   include "scanner/scanner_install.ycp";
-  include "scanner/scanner_manual.ycp";
+  include "scanner/scanner_notfound.ycp";
   include "scanner/scanner_options.ycp";
   include "scanner/scanner_scsi.ycp";
   include "scanner/scanner_usb.ycp";
   include "scanner/scanner_net.ycp";
-  include "scanner/scanner_driver.ycp";
+  include "scanner/scanner_manual.ycp";
 
   boolean test_mode = false;
 
@@ -164,11 +164,11 @@
 		  "scanner_new"		:   ``( ScannerNewDialog() ),
 		  "scanner_install"	:   ``( ScannerInstallDialog() ),
 		  "scanner_options"	:   ``( ScannerOptionsDialog() ),
-		  "scanner_manual"	:   ``( ScannerManualDialog() ),
+		  "scanner_notfound"	:   ``( ScannerNotFoundDialog() ),
 		  "scanner_scsi"	:   ``( ScannerSCSIDialog() ),
 		  "scanner_usb"		:   ``( ScannerUSBDialog() ),
 		  "scanner_net"		:   ``( ScannerNetDialog() ),
-		  "scanner_driver"	:   ``( ScannerDriverDialog() ),
+		  "scanner_manual"	:   ``( ScannerManualDialog() ),
 		  "abort"              	:   ``( AbortDialog() )
   ];
     
@@ -180,25 +180,29 @@
 					`cancel	  :   `cancel,
 					`overview  :   "scanner_overview",
 					`new	  :   "scanner_new",
-					`manual    :   "scanner_manual",
-					`driver	  :	"scanner_driver",
+					`manual    :   "scanner_notfound",
+					`driver	  :	"scanner_manual",
 					`next      :   "scanner_overview"],
 		   "scanner_overview":   $[
 					   `abort     :   "abort",
 					   `edit      :   "scanner_options",
 					   `delete    :   "scannner_delete",
-					   `add       :   "scanner_manual",	// `manual: try manual
+					   `add       :   "scanner_notfound",
+					   `new	      :   "scanner_new",
 					   `next	 :   `ok,
 					   `finish	  :   `ok ],	// finish
 		   "scanner_new" :   $[
 				       `abort     :   "abort",
 				       `next      :   "scanner_install"],
-		   "scanner_manual" : $[
+		   "scanner_notfound" : $[
 					`scsi	:	"scannner_scsi",
 					`usb   	:	"scanner_usb",
 					`net	:	"scanner_net",
 					`start  : 	"scanner_start",
 					`abort     :   "abort" ],
+		   "scanner_manual"   : $[
+				       `abort     :   "abort",
+				       `next      :   "scanner_install"],
 		   "scanner_install":   $[
 					  `abort     :   "abort",
 					  `next      :   "scanner_overview"],

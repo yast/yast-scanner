@@ -30,6 +30,9 @@
  */
 
 {
+
+  testdomain "scanner";
+  
   global define ScannerOverviewDialog_UI( list table_contents ) ``{
 
       term layout = `Empty();
@@ -125,7 +128,7 @@ made on your system will be reseted.
 	       else
 	       {
 		   user_settings = add(user_settings, "scannerInWork", scanner_id);
-		   y2debug( "SELECTED SCANNER: %1", GetActualScannerValue("device") );
+		   y2debug( "SELECTED SCANNER: %1", GetCurrentScannerValue("device") );
 	       }
 	  }
 
@@ -135,7 +138,7 @@ made on your system will be reseted.
 	      {
 		  string message = sformat( UI(_("Do you really want to remove the
 configuration of the scanner
-%1, %2 ?\n")), GetActualScannerValue("vendor"),GetActualScannerValue("device") );   
+%1, %2 ?\n")), GetCurrentScannerValue("vendor"),GetCurrentScannerValue("device") );   
 
 		  UI(`YesNoHeadlinePopup( WarningMsg(), message) );
 	      }

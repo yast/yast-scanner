@@ -20,7 +20,8 @@
  */
 
 {
-
+   textdomain "scanner";
+   
   /**
    * ScannerStartDialog Layout	
    */
@@ -49,8 +50,8 @@
 						    `VBox (
 							   `RadioButton (`id (0), `opt (`hstretch), _("Standard installation (recommended)"), true),
 							   `VSpacing (0.3),
-							   `RadioButton (`id (1), `opt (`hstretch), _("Custom configuration (Expert mode)")),
-							   `VSpacing (0.3),
+							   //`RadioButton (`id (1), `opt (`hstretch), _("Custom configuration (Expert mode)")),
+							   //`VSpacing (0.3),
 							   `RadioButton (`id (2), `opt (`hstretch), _("Configure a network scanner and use the
 PC as a scanner server (Expert mode)")),
 							   `VSpacing (1.0),
@@ -88,10 +89,10 @@ scanner options.</p>"));
       
       string caption = UI(_("New Scanner found"));
 
-      y2debug( "New scanner: %1, %2", GetActualScannerValue( "vendor" ),
-	       GetActualScannerValue( "device" ));
+      y2debug( "New scanner: %1, %2", GetCurrentScannerValue( "vendor" ),
+	       GetCurrentScannerValue( "device" ));
 
-      term contents  = ScannerNewDialog_UI( GetActualScanner() );
+      term contents  = ScannerNewDialog_UI( GetCurrentScanner() );
 
       UI(`SetWizardContentsButtons(caption,contents,help,BackButtonLabel(),NextButtonLabel()));
      
