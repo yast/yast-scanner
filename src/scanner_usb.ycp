@@ -115,7 +115,7 @@ successfully you can proceed to the
       list usb_selbox = [];
 
       /*
-       * SCR::Read(.probe.bybus.usb)
+       * SCR::Read(.probe.usb)
        * ----------------------------
        * [$["bus":"USB",
        * "class_id":268,
