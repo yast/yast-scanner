@@ -1,0 +1,176 @@
+/**
+ * File:	include/scanner/wizards.ycp
+ * Package:	Configuration of scanner
+ * Summary:	Wizard sequencer sequences
+ * Authors:	Gabriele Strattner <gs@suse.de>
+ *
+ * $Id$
+ */
+
+{
+
+textdomain "scanner";
+
+import "Wizard";
+import "Sequencer";
+
+include "scanner/dialogs.ycp";
+
+/**
+ * Main workflow of the scanner configuration
+ * @return sequence result
+ */
+symbol MainSequence() {
+    map aliases = $[
+	"scanner_read"		:  [``( ReadDialog() ), true ],
+	"scanner_decide"	:  [``( Scanner::DecideDialog (`start) ), true ],
+	"scanner_overview"	:   ``( ScannerOverviewDialog() ),
+	"scanner_new"		:   ``( ScannerNewDialog() ),
+	"scanner_install"	:   ``( ScannerInstallDialog() ),
+//	"scanner_options"	:   ``( ScannerOptionsDialog() ),
+	"scanner_notfound"	:   ``( ScannerNotFoundDialog() ),
+	"scanner_scsi"		:   ``( ScannerSCSIDialog() ),
+	"scanner_usb"		:   ``( ScannerUSBDialog() ),
+	"scanner_net"		:   ``( ScannerNetDialog() ),
+	"scanner_manual"	:   ``( ScannerManualDialog() ),
+	"abort"			:   ``( AbortDialog() )
+    ];
+
+
+    map sequence = $[
+	"ws_start"		:   "scanner_decide",
+	"scanner_read"		: $[
+	    `next		:   "scanner_decide",
+	],
+	"scanner_decide"	: $[
+	    `abort		:   "abort",
+	    `cancel		:   `cancel,
+	    `overview		:   "scanner_overview",
+	    `new		:   "scanner_new",
+	    `notfound		:   "scanner_notfound",
+	    `manual		:   "scanner_manual",
+	    `next		:   "scanner_overview"
+	],
+	"scanner_overview"	: $[
+	    `abort		:   "abort",
+	    `cancel		:   `cancel,
+	     //`edit		:   "scanner_options",
+	    `new		:   "scanner_new",
+	    `notfound		:   "scanner_notfound",
+	    `manual		:   "scanner_manual",
+	    `finish		:   `next	// finish
+	 ],
+	"scanner_new"		: $[
+	    `abort		:   "abort",
+	    `cancel		:   `cancel,
+	    `notfound		:   "scanner_notfound",
+	    `next		:   "scanner_install"
+	],
+	"scanner_notfound"	: $[
+	    `scsi		:	"scanner_scsi",
+	    `usb		:	"scanner_usb",
+	    `manual		:	"scanner_manual",
+	    `net		:	"scanner_net",
+	    `start		:	"scanner_read",
+	    `abort		:   "abort",
+	    `cancel		:   `cancel
+	],
+	"scanner_usb"   : $[
+	    `abort		:   "abort",
+	    `cancel		:   `cancel,
+	    `next		:   "scanner_manual"
+	],
+	"scanner_scsi"   : $[
+	    `abort		:   "abort",
+	    `cancel		:   `cancel,
+	    `next		:   "scanner_manual"
+	],
+	"scanner_net"		: $[
+	    `abort		:   "abort",
+	    `cancel		:   `cancel,
+	    `next		:   "scanner_install"
+	],
+	"scanner_manual"	: $[
+	    `abort		:   "abort",
+	    `cancel		:   `cancel,
+	    `next		:   "scanner_new"
+	],
+	"scanner_install"	: $[
+	    `abort		:   "abort",
+	    `cancel		:   `cancel,
+	    `next		:   "scanner_overview"
+	],
+	"abort"			: $[
+	    `yes		:   `abort
+	]
+    ];
+
+    symbol ret = Sequencer::Run(aliases, sequence);
+
+    return ret;
+}
+
+
+/**
+ * Whole configuration of scanner
+ * @return sequence result
+ */
+symbol ScannerSequence() {
+
+    map aliases = $[
+	"read"  : [ ``( ReadDialog() ), true ],
+	"main"  :   ``( MainSequence() ),
+	"write" : [ ``( WriteDialog() ), true ]
+    ];
+
+    map sequence = $[
+	"ws_start" : "read",
+	"read" : $[
+	    `abort      : `abort,
+	    `next       : "main"
+	],
+	"main" : $[
+	    `abort      : `abort,
+	    `next       : "write"
+	],
+	"write" : $[
+	    `abort      : `abort,
+	    `next       : `next
+	]
+    ];
+
+    Wizard::CreateDialog();
+    Wizard::SetDesktopIcon("scanner");
+    symbol ret = Sequencer::Run(aliases, sequence);
+
+    UI::CloseDialog();
+    return ret;
+}
+
+/**
+ * Whole configuration of scanner but without reading and writing.
+ * For use with autoinstallation.
+ * @return sequence result
+ */
+any ScannerAutoSequence() {
+
+    /* Initialization dialog caption */
+    string caption = _("Power Management Configuration");
+    /* Initialization dialog contents */
+    term contents = `Label(_("Initializing..."));
+
+    Wizard::CreateDialog();
+    Wizard::SetDesktopIcon("power-management");
+    Wizard::SetContentsButtons(caption, contents, "",
+	Label::BackButton(), Label::NextButton());
+
+    symbol ret = MainSequence();
+
+    UI::CloseDialog();
+    return ret;
+}
+
+
+
+/* EOF */
+}

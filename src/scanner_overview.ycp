@@ -37,6 +37,7 @@
   textdomain "scanner";
 
   import "Label";
+import "Scanner";
   
   define term ScannerOverviewDialog_UI( term table ) ``{
 
@@ -98,7 +99,7 @@
    */
    
   define any ScannerOverviewDialog()``{
-      map<any, map> scanner_map	= lookup( user_settings, "scannerInfo", $[] );
+      map<any, map> scanner_map	= lookup( Scanner::user_settings, "scannerInfo", $[] );
       
       string help = "";
       // help part1 of scanner overview dialog
@@ -160,22 +161,22 @@ will be discarded and your system will be reverted to the previous state.
 	      }
 	      else
 	      {
-		  user_settings = add(user_settings, "scannerInWork", scanner_id);
-		  y2debug( "DELETE scanner: %1", GetCurrentScannerValue("device") );
+		  Scanner::user_settings = add(Scanner::user_settings, "scannerInWork", scanner_id);
+		  y2debug( "DELETE scanner: %1", Scanner::GetCurrentScannerValue("device") );
 
 		  // text of a popup: ask the user whether to delete the sacnner
 		  // configuration (%1: the vendor, %2: the device) 
 		  string message = sformat( _("Do you really want to remove the
-configuration of the scanner %1, %2 ?\n"), GetCurrentScannerValue("vendor"),
-					    GetCurrentScannerValue("device") );   
+configuration of the scanner %1, %2 ?\n"), Scanner::GetCurrentScannerValue("vendor"),
+					    Scanner::GetCurrentScannerValue("device") );   
 
 		  boolean yesnoret = Popup::YesNoHeadline( Label::WarningMsg(), message);
 		  if(yesnoret==true)
 		  {
 		    // remove scanner_id form scannerInfo
-		    DeleteScannerEntry(scanner_id);
+		    Scanner::DeleteScannerEntry(scanner_id);
 		    // get new scanner_map
-		    scanner_map = lookup( user_settings, "scannerInfo", $[] );
+		    scanner_map = lookup( Scanner::user_settings, "scannerInfo", $[] );
 		    // update widget
 		    UI::ReplaceWidget(`id(`scanner_table_rp),CreateScannerTable(scanner_map));
 		  }
@@ -195,7 +196,7 @@ configuration of the scanner %1, %2 ?\n"), GetCurrentScannerValue("vendor"),
 	  }
 	  else if ( ret == `add )
 	  {
-	      ret = DecideDialog( `add );
+	      ret = Scanner::DecideDialog( `add );
 	      go_on = false;
 	  }
 	  else

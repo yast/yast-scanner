@@ -28,114 +28,14 @@
   import "Label";
 
 /**
- *  ------- UNUSED ---------
- * Fill the map of all scanner settings from the SCR
- * @return map all scanner settings
- */
-  define map ScannerRead() ``{
-      /* TODO: your code here ... */
-      return $[];
-  }
-
-/**
- * Write additional data/settings.
- * @param m a map of all scanner settings
- * @return boolean success of operation
- */
-  define boolean ScannerWrite(map<any, map> scanner_info) ``{
-      boolean ret = true;
-
-      foreach( any key, map scanner, scanner_info, ``{
-
-	  string usb_usermap = lookup( scanner, "usb_usermap", "" );
-	  string bus = lookup( scanner, "bus", "" );
-	  string scanner_driver = lookup( scanner, "scanner_driver", "" );
-	  string is_installed = lookup( scanner, "scanner_status", "" );
-	  string unique_key =  lookup( scanner, "unique_key", "" );
-
-	  if( is_installed == "installed" )
-	  {
-	      boolean success = false;
-
-	      SCR::Write(.probe.status.configured, unique_key, `yes);
-	      y2milestone ( "Mark scanner %1 as configured",  unique_key );
-
-	      if ( bus == "USB"
-		   && usb_usermap != ""
-		   && scanner_driver != "" )
-	      {
-		  // kernel 2.6: writing modules.conf is obsolete (scanner module is gone)
-
-		  integer exitcode = 0;
-
-		  // append USB IDs to /etc/sane.d/<driver>.conf
-		  exitcode = (integer)SCR::Execute(.target.bash, sformat("echo \"usb %1\" >> /etc/sane.d/%2.conf",
-							       usb_usermap, scanner_driver) );
-
-		  if ( exitcode == 0 )
-		  {
-	      		  string user_entry = sformat ("desktopdev  0x0003  %1  0x0000       0x0000       0x00         0x00            0x00            0x00            0x00            0x00            0x00000000", usb_usermap );
-		      // Write /etc/hotplug/usb/sane.usermap (using pseudo module name "desktopdev")
-		      exitcode = (integer)SCR::Execute(.target.bash, sformat("echo \"%1\" >> /etc/hotplug/usb/sane.usermap", user_entry ) );
-		  }
-		  if ( exitcode != 0 )
-		  {
-		      y2error( "ERROR: Manual USB configuration failed" );
-		      ret = false;
-		  }
-		  else
-		  {
-		      y2milestone( "Writing /etc/sane.d/%1.conf and /etc/hotplug/usb/sane.usermap" );
-		  }
-	      }
-	      else if ( bus == "SCSI" )
-	      {
-		  // set the link in /etc/init.d/rc3.d to start the script /usr/sbin/rcsane
-		  // (which sets and resets the permissions 666 on /dev/sg0 )
-		  success = Service::Enable("sane");
-		  y2milestone( "ServiceAdjust( sane, enable ) returns: %1", success );
-		  if ( !success )
-		      ret = false;
-	      }
-	      else if ( bus == "PTAL" )
-	      {
-		  // enable PTAL service and hotplug
-		  success = Service::Enable("hotplug");
-		  if ( success )
-		  {
-		      success = Service::Enable("ptal");
-		  }
-		  if ( !success )
-		      ret = false;
-
-		  y2milestone ( "PTAL service %1", success?"enabled":"NOT enabled" );
-	      }
-	  }
-      });
-
-      return ret;
-  }
-
-/**
- * Write the scanner data from SCR to the disk
- * @return list success of operation
- */
-  define boolean ScannerFinish() ``{
-
-      // TODO your code here ... */
-      // e.g. Write(.modules.nil);
-      return true;
-  }
-
-/**
  * Get the value to the given key of the scanner currently in work.
  * @param string key
  * @return string value
  */
-  define string GetCurrentScannerValue( string key ) ``{
+global  define string GetCurrentScannerValue( string key ) ``{
       string value = "";
-      integer current_id = lookup( user_settings, "scannerInWork", 0 );
-      map scanner_info = lookup( user_settings, "scannerInfo", $[] );
+      integer current_id = lookup( Scanner::user_settings, "scannerInWork", 0 );
+      map scanner_info = lookup( Scanner::user_settings, "scannerInfo", $[] );
 
       if ( current_id != 0 )
       {
@@ -149,10 +49,10 @@
  * Get the scanner data of the scanner currently in work.
  * @return map scanner info
  */
-  define map GetCurrentScanner(  ) ``{
+global  define map GetCurrentScanner(  ) ``{
       any value = "";
-      integer current_id = lookup( user_settings, "scannerInWork", 0 );
-      map scanner_info = lookup( user_settings, "scannerInfo", $[] );
+      integer current_id = lookup( Scanner::user_settings, "scannerInWork", 0 );
+      map scanner_info = lookup( Scanner::user_settings, "scannerInfo", $[] );
 
       if ( current_id != 0 && scanner_info != $[] )
       {
@@ -171,16 +71,16 @@
  * @param string value
  * @return boolean
  */
-  define boolean SetCurrentScannerValue( string key, any value ) ``{
-      integer current_id = lookup( user_settings, "scannerInWork", 0 );
-      map scanner_info = lookup( user_settings, "scannerInfo", $[] );
+global  define boolean SetCurrentScannerValue( string key, any value ) ``{
+      integer current_id = lookup( Scanner::user_settings, "scannerInWork", 0 );
+      map scanner_info = lookup( Scanner::user_settings, "scannerInfo", $[] );
       map current_scanner = lookup(scanner_info, current_id, $[]);
 
       if ( current_id != 0 && current_scanner != $[] )
       {
 	  current_scanner = add( current_scanner, key, value );
 	  scanner_info = add( scanner_info, current_id, current_scanner );
-	  user_settings = add( user_settings, "scannerInfo", scanner_info );
+	  Scanner::user_settings = add( Scanner::user_settings, "scannerInfo", scanner_info );
 	  return true;
       }
       else
@@ -196,7 +96,7 @@
  * @param string title of the popup
  * @return any selected item
  */
-  define any DisplayScannerList( map<integer, map> scanners, string title ) ``{
+global  define any DisplayScannerList( map<integer, map> scanners, string title ) ``{
 
       list table_contents =  maplist(integer key, map value, scanners,
 				 ``(`item(`id(key), lookup(value, "vendor", ""),lookup(value, "device", ""), lookup(value, "bus", ""))) );
@@ -241,7 +141,7 @@
    *
    * @return boolean package installed correctly or not
    */
-  define boolean CheckOfficeJet() ``{
+global  define boolean CheckOfficeJet() ``{
       // check whether the package hp-officeJet is installed
       integer exitcode = (integer) SCR::Execute (.target.bash, "/bin/rpm -q hp-officeJet");
 
@@ -286,8 +186,8 @@ with the YaST2 module 'Install and Remove Software'.
  * Check whether an USB scanner is already installed.
  * @return boolean already USB scanner installed or not
  */
-  define boolean CheckUSBScanner( ) ``{
-      map<any, map> scanner_map = lookup( user_settings, "scannerInfo", $[] );
+global  define boolean CheckUSBScanner( ) ``{
+      map<any, map> scanner_map = lookup( Scanner::user_settings, "scannerInfo", $[] );
       boolean already_usb = false;
 
       if ( scanner_map != $[] )
@@ -310,13 +210,13 @@ with the YaST2 module 'Install and Remove Software'.
  * @param symbol mode can be `start or `add.
  * @return symbol return value for the start dialog, e.g. `notfound
  */
-  define symbol DecideDialog( symbol mode ) ``{
+global  define symbol DecideDialog( symbol mode ) ``{
 
       map<integer, map> new_scanner 	 = $[]; //  new scanner which are supported by SANE
       map<integer, map> detected_scanner = $[]; //  detected scanner which are NOT supported by SANE
       symbol ret = `next;
       boolean installed = false;
-      map<integer, map> scanner_info = lookup( user_settings, "scannerInfo", $[] );
+      map<integer, map> scanner_info = lookup( Scanner::user_settings, "scannerInfo", $[] );
 
       if ( scanner_info != $[] )
       {
@@ -357,7 +257,7 @@ with the YaST2 module 'Install and Remove Software'.
 	      scan_id = (integer) DisplayScannerList( new_scanner, title );
 	  }
 	  ret = `new;
-	  user_settings = add( user_settings, "scannerInWork", scan_id );
+	  Scanner::user_settings = add( Scanner::user_settings, "scannerInWork", scan_id );
       }
       else if ( detected_scanner != $[] )
       {
@@ -374,7 +274,7 @@ with the YaST2 module 'Install and Remove Software'.
 	      scan_id = (integer) DisplayScannerList( detected_scanner, title );
 	  }
 	  ret = `manual;
-	  user_settings = add( user_settings, "scannerInWork", scan_id );
+	  Scanner::user_settings = add( Scanner::user_settings, "scannerInWork", scan_id );
       }
       else
       {
@@ -387,19 +287,19 @@ with the YaST2 module 'Install and Remove Software'.
 
 /**
  * Create a new scanner entry in "scannerInfo" map and write the
- * map to the user_settings..
+ * map to the Scanner::user_settings..
  * @param map new scanner
  */
-  define void CreateScannerEntry( map new_entry ) ``{
+global  define void CreateScannerEntry( map new_entry ) ``{
 
-      map scanner_info = lookup( user_settings, "scannerInfo", $[] );
+      map scanner_info = lookup( Scanner::user_settings, "scannerInfo", $[] );
       integer key = size(scanner_info) + 1;
 
       scanner_info = add( scanner_info, key, new_entry );
       y2debug("Scanner info added: %1 with key %2", scanner_info, key);
 
-      user_settings = add( user_settings, "scannerInfo", scanner_info );
-      user_settings = add( user_settings, "scannerInWork", key );
+      Scanner::user_settings = add( Scanner::user_settings, "scannerInfo", scanner_info );
+      Scanner::user_settings = add( Scanner::user_settings, "scannerInWork", key );
   }
 
 
@@ -410,13 +310,13 @@ with the YaST2 module 'Install and Remove Software'.
  * @param scanner id to be deleted
  */
 
-  define void DeleteScannerEntry (integer delete_id) ``{
+global  define void DeleteScannerEntry (integer delete_id) ``{
 
     y2debug("Scanner to be deleted: %1", delete_id);
     if (delete_id == 0) return;
 
-//      integer current_id = lookup( user_settings, "scannerInWork", 0 );
-    map<integer, map> oldscanner_info = lookup( user_settings, "scannerInfo", $[] );
+//      integer current_id = lookup( Scanner::user_settings, "scannerInWork", 0 );
+    map<integer, map> oldscanner_info = lookup( Scanner::user_settings, "scannerInfo", $[] );
     map newscanner_info = $[];
     map deleted_entry = $[];
 
@@ -453,7 +353,7 @@ with the YaST2 module 'Install and Remove Software'.
 
 //    SCR::Write(.dumpto.tmp.newscanner_info, newscanner_info );
 
-    user_settings = add( user_settings, "scannerInfo", newscanner_info );
-    user_settings = add( user_settings, "scannerInWork", 0 );
+    Scanner::user_settings = add( Scanner::user_settings, "scannerInfo", newscanner_info );
+    Scanner::user_settings = add( Scanner::user_settings, "scannerInWork", 0 );
   }
 }

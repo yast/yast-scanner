@@ -2,7 +2,7 @@
  * File:	clients/scanner.ycp
  * Package:	Configuration of scanner
  * Summary:	Main file
- * Authors:	Gabriele Strattner <gs@suse.de>
+ * Authors:	Jiri Srain <jsrain@suse.cz>
  *
  * $Id$
  */
@@ -13,76 +13,58 @@
  * <h3>Scanner Cconfiguration</h3>
  */
 
-  textdomain "scanner";
+textdomain "scanner";
 
-  import "Wizard";
-  import "Popup";
-  import "Label";
-  import "Sequencer";
+/* The main () */
+y2milestone ("----------------------------------------");
+y2milestone ("Scanner module started");
 
-  // this is the global data map
-  map user_settings = $[];
+import "CommandLine";
+include "scanner/wizards.ycp";
 
-  include "scanner/scanner_functions.ycp";
+// check test_mode
+integer arg_n = size(WFM::Args()) - 1;
 
-  include "scanner/scanner_start.ycp";
-  include "scanner/scanner_new.ycp";
-  include "scanner/scanner_overview.ycp";
-  include "scanner/scanner_install.ycp";
-  include "scanner/scanner_notfound.ycp";
-  include "scanner/scanner_scsi.ycp";
-  include "scanner/scanner_usb.ycp";
-  include "scanner/scanner_net.ycp";
-  include "scanner/scanner_manual.ycp";
+symbol test_status = `installed;
 
-  boolean test_mode = false;
+list arg_list = [];
 
-/* The main() */
-  y2milestone("Scanner configuration started");
+boolean test_mode = false;
 
+// start tests:
+// gs@sturm: > y2base scanner '(.test)' ncurses
+// gs@sturm: > y2base scanner '(.test_manual)' ncurses
+// gs@sturm: > y2base scanner '(.test_new)' ncurses
 
+while (arg_n >= 0) {
+    if (WFM::Args(arg_n) == .test)
+    {
+	test_mode = true;
+    }
+    else if (WFM::Args(arg_n) == .test_new)
+    {
+	test_mode = true;
+	test_status = `supported;
+    }
+    else if (WFM::Args(arg_n) == .test_manual)
+    {
+	test_mode = true;
+	test_status = `detected;
+    }
+    else
+    {
+	arg_list = add(arg_list, WFM::Args(arg_n));
+    }
+    arg_n = arg_n - 1;
+}
 
-  // check test_mode
-  integer arg_n = size(WFM::Args()) - 1;
-
-  symbol test_status = `installed;
-
-  list arg_list = [];
-
-  // start tests:
-  // gs@sturm: > y2base scanner '(.test)' ncurses
-  // gs@sturm: > y2base scanner '(.test_manual)' ncurses
-  // gs@sturm: > y2base scanner '(.test_new)' ncurses
-  
-  while (arg_n >= 0) {
-      if (WFM::Args(arg_n) == .test)
-      {
-	  test_mode = true;
-      }
-      else if (WFM::Args(arg_n) == .test_new)
-      {
-	   test_mode = true;
-	   test_status = `supported;
-      }
-      else if (WFM::Args(arg_n) == .test_manual)
-      {
-	   test_mode = true;
-	   test_status = `detected;
-      }
-      else
-      {
-	  arg_list = add(arg_list, WFM::Args(arg_n));
-      }
-      arg_n = arg_n - 1;
-  }
-
-  if ( test_mode )
-  {
-      y2debug("Scanner TESTMODE");
-      list connected_scanner = [];
-      if ( test_status == `detected )
-      {
-	  connected_scanner = [
+if ( test_mode )
+{
+    y2debug("Scanner TESTMODE");
+    list connected_scanner = [];
+    if ( test_status == `detected )
+    {
+	connected_scanner = [
 			       $["bus":"USB",
 				  "class_id":268,
 				  "device":"Perfection 640",
@@ -106,10 +88,10 @@
 				   "unique_key":"PTVH.9Hr5DGWrbRF",
 				   "vendor":"UMAX",
 				   "vendor_id":197816 ] ];
-      }
-      else if ( test_status == `supported )
-      {
-	  connected_scanner = [
+    }
+    else if ( test_status == `supported )
+    {
+	connected_scanner = [
 			       $["bus":"USB",
 				"class_id":268,
 				"device":"Perfection 640",
@@ -123,10 +105,10 @@
 				"unique_key":"PTVH.9Hr5DGWrbRF",
 				"vendor":"Epson",
 				"vendor_id":197816] ];
-      }
-      else
-      {
-	  connected_scanner = [
+    }
+    else
+    {
+	connected_scanner = [
 			       $["bus":"Net",		// this is a network scan station
 				"class_id":268,
 				"device":"Perfection 640",
@@ -141,12 +123,12 @@
 				"unique_key":"PTVH.9Hr5DGWrbRF",
 				"vendor":"Epson",
 				"vendor_id":197816] ];
-      }
+    }
 
-      list installed_scanner = [];
-      if ( test_status == `supported || test_status == `detected )
-      {
-	  installed_scanner = [$["bus":"USB",
+    list installed_scanner = [];
+    if ( test_status == `supported || test_status == `detected )
+    {
+	installed_scanner = [$["bus":"USB",
 				   "class_id":268,
 				   "device":"Perfection 641",
 				   "device_id":196876,
@@ -159,10 +141,10 @@
 				   "vendor":"Epson",
 				   "vendor_id":197816
 				   ]];
-      }
-      else
-      {
-	  installed_scanner = [$["bus":"USB",
+    }
+    else
+    {
+	installed_scanner = [$["bus":"USB",
 				   "class_id":268,
 				   "device":"Perfection 640",
 				   "device_id":196876,
@@ -175,133 +157,44 @@
 				   "vendor":"Epson",
 				   "vendor_id":197816
 				   ]];
-      }
-      user_settings = add( user_settings, "test_mode", true );
-      user_settings = add( user_settings, "test_connected", connected_scanner );
-      user_settings = add( user_settings, "test_installed", installed_scanner );
-  }
-  else
-  {
-      user_settings = add( user_settings, "test_mode", false );
-  }
+    }
+    Scanner::user_settings = add( Scanner::user_settings, "test_mode", true );
+    Scanner::user_settings = add( Scanner::user_settings, "test_connected", connected_scanner );
+    Scanner::user_settings = add( Scanner::user_settings, "test_installed", installed_scanner );
+}
+else
+{
+      Scanner::user_settings = add( Scanner::user_settings, "test_mode", false );
+}
+
+/*map cmdline_description = $[
+    "id"        : "scanner",
+    // Command line help text for the scanner module
+    "help"      : _("Configuration of scanner"),
+    "guihandler"        : ScannerSequence,
+    "initialize"        : Scanner::Read,
+    "finish"            : Scanner::Write,
+    "actions"           : $[
+    ],
+    "options"           : $[
+    ],
+    "mapping"           : $[
+    ]
+];*/
+
+/* main ui function */
+any ret = ScannerSequence ();
+//CommandLine::Run(cmdline_description);
+y2debug("ret=%1", ret);
+
+/* Finish */
+y2milestone("Scanner module finished");
+y2milestone("----------------------------------------");
+
+return ret;
 
 
-/**
- * Abort dialog
- */
-  define symbol AbortDialog() ``{
-
-      any ret = Popup::ReallyAbort(true);
-      if ( ret==true )
-      {
-	  y2milestone("ABORT the scanner installation - undo all changes.");
-	  boolean ok = (boolean) SCR::Execute(.sane.revertall);
-	  if(!ok)
-	  {
-	    Popup::Message(_("It was not possible to revert the already made changes"));
-	  }
-	  return `yes;
-      }
-      return `back;
-  }
-
-
-  Wizard::CreateDialog();
-  Wizard::SetDesktopIcon("scanner");
-
-  map aliases = $[
-		  "scanner_start"       :   [``( ScannerStartDialog() ), true ],
-		  "scanner_overview"	:   ``( ScannerOverviewDialog() ),
-		  "scanner_new"		:   ``( ScannerNewDialog() ),
-		  "scanner_install"	:   ``( ScannerInstallDialog() ),
-//		  "scanner_options"	:   ``( ScannerOptionsDialog() ),
-		  "scanner_notfound"	:   ``( ScannerNotFoundDialog() ),
-		  "scanner_scsi"	:   ``( ScannerSCSIDialog() ),
-		  "scanner_usb"		:   ``( ScannerUSBDialog() ),
-		  "scanner_net"		:   ``( ScannerNetDialog() ),
-		  "scanner_manual"	:   ``( ScannerManualDialog() ),
-		  "abort"              	:   ``( AbortDialog() )
-  ];
-
-
-  map sequence = $[
-		   "ws_start"     :   "scanner_start",
-		   "scanner_start":   $[
-					`abort    :   "abort",
-					`cancel	  :   `cancel,
-					`overview :   "scanner_overview",
-					`new	  :   "scanner_new",
-					`notfound :   "scanner_notfound",
-					`manual	  :   "scanner_manual",
-					`next     :   "scanner_overview"],
-		   "scanner_overview":   $[
-					   `abort     	:   "abort",
-					   `cancel	  :   `cancel,
-					   //`edit      :   "scanner_options",
-					   `new	  	:   "scanner_new",
-					   `notfound 	:   "scanner_notfound",
-					   `manual	:   "scanner_manual",
-					   `finish	:   `ok ],	// finish
-		   "scanner_new" :   $[
-				       `abort     :   "abort",
-				       `cancel	  :   `cancel,
-				       `notfound  :   "scanner_notfound",
-				       `next      :   "scanner_install"],
-		   "scanner_notfound" : $[
-					`scsi	:	"scanner_scsi",
-					`usb 	:	"scanner_usb",
-					`manual :	"scanner_manual",
-					`net	:	"scanner_net",
-					`start  : 	"scanner_start",
-					`abort     :   "abort",
-					`cancel	  :   `cancel],
-		   "scanner_usb"   : $[
-				       `abort     :   "abort",
-				       `cancel	  :   `cancel,
-				       `next      :   "scanner_manual"],
-		   "scanner_scsi"   : $[
-				       `abort     :   "abort",
-				       `cancel	  :   `cancel,
-				       `next      :   "scanner_manual"],
-		   "scanner_net"   : $[
-				       `abort     :   "abort",
-				       `cancel	  :   `cancel,
-				       `next      :   "scanner_install"],
-		   "scanner_manual"   : $[
-				       `abort     :   "abort",
-				       `cancel	  :   `cancel,
-				       `next      :   "scanner_new"],
-		   "scanner_install":   $[
-					  `abort     :   "abort",
-					  `cancel    :   `cancel,
-					  `next      :   "scanner_overview"],
-		   "abort"      :   $[
-				      `yes	  :   `abort ]
-  ];
-
-
-
-  any ret = Sequencer::Run(aliases, sequence);
-
-  if ( ret == `ok )
-  {
-      /* info text shown at the end of module */
-      string message = _("Please wait while the configuration files are updated...");
-      UI::OpenDialog(`opt(`decorated), `Label(message));
-
-      y2milestone("FINISH the scanner installation - confirm all changes." );
-
-      boolean success = ScannerWrite(lookup(user_settings, "scannerInfo", $[]));
-
-      if ( !success )
-	  ret = `cancel;
-
-      UI::CloseDialog();
-  }
-
-  UI::CloseDialog();
-
-  return ret;
-
+/* EOF */
+}
 /* EOF */
 }

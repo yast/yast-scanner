@@ -33,6 +33,7 @@
   textdomain "scanner";
 
   import "Label";
+import "Scanner";
     
   /**
    * ScannerSCSIDialog Layout	
@@ -102,7 +103,7 @@ can be obtained by issuing the command <b>/usr/sbin/hwinfo --storage_ctrl</b>
       // get a list of all SCSI devices
       list<map> scsi_devices = (list<map>) SCR::Read(.probe.scsi);
 
-      if ( lookup (user_settings, "test_mode", false ) )
+      if ( lookup (Scanner::user_settings, "test_mode", false ) )
       {
 	  scsi_devices =  [$["bus":"SCSI",
 			    "class_id":262,
@@ -185,7 +186,7 @@ can be obtained by issuing the command <b>/usr/sbin/hwinfo --storage_ctrl</b>
 	      }
 
 	      // Create the entry for the SCSI scanner
-	      CreateScannerEntry( device ); 
+	      Scanner::CreateScannerEntry( device ); 
 	  }
 	  
       } until ( ret == `next || ret == `back || ret == `abort || ret == `cancel );

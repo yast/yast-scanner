@@ -25,7 +25,7 @@
     textdomain "scanner";
 
     import "Label";
-  
+    import "Scanner";
 /**
  * ScannerInstallDialog
  */
@@ -121,7 +121,7 @@ offers more scan and image processing functionality.
 
 	// headline of the test dialog
 	string caption = _("Scanner Test");
-	map installed = GetCurrentScanner();
+	map installed = Scanner::GetCurrentScanner();
 
 	byteblock logo =  #[00000001];
 	logo = (byteblock) WFM::Read( .local.byte,
@@ -187,7 +187,7 @@ do the firmware upload. See 'man sane-gt68xx' or
 	    {
 		// Disable test button while scanning.
 		UI::ChangeWidget(`id(`test), `Enabled, false);
-		map scanner = GetCurrentScanner();
+		map scanner = Scanner::GetCurrentScanner();
 		string tmpdir = (string) SCR::Read(.target.tmpdir);
 		y2debug("TmpDir is tmpdir %1", tmpdir );
 
