@@ -11,6 +11,8 @@
  * Authors:
  *   Gabriele Strattner <gs@suse.de>
  *
+ * New English msg strings by Christian Steinruecken <cstein@suse.de>
+ *
  * $Id$
  *
  * 
@@ -66,9 +68,9 @@
 						    `id (`action),
 						    `VBox (
 							   // radio button1: install the scanner found by YaST2
-							   `RadioButton (`id (`install), `opt (`hstretch), _("&Installation of this scanner"), true),
+							   `RadioButton (`id (`install), `opt (`hstretch), _("&Install this scanner"), true),
 							   `VSpacing (1.0),
-							   // radio button2: select another scanner
+							   // radio button2: select a different scanner
 							   `RadioButton (`id (`different), `opt (`hstretch), _("&Select a different scanner"))
 							   )
 						    )
@@ -89,21 +91,22 @@
       
       // part 1 of helptext of dialog Scanner installation
       string help1    = UI(_("<p>All required scanner data
-are detected. Please check whether the vendor and the
-model are correct and go on with installation if the
-data are <i>OK</i>.</p>"));
+were detected. Please check whether the vendor and model
+settings are correct and proceed with the installation by
+clicking on <b>Next</b>.</p>"));
       
-      // part 2 of helptext of dialog scanner installation
-      string help2 = UI(_("<p>Click on <b>Next</b> to install
-the scanner. YaST2 will set reasonable values for all scanner options.</p>"));
-
-       // part 3 of helptext of dialog scanner installation
-      string help3 =  UI(_("<p>If the data are not correct or you want
-to install a different scanner please click on the appropriate button.
+       // part 2 of helptext of dialog scanner installation
+      string help2 =  UI(_("<p>In case the data are incorrect, you can select
+a different scanner.
 </p>"));
+
+      // part 3 of helptext of dialog scanner installation
+      string help3 = UI(_("<p>If you press <b>Next</b>, YaST2 will install the
+scanner and automatically set reasonable values for all options.</p>"));
+
       // part 4 of helptext of dialog scanner installation
-      string help4 =  UI(_("<p>You will have the possibilty to do
-a manual configuration.
+      string help4 =  UI(_("<p>If desired, you can also configure the options
+manually.
 </p>"));
       
       help = help1 + help2 + help3 + help4;
