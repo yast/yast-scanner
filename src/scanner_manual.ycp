@@ -124,8 +124,9 @@
       string help	= "";
       // help text1 for dialog Manual scanner selection
       // - don't translate SANE (Scanner Access Now Easy) - 
-      string help1    	= _("<p>This dialog shows all scanners which are supported
-by the SANE library (Scanner Access Now Easy).</p> ");
+      string help1    	= _("<p>This dialog shows all scanners that are supported
+by the SANE library (Scanner Access Now Easy).</p> 
+");
       // help text2 for dialog Manual scanner selection
       string help2    	= _("<p>If one of the vendor/model pairs matches
 your scanner, select the corresponding entries and proceed with the installation.</p>");
@@ -168,13 +169,13 @@ http://mostang.com/sane and http://sdb.suse.de.</p>");
         // show a warning popup which defaults to abort
         string wmesg =
 _("No scanner was found.
-Therefore a dummy USB scanner is used as fallback now.
+A dummy USB scanner is now used as a fallback.
 If you have an USB scanner (but no HP all-in-one device)
 it may work to select the model manually.
 Caution:
-If you select the wrong model (i.e. the wrong driver)
+If you select the wrong model (the wrong driver)
 you may damage your scanner or your system may crash.
-Therefore it is recommended to abort now.
+For this reason, it is recommended to abort now.
 ");
         if ( ! Popup::AnyQuestion( Label::WarningMsg(),
                                    wmesg,
