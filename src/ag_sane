@@ -9,7 +9,8 @@
 # $Id$
 #
 
-BEGIN { unshift @INC, "/usr/lib/YaST2/agents_non_y2/"; }
+BEGIN { unshift @INC, "/usr/lib/YaST2/agents_non_y2/" ;
+	unshift @INC, "/usr/lib/YaST2/servers_non_y2/" ; }
 
 use ycp;
 use strict;
@@ -43,7 +44,7 @@ while ( <STDIN> )
     {
 	my $vendor = findInHash( "vendor", \%scanner );
 	my $bus = findInHash( "bus", \%scanner  );
-	my $model = findInHash( "model", \%scanner );
+	my $model = findInHash( "device", \%scanner );
 
 	y2debug( "Bus is $bus" );
 	y2debug( "Model is $model" );

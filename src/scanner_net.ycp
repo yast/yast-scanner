@@ -21,6 +21,8 @@
 
 {
 
+  textdomain "scanner";
+  
   global define ScannerNetDialog_UI() ``{
 
       term layout = `Empty();

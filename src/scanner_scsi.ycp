@@ -21,6 +21,8 @@
 
 {
 
+  textdomain "scanner";
+  
   /**
    * ScannerSCSIDialog Layout	
    */

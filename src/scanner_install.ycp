@@ -19,29 +19,71 @@
  */
 
 {
-
+  textdomain "scanner";
+ 
+/**
+ * ScannerInstallDialog
+ */
   
   global define ScannerInstallDialog_UI() ``{
 
+      string summary = "";
 
+      string vendor = GetActua;
+
+    if ( neededspace == 0 && test_mode )
+	neededspace = 730;
+
+    summary = summaryAddSimpleSection( summary,
+				       
+				       // Headline in installation summary
+				       UI( _( "Software" ) ),
+
+				       // Info about amount of software that will be installed
+				       sformat( UI(_("%1 MB software will be installed.")), neededspace ) );
+
+
+
+    //
+    // User account
+    //
+
+    string username = lookup (user_settings, "loginname", "");
+    // show the user the final username used for login
+    if (size (username) > 0)
+    {
+	summary = summaryAddSimpleSection( summary,
+					   
+					   // Headline in installation summary
+					   UI( _( "User Account" ) ),
+					   
+					   // Info about user account that will be created
+					   sformat( UI( _( "User '%1' will be created." )), username ) );
+    }
+
+   term contents = `VBox(
+			  `VSpacing( 0.5 ),
+			  `RichText(`id(`summary), summary ),
+			  `VSpacing()
+			  // floppy button (if any) will be added later - see blow
+			  );
+   return contents;
   }
 
 /**
  * ScannerInstallDialog
  */
   global define ScannerInstallDialog()``{
-      string help    = UI(_("Scanner installation in progress"));
+      string help    = UI(_("<p>Scanner installation in progress</p>"));
 
      
       string caption = UI(_("Installing local scanner"));
       term contents  = ScannerInstallDialog_UI();
 
-      //UI(`SetWizardContentsButtons(caption,contents,help,BackButtonLabel(),NextButtonLabel()));
-      UI(`SetWizardContentsButtons(caption,contents,help,"Back", "Next"));
+      UI(`SetWizardContentsButtons(caption,contents,help,BackButtonLabel(),NextButtonLabel()));
      
       any ret = UI(`UserInput());
 
-      /* your code ... */
 
       return ret;
   }
