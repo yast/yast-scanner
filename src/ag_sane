@@ -175,7 +175,7 @@ while ( <STDIN> )
 	    
 	    if( defined $host )
 	    {
-		$ok = enalbeNetScan( $host );
+		$ok = enableNetScan( $host );
 	    }
 	    else
 	    {
@@ -211,6 +211,11 @@ while ( <STDIN> )
 	# valid are:
 	# vendor-bus-model
 	ycpReturnSkalarAsBoolean( $ok );
+    }
+    elsif( $action =~ /revertall/ )
+    {
+	y2debug( "Handling action revert all" );
+	revertAll();
     }
     elsif( $action =~ /scanimage/ )
     {
