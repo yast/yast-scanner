@@ -63,27 +63,30 @@ For more information, see our support database articles regarding scanner config
 for example:<br>
 http://portal.suse.com/sdb/en/2004/10/jsmeix_scanner-setup-92.html</p>") +
 // Summary dialog help 7/7:
-_("<p><b><big>Changing or Testing Existing Configurations:</big></b><br>
+_("<p><b><big>Changing or Testing Existing Configurations and Set Up Network Scanning:</big></b><br>
 If you press <b>Change</b>, an additional dialog opens
-in which to edit the configuration or test active scanners.</p>"),
+in which to edit the configuration, test active scanners, or set up network scanning.</p>"),
 
 "overview" :
-// Overview dialog help 1/4:
+// Overview dialog help 1/5:
 _("<p><b><big>Scanner Overview</big></b><br>
 Obtain an overview of the setup scanner backends (scanner drivers) and the associated scanners.
 Additionally change or test the configuration.</p>") +
-// Overview dialog help 2/4:
+// Overview dialog help 2/5:
 _("<p><b><big>Setting Up a New Scanner:</big></b><br>
 Press <b>Add</b> to configure a new scanner backend.</p>") +
-// Overview dialog help 3/4:
+// Overview dialog help 3/5:
 _("<p><b><big>Change the Configuration:</big></b><br>
 Select a scanner backend to modify.
 Then press <b>Edit</b> to select another backend
 or <b>Delete</b> to deactivate the backend.</p>") +
-// Overview dialog help 4/4:
+// Overview dialog help 4/5:
 _("<p><b><big>Testing the Configuration:</big></b><br>
 Select a scanner back-end and the associated scanner to test.
-Then press <b>Test</b>.</p>"),
+Then press <b>Test</b>.</p>") +
+// Overview dialog help 5/5:
+_("<p><b><big>Set Up Network Scanning:</big></b><br>
+To set up network scanning press <b>Network Scanning</b>.</p>"),
 
 "select_model" :
 // SelectModel dialog help 1/4:
@@ -143,7 +146,34 @@ but both services ('ptal' and 'hplip') exclude each other
 because both services cannot run at the same time.
 As a running service is required by the associated backend
 to access the device, the consequence is that only one
-backend (either 'hpoj' or 'hpaio') can be used.</p>")
+backend (either 'hpoj' or 'hpaio') can be used.</p>"),
+
+"configure_network_scanning" :
+// ConfigureNetworkScanning dialog help 1/4:
+_("<p><b><big>Network Scanning Configuration</big></b><br>
+Set up network scanning here.
+Enter the appropriate information or use <b>Propose</b>
+and press <b>Next</b> to set up the configuration.</p>") +
+// ConfigureNetworkScanning dialog help 2/4:
+_("<p><b><big>Server Configuration:</big></b><br>
+If you have local connected scanners and want to make them accessible via network,
+set up the 'saned' network scanning daemon so that your host becomes a server.
+Enter which client hosts are permitted to access the 'saned' on your server.
+If no client hosts are permitted, the 'saned' will not be activated.</p>") +
+// ConfigureNetworkScanning dialog help 3/4:
+_("<p><b><big>Client Configuration:</big></b><br>
+If you want to access scanners which are connected to other hosts in the network,
+set up the 'net' backend to access them via the 'saned' running on the other host.
+Each of those 'saned' must permit access.
+Enter which hosts should be used by the 'net' backend.
+If no hosts should be used, the 'net' backend will not be activated.</p>") +
+// ConfigureNetworkScanning dialog help 4/4:
+_("<p><b><big>Localhost Configuration:</big></b><br>
+By using the loopback network the above is useful even only on your local host.
+In this case server and client are the same machine 'localhost'.
+Some scanners (e.g. parallel port scanners) require root privileges.
+When you enter 'localhost' for both the 'saned' and the 'net' backend,
+you can access such a scanner even as normal user on your local host.</p>")
 
 ];
 
