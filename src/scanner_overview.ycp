@@ -85,22 +85,40 @@ made on your system will be reseted.
       UI(`SetWizardContentsButtons(caption,contents,help,
 				   BackButtonLabel(),
 				   NextButtonLabel()));
-
+      term finish_button = `PushButton(`id(`finish), FinishButtonLabel() );
+      UI(`ReplaceWizardNextButton( finish_button ));
+      
       any ret = nil;
 
       repeat {
 
+	  integer scanner_id = 0;
+	  
 	  ret = UI(`UserInput());
 
-	  if ( ret == `next || ret == `delete || ret == `edit )
+	  if ( ret == `finish || ret == `delete || ret == `edit )
 	  {
 	      // which scanner is selected?
-	       integer scanner_id = UI(`QueryWidget( `id(`scanner_table), `CurrentItem ));
+	       scanner_id = UI(`QueryWidget( `id(`scanner_table), `CurrentItem ));
 	       user_settings = add(user_settings, "scannerInWork", scanner_id);
 	       y2debug( "SELECTED SCANNER: %1", lookup(lookup(scanner_map, scanner_id, $[]), "device", "") );
 	  }
 
-      } until (ret == `next || ret == `abort || ret == `back);
+	  if ( ret == `delete )
+	  {
+	      string message = sformat( UI(_("Do you really want to remove the configuration
+of scanner %1, %2")),
+					lookup(lookup(scanner_map, scanner_id, $[]), "vendor", ""),
+					lookup(lookup(scanner_map, scanner_id, $[]), "device", "") );   
+	      UI(`AnyMessagePopup(WarningMsg(), message));
+	  }
+
+	  if ( ret == `edit )
+	  {
+	      
+	  }
+
+      } until (ret == `finish || ret == `abort || ret == `back || ret == `add );
 
       return ret;
 

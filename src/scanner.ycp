@@ -83,21 +83,52 @@
   if ( test_mode )
   {
       y2debug("Scanner TESTMODE");
-      map test_scanner =  $[1:$["bus":"USB",
-			       "class_id":268,
-			       "device":"Perfection 640",
-			       "device_id":196876,
-			       "new_scanner":test_new,
-			       "resource":$["baud":[$["speed":1500000]]],
-			       "rev":"0.01", "sub_class_id":0,
-			       "sub_device":"Perfection640  ",
-			       "sub_vendor":"EPSON",
-			       "unique_key":"PTVH.9Hr5DGWrbRF",
-			       "vendor":"Epson",
-			       "vendor_id":197816]];
-
+      list connected_scanner =  [$["bus":"USB",
+				  "class_id":268,
+				  "device":"Perfection 640",
+				  "device_id":196876,
+				  "new_scanner":test_new,
+				  "resource":$["baud":[$["speed":1500000]]],
+				  "rev":"0.01", "sub_class_id":0,
+				  "sub_device":"Perfection640  ",
+				  "sub_vendor":"EPSON",
+				  "unique_key":"PTVH.9Hr5DGWrbRF",
+				  "vendor":"Epson",
+				  "vendor_id":197816]];
+      list installed_scanner = [];
+      if ( test_new )
+      {
+	  installed_scanner = [$["bus":"USB",
+				   "class_id":268,
+				   "device":"Perfection 641",
+				   "device_id":196876,
+				   "resource":$["baud":[$["speed":1500000]]],
+				   "rev":"0.01", "sub_class_id":0,
+				   "sub_device":"Perfection640  ",
+				   "sub_vendor":"EPSON",
+				   "unique_key":"PTVH.9Hr5DGWrbRF",
+				   "vendor":"Epson",
+				   "vendor_id":197816
+				   ]];
+      }
+      else
+      {
+	  installed_scanner = [$["bus":"USB",
+				   "class_id":268,
+				   "device":"Perfection 640",
+				   "device_id":196876,
+				   "resource":$["baud":[$["speed":1500000]]],
+				   "rev":"0.01", "sub_class_id":0,
+				   "sub_device":"Perfection640  ",
+				   "sub_vendor":"EPSON",
+				   "unique_key":"PTVH.9Hr5DGWrbRF",
+				   "vendor":"Epson",
+				   "vendor_id":197816
+				   ]];
+      }  
       user_settings = add( user_settings, "test_mode", true ); 
-      user_settings = add( user_settings, "scannerInfo", test_scanner );
+      user_settings = add( user_settings, "test_connected", connected_scanner );
+      user_settings = add( user_settings, "test_installed", installed_scanner ); 
   }
   else
   {
@@ -123,7 +154,7 @@
 		  "scanner_new"		:   ``( ScannerNewDialog() ),
 		  "scanner_install"	:   ``( ScannerInstallDialog() ),
 		  "scanner_options"	:   ``( ScannerOptionsDialog() ),
-		  "scanner_notfound"	:   ``( ScannerNotFoundDialog() ),
+		  "scanner_manual"	:   ``( ScannerManualDialog() ),
 		  "abort"              	:   ``( AbortDialog() )
   ];
     
@@ -135,18 +166,23 @@
 					`cancel	  :   `cancel,
 					`overview  :   "scanner_overview",
 					`new	  :   "scanner_new",
-					`manual    :   "scanner_notfound",
+					`manual    :   "scanner_manual",
 					`next      :   "scanner_overview"],
 		   "scanner_overview":   $[
 					   `abort     :   "abort",
 					   `edit      :   "scanner_options",
-					   `new       :   "scanner_new",	// `new: scanner recognised
-					   `manual    :   "scanner_notfound",	// `manual: try manual
+					   `delete    :   "scannner_delete",
+					   `add       :   "scanner_manual",	// `manual: try manual
 					   `next	 :   `ok,
 					   `finish	  :   `ok ],	// finish
 		   "scanner_new" :   $[
 				       `abort     :   "abort",
 				       `next      :   "scanner_install"],
+		   "scanner_manual" : $[
+					`scsi	:	"scannner_scsi",
+					`usb   	:	"scanner_usb",
+					`net	:	"scanner_net",
+					`abort     :   "abort" ],
 		   "scanner_install":   $[
 					  `abort     :   "abort",
 					  `next      :   "scanner_overview"],
