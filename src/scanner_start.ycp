@@ -123,16 +123,16 @@ with YaST2 module 'Install/Remove Software'.\n")));
 	      // only one USB scanner is supported by scanner library SANE
 	      // and there are problems with hot plugin (changing device numbers)
 	      // -> only *one* USB scanner is allowed
-	      UI(`ErrorPopup("YaST2 has detected several USB scanners
+	      UI(`ErrorPopup(_("YaST2 has detected several USB scanners
 connected to your PC. At the moment it's only
 possible to support ONE single USB scanner.\n
 Please disconnect the unwanted USB scanner(s)
-and restart the scanner configuration."));
+and restart the scanner configuration.")));
 	      return `cancel;
 	    
 	  }
 	  // check SCSI ports
-	  // connected_scanner = add(connected_scanner, SCR(`Execute(.target.bash, "get_scsi_scanner" )));
+	  connected_scanner = add(connected_scanner, SCR(`Execute(.target.bash, "get_scsi_scanner" )));
 	  y2debug("Connected Scanner: %1", connected_scanner);
       }
       else
@@ -148,8 +148,8 @@ and restart the scanner configuration."));
     
       if ( !test_mode )
       {
-	
-	  //list installed_scanner = SCR(`Execute(.target.bash, "get_configured_scanner" ));
+	  list installed_scanner = SCR(`Execute(.target.bash, "get_configured_scanner" ));
+	  y2debug("Configured scanner: %1", installed_scanner );
       }
       else
       {

@@ -5,6 +5,7 @@
 clientsdir = $(YAST2DIR)/clients
 includedir = $(YAST2DIR)/include/scanner
 menudir = $(YAST2DIR)/menuentries
+agentdir = $(YAST2DIR)/servers_non_y2
 
 clients_DATA =		\
 	scanner.ycp
@@ -14,11 +15,12 @@ include_DATA =		\
 	scanner_overview.ycp	\
 	scanner_new.ycp		\
 	scanner_options.ycp	\
-	scanner_new_ui.ycp	\
 	scanner_install.ycp	\
 	scanner_manual.ycp	\
 	scanner_functions.ycp
 
 menu_DATA = menuentry_scanner.ycp
+agent_SCRIPTS = get_configured_scanner	\
+		get_scsi_scanner
 
-EXTRA_DIST = $(clients_DATA) $(include_DATA) $(menu_DATA)
+EXTRA_DIST = $(clients_DATA) $(include_DATA) $(menu_DATA) $(agent_SCRIPTS)
