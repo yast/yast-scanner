@@ -46,7 +46,6 @@
   global define ScannerStartDialog( )``{
 
       any ret = nil;
-      list scanner_info = lookup( user_settings, "scannerInfo", []);
       boolean test_mode = lookup( user_settings, "test_mode", false );
 
       
@@ -119,27 +118,72 @@ with YaST2 module 'Install/Remove Software'.\n")));
     
     UI(`ProgressMilestoneUI( 300, _("Checking for already installed scanner"), 2 ));
     sleep(100);
+
+    list installed_scanner = [];
     
     if ( !test_mode )
     {
-	//map installed_scanner = SCR(`Execute(.target.bash, "check_installed" ));
+	installed_scanner = [$["bus":"USB",
+				   "class_id":268,
+				   "device":"Perfection 640",
+				   "device_id":196876,
+				   "resource":$["baud":[$["speed":1500000]]],
+				   "rev":"0.01", "sub_class_id":0,
+				   "sub_device":"Perfection640  ",
+				   "sub_vendor":"EPSON",
+				   "unique_key":"PTVH.9Hr5DGWrbRF",
+				   "vendor":"Epson",
+				   "vendor_id":197816
+				   ]]; 
+	//list installed_scanner = SCR(`Execute(.target.bash, "check_installed" ));
     }
 
     UI(`ProgressMilestoneUI( 1000, _("Checking for already installed scanner"), 2 ));
     sleep(500);
 
     // find out which scanner is already installed/which is new
-    // TEST: add "new_scanner" true to scanner map and return new
 
-    map scan = select (connected_scanner, 0 );
-    scan = add(scan, "new_scanner", true );
-    scanner_info = add( scanner_info,  scan);
-    ret = `new;
-
+    map scanner_info = $[];
+    boolean installed = false;
+    boolean new = false;
     
-    if ( test_mode )
+    if ( !test_mode )
     {
-	if ( lookup( select(scanner_info, 0), "new_scanner", false) )
+	integer no = 1;
+	foreach( `scanner, connected_scanner, ``{
+	    foreach ( `scan, installed_scanner, ``{
+		if ( (lookup( scan, "vendor", "") == lookup( scanner, "vendor", "")) &&
+		     (lookup( scan, "device", "") == lookup( scanner, "device", ""))  	)
+		{
+		    // bei SCSI muss auch noch /dev/scsi/... gleich sein
+		    scanner_info = add(scanner_info, no, add( scan, "new_scanner", false));
+		    installed = true;
+		}
+		else
+		{
+		    scanner_info = add(scanner_info, no, add( scan, "new_scanner", true));
+		    new = true;
+		}
+	    });
+	    no = no+1;
+	});
+	if ( new )
+	{
+	    ret = `new;
+	}
+	else if ( installed )
+	{
+	    ret = `overview;
+	}
+	else
+	{
+	    ret = `manual;
+	}
+    }
+    else
+    {
+	scanner_info = lookup( user_settings, "scannerInfo", $[] );
+	if ( lookup( lookup(scanner_info, 1, $[]), "new_scanner", false) )
 	{
 	    ret = `new;
 	}
@@ -149,7 +193,7 @@ with YaST2 module 'Install/Remove Software'.\n")));
 	}
     }
 
-    if ( scanner_info != [] )
+    if ( scanner_info != $[] )
     {
 	// write scanner data to user_settings
 	user_settings = add( user_settings, "scannerInfo", scanner_info );

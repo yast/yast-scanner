@@ -19,25 +19,91 @@
  */
 
 {
+  global define ScannerOverviewDialog_UI( list table_contents ) ``{
 
+      term layout = `Empty();
+
+      layout = `VBox(
+		     `VSpacing( 0.2 ),
+		     `Table(`id(`scanner_table),`opt(`notify, `hvstretch), 
+			    `header( _("Vendor"), _("Model"), _("Bus") ),
+			    table_contents
+			    ),
+		     `VSpacing(2.0),
+		     `HBox(
+			   `HWeight(1, `PushButton(`id(`edit), _("&Edit"))),
+			   `HWeight(1, `PushButton(`id(`delete), _("&Delete"))),
+			   `HWeight(1, `PushButton(`id(`add), `opt(`default), _("&Add"))),
+			   `HStretch()
+			   ),
+		     `VSpacing( 0.2 )
+		     );
+
+      return layout;
+  };
 
   /**
    * OverviewDialog dialog
    */
    
   global define ScannerOverviewDialog()``{
-      string help    = UI(_("OverviewDialog help..."));
-      string caption = UI(_("OverviewDialog ..."));
-      term contents  = ScannerOverviewDialog_UI();
+      map  scanner_map 	= lookup( user_settings, "scannerInfo", $[] );
+      list scanner_table = [];
+      
+      string help = "";
+      
+      string help1    = UI(_("<p>YaST2 has found at least one scanner
+which is already configured.
+Click on button <b>Edit</b> if you want to change a scanner
+configuration.</p>"
+			     ));
+      string help2 = UI(_("<p>
+You also can uninstall a scanner, select the list entry and
+choose <b>Delete</b>. If you want to install a new scanner
+click on <b>Add</b> button. 
+</p>"));
+      string help3 = UI(_("<p>
+Press button <b>Finish</b> to save all scanner settings
+and exit the scanner configuration workflow.
+If you leave this dialog with <b>Abort</b> all changes
+made on your system will be reseted.
+</p>"));
+      help = help1 + help2 + help3;
+      
+      foreach (`key, `value, scanner_map, ``{
+	  scanner_table = add(scanner_table,
+			      `item(`id(key),
+				    lookup(value, "vendor", ""),
+				    lookup(value, "device", ""),
+				    lookup(value, "bus", "")));
+      });
+	       
+      string caption = UI(_("Scanner Overview"));
 
-      //UI(`SetWizardContentsButtons(caption,contents,help,BackButtonLabel()),NextButtonLabel());
-      UI(`SetWizardContentsButtons(caption,contents,help,"Back","Next"));
+      term contents = ScannerOverviewDialog_UI( scanner_table );
 
-      any ret = UI(`UserInput());
+      UI(`SetWizardContentsButtons(caption,contents,help,
+				   BackButtonLabel(),
+				   NextButtonLabel()));
 
-      /* your code ... */
+      any ret = nil;
+
+      repeat {
+
+	  ret = UI(`UserInput());
+
+	  if ( ret == `next || ret == `delete || ret == `edit )
+	  {
+	      // which scanner is selected?
+	       integer scanner_id = UI(`QueryWidget( `id(`scanner_table), `CurrentItem ));
+	       user_settings = add(user_settings, "scannerInWork", scanner_id);
+	       y2debug( "SELECTED SCANNER: %1", lookup(lookup(scanner_map, scanner_id, $[]), "device", "") );
+	  }
+
+      } until (ret == `next || ret == `abort || ret == `back);
 
       return ret;
+
   }
 
 }

@@ -21,19 +21,22 @@
 
 {
 
+  global define ScannerNotFoundDialog_UI()``{
 
+
+  }
 /**
  * ScannerStartDialog
  */
   global define ScannerNotFoundDialog()``{
-      string help    = UI(_("BeginDialog help..."));
+      string help    = UI(_("YaST2 was not able to detect your new
+scanner automatically."));
 
      
       string caption = UI(_("Scanner not found"));
       term contents  = ScannerNotFoundDialog_UI();
 
-      //UI(`SetWizardContentsButtons(caption,contents,help,BackButtonLabel(),NextButtonLabel()));
-      UI(`SetWizardContentsButtons(caption,contents,help,"Back", "Next"));
+      UI(`SetWizardContentsButtons(caption,contents,help,BackButtonLabel(),NextButtonLabel()));
      
       any ret = UI(`UserInput());
 
