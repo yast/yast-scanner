@@ -2,6 +2,7 @@
 Thu Mar  6 13:57:17 CET 2003 - gs@suse.de
 
 - bugfix in scannerDB.pm (correct initialization of $oriline) 
+  bug #24833
 
 -------------------------------------------------------------------
 Mon Mar  3 14:52:03 CET 2003 - gs@suse.de
