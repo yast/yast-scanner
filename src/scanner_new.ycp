@@ -55,7 +55,7 @@
 				  `HWeight(1, `Empty())
 				  ),
 			   `VSpacing(0.5),
-			   `Left(`Label (`opt (`hstretch), _("uses the scanner driver"))),
+			   `Left(`Label (`opt (`hstretch), _("uses the SANE driver"))),
 			   `VSpacing(0.3),
 			   `HBox (`HSpacing(2.5),
 				  `HWeight(5, `Label (`opt (`outputField, `hstretch), driver)),
