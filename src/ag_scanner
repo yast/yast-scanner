@@ -3,7 +3,7 @@
 # ag_scanner
 # This script is part of the YaST2 Scanner installation module
 # Copyright SuSE Gmbh - 2001
-# 
+#
 # Author: Klaas Freitag <freitag@suse.de>
 #         Gabi Strattner <gs@suse.de>
 #
@@ -11,8 +11,8 @@
 #
 
 # ag_scanner provides two different functions, selected through the
-# ycp 'path', which is mapped to the perl var $action in this script. 
-# 
+# ycp 'path', which is mapped to the perl var $action in this script.
+#
 # The first action, 'scsi', queries the system for know SCSI scanners.
 # This is a kind of hardware detection, the devices  need not to be configured
 #  in SANE but are also found if they are.
@@ -40,7 +40,7 @@ while ( <STDIN> )
 
     if( /result/i )
     {
-	y2debug("got result -> say goodby!" );
+	y2debug("got result -> say goodbye!");
 	exit(0);
     }
 
@@ -65,19 +65,19 @@ while ( <STDIN> )
 		$class   =~ s/\"//g;
 		$vendor  =~ s/\"//g;
 		$model   =~ s/\"//g;
-		
+
 		y2debug( "Found $class $vendor $model on $devfile" );
 
                 # Check if there are links and skip them
-		if( -l $devfile ) 
+		if( -l $devfile )
 		{
 		    y2debug( "$devfile is a link -> skipping !" );
 		    next;
 		}
-	
-		push ( @scanners , 
-		{ 
-		    bus => "SCSI", 
+
+		push ( @scanners ,
+		{
+		    bus => "SCSI",
 		    class_id => "",
 		    device => $model,
 		    device_id => "",
