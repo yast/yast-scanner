@@ -58,6 +58,7 @@ make install
 @YAST2DIR@/servers_non_y2/scannerDB.pm
 @YAST2DIR@/scrconf/scanner.scr
 @YAST2DIR@/scrconf/sane.scr
+@YAST2DIR@/scrconf/cfg_scanner.scr
 
 %dir @DOCDIR@
 @DOCDIR@/*

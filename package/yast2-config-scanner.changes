@@ -1,4 +1,10 @@
 -------------------------------------------------------------------
+Tue Feb  5 11:07:17 CET 2002 - gs@suse.de
+
+- bugfix for scanner agent, internal changes in ycp modules,
+- read /etc/sysconfig/scanner
+
+-------------------------------------------------------------------
 Mon Feb  4 15:20:46 CET 2002 - freitag@suse.de
 
 - removed bug that skips the bus in the device file line in the 
