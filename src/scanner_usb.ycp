@@ -43,14 +43,18 @@ Please enter required scanner data.")),
  */
   global define ScannerUSBDialog()``{
       string help = "";
-      string help1    = UI(_("<p>YaST2 could not load the scanner module
-for your USB scanner.</p> "));
-      string help2    = UI(_("<p>Please enter the Product-ID,
+
+      // help part 1 of dialog manual USB Scanner configuration
+      string help1    = UI(_("<p>Please enter the Product-ID,
 the Vendor-ID and the USB module name (usually named
-'scanner') and try to load the module.</p>"));
+'scanner') and press button <b>Load</b>.</p>"));
+       // help part 2 of dialog manual USB Scanner configuration
+      string help2    = UI(_("<p>YaST2 will try to load the
+kernel module for USB support.</p> "));
+      // help part 3 of dialog manual USB Scanner configuration
       string help3    = UI(_("<p>If the loading of the scanner
 module was successful you can go <b>Next</b> to dialog
-\"Select scanner driver\".</p>"));
+\"Manual scanner selection\".</p>"));
 
       help = help1 + help2 + help3;
       
@@ -61,16 +65,20 @@ module was successful you can go <b>Next</b> to dialog
 
       any ret = nil;
 
-      ret = UI(`UserInput());
+      repeat {
+	  ret = UI(`UserInput());
 
-      if ( ret == `next )
-      {
-	  return ( UI(`QueryWidget(`id(`scanner), `CurrentButton)) );
-      }
-      else
-      {
-	  return ret;
-      }
+	  if ( ret == `load )
+	  {
+	      // get data and try to load the module
+	      // if ( !load_ok )
+	      //   ret = `abort;
+	  }
+
+      } until ( ret == `next || ret == `back || ret == `abort );
+
+      return ret;
+      
   }
 
 }

@@ -25,7 +25,7 @@
 /**
  * ScannerInstallDialog
  */
-  
+
   global define ScannerInstallDialog_UI( map installed_scanner ) ``{
       string scanner = lookup( installed_scanner, "vendor", "" ) + " - " + lookup(installed_scanner, "device", "" );
 

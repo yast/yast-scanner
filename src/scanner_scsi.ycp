@@ -27,39 +27,22 @@
    * ScannerSCSIDialog Layout	
    */
   
-  global define ScannerSCSIDialog_UI( map new_scanner )``{
+  global define ScannerSCSIDialog_UI( )``{
 
-      string scanner_descr = "default";
-
-      if ( new_scanner != $[] )
-      {
-	  scanner_descr = lookup( new_scanner, "vendor", "" );
-	  scanner_descr = scanner_descr + "\n" + lookup( new_scanner, "device" );
-      }
-      
       term layout = `VBox (
-			   // the user can choose the installation mode for the new scanner
-			   `Left(`Label (`opt (`hstretch), _("Please choose installation mode for scanner\n"))),
-			   `HBox (`HSpacing(2.5),
-				  `HWeight(5, `Label (`opt (`outputField, `hstretch), scanner_descr)),
+			   `VSpacing (1),
+			   // the user has to enter the SCSI device, e.g. /dev/sg0
+			   `Left(`Label (`opt (`hstretch), _("It is necessary to know the device file
+before going on with installation.\n
+Please enter the device, e.g. /dev/sg0.\n"))),
+			   `HBox (
+				  `HWeight(4, `TextEntry(`id(`device),
+					     // Input field label for device file
+					     _("&SCSI device file"),
+							 "" )),
 				  `HWeight(1, `Empty())
 				  ),
-			   `VSpacing (1),
-			   `Left(`RadioButtonGroup (
-						    `id (`action),
-						    `VBox (
-							   `RadioButton (`id (0), `opt (`hstretch), _("Standard installation (recommended)"), true),
-							   `VSpacing (0.3),
-							   `RadioButton (`id (1), `opt (`hstretch), _("Custom configuration (Expert mode)")),
-							   `VSpacing (0.3),
-							   `RadioButton (`id (2), `opt (`hstretch), _("Configure a network scanner and use the
-PC as a scanner server (Expert mode)")),
-							   `VSpacing (1.0),
-							   `RadioButton (`id (2), `opt (`hstretch), _("Scanner data aren't correct"))
-							   )
-						    )
-				 ),
-			   `VSpacing (3.0)
+			   `VSpacing (1)
 			   );
 
 
@@ -74,38 +57,37 @@ PC as a scanner server (Expert mode)")),
   global define ScannerSCSIDialog( )``{
 
       string help = "";
-      map scanner_map = lookup( user_settings, "scannerInfo", $[] );
-      map new_scanner = $[];
       
-      foreach( `scan_id, `scanner, scanner_map, ``{
-	  if ( lookup( scanner, "new_scanner", false ) )
-	  {
-	      user_settings = add( user_settings, "scannerInWork", scan_id ); 
-	      new_scanner = lookup(scanner_map, scan_id, $[]);
-	      y2debug( "New scanner: %1", lookup(new_scanner, "device", "") );
-	  }
-      });
-      
-      // part 1 of helptext of dialog New scanner found
-      string help1    = UI(_("<p>YaST2 has detected a new scanner.
-Please check the data shown beneath and choose
-the installation mode.</p>"));
-      // part 2 of helptext of dialog New scanner found
-      string help2 = UI(_("<p>It is recommended to do a <b>Standard
-installation</b>. YaST2 will set reasonable values for the
-scanner options.</p>"));
+      // part 1 of helptext of dialog SCSI scanner configuration
+      string help1    = UI(_("<p>Please enter the device file
+used by your SCSI scanner (e.g. /dev/sg0 ).
+</p>"));
+      // part 2 of helptext of dialog SCSI scanner configuration
+      string help2 = UI(_("<p>You can get informations about all
+your SCSI devices with command <i>hwinfo --scsi</i> (call it
+as user 'root').
+Search the output for your scanner to get the
+<i>Device File:</i>.</p>"));
 
       help = help1 + help2;
       
-      string caption = UI(_("New Scanner found"));
+      string caption = UI(_("Manual SCSI Scanner configuration"));
 
-      term contents  = ScannerSCSIDialog_UI( new_scanner );
+      term contents  = ScannerSCSIDialog_UI( );
 
       UI(`SetWizardContentsButtons(caption,contents,help,BackButtonLabel(),NextButtonLabel()));
      
       any ret = UI(`UserInput());
 
+      string devicefile = UI(`QueryWidget(`id(`device), `Value ));
 
+      // TODO: create the entry for CurrentScanner
+
+      map scanner_info = lookup( user_settings, "scannerInfo", $[] );
+      integer key = size(scanner_info);
+      
+      scanner_info = add( scanner_info, key, $["bus":"SCSI", "devicefile":devicefile] );
+      
       return ret;
       
   };

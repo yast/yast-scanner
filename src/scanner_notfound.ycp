@@ -100,29 +100,37 @@ is supported.</p>"));
 	      // if the user clicked on USB -> check for already connected USB scanner
 	      if ( type == `usb )
 	      {
-		  if ( CheckUSBScanner() )
+                  // try again to detect a USB scanner ( maybe it's switched on now)
+		  list connected_scanner = SCR(`Read(.probe.scanner));
+
+		  if ( size (connected_scanner) > 1 )
 		  {
 		      // text of a warning popup
-		      UI(`WarningPopup(_("Only one USB scanner is supported.
-Please disconnect the unwanted USB scanner,
-go back to the Overview dialog and
-delete the unused scanner configuration.")));
-		      go_on = true;
+		      UI(`WarningPopup(_("YaST2 has detected several USB scanner -
+but only ONE is supported.
+Please disconnect the unwanted USB scanner(s)
+and restart the Scanner configuration.")));
+		      go_on = false;
+		      ret = `abort;
+		  }
+		  else if ( size (connected_scanner) == 1 )
+		  {
+		      // start again with scanner start dialog
+		      // TODO ? sollte immer funktionieren ?
+		      //    -> scanner jetzt eingesteckt/aber bereits installiert -> overview
+		      //	-> scanner neu, scanner nicht unterstützt -> manual
+		      //	-> scanner neu und unterstützt -> new
+		      ret = `start;
 		  }
 		  else
 		  {
-		      // try again to detect a USB scanner ( maybe it's switched on now)
-		      list connected_scanner = SCR(`Read(.probe.scanner));
-		      if ( connected_scanner != [] )
-		      {
-			  // scanner_start 
-			  ret = `start;
-		      }
-		      else
-		      {
-			  // go to manual USB scanner configuration
-			  ret = `usb;
-		      }
+		      // go to manual USB scanner configuration
+		      // TODO: make sure module scanner is not yet loaded -> lsmod
+		      //       ONLY go to dialog load USB module if NOT yet loaded
+		      // if ( usb_notloaded ) 
+		      ret = `usb;
+		      // else
+		      // ret = `manual;
 		  }
 	      }
 	      else

@@ -35,9 +35,6 @@ while ( <STDIN> )
     }
 
     my $action = ycpGetPath();
-    my $vendor = findInHash( "vendor", \%scanner );
-    my $bus    = findInHash( "bus", \%scanner  );
-    my $model  = findInHash( "device", \%scanner );
 
     y2debug( " vvv starting in ag_sane with action <$action> vvv" );
 
@@ -49,6 +46,9 @@ while ( <STDIN> )
 	y2debug( "Argument seems not to be a Map from ycp" );
     }
     my %scanner = ycpGetArgMap();
+    my $vendor = findInHash( "vendor", \%scanner );
+    my $bus    = findInHash( "bus", \%scanner  );
+    my $model  = findInHash( "device", \%scanner );
 
     if( $action =~ /driver\s*$/i )
     {
