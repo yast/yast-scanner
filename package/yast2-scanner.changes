@@ -1,4 +1,10 @@
 -------------------------------------------------------------------
+Wed Aug  6 11:29:56 CEST 2003 - gs@suse.de
+
+- V 2.8.4
+- identify HP all-in-one in hwinfo scanner list
+
+-------------------------------------------------------------------
 Sat Aug 02 20:41:22 CEST 2003 - arvin@suse.de
 
 - added desktop file
