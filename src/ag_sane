@@ -283,10 +283,11 @@ while ( <STDIN> )
 	my $resFile = "";
 	my $devicefile = findInHash( "dev_name", \%scanner );
 	my $driver = findInHash( "driver", \%scanner );
-	
+	my $tmpdir = findInHash( "tmpdir", \%scanner );
+	y2debug( "Scanning to temp-dir: $tmpdir" );
 	if( !defined $driver || $driver eq "" || !defined $devicefile || $devicefile eq "" )
 	{
-	    y2debug( "Driver is not defined - can not scan !" );
+	    y2debug( "Driver or devicefile is not defined - can not scan !" );
 	}
 	else
 	{
@@ -304,7 +305,7 @@ while ( <STDIN> )
 	    }
 	    
 	    if( defined $devstring ) {
-		$resFile = acquireTestImage( $devstring );
+		$resFile = acquireTestImage( $devstring, $tmpdir );
 		
 		y2debug( "Acquired image to result-file <$resFile>" );
 	    }
