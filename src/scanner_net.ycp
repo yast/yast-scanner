@@ -79,10 +79,19 @@ can be found in the SuSE support database.</p>") );
 
 	      if ( net_scanner != [] )
 	      {
+		  string devices = "";
+		  string vendors = "";
+		  
+		  foreach( `one_scanner, net_scanner, ``{
+		      devices = devices + " " + lookup( one_scanner, "device", "" );
+		      vendors = vendors + " " + lookup( one_scanner, "vendor", "" );
+		  });
 		  y2milestone("Net Scanner: %1", net_scanner );
-	      
+		  y2debug( "Net Scanner device: %1", devices );
+		  
 		  // Create the entry for the Network scanner
-		  CreateScannerEntry( $["bus":"Net", "host":host, "device":net_scanner] );
+		  CreateScannerEntry( $["bus":"Net", "host":host, "device":devices,
+				       "scanner_status":"installed", "vendor":vendors] );
 	      }
 	      else
 	      {
