@@ -24,6 +24,6 @@ include_DATA =		\
 	scanner_functions.ycp
 
 menu_DATA = menuentry_scanner.ycp
-agent_SCRIPTS = ag_scanner
+agent_SCRIPTS = ag_scanner ag_sane scannerDB.pm
 
 EXTRA_DIST = $(clients_DATA) $(include_DATA) $(menu_DATA) $(agent_SCRIPTS)
