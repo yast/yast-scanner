@@ -11,6 +11,8 @@
  * Authors:
  *   Gabriele Strattner <gs@suse.de>
  *
+ * String corrections by Christian Steinruecken <cstein@suse.de>
+ *
  * $Id$
  *
  * Main file for scanner configuration. Uses all other files.
@@ -20,7 +22,7 @@
 {
 
 /***
- * <h3>Configuration of the scanner</h3>
+ * <h3>Scanner Cconfiguration</h3>
  */
 
   textdomain "scanner";
@@ -293,7 +295,7 @@
   if ( ret == `ok )
   {
       /* info text shown at the end of module */
-      string message = UI(_("Please wait while updating configuration files."));
+      string message = UI(_("Please wait while the configuration files are updated..."));
       UI(`OpenDialog(`opt(`decorated), `Label(message)));
 
       any ret = ScannerWrite(settings);
@@ -305,6 +307,5 @@
   }
 
 /* Finish */
-  y2debug("Scanner module finished");
-
+  y2debug("Scanner module finished.");
 }
