@@ -1,6 +1,6 @@
 /**
  * File:
- *   scanner_manual.ycp
+ *   scanner_usb.ycp
  *
  * Module:
  *   Configuration of scanner
@@ -180,6 +180,10 @@ successfully you can proceed to the
 	  
 	  ret = UI(`UserInput());
 
+	  if ( ret == `next || ret == `abort || ret == `back )
+	  {
+	      go_on = false;
+	  }
 	  if ( ret == `load || ret == `next )
 	  {
 	      // try to load the USB module
@@ -201,7 +205,7 @@ successfully you can proceed to the
 		  // SCR(`Execute(.target.bash, modprobe ));
 		  boolean success = SCR::Execute(.target.modprobe, module_name, options );
 
-		  y2milestone( "Loading USB: %1 %2, exit status: %3", module_name, options, success );  
+		  y2milestone( "Loading USB: modprobe %1 %2, exit status: %3", module_name, options, success );  
 
 		  if ( !success )
 		  {
@@ -217,11 +221,17 @@ exit the scanner configuration?"));
 			  ret = `cancel;
 		      }
 		  }
-		  else if ( ret == `load )
+		  else
 		  {
-		      // text of a notify popup: the loading was successful
-		      UI(`NotifyPopup(_("The USB module is loaded successfully.
-You may proceed by clicking Next."))); 
+		      // USB module is loaded successfully
+		      // set a flag to add the options to /etc/modules.conf if user Finish the installation
+		      
+		      if ( ret == `load )
+		      {
+			  // text of a notify popup: the loading was successful
+			  UI(`NotifyPopup(_("The USB module is loaded successfully.
+You may proceed by clicking Next.")));
+		      }
 		  }  
 	      }
 	  }
