@@ -73,13 +73,10 @@
 	      }
 	      if( bus == "SCSI" )
 	      {
-		  if ( Runlevel::ServiceStatus( "sane" ) != 0 )
-		  {
-		      // set the link in /etc/init.d/rc3.d to start the script /usr/sbin/rcsane
-		      // (which sets the permissions 666 on /dev/sg0 )
-		      boolean success = Runlevel::ServiceAdjust( "sane", "enable" );
-		      y2milestone( "ServiceAdjust( sane, enable ) returns: %1", success );
-		  }
+		  // set the link in /etc/init.d/rc3.d to start the script /usr/sbin/rcsane
+		  // (which sets and resets the permissions 666 on /dev/sg0 )
+		  boolean success = Runlevel::ServiceAdjust( "sane", "enable" );
+		  y2milestone( "ServiceAdjust( sane, enable ) returns: %1", success );
 	      }
 	  }
 
