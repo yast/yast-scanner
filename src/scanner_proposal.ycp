@@ -1,0 +1,88 @@
+/**
+ * File:	clients/scanner_proposal.ycp
+ * Package:	Configuration of scanner
+ * Summary:	Proposal function dispatcher.
+ * Authors:	Jiri Srain <jiri.srain@suse.cz>
+ *
+ * $Id$
+ *
+ * Proposal function dispatcher for scanner configuration.
+ * See source/installation/proposal/proposal-API.txt
+ */
+
+{
+
+textdomain "scanner";
+
+import "Scanner";
+import "Progress";
+
+/* The main () */
+y2milestone("----------------------------------------");
+y2milestone("Scanner proposal started");
+
+string func = (string) WFM::Args(0);
+map param = (map) WFM::Args(1);
+map ret = $[];
+
+/* create a textual proposal */
+if(func == "MakeProposal") {
+    string proposal = "";
+    string warning = nil;
+    symbol warning_level = nil;
+    boolean force_reset = param["force_reset"]:false;
+
+    if(force_reset || !Scanner::proposal_valid) {
+        Scanner::proposal_valid = true;
+	Progress::off();
+	Scanner::Read();
+    }
+    list sum = Scanner::Summary();
+    proposal = sum[0]:"";
+    Progress::on();
+
+    ret = $[
+	"preformatted_proposal" : proposal,
+	"warning_level" : warning_level,
+	"warning" : warning,
+    ];
+}
+/* run the module */
+else if(func == "AskUser") {
+    map stored = Scanner::Export();
+    symbol seq = ScannerAutoSequence ();
+    if(seq != `next)
+	Scanner::Import(stored);
+    y2debug("stored=%1",stored);
+    y2debug("seq=%1",seq);
+    ret = $[
+	"workflow_sequence" : seq
+    ];
+}
+/* create titles */
+else if(func == "Description") {
+    ret = $[
+	/* Rich text title for Scanner in proposals */
+	"rich_text_title" : _("Scanner"),
+	/* Menu title for Scanner in proposals */
+	"menu_title" : _("&Scanner"),
+	"id" : "scanner",
+    ];
+}
+/* write the proposal */
+else if(func == "Write") {
+    Scanner::Write();
+}
+/* unknown function */
+else {
+    y2error("unknown function: %1", func);
+}
+
+/* Finish */
+y2debug("ret=%1",ret);
+y2milestone("Scanner proposal finished");
+y2milestone("----------------------------------------");
+return ret;
+
+/* EOF */
+}
