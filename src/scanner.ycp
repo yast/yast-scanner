@@ -38,6 +38,10 @@
   include "scanner/scanner_install.ycp";
   include "scanner/scanner_manual.ycp";
   include "scanner/scanner_options.ycp";
+  include "scanner/scanner_scsi.ycp";
+  include "scanner/scanner_usb.ycp";
+  include "scanner/scanner_net.ycp";
+  include "scanner/scanner_driver.ycp";
 
   boolean test_mode = false;
 
@@ -59,7 +63,7 @@
   integer arg_n = size(Args()) - 1;
 
   boolean test_mode = false;
-  boolean test_new = false;
+  symbol test_status = `installed;
   
   list arg_list = [];
   
@@ -71,7 +75,12 @@
       else if (Args(arg_n) == .test_new)
       {
 	   test_mode = true;
-	   test_new = true;
+	   test_status = `supported;
+      }
+      else if (Args(arg_n) == .test_driver)
+      {
+	   test_mode = true;
+	   test_status = `detected;
       }
       else
       {
@@ -87,7 +96,8 @@
 				  "class_id":268,
 				  "device":"Perfection 640",
 				  "device_id":196876,
-				  "new_scanner":test_new,
+				  "scanner_status":test_status,
+				  "scanner_driver":"test123",
 				  "resource":$["baud":[$["speed":1500000]]],
 				  "rev":"0.01", "sub_class_id":0,
 				  "sub_device":"Perfection640  ",
@@ -96,7 +106,7 @@
 				  "vendor":"Epson",
 				  "vendor_id":197816]];
       list installed_scanner = [];
-      if ( test_new )
+      if ( test_status == `supported || test_status == `detected )
       {
 	  installed_scanner = [$["bus":"USB",
 				   "class_id":268,
@@ -155,6 +165,10 @@
 		  "scanner_install"	:   ``( ScannerInstallDialog() ),
 		  "scanner_options"	:   ``( ScannerOptionsDialog() ),
 		  "scanner_manual"	:   ``( ScannerManualDialog() ),
+		  "scanner_scsi"	:   ``( ScannerSCSIDialog() ),
+		  "scanner_usb"		:   ``( ScannerUSBDialog() ),
+		  "scanner_net"		:   ``( ScannerNetDialog() ),
+		  "scanner_driver"	:   ``( ScannerDriverDialog() ),
 		  "abort"              	:   ``( AbortDialog() )
   ];
     
@@ -167,6 +181,7 @@
 					`overview  :   "scanner_overview",
 					`new	  :   "scanner_new",
 					`manual    :   "scanner_manual",
+					`driver	  :	"scanner_driver",
 					`next      :   "scanner_overview"],
 		   "scanner_overview":   $[
 					   `abort     :   "abort",
@@ -182,6 +197,7 @@
 					`scsi	:	"scannner_scsi",
 					`usb   	:	"scanner_usb",
 					`net	:	"scanner_net",
+					`start  : 	"scanner_start",
 					`abort     :   "abort" ],
 		   "scanner_install":   $[
 					  `abort     :   "abort",

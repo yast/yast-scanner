@@ -32,7 +32,8 @@
       if ( new_scanner != $[] )
       {
 	  scanner_descr = lookup( new_scanner, "vendor", "" );
-	  scanner_descr = scanner_descr + "\n" + lookup( new_scanner, "device" );
+	  scanner_descr = scanner_descr + "\n" + lookup( new_scanner, "device", "" );
+	  scanner_descr = scanner_descr + "\n" + lookup( new_scanner, "scanner_driver", "" );
       }
       
       term layout = `VBox (
@@ -72,17 +73,7 @@ PC as a scanner server (Expert mode)")),
   global define ScannerNewDialog( )``{
 
       string help = "";
-      map scanner_map = lookup( user_settings, "scannerInfo", $[] );
       map new_scanner = $[];
-      
-      foreach( `scan_id, `scanner, scanner_map, ``{
-	  if ( lookup( scanner, "new_scanner", false ) )
-	  {
-	      user_settings = add( user_settings, "scannerInWork", scan_id ); 
-	      new_scanner = lookup(scanner_map, scan_id, $[]);
-	      y2debug( "New scanner: %1", lookup(new_scanner, "device", "") );
-	  }
-      });
       
       // part 1 of helptext of dialog New scanner found
       string help1    = UI(_("<p>YaST2 has detected a new scanner.
@@ -90,14 +81,17 @@ Please check the data shown beneath and choose
 the installation mode.</p>"));
       // part 2 of helptext of dialog New scanner found
       string help2 = UI(_("<p>It is recommended to do a <b>Standard
-installation</b>. YaST2 will set reasonable values for the
+installation</b>. YaST2 will set reasonable values for all
 scanner options.</p>"));
 
       help = help1 + help2;
       
       string caption = UI(_("New Scanner found"));
 
-      term contents  = ScannerNewDialog_UI( new_scanner );
+      y2debug( "New scanner: %1, %2", GetActualScannerValue( "vendor" ),
+	       GetActualScannerValue( "device" ));
+
+      term contents  = ScannerNewDialog_UI( GetActualScanner() );
 
       UI(`SetWizardContentsButtons(caption,contents,help,BackButtonLabel(),NextButtonLabel()));
      

@@ -20,15 +20,20 @@
 
 {
 
+  
+  global define ScannerInstallDialog_UI() ``{
+
+
+  }
 
 /**
- * ScannerStartDialog
+ * ScannerInstallDialog
  */
   global define ScannerInstallDialog()``{
-      string help    = UI(_("BeginDialog help..."));
+      string help    = UI(_("Scanner installation in progress"));
 
      
-      string caption = UI(_("Initialising scanner module..."));
+      string caption = UI(_("Installing local scanner"));
       term contents  = ScannerInstallDialog_UI();
 
       //UI(`SetWizardContentsButtons(caption,contents,help,BackButtonLabel(),NextButtonLabel()));
