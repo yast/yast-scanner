@@ -1,4 +1,12 @@
 -------------------------------------------------------------------
+Mon Aug 20 19:31:00 CEST 2001 - gs@suse.de
+
+- installation works (except setting the permissions of /dev/sg_
+  or /dev/usbscanner to 666),
+  manual installation needs some more work,
+  delete an scanner configuration does not work
+
+-------------------------------------------------------------------
 Mon Aug  6 12:23:52 CEST 2001 - gs@suse.de
 
 - workflow dialogs completed - but not yet with full functionality
