@@ -59,26 +59,87 @@ a manual configuration is necessary.")),
       string help1    = UI(_("<p>Please check first whether your scanner is
 connected correctly and is switched on.</p> "));
       string help2    = UI(_("<p>In case of USB you can connect and switch
-on the scanner and go <i>Back</i> to scanner detectection.
-<b>Attention!</b> Do NOT connect or disconnect a SCSI scanner
-on running system - but shutdown and reboot. 
-</p>")
-			   );
+on the scanner before going on.<br>
+<i><b>Attention!</b></i> Do NOT connect or disconnect a SCSI scanner
+on running system - but <b>Abort</b> scanner installation, shutdown
+and reboot. 
+</p>"));
       string help3    = UI(_("<p>YaST2 provides assistence for manual
 USB and SCSI scanner configuration. You can also
 configure a network scan station. Select the correct button
-and click on <i>Next</i>.</p>"));
+and click on <b>Next</b>.</p>"));
+       string help4    = UI(_("<p>Please note: only <i>one</i> USB scanner
+is supported.</p>"));
 
-      help = help1 + help2 + help3;
+      help = help1 + help2 + help3 + help4;
       
       string caption = UI(_("Manual scanner configuration"));
       term contents  = ScannerManualDialog_UI();
 
       UI(`SetWizardContentsButtons(caption,contents,help,BackButtonLabel(),NextButtonLabel()));
 
-      any ret = UI(`UserInput());
+      any ret = nil;
+      boolean go_on = true;
 
-      /* your code ... */
+      while ( go_on )
+      {
+	  go_on = true;
+	  
+	  ret = UI(`UserInput());
+
+	  if ( ret == `next || ret == `abort || ret == `back )
+	  {
+	      go_on = false;
+	  }
+	  
+	  map scanner_map = lookup( user_settings, "scannerInfo", $[] );
+	  boolean already_usb = false;
+      
+	  if ( ret == `next )
+	  {
+	      symbol type = UI(`QueryWidget(`id(`scanner), `CurrentButton));
+	      y2debug("TYPE: %1", type );
+	      // if the user clicked on USB -> check for already connected USB scanner
+	      if ( type == `usb )
+	      {
+		  y2debug( "MAP: %1", scanner_map );
+		  foreach( `scan_id, `scanner, scanner_map, ``{
+		      if ( lookup( scanner, "bus", "" ) == "USB" )
+		      {
+			  already_usb = true;
+		      }   
+		  });
+		  if ( already_usb )
+		  {
+		      // text of a warning popup
+		      UI(`WarningPopup(_("Only one USB scanner is supported.
+Please disconnect the unwanted USB scanner,
+go back to the Overview dialog and
+delete the unused scanner configuration.")));
+		      go_on = true;
+		  }
+		  else
+		  {
+		      // try again to detect a USB scanner ( maybe it's switched on now)
+		      list connected_scanner = SCR(`Read(.probe.scanner));
+		      if ( connected_scanner != [] )
+		      {
+			  // TODO !!!!!!!! only do some checks 
+			  ret = `start;
+		      }
+		      else
+		      {
+			  // go to manual USB scanner configuration
+			  ret = `usb;
+		      }
+		  }
+	      }
+	      else
+	      {
+		  ret = type;
+	      }
+	  }
+      };
 
       return ret;
   }

@@ -19,20 +19,10 @@
  *    1a) USB: SCR(.probe.scanner)	
  *    1b) SCSI: sane-find-scanner
  * 2. Check already installed scanner (perl script)
- * 3. Decide whether the detected scanner(s) is (are) installed
+ * 3. Decide whether the detected scanner(s) is (are) installed/supported by SANE
  * 4. Decide which dialog is called next
- *    - at least one new scanner detected/no scanner configured
- *      -> go to dialog scanner_new (show first detected scanner)
- *    - at least one new scanner detected/at least one scanner configured
- *	-> show dialog scanner_overview AND a popup
- *	   "New scanner - configuration wanted?"
- *    - nothing new, but at least one scanner configured
- *      -> show dialog scanner_overview
- *    - nothing detected at all
- *	-> go to dialog scanner_notfound
  * 
  * Shows the progress of hardware probing and scanner checking. 
- * 
  *
  */
 
@@ -51,9 +41,8 @@
 
       
       // Help text for last dialog of base installation
-      string help_text = UI(_("<p>
-YaST2 starts the hardware probing, i.e. checks the 'USB' and/or
-the 'SCSI' port(s) for connected scanner(s).
+      string help_text = UI(_("<p>YaST2 starts the hardware probing,
+i.e. checks the 'USB' and/or the 'SCSI' port(s) for connected scanner(s).
 If a new scanner is detected the next dialog allows you to
 configure easily the scanner.
 If the automatic detection fails you have the possibility to continue
@@ -114,6 +103,8 @@ with YaST2 module 'Install/Remove Software'.\n")));
 	      // only one USB scanner is supported by scanner library SANE
 	      // and there are problems with hot plugin (changing device numbers)
 	      // -> only *one* USB scanner is allowed
+
+	      // text of an error popup "only one USB scanner allowed" 
 	      UI(`ErrorPopup(_("YaST2 has detected several USB scanners
 connected to your PC. At the moment it's only
 possible to support ONE single USB scanner.\n
@@ -149,18 +140,34 @@ and restart the scanner configuration.")));
       UI(`ProgressMilestoneUI( 1000, _("Checking for already installed scanner"), 2 ));
       sleep(500);
 
-      // find out which scanner is already installed/which is new
-
+      // find out which scanner is already installed/which is new/which is supported
       map scanner_info = $[];
-      boolean installed = false;
-      boolean new = false;
     
       integer no = 1;
+      boolean new = false;
+      boolean installed = false;
+      boolean detected = false;
+
       foreach ( `scanner, connected_scanner, ``{
+	  string driver = "";
+	  if ( !test_mode )
+	  {
+	      /*
+		driver = SCR(`Read(.sane.driver, scanner));
+	      */
+	      driver = "testdriver";
+	  }
 	  if ( installed_scanner == [] )
 	  {
-	      scanner = add( scanner, "new_scanner", true);
-	      new = true;    
+	      if ( driver != "" )
+	      {
+		  scanner = add( scanner, "scanner_status", `supported );
+		  scanner = add( scanner, "scanner_driver", driver );
+	      }
+	      else
+	      {
+		  scanner = add( scanner, "scanner_status", `detected ); 
+	      }
 	  }
 	  else
 	  {
@@ -170,30 +177,59 @@ and restart the scanner configuration.")));
 		       (lookup( scan, "bus", "") )  == lookup( scanner, "bus", "") &&
 		       (lookup( scan, "devicefile", "") == lookup( scan, "devicefile", "")) )
 		  {
-		      scanner = add( scanner, "new_scanner", false);
+		      scanner = add( scanner, "scanner_status", `installed );
 		      installed = true;
+		  }
+		  else if ( driver != "" )
+		  {
+		      scanner = add( scanner, "scanner_status", `supported );
 		  }
 		  else
 		  {
-		      scanner = add( scanner, "new_scanner", true);
-		      new = true;
+		      scanner = add( scanner, "scanner_status", `detected );  
 		  }
 	      });
 	  }
 	  scanner_info = add(scanner_info, no, scanner);
 	  no = no+1;
       });
+
+      foreach( `scan_id, `scanner, scanner_info, ``{
+	  if ( lookup( scanner, "scanner_status", `empty ) == `supported )
+	  {
+	      user_settings = add( user_settings, "scannerInWork", scan_id );
+	      new = true;
+	  }
+      });
+      if ( !new )
+      {
+	  foreach( `scan_id, `scanner, scanner_info, ``{
+	      if ( lookup( scanner, "scanner_status", `empty ) == `detected )
+	      {
+		  user_settings = add( user_settings, "scannerInWork", scan_id );
+		  detected = true;
+	      }
+	  }); 
+      }
       
       if ( new )
       {
+	  // if a new, supported scanner is found go to dialog "New Scanner found"
 	  ret = `new;
+      }
+      else if ( detected )
+      {
+	  // if a new scanner is detected but not supported by SANE go to "Select a scanner driver"
+	  ret = `driver;
       }
       else if ( installed )
       {
+	  // if one (or more) already configured scanner are found go to "Scanner overview"
 	  ret = `overview;
       }
       else
       {
+	  // no scanner found at all -> go to dialog manual configuration
 	  ret = `manual;
       }
 
