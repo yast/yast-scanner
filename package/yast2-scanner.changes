@@ -1,4 +1,11 @@
 -------------------------------------------------------------------
+Mon Jan 31 11:47:15 CET 2005 - jsmeix@suse.de
+
+- V 2.10.999 (will become 2.11.0)
+- Created the help texts.
+- Added search function (filter) for the model list.
+
+-------------------------------------------------------------------
 Tue Jan 18 10:42:49 CET 2005 - jsmeix@suse.de
 
 - V 2.10.99 (will become 2.11.0)
