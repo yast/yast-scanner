@@ -12,7 +12,6 @@
  *   Gabriele Strattner <gs@suse.de>
  *   Klaas Freitag <freitag@suse.de>
  *
- * String corrections by Christian Steinruecken <cstein@suse.de>, 2001/07/28
  *
  *
  * $Id$
@@ -77,8 +76,6 @@ hardware probing of 'USB' or 'SCSI' ports.
 	  list packs_to_install = [];
 	  string mesg = "";
 
-	  // ( we do not need ImageMagick any longer )
-
 	  if( sane_installed != 0 )
 	  {
 	      // Translators: 'SANE' is a package name - don't translate!
@@ -125,7 +122,7 @@ with the YaST2 module 'Install and Remove Software'.
 
       if ( !test_mode )
       {
-	  // pobe USB and SCSI ports; command is hwinfo --scanner
+	  // probe USB and SCSI ports; command is hwinfo --scanner
 	  connected_scanner = (list<map>) SCR::Read(.probe.scanner);
 	  list scanner_list = [];
 
@@ -183,20 +180,9 @@ the scanner configuration\n."));
 	      return `cancel;
 	  }
 
-	  // add device name /dev/usbscanner in USB scanner map
-	  connected_scanner =  maplist (map scanner, connected_scanner,
-	  ``{
-	      if ( lookup( scanner, "bus", "" ) == "USB" )
-	      {
-		  scanner = add( scanner, "dev_name", "/dev/usbscanner" );
-	      }
-	      return scanner;
-	  });
-
 	  y2milestone( "Connected Scanner: %1", connected_scanner);
 
           // add net scanner/call SCR::Read(.scanner.net) -> see below
-
       }
       else
       {
@@ -221,7 +207,6 @@ the scanner configuration\n."));
       Progress::NextStep();
       // text for a progress bar label
       Progress::Title( _("Finishing the check procedure") );
-      sleep(300);
 
       // find out which scanner is already installed / which is new / which is supported
       map scanner_info = $[];
@@ -264,7 +249,7 @@ the scanner configuration\n."));
 	      m = m+1;
 	  }
 
-	  // scanner ist not installed
+	  // scanner is not installed
 	  if (!found )
 	  {
 	      // scanner is supported if driver is available
@@ -375,15 +360,7 @@ the scanner configuration\n."));
       user_settings = add( user_settings, "scannerInfo", scanner_info );
       y2debug( "Writing SCANNER INFO: %1", scanner_info );
 
-      // decide which dialog comes next
-      if ( !lookup( user_settings, "check_again", false ))
-      {
-	  ret = DecideDialog( `start );
-      }
-      else
-      {
-	  ret = DecideDialog( `add );
-      }
+      ret = DecideDialog( );
 
       return ret;
   }
