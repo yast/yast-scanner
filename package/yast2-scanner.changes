@@ -1,4 +1,10 @@
 -------------------------------------------------------------------
+Fri Mar 14 13:56:41 CET 2003 - gs@suse.de
+
+- parse external scanner descriptions, too, to get the complete
+  scanner list (support of HP Office Jet scanners) 
+
+-------------------------------------------------------------------
 Thu Mar  6 13:57:17 CET 2003 - gs@suse.de
 
 - bugfix in scannerDB.pm (correct initialization of $oriline) 
