@@ -141,7 +141,8 @@ with the YaST2 module 'Install and Remove Software'.
 			  // replace scanner entry
 			  list<map> ptal_devices = (list<map>) SCR::Read(.scanner.ptal);
 			  foreach (map device, ptal_devices, ``{
-			      if ( lookup( device, "device", "") == lookup( scanner, "sub_device", "" ) )
+			      if ( lookup( device, "device", "") == lookup( scanner, "device", "" )
+				   || lookup( device, "device", "") == lookup( scanner, "sub_device", "" ) )
 			      {
 				  if ( lookup( device, "scanner_driver", "" ) != "" )
 				  {
