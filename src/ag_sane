@@ -326,7 +326,13 @@ while ( <STDIN> )
 	if( defined ( $host ) )
 	{
 	    my @netscanners_on_host = getNetInfo( $host );
-	    
+	    my $found_scanners_anz = @netscanners_on_host;
+
+	    y2debug( "Found $found_scanners_anz net scanners" );
+	    if( $found_scanners_anz > 0 )
+	    {
+		enableNetScan( $host );
+	    }
 	    ycpReturn( \@netscanners_on_host );
 	}
 	else
