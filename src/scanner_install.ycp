@@ -28,7 +28,7 @@
  * ScannerInstallDialog
  */
 
-  global define ScannerInstallDialog_UI( map installed_scanner ) ``{
+  global define ScannerInstallDialog_UI( map installed_scanner, byteblock image ) ``{
       string scanner = lookup( installed_scanner, "vendor", "" ) + " - " + lookup(installed_scanner, "device", "" );
 
       term contents = `VBox (
@@ -48,7 +48,7 @@
 				    ),
 			     `VSpacing (1),
 			     `HBox (
-				    `ReplacePoint(`id(`replace), `Empty() ),
+				    `ReplacePoint(`id(`replace),`Image( image, _("Test picture")) ),
 				    `PushButton (`id (`test), _("&Test")),
 				    `HSpacing (1.0)
 				    ),
@@ -85,7 +85,8 @@ The <b>Gimp</b> also provides scan support.</p>");
       
       string caption = _("Scanner Test");
 
-      term contents  = ScannerInstallDialog_UI( GetCurrentScanner() );
+      term contents  = ScannerInstallDialog_UI( GetCurrentScanner(),
+						Read( .local.byte, "/usr/lib/YaST2/images/lvm-config.png") );
 
       UI(`SetWizardContentsButtons(caption,contents,help,BackButtonLabel(),NextButtonLabel()));
 
@@ -95,12 +96,14 @@ The <b>Gimp</b> also provides scan support.</p>");
 
 	  ret = UI(`UserInput());
 
-	  //term image = `Image(  image_data, "" );
+	  term image = `Empty();
 
 	  if ( ret == `test )
 	  {
-	      // label string
-	      term image = `Label(_("Test page"));
+	      // get the test picture from SANE
+	      byteblock image_data = SCR(`Read(.sane.scanimage, GetCurrentScanner()));
+	      image = `Image(  image_data, _("Test picture"));
+
 	      UI( `ReplaceWidget(`id(`replace), image ));
 	  }
 	  

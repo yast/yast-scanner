@@ -13,11 +13,11 @@
  * file /lib/modules/<kernel-version>/modules.usbmap.
  * In case the scanner is known the USB module will be loaded automatically
  * (hotplug).
- * Otherwise the module must be loaded with: modprobe ID ID <module name>
+ * Otherwise the module must be loaded with: modprobe <module name> ID ID
  * The options must be added to /etc/modules.conf.    
  *
- * Remark: Up to verion 7.2 the USB manager had an own, hand made config file
- *         /etc/usbmgr/usbmgr.conf which is obsleted by the hotplug script.
+ * Remark: Up to verion 7.2 the USB manager had an own, manually created config file
+ *         /etc/usbmgr/usbmgr.conf which is obsleted by the hotplug script now.
  *
  * Authors:
  *   Gabriele Strattner <gs@suse.de>
@@ -120,7 +120,7 @@ successfully you can proceed to the
        * "class_id":268,
        * "device":"Perfection 640",
        * "device_id":196876,
-       * "module":[$["active":false, "modprobe":true, "name":"scanner"]],
+       * "drivers":[$["active":true,"modprobe":true, "modules":$["scanner":""]]],
        * "resource":$["baud":[$["speed":1500000]]],
        * "rev":"0.01",
        * "sub_class_id":0,
@@ -130,14 +130,15 @@ successfully you can proceed to the
        * "vendor":"Epson",
        * "vendor_id":197816]]
        *
-       * The result map of an USB device doesn't contain a "module" entry if the device is unknown.
+       * The result map does NOT contain a "drivers" entry if the device is unknown.
        */
       
       if ( lookup (user_settings, "test_mode", false ) )
       {
 	  usb_devices = [
 			 $["bus":"USB", "class_id":268, "device":"Perfection 640",
-			  "device_id":196876, "module":[$["active":false, "modprobe":true, "name":"scanner"]],
+			  "device_id":196876,
+			  "drivers":[$["active":true,"modprobe":true, "modules":$["scanner":""]]],
 			  "resource":$["baud":[$["speed":1500000]]],
 			  "rev":"0.01", "sub_class_id":0, "sub_device":"Perfection640  ", "sub_vendor":"EPSON",
 			  "unique_key":"ldbq.9Hr5DGWrbRF", "vendor":"Epson", "vendor_id":197816],
@@ -153,7 +154,7 @@ successfully you can proceed to the
 
       // get all unknown USB devices
       foreach ( `device, usb_devices, ``{
-	  if ( lookup( device, "module", $[] ) == $[] )
+	  if ( lookup( device, "drivers", [] ) == [] )
 	  {
 	      usb_unknown = add( usb_unknown, no, device );
 	      list_entry = sformat( "%1 - %2", lookup( device, "vendor", ""), lookup( device, "device", ""));
@@ -179,12 +180,9 @@ successfully you can proceed to the
 	  
 	  ret = UI(`UserInput());
 
-	  integer exit_status = 1;
-
 	  if ( ret == `load || ret == `next )
 	  {
 	      // try to load the USB module
-	      string modprobe = "";
 
 	      any usb_device = UI( `QueryWidget(`id(`sel_usb), `CurrentItem) );
 
@@ -194,20 +192,22 @@ successfully you can proceed to the
 	      }
 	      else
 	      {
+		  string module_name = UI(`QueryWidget(`id(`module), `Value));
 		  map device 	= lookup( usb_unknown, usb_device );
-		  modprobe = sformat("modprobe %1 vendor=0x%2 product=0x%3",
-				     UI(`QueryWidget(`id(`module), `Value)),
-				     lookup( device, "vendor_id", ""),
-				     lookup( device, "device_id", ""));
+		  string options = sformat("vendor=0x%1 product=0x%1",
+					   lookup( device, "vendor_id", ""),
+					   lookup( device, "device_id", ""));
 
-		  exit_status = SCR(`Execute(.target.bash, modprobe ));
-		  y2milestone( "Loading USB: %1, exit status: %2", modprobe, exit_status );  
+		  // SCR(`Execute(.target.bash, modprobe ));
+		  boolean success = SCR::Execute(.target.modprobe, module_name, options );
 
-		  if ( exit_status != 0 )
+		  y2milestone( "Loading USB: %1 %2, exit status: %3", module_name, options, success );  
+
+		  if ( !success )
 		  {
 		      // text of an error popup: loading the module failed
 		      any cont = UI(`ContinueCancelHeadlinePopup( ErrorMsg(),
-"The USB module is NOT loaded successfully.
+								  "The USB module is NOT loaded successfully.
 Do you want to have another try or
 exit the scanner configuration?"));
 
@@ -221,7 +221,7 @@ exit the scanner configuration?"));
 		  {
 		      // text of a notify popup: the loading was successful
 		      UI(`NotifyPopup(_("The USB module is loaded successfully.
-You may proceed by clicking on Next."))); 
+You may proceed by clicking Next."))); 
 		  }  
 	      }
 	  }
