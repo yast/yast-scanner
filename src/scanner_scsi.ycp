@@ -87,7 +87,7 @@ dialog by clicking on <b>Next</b>.</p>"));
 you added a new SCSI controller to your computer, you will probably
 have to load the SCSI kernel module (driver) first.
 Press <b>Abort</b> to exit the scanner installation and follow the
-steps described in chapter 'Scanner under Linux'
+steps described in chapter 'Scanning in Linux'
 of the SuSE Configuration Manual.</p>
 "));
       
