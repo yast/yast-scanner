@@ -764,6 +764,7 @@ microtek
 microtek2
 mustek
 #mustek_pp
+mustek_usb
 nec
 pie
 pint
@@ -1053,6 +1054,40 @@ port 0x378
  # use this option to define the maximal black value for lineart scans
  #option bw 127
 EndOfConf
+
+$config{mustek_usb} = <<"EndOfConf";
+# mustek_usb.conf: Configuration file for Mustek USB scanner
+# Read man sane-mustek_usb for documentation
+ 
+# Autodetect 1200 UB and Trust Compact Scan USB 19200
+usb 0x055f 0x0006
+ 
+# Autodetect 1200 CU
+usb 0x055f 0x0001
+ 
+# Autodetect 1200 CU Plus
+usb 0x055f 0x0008
+ 
+# Autodetect 600 CU
+usb 0x055f 0x0002
+ 
+# If autodetection doesn't work uncomment or add your device file and one
+# suitable option (1200ub is also for Trust Compact Scan USB 19200).
+ 
+#/dev/usb/scanner0
+#option 1200ub
+#option 1200cu
+#option 1200cu_plus
+#option 600cu
+ 
+#/dev/usbscanner0
+#option 1200ub
+#option 1200cu
+#option 1200cu_plus
+#option 600cu
+
+EndOfConf
+
 
 $config{tamarack} = <<"EndOfConf";
 scsi TAMARACK
