@@ -1,4 +1,10 @@
 -------------------------------------------------------------------
+Mon Sep  9 12:09:30 CEST 2002 - freitag@suse.de
+
+- removed some nasty warnings on console (bug #19090)
+  disabled Test-Button while scanning to avoid 'double' clicks 
+
+-------------------------------------------------------------------
 Wed Sep  4 14:32:37 CEST 2002 - mvidner@suse.cz
 
 - Don't use a temporary file when calling sw_single.
