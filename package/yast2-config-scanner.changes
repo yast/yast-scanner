@@ -1,7 +1,7 @@
 -------------------------------------------------------------------
 Tue Feb  5 11:07:17 CET 2002 - gs@suse.de
 
-- bugfix for scanner agent, internal changes in ycp modules,
+- bugfix for the scanner agent, internal changes in ycp modules,
 - enable service "sane" if a SCSI scanner is connected
 
 -------------------------------------------------------------------
