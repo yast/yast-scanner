@@ -1,4 +1,10 @@
 -------------------------------------------------------------------
+Tue Jul  2 16:39:12 CEST 2002 - msvec@suse.cz
+
+- renamed to yast2-scanner
+- 2.6.0
+
+-------------------------------------------------------------------
 Tue Mar 26 14:02:20 CET 2002 - gs@suse.de
 
 - (#15510) mark installed scanner as configured for hardware detection 
