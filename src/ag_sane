@@ -118,9 +118,9 @@ while ( <STDIN> )
 	$model = findInHash( "sub_device", \%scanner );
     }
 
-
-    if( $action =~ /^\s*\.*driver\s*$/i )
-    {
+    #Read command
+    if ( ycpCommandIsRead() ) {
+      if ( $action =~ /^\s*\.*driver\s*$/i ) {
 	#
 	# This action queries for the correct driver for one scanner
 	# identified by its vendor and the model, both values come as
@@ -131,9 +131,8 @@ while ( <STDIN> )
 
 	my %models = getModel( $bus, $vendor);
 
-	while( my ($model, $driver) = each %models )
-	{
-	    y2debug( "Use <$driver> for <$model>" );
+	while ( my ($model, $driver) = each %models ) {
+	  y2debug( "Use <$driver> for <$model>" );
 	}
 
 	my $use_driver = "";
@@ -142,30 +141,26 @@ while ( <STDIN> )
 	# If no entry was found regularly, try a version of the model without any
 	# whitespaces. That makes for example Perfection1200 from 'Perfection 1200'
 	# Seems to be common with Epson, that they skip the whitespaces.
-	if( $use_driver eq "" )
-	{
-	    my $wsfree = $model;
-	    $wsfree =~ s/\s//g;
-	    y2debug( "Found no driver for <$model>, try whitespace free <$wsfree>" );
-	    # And then, try again...
-	    $use_driver = findInHash( $wsfree, \%models );
+	if ( $use_driver eq "" ) {
+	  my $wsfree = $model;
+	  $wsfree =~ s/\s//g;
+	  y2debug( "Found no driver for <$model>, try whitespace free <$wsfree>" );
+	  # And then, try again...
+	  $use_driver = findInHash( $wsfree, \%models );
 	}
 	y2debug( "Returning <$use_driver>" );
 
 	ycpReturnSkalarAsString( $use_driver );
 
 	# my $retdriver = $driver;
-    }
-    elsif( $action =~ /modellist\s*$/ )
-    {
+      } elsif ( $action =~ /modellist\s*$/ ) {
 	# Only the vendor and the bus must be set in the incoming parameter hash -
 	# returning a list of available drivers.
 	y2debug( "Handling action modellist" );
 
-	if( !defined $vendor || $vendor =~ /^\s+$/  )
-	{
-	    y2debug("Vendor string is empty -> assume 'generic'" );
-	    $vendor = "generic";
+	if ( !defined $vendor || $vendor =~ /^\s+$/  ) {
+	  y2debug("Vendor string is empty -> assume 'generic'" );
+	  $vendor = "generic";
 	}
 	my %models = getModel( $bus, $vendor);
 
@@ -174,36 +169,57 @@ while ( <STDIN> )
 	@drivers = sort keys %models;
 
 	ycpReturn( \@drivers );
-    }
-    elsif( $action =~ /vendorlist/ )
-    {
+      } elsif ( $action =~ /vendorlist/ ) {
 	y2debug( "Handling action vendorlist" );
 	# Only the bus is required. Return a list of vendors for the list.
 	my @vlist = getVendorList( findInHash( "bus", \%scanner ));
 	ycpReturn( \@vlist );
-    }
-    elsif( $action =~ /writeconfig/ )
-    {
+      } elsif ( $action =~ /netscannerinfo/i ) {
+	y2debug( "Handling action netscannerinfo" );
+	unless ( $bus =~ /net/i )
+	  {
+	    y2debug( "bus is not net !" );
+	  }
+	my $host = findInHash( "host", \%scanner );
+
+	if ( defined ( $host ) ) {
+	  my @netscanners_on_host = getNetInfo( $host );
+	  my $found_scanners_anz = @netscanners_on_host;
+
+	  y2debug( "Found $found_scanners_anz net scanners" );
+	  if ( $found_scanners_anz > 0 ) {
+	    enableNetScan( $host );
+	  }
+	  ycpReturn( \@netscanners_on_host );
+	} else {
+	  y2debug( "No host defined for netscannerinfo!" );
+	  ycpReturn( [] );
+	}
+      } else {
+	y2debug( "Unknown action <$action>" );
+	ycpReturnSkalarAsBoolean (0);
+      }
+    }  
+
+    # Write command
+    elsif ( ycpCommandIsWrite() ) {
+      if ( $action =~ /writeconfig/ ) {
 	y2debug( "Handling action writeconfig" );
 	my @cfg_backends = readDllconf( );
 	my $ok = 0;
 
-	if( $bus =~ /net/i )
-	{
-	    my $host = findInHash( "host", \%scanner );
-	    y2debug( "Installing a net scanner on host <$host> !" );
+	if ( $bus =~ /net/i ) {
+	  my $host = findInHash( "host", \%scanner );
+	  y2debug( "Installing a net scanner on host <$host> !" );
 
-	    if( defined $host )
-	    {
-		$ok = enableNetScan( $host );
-	    }
-	    else
-	    {
-		y2debug( "ERROR: Host is not defined or empty!" );
-		$ok = 0;
-	    }
-	    # ATTENTION: Return here :(
-	    ycpReturnSkalarAsBoolean( $ok );
+	  if ( defined $host ) {
+	    $ok = enableNetScan( $host );
+	  } else {
+	    y2debug( "ERROR: Host is not defined or empty!" );
+	    $ok = 0;
+	  }
+	  # ATTENTION: Return here :(
+	  ycpReturnSkalarAsBoolean( $ok );
 	}
 
 
@@ -212,17 +228,14 @@ while ( <STDIN> )
 	my $devicefile = findInHash( "dev_name", \%scanner );
 	y2debug( "Installing driver <$driver> for scanner <$vendor/$model> on <$devicefile>" );
 
-	if( grep( /$driver/, @cfg_backends ) )
-	{
-	    y2debug( "Backend <$driver> is already configured!" );
-	    $ok = 1;
-	}
-	else
-	{
-	    y2debug( "Backend <$driver> is not configured, adding it" );
-	    push @cfg_backends, $driver;
+	if ( grep( /$driver/, @cfg_backends ) ) {
+	  y2debug( "Backend <$driver> is already configured!" );
+	  $ok = 1;
+	} else {
+	  y2debug( "Backend <$driver> is not configured, adding it" );
+	  push @cfg_backends, $driver;
 
-	    $ok = writeDllconf( \@cfg_backends );
+	  $ok = writeDllconf( \@cfg_backends );
 	}
 
 	# now the scanner conf:
@@ -231,139 +244,115 @@ while ( <STDIN> )
 	# valid are:
 	# vendor-bus-model
 	ycpReturnSkalarAsBoolean( $ok );
+      }
+      else {
+	y2debug( "Unknown action <$action>" );
+	ycpReturnSkalarAsBoolean (0);	
+      }
     }
-    elsif( $action =~ /revertall/ )
-    {
+
+    # Execute command
+    elsif ( ycpCommandIsExecute() ) {
+      if ( $action =~ /revertall/ ) {
 
 	y2debug( "Handling action revert all" );
 	revertAll();
 	ycpReturnSkalarAsBoolean( 1 );
-    }
-    elsif( $action =~ /removeDriver/ )
-    {
+      } elsif ( $action =~ /removeDriver/ ) {
 	my $ok = 0;
 	my $driver = findInHash( "scanner_driver", \%scanner );
 
 	y2debug( "Handling action removeDriver" );
 
 	# If a net scanner is to remove, just delete it from net.conf
-	if( $bus =~ /^\s*net\s*$/i )
-	{
-	    my $host = findInHash( "host", \%scanner );
-	    if( defined $host )
-	    {
-		y2debug( "Going to remove net scanning on <$host>" );
-		$ok = disableNetScan( $host );
-	    }
-	    else
-	    {
-		y2debug( "Property Host not defined in scanner map" );
-	    }
-	}
-	else
-	{
-            # If not net scanner, remove from dll.conf
-	    if( defined $driver  )
-	    {
-		my @existing  = readDllconf();
-		my $driver_found = 0;
+	if ( $bus =~ /^\s*net\s*$/i ) {
+	  my $host = findInHash( "host", \%scanner );
+	  if ( defined $host ) {
+	    y2debug( "Going to remove net scanning on <$host>" );
+	    $ok = disableNetScan( $host );
+	  } else {
+	    y2debug( "Property Host not defined in scanner map" );
+	  }
+	} else {
+	  # If not net scanner, remove from dll.conf
+	  if ( defined $driver  ) {
+	    my @existing  = readDllconf();
+	    my $driver_found = 0;
 
-		my @writeDll = ();
-		foreach my $exist_driver ( @existing )
-		{
-		    if( $driver =~ /$exist_driver/i )
-		    {
-			y2debug( "Removing <$driver> from existing list" );
-			$driver_found++;
-			next; # continue in loop
-		    }
-		    push @writeDll,  $exist_driver;
+	    my @writeDll = ();
+	    foreach my $exist_driver ( @existing )
+	      {
+		if ( $driver =~ /$exist_driver/i ) {
+		  y2debug( "Removing <$driver> from existing list" );
+		  $driver_found++;
+		  next;		# continue in loop
 		}
-		if( $driver_found > 0 )
-		{
-		    $ok = writeDllconf( \@writeDll );
-		}
-		else
-		{
-		    y2debug("Driver to remove was not found in existing list!" );
-                    # but return true :)
-		    $ok = 1;
-		}
+		push @writeDll,  $exist_driver;
+	      }
+	    if ( $driver_found > 0 ) {
+	      $ok = writeDllconf( \@writeDll );
+	    } else {
+	      y2debug("Driver to remove was not found in existing list!" );
+	      # but return true :)
+	      $ok = 1;
 	    }
-	    else
-	    {
-		y2debug( "ERR: Driver was not given but is a required argument for removeDriver!" );
-	    }
+	  } else {
+	    y2debug( "ERR: Driver was not given but is a required argument for removeDriver!" );
+	  }
 	}
 	ycpReturnSkalarAsBoolean( $ok );
 
-    }
-    elsif( $action =~ /scanimage/ )
-    {
+      } elsif ( $action =~ /scanimage/ ) {
 	y2debug( "Handling action scanimage" );
 	my $resFile = "";
 	my $devicefile = findInHash( "dev_name", \%scanner );
 	my $driver = findInHash( "scanner_driver", \%scanner );
 	my $tmpdir = findInHash( "tmpdir", \%scanner );
 	y2debug( "Scanning to temp-dir: $tmpdir" );
-	if( !defined $driver || $driver eq "" || !defined $devicefile || $devicefile eq "" )
-	{
-	    y2debug( "Driver or devicefile is not defined - can not scan !" );
-	}
-	else
-	{
-	    my $devstring = sprintf( "%s:%s", lc $driver, $devicefile );
+	if ( !defined $driver || $driver eq "" || !defined $devicefile || $devicefile eq "" ) {
+	  y2debug( "Driver or devicefile is not defined - can not scan !" );
+	} else {
+	  my $devstring = sprintf( "%s:%s", lc $driver, $devicefile );
 
-	    if( $bus =~ /net/i )
-	    {
-		my $host = findInHash( "host", \%scanner );
-		if(defined $host)  {
-		    $devstring = "net:" . $host .":". $devstring;
-		} else {
-		    y2debug( "ERROR: Tried to scan net, but no host given !" );
-		    $devstring = undef;
-		}
+	  if ( $bus =~ /net/i ) {
+	    my $host = findInHash( "host", \%scanner );
+	    if (defined $host) {
+	      $devstring = "net:" . $host .":". $devstring;
+	    } else {
+	      y2debug( "ERROR: Tried to scan net, but no host given !" );
+	      $devstring = undef;
 	    }
+	  }
 
-	    if( defined $devstring ) {
-		$resFile = acquireTestImage( $devstring, $tmpdir );
+	  if ( defined $devstring ) {
+	    $resFile = acquireTestImage( $devstring, $tmpdir );
 
-		y2debug( "Acquired image to result-file <$resFile>" );
-	    }
+	    y2debug( "Acquired image to result-file <$resFile>" );
+	  }
 	}
 	ycpReturnSkalarAsString( $resFile );
 
-    }
-    elsif( $action =~ /netscannerinfo/i )
-    {
-	y2debug( "Handling action netscannerinfo" );
-	unless ( $bus =~ /net/i )
-	{
-	    y2debug( "bus is not net !" );
-	}
-	my $host = findInHash( "host", \%scanner );
-
-	if( defined ( $host ) )
-	{
-	    my @netscanners_on_host = getNetInfo( $host );
-	    my $found_scanners_anz = @netscanners_on_host;
-
-	    y2debug( "Found $found_scanners_anz net scanners" );
-	    if( $found_scanners_anz > 0 )
-	    {
-		enableNetScan( $host );
-	    }
-	    ycpReturn( \@netscanners_on_host );
-	}
-	else
-	{
-	    y2debug( "No host defined for netscannerinfo!" );
-	    ycpReturn( [] );
-	}
-    }
-    else
-    {
+      } else {
 	y2debug( "Unknown action <$action>" );
+	ycpReturnSkalarAsBoolean (0);	
+      }
+    } 
+    
+    # Dir command
+    elsif ( ycpCommandIsDir() ) {
+	my @paths = ("driver","modellist","vendorlist","netscannerinfo","writeconfig","revertall","scanimage");
+	ycpReturn( \@paths );
+      }
+    
+    # Result
+    elsif ( ycpCommandIsResult() ) {
+	exit;
+    }
+
+    # Unknown
+    else {
+        y2debug ("Unknown instruction ", ycpGetCommand, " or argument: ", ycpGetArgType);
+        ycpReturnSkalarAsBoolean (0);
     }
 }
 
