@@ -101,7 +101,7 @@ while ( <STDIN> )
 		      unique_key => "",
 		      vendor => $vendor,
 		      vendor_id => "",
-		      device_file => $devfile } );
+		      devicefile => $devfile } );
 		$cnt ++;
 	    }
 	    close CMD;
@@ -138,7 +138,7 @@ while ( <STDIN> )
 		{
                     # A Network scanner was found with a name like 
                     # net:d213.suse.de:umax:/dev/sg0
-		    $bus = uc $1;
+		    $bus = "Net";
 		    $host =  $2;
 		    $driver =  $3;
 		    $devfile =  $4;
@@ -171,7 +171,7 @@ while ( <STDIN> )
 			 unique_key => "",
 			 vendor => trim($vendor),
 			 vendor_id => "",
-			 device_file => trim($devfile),
+			 devicefile => trim($devfile),
 			 class => trim($class),
 			 driver => trim($driver),
 			 host => $host 
