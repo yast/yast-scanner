@@ -123,6 +123,7 @@ any ScannerSequence()
  */
 any ScannerAutoSequence()
 { string caption = _("Scanner Configuration");
+  // Label of the dialog for ScannerAutoSequence:
   term contents = `Label( _("Initializing...") );
   Wizard::CreateDialog();
   Wizard::SetContentsButtons( caption,

@@ -1,6 +1,6 @@
 #! /bin/bash
 #
-# Johannes Meixner <jsmeix@suse.de>, 2004
+# Johannes Meixner <jsmeix@suse.de>, 2004, 2005
 
 #set -x
 export PATH="/usr/bin:/bin"
@@ -36,7 +36,18 @@ for DESCRIPTION_FILE in $DESCRIPTION_FILES
 do Extract $DESCRIPTION_FILE
 done >>$TMP_DATA
 
+# Process the optional HPLIP external description file:
+# The package hplip is installed by default.
+PACKAGE="hplip"
+DESCRIPTION_FILE="/usr/share/sane/descriptions-external/hpaio.desc"
+if [ -r "$DESCRIPTION_FILE" ]
+then echo ":package \"$PACKAGE\"" >>$TMP_DATA
+     Extract $DESCRIPTION_FILE >>$TMP_DATA
+else echo "Info: Cannot read $DESCRIPTION_FILE" 1>&2
+fi
+
 # Process the optional HPOJ external description file:
+# The package hp-officeJet is not installed by default.
 PACKAGE="hp-officeJet"
 DESCRIPTION_FILE="/usr/share/sane/descriptions-external/hpoj.desc"
 if [ -r "$DESCRIPTION_FILE" ]
@@ -45,7 +56,8 @@ then echo ":package \"$PACKAGE\"" >>$TMP_DATA
 else echo "Info: Cannot read $DESCRIPTION_FILE" 1>&2
 fi
 
-# Process the optional EPKOWA external description file:
+# Process the optional EPSON KOWA Image Scan external description file:
+# The proprietary binary-only i386-only package iscan cannot be installed by default.
 # Note the "sed" to remove the leading comment character ';'.
 PACKAGE="iscan"
 DESCRIPTION_FILE="/usr/share/sane/descriptions-external/epkowa.desc"

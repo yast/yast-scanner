@@ -17,26 +17,26 @@ textdomain "scanner";
 map HELPS =
 $[
 
-/* Read dialog help 1/1 */
 "read" :
+// Read dialog help 1/1:
 _("<p><b><big>Initializing scanner Configuration</big></b><br>
 Please wait...</p>"),
 
-/* Write dialog help 1/1 */
 "write" :
+// Write dialog help 1/1:
 _("<p><b><big>Saving scanner Configuration</big></b><br>
 Please wait...</p>"),
 
-/* Summary dialog help 1/7 */
 "summary" :
+// Summary dialog help 1/7:
 _("<p><b><big>Scanner Configuration</big></b><br>
 Set up or change the scanner configuration and show the already active scanners.</p>") +
-/* Summary dialog help 2/7 */
+// Summary dialog help 2/7:
 _("<p><b><big>Set up a new scanner:</big></b><br>
 Choose the scanner from the list of autodetected scanners and press <b>Configure</b>.
 If a scanner was not autodetected or if you already tried to set it up
 but it is not shown as active scanner, then read the information below.</p>") +
-/* Summary dialog help 3/7 */
+// Summary dialog help 3/7:
 _("<p><b><big>Set up an USB scanner:</big></b><br>
 A normal USB scanner should have been autodetected.
 If it was not autodetected, it may work to proceed with 'Other (not detected)'.
@@ -45,7 +45,7 @@ but it should work well to proceed with 'Other (not detected)'.
 At least any USB scanner must be shown by the command '/sbin/lsusb'
 otherwise the USB system cannot communicate with the scanner
 and it will not work unless the USB system was set up correctly.</p>") +
-/* Summary dialog help 4/7 */
+// Summary dialog help 4/7:
 _("<p><b><big>Set up a SCSI scanner:</big></b><br>
 A SCSI scanner should have been autodetected.
 If it was not autodetected, it may work to proceed with 'Other (not detected)'.
@@ -53,7 +53,7 @@ At least any SCSI scanner must be shown by the command 'lsscsi'
 otherwise the SCSI system cannot communicate with the scanner
 and it will not work unless the SCSI system was set up correctly.
 In particular an appropriate kernel module for the SCSI host adapter must have been loaded.</p>") +
-/* Summary dialog help 5/7 */
+// Summary dialog help 5/7:
 _("<p><b><big>Set up a parallel-port scanner:</big></b><br>
 Parallel-port scanners are not autodetected.
 You may proceed with 'Other (not detected)' to activate an appropriate scanner driver.
@@ -62,7 +62,7 @@ and enter the correct values regarding parallel-port access.
 As wrong parallel-port settings may cause a total system hang-up,
 it is safer not to activate any scanner driver now but to abort
 and set up the parallel-port scanner completely manually.</p>") +
-/* Summary dialog help 6/7 */
+// Summary dialog help 6/7:
 _("<p><b><big>Configuration Summary:</big></b><br>
 The configuration summary shows the active scanners and the active backends (scanner drivers).
 If a backend is active but no matching active scanner is shown
@@ -70,64 +70,72 @@ then the backend cannot communicate with the scanner (see above)
 and scanning will not work. For more information see our support database
 articles regarding scanner configuration, for example:<br>
 http://portal.suse.com/sdb/en/2004/10/jsmeix_scanner-setup-92.html</p>") +
-/* Summary dialog help 7/7 */
+// Summary dialog help 7/7:
 _("<p><b><big>Change or test the existing configuration:</big></b><br>
 If you press <b>Change</b>, an additional dialog opens
 where you can edit the configuration or test active scanners.</p>"),
 
-/* Overview dialog help 1/4 */
 "overview" :
+// Overview dialog help 1/4:
 _("<p><b><big>Scanner Overview</big></b><br>
 Obtain an overview of the set up scanner backends (scanner drivers) and the associated scanners.
-Additionally change ot test the configuration.</p>") +
-/* Overview dialog help 2/4 */
+Additionally change or test the configuration.</p>") +
+// Overview dialog help 2/4:
 _("<p><b><big>Set up a new scanner:</big></b><br>
 Press <b>Add</b> to configure a new scanner backend.</p>") +
-/* Overview dialog help 3/4 */
+// Overview dialog help 3/4:
 _("<p><b><big>Change the configuration:</big></b><br>
 Select a scanner backend to change.
 Then press <b>Edit</b> to select another backend or <b>Delete</b> to deactivate the backend.
 Note that 'Edit' does not deactivate a backend.
 You must explicitely use 'Delete' to deactivate a backend.
 </p>") +
-/* Overview dialog help 4/4 */
+// Overview dialog help 4/4:
 _("<p><b><big>Test the configuration:</big></b><br>
 Select a scanner backend and the associated scanner to test.
 Then press <b>Test</b>.</p>"),
 
-/* SelectModel dialog help 1/4 */
 "select_model" :
+// SelectModel dialog help 1/5:
 _("<p><b><big>Scanner Model Selection</big></b><br>
 All models which are known to be supported or unsupported are listed here.<br>
 Please read all information carefully before you
 select a model and press the <b>Next</b> button.<br>
 The information is based on data of the SANE project (Scanner Access Now Easy), see<br>
 http://www.sane-project.org/</p>") +
-/* SelectModel dialog help 2/4 */
+// SelectModel dialog help 2/5:
+_("<p><b><big>Search particular models:</big></b><br>
+Enter a search string and then press <b>Apply</b> to limit the listed models
+to those where the search string is a sub-string of the model entry.
+Note that case does not matter ('FunScanner XL' and 'funscanner xl' are considered the same)
+but blanks do matter ('FunScanner XL' and 'FunScannerXL' are different).</p>") +
+// SelectModel dialog help 3/5:
 _("<p><b><big>Supported models:</big></b><br>
 A model is supported if there is at least one appropriate scanner driver available.
-Available means that there is a package available which provides the driver.
-A scanner driver is called 'backend' or more precise 'SANE backend'
-because most scanner drivers are provided by the 'sane' package.<br>
+Available means that the software package which provides the driver
+is already installed or available for installation on the installation medium.
+A scanner driver is called 'backend' or more precise 'SANE backend'.
+Most backends are provided by the 'sane' package which provides also the basic software for scanning.
+Other packages which provide backends are 'hplip', 'hp-officeJet', and 'iscan'.<br>
 The support status varies from minimal to complete.</p>") +
-/* SelectModel dialog help 3/4 */
+// SelectModel dialog help 4/5:
 _("<p><b><big>Unsupported models:</big></b><br>
 If there is no appropriate backend available, the manufacturer might have a driver.
 Therefore you should ask the scanner manufacturer for a driver.</p>") +
-/* SelectModel dialog help 4/4 */
+// SelectModel dialog help 5/5:
 _("<p><b><big>Additional comments:</big></b><br>
 When additional comments are available, they are shown included in brackets.
 Such comments are only available in English.</p>"),
 
-/* ConfigureBackend dialog help 1/4 */
 "configure_backend" :
+// ConfigureBackend dialog help 1/4:
 _("<p><b><big>Scanner Backend Configuration</big></b><br>
 Most backends (scanner drivers) don't need a special configuration.
 In this case it seems that nothing happens here but in fact the following is done:<br>
 The backend is activated and the associated scanner(s) are probed.
 This may take a few seconds so that you must wait until you can press <b>Next</b>.<br>
 If you press <b>Back</b> the backend will be deactivated.</p>") +
-/* ConfigureBackend dialog help 2/4 */
+// ConfigureBackend dialog help 2/4:
 _("<p><b><big>Special packages:</big></b><br>
 Particular backends may require that additional packages must be installed.
 In this case an appropriate dialog is shown.<br> 
@@ -136,17 +144,34 @@ For example the 'epkowa' backend is provided by the package 'iscan'
 which is only available for i386-compatible architectures
 because 'iscan' includes proprietary binary-only i386-only software.
 Most scanners which are supported by the 'epkowa' backend
-are also supported by a backend which is provided by the 'sane' package.</p>") +
-/* ConfigureBackend dialog help 3/4 */
+are also supported by a backend which is provided by the 'sane' package
+(for example the backend 'epson').
+Please note that arbitrary problems may occur if more than one backend
+which support the same scanner are activated at the same time
+because then more than one driver will access the scanner at the same time.</p>") +
+// ConfigureBackend dialog help 3/4:
 _("<p><b><big>Firmware upload:</big></b><br>
 Some models require a firmware upload.
 Otherwise the scanner does not work.
 In this case an appropriate explanatory text is shown.</p>") +
-/* ConfigureBackend dialog help 4/4 */
+// ConfigureBackend dialog help 4/4:
 _("<p><b><big>HP all-in-one devices:</big></b><br>
 HP all-in-one devices require a special setup.
 Otherwise the scanner does not work.
-In this case an appropriate dialog is shown.</p>")
+In this case an appropriate dialog is shown.
+There are two software packages which provide support for HP all-in-one devices:<br>
+The old HPOJ software (package 'hp-officeJet')
+which provides the PTAL system (with the 'ptal' service) to access HP all-in-one devices
+and the 'hpoj' backend which is the actual scanner driver.<br>
+The new HPLIP software (package 'hplip')
+which provides the 'hplip' service to access HP all-in-one devices
+and the 'hpaio' backend which is the actual scanner driver.<br>
+Both software packages can be installed at the same time
+but both services ('ptal' and 'hplip') exclude each other
+because both services cannot run at the same time.
+As a running service is required by the associated backend
+to access the device, the consequence is that only one
+backend (either 'hpoj' or 'hpaio') can be used.</p>")
 
 ];
 
