@@ -14,14 +14,12 @@ include_DATA =		\
 	scanner_start.ycp	\
 	scanner_overview.ycp	\
 	scanner_new.ycp		\
-	scanner_options.ycp	\
 	scanner_install.ycp	\
 	scanner_manual.ycp	\
 	scanner_scsi.ycp	\
 	scanner_usb.ycp		\
 	scanner_net.ycp		\
 	scanner_notfound.ycp	\
-	scanner_driver.ycp	\
 	scanner_functions.ycp
 
 menu_DATA = menuentry_scanner.ycp
