@@ -50,6 +50,8 @@
 	    label = _("Device");
 	    scanner = lookup( installed_scanner, "vendor", "" ) + " - " + lookup(installed_scanner, "device", "" );
 	    info = lookup(installed_scanner, "dev_name", "");
+	    if ( info == "" && lookup(installed_scanner, "bus", "") == "USB" )
+		info = "libusb";
 	}
 
 	
