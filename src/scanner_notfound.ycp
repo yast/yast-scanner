@@ -133,6 +133,7 @@ and restart the scanner configuration.")));
 		      //    -> scanner jetzt eingesteckt/aber bereits installiert -> overview
 		      //	-> scanner neu, scanner nicht unterstützt -> manual
 		      //	-> scanner neu und unterstützt -> new
+		      user_settings = add(user_settings, "check_again", true);
 		      ret = `start;
 		  }
 		  else

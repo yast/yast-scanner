@@ -10,7 +10,13 @@
  * This dialog is shown very rarely because the SANE library usually finds
  * all connected SCSI scanner.
  * Only for some reasons  (e.g. install a very new scanner) it is useful 
- * to show a list of all SCSI devices connected to /dev/sg<n>.
+ * to show a list of all SCSI devices connected to /dev/sg_.
+ *
+ * The SCSI module of the SCSI controller is loaded automatically if the
+ * controller was already inserted when SuSE Linux was installed.
+ * A new, additional SCSI controller must be added manually:
+ * 'hwinfo --storage_ctrl' provides information about the module (driver).
+ * Insert the line 'modprobe <module>' to file /etc/init.d/boot.local.
  *
  * Authors:
  *   Gabriele Strattner <gs@suse.de>
@@ -71,22 +77,25 @@ devices which are connected to /dev/s<b>g</b>? device files).
 </p>"));
 
       // helptext part2 of dialog SCSI scanner configuration
-      // German: Um die Scanner-Daten zu vervollständigen..
+      // German: Um die Scanner-Daten zu vervollstaendigen..
       string help2 = UI(_("<p>To complete the scanner data 
 proceed with the \"Manual scanner selection\"
 dialog by clicking on <b>Next</b>.</p>"));
+
+      // helptext part3 of dialog SCSI scanner configuration
+      string help3 = UI(_("<p>If your scanner is not in the list and
+you added a new SCSI controller to your computer, you will probably
+have to load the SCSI kernel module (driver) first.
+Press <b>Abort</b> to exit the scanner installation and follow the
+steps described in chapter 9.7.1 of the SuSE Configuration Manual.</p>
+"));
       
       // helptext of dialog SCSI scanner configuration (continued)
-      string help2_unused = UI(_("<p>Information on your SCSI devices can be obtained
-by issuing the command <b>hwinfo --scsi</b>
-(you must be 'root' to do this).</p>"));
+      string help4 = UI(_("<p>Information on your SCSI storage controller
+can be obtained by issuing the command <b>/usr/sbin/hwinfo --storage_ctrl</b>
+.</p>"));
 
-      // helptext of dialog SCSI scanner configuration (continued)
-      // Translators: do not translate 'Device File'
-      string help3_unused = UI(_("<p>You will find the <i>'Device File'</i> of your scanner in the
-respective section of the hwinfo output.</p>"));
-
-      help = help1 + help2;
+      help = help1 + help2 + help3 + help4;
 
       // get a list of all SCSI devices
       list scsi_devices = SCR(`Read(.probe.bybus.scsi));

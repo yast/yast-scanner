@@ -125,16 +125,16 @@ configuration.")));
 	      return `cancel;
 	    
 	  }
-else if ( size(connected_scanner) == 1 )
-{
-    // add the devicefile - rebuild the list
-	map usb_scanner = select( connected_scanner, 0 );
-	connected_scanner = [];
-    usb_scanner = add( usb_scanner, "dev_name", "/dev/usbscanner" );
-    connected_scanner = add( connected_scanner, usb_scanner );
-}
- y2milestone( "USB Scanner: %1", connected_scanner);
-// check SCSI ports
+	  else if ( size(connected_scanner) == 1 )
+	  {
+	      // add the devicefile - rebuild the list
+	      map usb_scanner = select( connected_scanner, 0 );
+	      connected_scanner = [];
+	      usb_scanner = add( usb_scanner, "dev_name", "/dev/usbscanner" );
+	      connected_scanner = add( connected_scanner, usb_scanner );
+	  }
+	  y2milestone( "USB Scanner: %1", connected_scanner);
+          // check SCSI ports
 	  list scsi_scanner = SCR(`Read(.scanner.scsi));
 	  connected_scanner = union(connected_scanner, scsi_scanner);
 	  y2milestone( "SCSI Scanner: %1", scsi_scanner );
@@ -223,7 +223,14 @@ else if ( size(connected_scanner) == 1 )
       y2debug( "Writing SCANNER INFO: %1", scanner_info );
 
       // decide which dialog comes next
-      ret = DecideDialog( `start );
+      if ( !lookup( user_settings, "check_again", false ))
+      {
+	  ret = DecideDialog( `start );
+      }
+      else
+      {
+	  ret = DecideDialog( `add );
+      }
 
       return ret;
   }
