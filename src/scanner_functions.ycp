@@ -268,7 +268,7 @@ Install the package now?
 This package is mandatory for the installation of an HP all-in-one device.
 Make sure you have the SuSE CD set available
 and restart the scanner installation.  Alternatively, install the package
-with the YaST2 module 'Install/Remove Software'.
+with the YaST2 module 'Install and Remove Software'.
 "));
 	  return false;
       }
