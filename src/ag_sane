@@ -1,0 +1,85 @@
+#!/usr/bin/perl
+#
+# ag_sane
+# This script is part of the YaST2 Scanner installation module
+# Copyright SuSE Gmbh - 2001
+# 
+# Author: Klaas Freitag <freitag@suse.de>
+#
+# $Id$
+#
+
+BEGIN { unshift @INC, "/usr/lib/YaST2/agents_non_y2/"; }
+
+use ycp;
+use strict;
+
+use scannerDB;
+
+
+#
+# Simple sub to cut off whitespaces in front and at the end of
+# of a string.
+#
+sub trim( $ )
+{
+    my ($str) = @_;
+    $str =~ s/^\s+//;
+    $str =~ s/\s+$//;
+    y2debug("Trim: Trimmed string to <$str>");
+    return( $str );
+}
+
+# ##############################################################################
+
+
+
+while ( <STDIN> )
+{
+    ycpDoVerboseLog();
+    ycpInit( $_ );
+
+    my $action = ycpGetPath();
+    y2debug( " vvv starting in ag_sane vvv" );
+
+    $action = "driver";
+    y2debug( "Got Action = ycpPath = <$action>");
+
+    unless( ycpArgIsMap() )
+    {
+	y2debug( "Argument seems not to be a Map from ycp" );
+    }
+    my %scanner = ycpGetArgMap();
+
+    if( $action =~ /driver/i )
+    {
+	my $vendor = findKeyInHash( "vendor", \%scanner );
+	my $bus = findKeyInHash( "bus", \%scanner  );
+	my $model = findKeyInHash( "model", \%scanner );
+
+	y2debug( "Bus is $bus" );
+	y2debug( "Model is $model" );
+	y2debug( "Vendor is $vendor" );
+
+	my %models = getModel( $bus, $vendor);
+
+	while( my ($model, $driver) = each %models )
+	{
+	    y2debug( "Use <$driver> for <$model>" );
+	}
+
+	my $use_driver = "";
+	$use_driver = findKeyInHash( $model, \%models );
+
+	y2debug( "Returning <$use_driver>" );
+
+	ycpReturnSkalarAsString( $use_driver );
+
+	# my $retdriver = $driver;
+    }
+    else
+    {
+	y2debug( "Unknown action <$action>" );
+    }
+}
+
