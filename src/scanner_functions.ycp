@@ -71,8 +71,8 @@
 	      }
 	      if( bus == "SCSI" )
 	      {
-		  SCR::Write (.rc.system.ADJUST_SCSI_SCANNER_PERM, "yes");
-		  SCR::Write (.rc.system, nil); // flush
+		  SCR::Write (.sysconfig.scanner.ADJUST_SCSI_SCANNER_PERM, "yes");
+		  SCR::Write (.sysconfig.scanner, nil); // flush
 	      }
 	  }
 
@@ -183,7 +183,7 @@
 			   )
 		     );
       // select first list entry
-      UI::ChangeWidget(`id(`table), `CurrentItem, select(select(select(table_contents,0) ,0) ,0));
+      UI::ChangeWidget(`id(`table), `CurrentItem, select(select(select(table_contents,0,`item()) ,0,`id()) ,0, 1));
 	  
       any r = UI::UserInput();
 
@@ -266,7 +266,7 @@
 	  integer scan_id = 0;
 	  if ( size(new_scanner) == 1 ) 
 	  {
-	      scan_id = select( maplist(`key, `value, new_scanner, ``{ return key;}), 0 );
+	      scan_id = select( maplist(`key, `value, new_scanner, ``{ return key;}), 0, 0 );
 	  }
 	  else if ( size(new_scanner) > 1 )
 	  {
@@ -282,7 +282,7 @@
 	  integer scan_id = 0;
 	  if ( size(detected_scanner) == 1 ) 
 	  {
-	      scan_id = select( maplist(`key, `value, detected_scanner, ``{ return key;}), 0 );
+	      scan_id = select( maplist(`key, `value, detected_scanner, ``{ return key;}), 0, 0 );
 	  }
 	  else if ( size(detected_scanner) > 1 )
 	  {

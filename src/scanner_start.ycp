@@ -59,6 +59,7 @@ hardware probing of 'USB' and/or the 'SCSI' port(s).
 		     _("Probing hardware - looking for connected scanners..."),
 		     _("Checking already installed scanners...")
 		    ],
+		    [],		// descriptions
 		    help_text );
 
       Progress::NextStep( );
@@ -158,7 +159,7 @@ the scanner configuration\n."));
 	  else if ( size(connected_scanner) == 1 )
 	  {
 	      // add the devicefile - rebuild the list
-	      map usb_scanner = select( connected_scanner, 0 );
+	      map usb_scanner = select( connected_scanner, 0, $[] );
 	      connected_scanner = [];
 	      usb_scanner = add( usb_scanner, "dev_name", "/dev/usbscanner" );
 	      connected_scanner = add( connected_scanner, usb_scanner );
@@ -221,7 +222,7 @@ the scanner configuration\n."));
 	  //determine whether scanner is already installed
 	  while ( !found && m < size(installed_scanner) )
 	  {
-	      scan = select( installed_scanner, m );
+	      scan = select( installed_scanner, m, $[] );
 	      if ( ( lookup( scan, "vendor", "") 	== lookup( scanner, "vendor", "") ) 	&&
 		   ( (lookup( scan, "device", "") 	== lookup( scanner, "device", "")) ||
 		     (CutBlanks(lookup( scan, "sub_device", "")) == CutBlanks(lookup( scanner, "sub_device", ""))) )  &&
