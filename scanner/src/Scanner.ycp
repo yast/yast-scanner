@@ -1,0 +1,1363 @@
+/**
+ * File:        modules/Scanner.ycp
+ * Package:     Configuration of scanner
+ * Summary:     Scanner settings, input and output functions
+ * Authors:     Johannes Meixner <jsmeix@suse.de>
+ *
+ * $Id$
+ *
+ * Representation of the configuration of scanner.
+ * Input and output routines.
+ */
+
+{
+
+module "Scanner";
+textdomain "scanner";
+
+import "Progress";
+import "Report";
+import "Summary";
+import "Popup";
+import "Package";
+import "Label";
+
+/**
+ * Something was committed to the system?
+ * True if system may have been modified.
+ */
+global boolean modified = false;
+
+/**
+ */
+global boolean proposal_valid = false;
+
+/**
+ * Write only, used during autoinstallation.
+ * Don't run services and SuSEconfig, it's all done at one place.
+ */
+global boolean write_only = false;
+
+/**
+ * Something was committed to the system?
+ * @return true if system may have been modified
+ */
+global boolean Modified()
+{ return modified;
+}
+
+/**
+ * Abort function
+ * @return true if not modified and user requested abort
+ */
+global boolean Abort()
+{ return !Modified() && UI::PollInput() == `abort;
+}
+
+// Settings:
+// Define all variables needed for configuration of scanner:
+
+/**
+ * Scanner database:
+ * When package version of sane/hp-officeJet/iscan changes
+ * the database is created anew in Scanner::Read() which calls the bash script
+ * "/usr/lib/YaST2/bin/create_scanner_database YCP"
+ * which outputs on stdout a YCP list of scanner maps in the following format:
+ * [
+ *   $[ "package":"The package which provides the backend: sane/hp-officeJet/iscan/external (required)",
+ *      "backend":"The name of the backend (required)",
+ *      "manufacturer":"The manufacturer name of the scanner (required)",
+ *      "model":"The model name of the scanner (required)",
+ *      "firmware":"Whether or not firmware upload is required (value is 'required' or the empty string)",
+ *      "interface":"None or one or more scanner interfaces (may be the empty string)",
+ *      "status":"The support status: basic/complete/good/minimal/unsupported/untested (required)",
+ *      "comment":"An optional comment (may be the empty string)"
+ *   ],
+ *   $[ ...
+ *   ],
+ *   ...
+ *   $[]
+ * ]
+ */
+global list< map< string, string > > database = [];
+
+/**
+ * Active scanners:
+ * Determined at runtime via Scanner::DetermineActiveScanners() which calls the bash script
+ * "/usr/lib/YaST2/bin/determine_active_scanners YCP"
+ * which outputs on stdout a YCP list of scanner maps in the following format:
+ * [
+ *   $[ "backend":"The name of the backend (required)",
+ *      "device":"The SANE device (required)",
+ *      "manufacturer":"The manufacturer name of the scanner (required)",
+ *      "model":"The model name of the scanner (required)",
+ *   ],
+ *   $[ ...
+ *   ],
+ *   ...
+ *   $[]
+ * ]
+ */
+global list< map< string, string > > active_scanners = [];
+
+/**
+ * Active backends:
+ * Determined at runtime via Scanner::DetermineActiveBackends() which calls the bash script
+ * "/usr/lib/YaST2/bin/determine_active_scanner_backends YCP"
+ * which outputs on stdout a YCP list of backends in the following format:
+ * [ "The name of the backend",
+ *   ...
+ *   ""
+ * ]
+ */
+global list< string > active_backends = [];
+
+/**
+ * Autodetected scanners:
+ * Determined at runtime via Scanner::AutodetectScanners() which calls the bash script
+ * "/usr/lib/YaST2/bin/autodetect_scanners YCP" which calls "sane-find-scanner"
+ * which may result for example the following description strings of autodetected scanners:
+ *
+ * SCSI processor 'HP C6270A 3846' at /dev/sg0
+ * USB scanner (vendor=0x05da, product=0x20b0) at libusb:002:005
+ * USB scanner (vendor=0x03f0 [Hewlett-Packard], product=0x0201 [HP ScanJet 6200C]) at libusb:002:006
+ * USB scanner (vendor=0x04a9 [Canon], product=0x220e [CanoScan], chip=LM9832/3) at libusb:001:005
+ * USB scanner (vendor=0x04b8 [EPSON], product=0x010b [Perfection1240]) at libusb:001:004
+ *
+ * Only in case of USB an automated extraction of manufacturer is possible.
+ * If there are two '[...]' substrings then the first one is the manufacturer
+ * and the second one is the model (but there may be only one or none substring).
+ *
+ * The result is a YCP list of scanner maps in the following format:
+ * [
+ *   $[ "connection":"Either USB or SCSI (required)",
+ *      "manufacturer":"The manufacturer name of the scanner (may be the empty string)",
+ *      "model":"The model name of the scanner (may be the empty string)",
+ *      "description":"The sane-find-scanner output description string (required)"
+ *   ],
+ *   $[ ...
+ *   ],
+ *   ...
+ *   $[]
+ * ]
+ */
+global list< map< string, string > > autodetected_scanners = [];
+
+/**
+ * Environment values:
+ * It is a map in the following format:
+ * $[ "sane_version":"What 'rpm -q sane' returns (required)",
+ *    "hp-officeJet_version":"What 'rpm -q hp-officeJet' returns (required)",
+ *    "iscan_version":"What 'rpm -q iscan' returns (required)"
+ * ]
+ */
+global map< string, string > actual_environment = $[ "sane_version":"",
+                                                     "hplip_version":"",
+                                                     "hp-officeJet_version":"",
+                                                     "iscan_version":""
+                                                   ];
+global map< string, string > stored_environment = $[ "sane_version":"",
+                                                     "hplip_version":"",
+                                                     "hp-officeJet_version":"",
+                                                     "iscan_version":""
+                                                   ];
+
+/**
+ * Other global variables:
+ */
+global integer selected_model_database_index = -1;
+global integer selected_autodetected_scanners_index = -1;
+
+/**
+ * Local variables:
+ */
+map bash_result = $[];
+string environment_filename = "/var/lib/YaST2/stored_scanner_environment.ycp";
+string database_filename = "/var/lib/YaST2/scanner_database.ycp";
+string create_database_commandline = "/usr/lib/YaST2/bin/create_scanner_database YCP >" + database_filename;
+string active_scanners_filename = "/var/lib/YaST2/active_scanners.ycp";
+string determine_active_scanners_commandline = "/usr/lib/YaST2/bin/determine_active_scanners YCP >" + active_scanners_filename;
+string active_backends_filename = "/var/lib/YaST2/active_scanner_backends.ycp";
+string determine_active_scanner_backends_commandline = "/usr/lib/YaST2/bin/determine_active_scanner_backends YCP >" + active_backends_filename;
+string autodetected_scanners_filename = "/var/lib/YaST2/autodetected_scanners.ycp";
+string autodetect_scanners_commandline = "/usr/lib/YaST2/bin/autodetect_scanners YCP >" + autodetected_scanners_filename;
+string activate_backend_commandline = "/usr/lib/YaST2/bin/activate_scanner_backend";
+string deactivate_backend_commandline = "/usr/lib/YaST2/bin/deactivate_scanner_backend";
+string setup_ptal_scanner_service_commandline = "/usr/lib/YaST2/bin/setup_ptal_scanner_service";
+string setup_hplip_scanner_service_commandline = "/usr/lib/YaST2/bin/setup_hplip_scanner_service";
+
+/**
+ * Local functions:
+ */
+
+/**
+ * Wrapper for SCR::Execute to execute a bash command to increase verbosity via y2milestone.
+ * It reports the command via y2milestone in any case and it reports exit code, stdout
+ * and stderr via y2milestone in case of non-zero exit code.
+ * @param bash_commandline string of the bash command to be executed
+ * @return true on success
+ *
+ * The well working old version (without any Popup::ShowFeedback):
+ */
+boolean ExecuteBashCommand( string bash_commandline )
+{ y2milestone( "Executing bash commandline: %1", bash_commandline );
+  bash_result = (map)SCR::Execute( .target.bash_output, bash_commandline );
+  if( bash_result["exit"]:9999 != 0 )
+  { y2milestone( "'%1' exit code is: %2", bash_commandline, bash_result["exit"]:9999 );
+    y2milestone( "'%1' stdout is: %2", bash_commandline, bash_result["stdout"]:"" );
+    y2milestone( "'%1' stderr is: %2", bash_commandline, bash_result["stderr"]:"" );
+    return false;
+  }
+  return true;
+}
+/**
+ * An ugly new version (with simple automated Popup::ShowFeedback which is shown too often):
+ *
+boolean ExecuteBashCommand( string bash_commandline )
+{ y2milestone( "Executing bash commandline: %1", bash_commandline );
+  // if( "" == feeback_title )
+  // { feeback_title = "Executing " + bash_commandline;
+  string feeback_title = "Executing " + bash_commandline;
+  // }
+  // Show feedback in any case:
+  Popup::ShowFeedback( feeback_title, _("Please wait ... this takes some time.") );
+  bash_result = (map)SCR::Execute( .target.bash_output, bash_commandline );
+  // Wait at least one more second before clearing the feedback
+  // so that the user can read the feedback text in any case:
+  sleep( 1000 );
+  Popup::ClearFeedback();
+  if( bash_result["exit"]:9999 != 0 )
+  { y2milestone( "'%1' exit code is: %2", bash_commandline, bash_result["exit"]:9999 );
+    y2milestone( "'%1' stdout is: %2", bash_commandline, bash_result["stdout"]:"" );
+    y2milestone( "'%1' stderr is: %2", bash_commandline, bash_result["stderr"]:"" );
+    return false;
+  }
+  return true;
+}
+ *
+ * A future version (with sophisticated automated Popup::ShowFeedback), see
+ * yast/trunk/core/agents-perl/doc/ag_background.html
+ *
+boolean ExecuteBashCommand( string bash_commandline )
+{ // if( "" == feeback_title )
+  // { feeback_title = "Executing " + bash_commandline;
+  string feeback_title = "Executing " + bash_commandline;
+  // }
+  y2milestone( "Executing bash commandline: %1", bash_commandline );
+  // Run the bash_commandline in the background and get its stdout and stderr:
+  if( !(boolean)SCR::Read(.background.run_output_err, bash_commandline ) )
+  { y2milestone( "Cannot execute bash commandline: %1", bash_commandline );
+    return false;
+  }
+  // Wait for the bash_commandline to finish up to one second without feedback.
+  // After one second show feedback that it may take some time.
+  integer counter = 0;
+  while( (boolean)SCR::Read(.background.isrunning) )
+  { counter = counter + 1;
+    sleep( 100 );
+    if( counter == 10 )
+    { Popup::ShowFeedback( feeback_title, _("Please wait ... this takes some time.") );
+    }
+  }
+  // If feedback was shown, wait at least one more second before clearing the feedback
+  // so that the user can read the feedback text in any case:
+  if( counter >= 10 )
+  { while( counter < 20 )
+    { counter = counter + 1;
+      sleep( 100 );
+    }
+    Popup::ClearFeedback();
+  }
+  // Read exit code, stdout, and stderr from the finished bash_commandline:
+  bash_result["exit"] = SCR::Read(.background.status);
+  bash_result["stdout"] = SCR::Read(.background.buffer);
+  bash_result["stderr"] = SCR::Read(.background.buffer_err);
+  if( bash_result["exit"]:9999 != 0 )
+  { y2milestone( "'%1' exit code is: %2", bash_commandline, bash_result["exit"]:9999 );
+    y2milestone( "'%1' stdout is: %2", bash_commandline, bash_result["stdout"]:"" );
+    y2milestone( "'%1' stderr is: %2", bash_commandline, bash_result["stderr"]:"" );
+    return false;
+  }
+  return true;
+}
+ */
+
+/**
+ * Determine the version of an installed package by calling a bash command (rpm).
+ * @param package_name string of the package name
+ * @return string of the version of an installed package or "failed to determine" otherwise
+ */
+string InstalledPackageVersion( string package_name )
+{ if( ! Package::Installed( package_name ) )
+  { return "not installed";
+  }
+  if( ! ExecuteBashCommand( "/bin/rpm -q " + package_name + " | /usr/bin/tr -d '\n'" ) )
+  { Report::Error( sformat( // Message of a Report::Error where %1 will be replaced by the package name:
+                            _("Failed to determine the version of the package %1."), package_name ) );
+  }
+  return bash_result["stdout"]:"failed to determine";
+}
+
+/**
+ * Test whether the package is installed (Package::Installed) and
+ * if not then test whether the package is available to be installed (Package::Available) and
+ * if yes then install it (Package::Install).
+ * @param package_name string of the package name
+ * @return true on success
+ */
+boolean TestAndInstallPackage( string package_name )
+{ if( ! Package::Installed( package_name ) )
+  { if( ! Package::Available( package_name ) )
+    { y2milestone( "Required package %1 is not installed and not available for installation.", package_name );
+      Report::Error( sformat( // Message of a Report::Error where %1 will be replaced by the package name:
+                              _("Required package %1 is not installed and not available for installation."),
+                              package_name
+                            )
+                   );
+      return false;
+    }
+    if( ! Popup::TimedOKCancel( sformat( // Message of a Popup::TimedOKCancel where %1 will be replaced by the package name:
+                                         _("Required package %1 is not installed. It will be installed now."),
+                                         package_name
+                                       ),
+                                10
+                              )
+      )
+    { y2milestone( "Package %1 is required and must be installed.", package_name );
+      Report::Error( // Message of a Report::Error where %1 will be replaced by the package name:
+                     sformat( _("Package %1 is required and must be installed."),
+                              package_name
+                            )
+                   );
+      return false;
+    }
+    if( ! Package::Install( package_name ) )
+    { y2milestone( "Failed to install required package %1.", package_name );
+      Report::Error( // Message of a Report::Error where %1 will be replaced by the package name:
+                     sformat( _("Failed to install required package %1."),
+                              package_name
+                            )
+                   );
+      return false;
+    }
+  }
+  return true;
+}
+
+/**
+ * Determine the active scanners by calling a bash script
+ * which calls "scanimage -L" and processes its output
+ * and stores the results as YCP list in a temporary file
+ * and then read the temporary file (SCR::Read) to get the YCP list
+ * @return true on success
+ */
+boolean DetermineActiveScanners()
+{ if( ! ExecuteBashCommand( determine_active_scanners_commandline ) )
+  { Report::Error( // Message of a Report::Error:
+                   _("Failed to determine the active scanners.")
+                 );
+    return false;
+  }
+  if( -1 == SCR::Read( .target.size, active_scanners_filename ) )
+  { y2milestone( "Error: Active scanners file %1 does not exist.", active_scanners_filename );
+    Report::Error( sformat( // Message of a Report::Error where %1 will be replaced by the file name:
+                            _("Active scanners file %1 does not exist."),
+                            active_scanners_filename
+                          )
+                 );
+    return false;
+  }
+  active_scanners = (list< map< string, string > >)SCR::Read( .target.ycp, active_scanners_filename );
+  if( nil == active_scanners )
+  { y2milestone( "Error: Failed to read the active scanners file %1", active_scanners_filename );
+    Report::Error( sformat( // Message of a Report::Error where %1 will be replaced by the file name:
+                            _("Failed to read the active scanners file %1"),
+                            active_scanners_filename
+                          )
+                 );
+    active_scanners = [];
+    return false;
+  }
+  y2milestone( "Active scanners: %1", active_scanners );
+  return true;
+}
+
+/**
+ * Determine the active backends by calling a bash script
+ * which calls "grep ... /etc/sane.d/dll.conf" and processes its output
+ * and stores the results as YCP list in a temporary file
+ * and then read the temporary file (SCR::Read) to get the YCP list
+ * @return true on success
+ */
+boolean DetermineActiveBackends()
+{ if( ! ExecuteBashCommand( determine_active_scanner_backends_commandline ) )
+  { Report::Error( // Message of a Report::Error:
+                   _("Failed to determine the active backends.")
+                 );
+    return false;
+  }
+  if( -1 == SCR::Read( .target.size, active_backends_filename ) )
+  { y2milestone( "Error: Active backends file %1 does not exist.", active_backends_filename );
+    Report::Error( sformat( // Message of a Report::Error where %1 will be replaced by the file name:
+                            _("Active backends file %1 does not exist."),
+                            active_backends_filename
+                          )
+                 );
+    return false;
+  }
+  active_backends = (list< string >)SCR::Read( .target.ycp, active_backends_filename );
+  if( nil == active_backends )
+  { y2milestone( "Error: Failed to read the active backends file %1", active_backends_filename );
+    Report::Error( sformat( // Message of a Report::Error where %1 will be replaced by the file name:
+                            _("Failed to read the active backends file %1"),
+                            active_backends_filename
+                          )
+                 );
+    active_backends = [];
+    return false;
+  }
+  y2milestone( "Active backends: %1", active_backends );
+  return true;
+}
+
+/**
+ * Try to autodetect USB and SCSI scanners by calling a bash script
+ * which calls "sane-find-scanner" and processes its output
+ * and stores the results as YCP list in a temporary file
+ * and then read the temporary file (SCR::Read) to get the YCP list
+ * @return true on success
+ */
+boolean AutodetectScanners()
+{ if( ! ExecuteBashCommand( autodetect_scanners_commandline ) )
+  { Report::Error( // Message of a Report::Error:
+                   _("Failed to autodetect scanners.")
+                 );
+    return false;
+  }
+  if( -1 == SCR::Read( .target.size, autodetected_scanners_filename ) )
+  { y2milestone( "Error: Autodetected scanners file %1 does not exist.", autodetected_scanners_filename );
+    Report::Error( sformat( // Message of a Report::Error where %1 will be replaced by the file name:
+                            _("Autodetected scanners file %1 does not exist."),
+                            autodetected_scanners_filename
+                          )
+                 );
+    return false;
+  }
+  autodetected_scanners = (list< map< string, string > >)SCR::Read( .target.ycp, autodetected_scanners_filename );
+  if( nil == autodetected_scanners )
+  { y2milestone( "Error: Failed to read the autodetected scanners file %1", autodetected_scanners_filename );
+    Report::Error( sformat( // Message of a Report::Error where %1 will be replaced by the file name:
+                            _("Failed to read the autodetected scanners file %1"),
+                            autodetected_scanners_filename
+                          )
+                 );
+    autodetected_scanners = [];
+    return false;
+  }
+  y2milestone( "Autodetected scanners: %1", autodetected_scanners );
+  return true;
+}
+
+/**
+ * Global functions:
+ */
+
+/**
+ * Read all scanner settings:
+ * - Check installed packages
+ * - Read or create the scanner database
+ * - Determine active scanners
+ * - Determine active backends
+ * - Try to autodetect USB and SCSI scanners
+ * @return true on success
+ */
+global boolean Read()
+{ // Define the progress stages:
+  Progress::New( // Header of a Progress::New:
+                 _("Initializing scanner configuration"),
+                 " ",
+                 5,
+                 [ // 1. stage description of a Progress::New:
+                   _("Check installed packages"),
+                   // 2. stage description of a Progress::New:
+                   _("Read or create the scanner database"),
+                   // 3. stage description of a Progress::New:
+                   _("Determine active scanners"),
+                   // 4. stage description of a Progress::New:
+                   _("Determine active backends"),
+                   // 5. stage description of a Progress::New:
+                   _("Try to autodetect USB and SCSI scanners")
+                 ],
+                 [ // 1. stage work in progress message of a Progress::New:
+                   _("Checking installed packages..."),
+                   // 2. stage work in progress message of a Progress::New:
+                   _("Reading or creating the scanner database..."),
+                   // 3. stage work in progress message of a Progress::New:
+                   _("Determining active scanners..."),
+                   // 4. stage work in progress message of a Progress::New:
+                   _("Determining active backends..."),
+                   // 5. stage work in progress message of a Progress::New:
+                   _("Trying to autodetect USB and SCSI scanners..."),
+                   // Last work in progress message of a Progress::New:
+                   _("Finished")
+                 ],
+                 ""
+               );
+  // Progress 1. stage (Check installed packages):
+  if( Abort() ) return false;
+  Progress::NextStage();
+  // Make sure the package sane is installed (otherwise abort):
+  if( ! TestAndInstallPackage( "sane" ) )
+  { return false;
+  }
+  // Check installed package version of sane, hp-officeJet, iscan:
+  actual_environment["sane_version"] = InstalledPackageVersion( "sane" );
+  actual_environment["hplip_version"] = InstalledPackageVersion( "hplip" );
+  actual_environment["hp-officeJet_version"] = InstalledPackageVersion( "hp-officeJet" );
+  actual_environment["iscan_version"] = InstalledPackageVersion( "iscan" );
+  y2milestone( "Version of sane, hplip, hp-officeJet, iscan: %1 %2 %3 %4",
+               actual_environment["sane_version"]:"failed",
+               actual_environment["hplip_version"]:"failed",
+               actual_environment["hp-officeJet_version"]:"failed",
+               actual_environment["iscan_version"]:"failed"
+             );
+  // Read stored environment:
+  if( -1 != SCR::Read( .target.size, environment_filename ) )
+  { stored_environment = (map< string, string >)SCR::Read( .target.ycp, environment_filename );
+    if( stored_environment == nil )
+    { y2milestone( "Warning: Failed to read the stored environment." );
+      stored_environment = $[ "sane_version":"failed to read",
+                              "hplip_version":"failed to read",
+                              "hp-officeJet_version":"failed to read",
+                              "iscan_version":"failed to read"
+                            ];
+    }
+  }
+  // Progress 2. stage (Read or create the scanner database):
+  if( Abort() ) return false;
+  Progress::NextStage();
+  if( actual_environment["sane_version"]:"0" != stored_environment["sane_version"]:"1"
+      || actual_environment["hplip_version"]:"0" != stored_environment["hplip_version"]:"1"
+      || actual_environment["hp-officeJet_version"]:"0" != stored_environment["hp-officeJet_version"]:"1"
+      || actual_environment["iscan_version"]:"0" != stored_environment["iscan_version"]:"1"
+      || -1 == SCR::Read( .target.size, database_filename )
+    )
+  { Popup::ShowFeedback( // Header of a Popup::ShowFeedback:
+                         _("Creating scanner database"),
+                         // Body of a Popup::ShowFeedback:
+                         _("Please wait ... this takes some time.")
+                       );
+    if( ! ExecuteBashCommand( create_database_commandline ) )
+    { Popup::ClearFeedback();
+      Report::Error( // Message of a Report::Error:
+                     _("Aborting: Failed to create the scanner database.")
+                   );
+      return false;
+    }
+    Popup::ClearFeedback();
+  }
+  database = (list< map< string, string > >)SCR::Read( .target.ycp, database_filename );
+  if( database == nil )
+  { y2milestone( "Aborting: Failed to read the scanner database %1", database_filename );
+    Report::Error( sformat( // Message of a Report::Error where %1 will be replaced by the file name:
+                            _("Aborting: Failed to read the scanner database %1"),
+                            database_filename
+                          )
+                 );
+    return false;
+  }
+  // Progress 3. stage (Determine active scanners):
+  if( Abort() ) return false;
+  Progress::NextStage();
+  if( ! DetermineActiveScanners() )
+  { active_scanners = [];
+  }
+  // Progress 4. stage (Determine active backends):
+  if( Abort() ) return false;
+  Progress::NextStage();
+  if( ! DetermineActiveBackends() )
+  { active_backends = [];
+  }
+  // Progress 5. stage (Try to autodetect USB and SCSI scanners):
+  if( Abort() ) return false;
+  Progress::NextStage();
+  if( ! AutodetectScanners() )
+  { autodetected_scanners = [];
+  }
+  // Progress last stage (progress finished):
+  if( Abort() ) return false;
+  Progress::NextStage();
+  // only sleep one second to let the user notice that the progress has finished
+  sleep( 1000 );
+  if( Abort() ) return false;
+  return true;
+}
+
+/**
+ * Write scanner settings:
+ * - Save the actual environment
+ * @return true on success
+ */
+global boolean Write()
+{ // Define the progress stages:
+  Progress::New( // Header of a Progress::New:
+                 _("Writing scanner configuration"),
+                 " ",
+                 1,
+                 [ // 1. stage description of a Progress::New:
+                   _("Save the actual environment")
+                 ],
+                 [ // 1. stage work in progress message of a Progress::New:
+                   _("Saving the actual environment..."),
+                   // Last work in progress message of a Progress::New:
+                   _("Finished")
+                 ],
+                 ""
+               );
+  // Progress first stage (Save the actual environment):
+  if( Abort() ) return false;
+  Progress::NextStage();
+  if( ! SCR::Write( .target.ycp, environment_filename, actual_environment ) )
+  { y2milestone( "Warning: Failed to save the actual environment." );
+  }
+  // Progress last stage (progress finished):
+  if( Abort() ) return false;
+  Progress::NextStage();
+  // only sleep one second to let the user notice that the progress has finished
+  sleep( 1000 );
+  if( Abort() ) return false;
+  return true;
+}
+
+/**
+ * Create a textual summary and a list of detected scanners
+ * @return list of the currently activated scanners and activated backends
+ */
+global list Summary()
+{ // Make a list of the autodetected scanners:
+  list< term > detected_scanners = [];
+  integer autodetected_scanners_index = 0;
+  foreach( map< string, string > autodetected_scanner,
+           autodetected_scanners,
+           { string description = autodetected_scanner["description"]:"";
+             if( "" != description )
+             { if( selected_autodetected_scanners_index == autodetected_scanners_index )
+               { // If there was already a scanner selected before then preselect it.
+                 // This happens for example when going 'back' to the summary screen.
+                 detected_scanners = add( detected_scanners,
+                                          `item( `id( autodetected_scanners_index ), description, true )
+                                        );
+               }
+               else
+               { detected_scanners = add( detected_scanners,
+                                          `item( `id( autodetected_scanners_index ), description )
+                                        );
+               }
+               // Increase the autodetected_scanners_index only if a new item was added:
+               autodetected_scanners_index = autodetected_scanners_index +1;
+             }
+           }
+         );
+  if( selected_autodetected_scanners_index < 0 )
+  { detected_scanners = add( detected_scanners, `item( `id( -1 ), "Other (not detected)", true ) );
+  }
+  else
+  { detected_scanners = add( detected_scanners, `item( `id( -1 ), "Other (not detected)" ) );
+  }
+  // Make a configuration summary text:
+  // Header of the configuration summary text:
+  string summary_text = _("Configuration summary:");
+  // Make a summary text of the active scanners:
+  string active_scanner_text = "";
+  summary_text = summary_text
+                 + "<p>"
+                 // 1. sub-header of the configuration summary text:
+                 + _("Active scanners:");
+  foreach( map< string, string > active_scanner,
+           active_scanners,
+           { if( "" != active_scanner["backend"]:"" )
+             { active_scanner_text = sformat( // Active scanner entry where
+                                              // %1 will be replaced by the manufacturer name
+                                              // %2 will be replaced by the model name
+                                              // %3 will be replaced by the device name where the scanner is connected to:
+                                              _("<br>%1 %2 at %3"),
+                                              // Fallback manufacturer name if the real manufacturer name is missing:
+                                              active_scanner["manufacturer"]:_("unknown manufacturer"),
+                                              // Fallback model name if the real model name is missing:
+                                              active_scanner["model"]:_("unknown model"),
+                                              // Fallback device name if the real device name is missing:
+                                              active_scanner["device"]:_("unknown device")
+                                            );
+               summary_text = summary_text + active_scanner_text;
+             }
+           }
+         );
+  // Make a summary text of the active backends:
+  summary_text = summary_text
+                 + "<p>"
+                 // Last sub-header of the configuration summary text:
+                 + _("Active backends:");
+  foreach( string active_backend,
+           active_backends,
+           { if( "" != active_backend )
+             { summary_text = summary_text
+                              + "<br>"
+                              + active_backend;
+             }
+           }
+         );
+  // return the list of detected scanners and the summary text of the active scanners and backends:
+  return [ summary_text, detected_scanners ];
+}
+
+/**
+ * Create a list of items from the database entries
+ * which is used for the SelectionBox in the SelectModelDialog
+ * @param filter_string string of a search string to return only matching models
+ *        (retunr all models if filter_string is the empty string)
+ * @return list of model strings (manufacturer, model, backend, comment)
+ */
+global list ModelItems( string filter_string )
+{ // Make a list of the scanner models according to the database
+  // and take the filter_string into account (if it is not the empty string)
+  // and try to preselect a model according to a selected autodetected scanner:
+  integer database_index = -1;
+  string model_string = "";
+  list< term > model_items = [];
+  foreach( map< string, string > database_entry,
+           database,
+           { // Set the database_index to the index number of the actual database_entry:
+             database_index = database_index + 1;
+             // Use local variables to have shorter variable names:
+             string manufacturer = database_entry["manufacturer"]:"unknown manufacturer";
+             string model = database_entry["model"]:"unknown model";
+             string backend = database_entry["backend"]:"unknown";
+             string status = database_entry["status"]:"unknown";
+             string comment = database_entry["comment"]:"";
+             string firmware = database_entry["firmware"]:"unknown";
+             // Build the model_string:
+             if( manufacturer != "unknown manufacturer"
+                 && model != "unknown model"
+                 && backend != "unknown"
+                 && status != "unknown"
+               )
+             { // Enclose a comment in brackets to seperate it from the rest of the model_string
+               // because the comment is untranslatable English text:
+               if( "" != comment )
+               { comment = "[ " + comment + " ]";
+               }
+               // Enclose the backend name and the support status in single quotes to seperate them
+               // from the rest of the model_string because they are untranslatable English words.
+               if( "unsupported" == status )
+               { // The model_string for unsupported models:
+                 model_string = sformat( // Scanner model list entry for unsupported models where
+                                         // %1 will be replaced by the manufacturer name
+                                         // %2 will be replaced by the model name
+                                         // %3 will be replaced by an optional model dependent comment
+                                         //    which is only available in English
+                                         //    and therefore the comment is included in brackets
+                                         _("%1 %2 : This scanner is not supported. %3"),
+                                         manufacturer,
+                                         model,
+                                         comment
+                                       );
+               }
+               else
+               { if( "required" == firmware )
+                 { // The model_string for supported models which require a firmware upload:
+                   model_string = sformat( // Scanner model list entry for supported models
+                                           // which require a firmware upload where
+                                           // %1 will be replaced by the manufacturer name
+                                           // %2 will be replaced by the model name
+                                           // %3 will be replaced by the backend (scanner driver) name
+                                           // %4 will be replaced by the support status
+                                           //    which is only available in English
+                                           //    and varies from 'complete' to 'minimal'
+                                           // %5 will be replaced by an optional model dependent comment
+                                           //    which is only available in English
+                                           //    and therefore the comment is included in brackets
+                                           _("%1 %2 : Firmware upload required. Backend '%3' provides '%4' functionality. %5"),
+                                           manufacturer,
+                                           model,
+                                           backend,
+                                           status,
+                                           comment
+                                         );
+                 }
+                 else
+                 { // The model_string for all normal supported models:
+                   model_string = sformat( // Scanner model list entry for normal supported models where
+                                           // %1 will be replaced by the manufacturer name
+                                           // %2 will be replaced by the model name
+                                           // %3 will be replaced by the backend (scanner driver) name
+                                           // %4 will be replaced by the support status
+                                           //    which is only available in English
+                                           //    and varies from 'complete' to 'minimal'
+                                           // %5 will be replaced by an optional model dependent comment
+                                           //    which is only available in English
+                                           //    and therefore the comment is included in brackets
+                                           _("%1 %2 : Backend '%3' provides '%4' functionality. %5"),
+                                           manufacturer,
+                                           model,
+                                           backend,
+                                           status,
+                                           comment
+                                         );
+                 }
+               }
+               // If there is an autodetected scanner selected then try to determine
+               // whether the model in the database matches to the selected autodetected scanner
+               // and if exactly one model in the database matches then preselect it.
+               // If no model matches then leave the selected_model_database_index unchanged
+               // to preselect an already selected model in the database again.
+               // This happens for example when going 'back' to the model selection screen.
+               if( selected_autodetected_scanners_index >= 0 )
+               { string autodetected_manufacturer = autodetected_scanners[selected_autodetected_scanners_index,"manufacturer"]:"";
+                 string autodetected_model = autodetected_scanners[selected_autodetected_scanners_index,"model"]:"";
+                 if( autodetected_manufacturer == manufacturer
+                     && autodetected_model == model )
+                 { // Best case: Manufacturer and model match exactly.
+                   // To test for uniqueness the whole database must be processed again
+                   // because for the actual model entry in the database the decission must be made now
+                   // whether or not to preselect it:
+                   integer matching_models_count = 0;
+                   foreach( map< string, string > database_test_entry,
+                            database,
+                            { string test_manufacturer = database_test_entry["manufacturer"]:"qq";
+                              string test_model = database_test_entry["model"]:"qq";
+                              if( autodetected_manufacturer == test_manufacturer
+                                  && autodetected_model == test_model )
+                              { matching_models_count = matching_models_count + 1;
+                              }
+                            }
+                          );
+                   if( 1 == matching_models_count )
+                   { y2milestone( "Autodetected '%1' '%2' matches exactly to database entry.",
+                                  autodetected_manufacturer,
+                                  autodetected_model);
+                     selected_model_database_index = database_index;
+                   }
+                 }
+                 else
+                 { // Normal case: Manufacturer and model don't match exactly.
+                   // Do a reasonable guess based only on unified model strings
+                   // but to be safe preselect only if the guess result is unique.
+                   // Note that the '+' character must be included in the allowed characters
+                   // because there are for example those models in the database:
+                   //   'gt-10000' and 'gt-10000+' both using backend epkowa
+                   //   'imagery 4800 sp' using backend mustek but 'imagery 4800 sp+' using backend teco3
+                   //   'opticpro u16b' and 'opticpro u16b+' both using backend gt68xx
+                   //   'scanexpress 1200 cp' and 'scanexpress 1200 cp+' both using backend mustek_pp
+                   // At least 'imagery 4800 sp' versus 'imagery 4800 sp+' shows that '+' is significant.
+                   string allowed_chars = "abcdefghijklmnopqrstuvwxyz0123456789+";
+                   string unified_autodetected_model = filterchars( tolower( autodetected_model ), allowed_chars );
+                   string unified_model = filterchars( tolower( model ), allowed_chars );
+                   if( unified_autodetected_model == unified_model )
+                   { // To test for uniqueness the whole database must be processed again
+                     // because for the actual model entry in the database the decission must be made now
+                     // whether or not to preselect it:
+                     integer matching_models_count = 0;
+                     foreach( map< string, string > database_test_entry,
+                              database,
+                              { string unified_test_model = filterchars( tolower( database_test_entry["model"]:"qq" ), allowed_chars );
+                                if( unified_autodetected_model == unified_test_model )
+                                { matching_models_count = matching_models_count + 1;
+                                }
+                              }
+                            );
+                     if( 1 == matching_models_count )
+                     { y2milestone( "Autodetected '%1' '%2' matches with unified model name '%3' to database entry '%4' '%5'",
+                                    autodetected_manufacturer,
+                                    autodetected_model,
+                                    unified_autodetected_model,
+                                    manufacturer,
+                                    model);
+                       selected_model_database_index = database_index;
+                     }
+                   }
+                 }
+               }
+               // Take the filter_string into account:
+               if( "" != filter_string )
+               { // If the filter_string is not the empty string then
+                 // test whether the model_string matches to the filter_string:
+                 if( issubstring( tolower( model_string ), tolower( filter_string ) ) )
+                 { // If there was already a model selected before then preselect this model.
+                   // This happens for example when going 'back' to the model selection screen
+                   // or when a model in the database matches the selected autodetected scanner:
+                   if( selected_model_database_index == database_index )
+                   { model_items = add( model_items, `item( `id( database_index ), model_string, true ) );
+                   }
+                   else
+                   { model_items = add( model_items, `item( `id( database_index ), model_string ) );
+                   }
+                 }
+               }
+               else
+               { // If there was already a model selected before then preselect this model.
+                 // This happens for example when going 'back' to the model selection screen
+                 // or when a model in the database matches the selected autodetected scanner:
+                 if( selected_model_database_index == database_index )
+                 { model_items = add( model_items, `item( `id( database_index ), model_string, true ) );
+                 }
+                 else
+                 { model_items = add( model_items, `item( `id( database_index ), model_string ) );
+                 }
+               }
+             }
+           }
+         );
+  return sort( term a,
+               term b,
+               model_items,
+               { return a[1]:"" < b[1]:""; }
+             );
+}
+
+/**
+ * Activate the backend in /etc/sane.d/dll.conf
+ * according to the specified backend_name
+ * or if the specified backend_name is the empty string
+ * then set the backend_name according to a specified database_index.
+ * @param backend_name string of a backend which should be activated
+ *        (if backend_name is the empty string then database_index must be >= 0)
+ * @param database_index integer which points to an entry in the model database
+ *        (if backend_name is the empty string then the backend according to the database_index is used)
+ * @param user_confirmation boolean true if user confirmation popup in case of problems is requested
+ * @return true on success
+ */
+global boolean ActivateBackend( string backend_name, integer database_index, boolean user_confirmation )
+{ // First of all the multi-line strings because such strings cannot be indented:
+  string firmware_message =
+  // The body of a Popup::AnyMessage for scanners which require a firmware upload
+  // Below this message on a seperated line a special command will be shown:
+_("A firmware file contains software that must be uploaded to the scanner's memory.
+Without firmware the scanner cannot work.\n
+As firmware is licensed by the scanner manufacturer, we cannot distribute it.
+Usually the firmware file is somehow stored on the manufacturer's CD.
+Alternatively it may be possible to download it from the manufacturer's web site.
+Ask the manufacturer how to get the firmware file for your particular scanner.
+Additionally you can find useful information on the SANE web site:
+http://www.sane-project.org/\n
+After you have got the firmware file, you must configure the backend manually.
+Read the man page of the backend how to configure it for firmware upload.
+The following command shows the man page for the particular backend:"
+);
+  string hpaio_message =
+  // The message of a Popup::YesNo for scanners which should be set up with the hpaio backend:
+_("The hpaio backend requires the hplip service to be up and running.
+Additionally the hplip service should be activated to be started when booting.
+The hplip service and the PTAL system exclude each other.
+Therefore a running PTAL system would be stopped and deactivated
+before the the hplip service is activated and started.
+The hplip service doesn't support parallel-port scanners.
+For more information see the following article in our support portal:
+http://portal.suse.com/sdb/en/2002/05/ke_hp-officejet.html\n
+Should the hplip service be activated and started now?"
+);
+  string hpoj_message =
+  // The message of a Popup::YesNo for scanners which should be set up with the hpoj backend:
+_("The hpoj backend requires the PTAL system to be set up and running.
+In particular the ptal service must be up and running.\n
+Before the ptal service can be started the PTAL system must be initialized.
+Additionally the ptal service should be activated to be started when booting.
+The PTAL system and the hplip service exclude each other.
+Therefore a running hplip service would be stopped and deactivated
+before the the PTAL system is initialized, activated, and started.
+An automated initialization of the PTAL system is only safe for USB.
+If you have a non-USB device or if the automated initialization for USB fails,
+then you must set up the PTAL system manually.
+If you have an all-in-one device (scanner+printer) then please note that
+a running ptal service monopolizes the USB device file (e.g. /dev/usb/lp0)
+and thus, the printer can no longer be addressed via the USB device file.
+See the following article in our support portal:
+http://portal.suse.com/sdb/en/2002/05/ke_hp-officejet.html\n
+Should the PTAL system for USB be initialized, activated, and started now?"
+);
+  // Here the real code starts with proper indentation:
+  if( backend_name == "" )
+  { if( database_index < 0 )
+    { y2milestone( "Error: Scanner database_index is: %1", database_index );
+      return false;
+    }
+    backend_name = database[database_index,"backend"]:"unknown";
+    if( "unknown" == backend_name )
+    { y2milestone( "Error: Cannot activate backend: %1", backend_name );
+      return false;
+    }
+  }
+  // To be safe assume that something will really be modified.
+  // If there is in fact nothing modified, it doesn't harm if 'modified' is 'true':
+  modified = true;
+  // Test if the package which provides the backend is installed
+  // and if not then try to install it.
+  // This makes only sense if a database_index was specified
+  // because which package is required for which backend is stored in the database
+  // and additionally user confirmation must be requested.
+  // Otherwise skip this section.
+  string package_name = database[database_index,"package"]:"unknown";
+  if( package_name != "unknown"
+      && user_confirmation
+    )
+  { if( ! TestAndInstallPackage( package_name ) )
+    { Popup::AnyMessage( // Header of a Popup::AnyMessage:
+                         _("Required package not installed"),
+                         // Body of a Popup::AnyMessage where
+                         // %1 will be replaced by the backend name
+                         // %2 will be replaced by the package name
+                         sformat( _("The backend %1 requires the package %2."), backend_name, package_name )
+                       );
+      return false;
+    }
+  }
+  // Some scanners require a firmware upload to become ready to operate.
+  // When building the sane package ':firmware "required"' entries have been
+  // added for the respective scanners to the appropriate descriptions files.
+  // See the sane.spec file of the sane package.
+  // This makes only sense if a database_index was specified
+  // because which scanner requires firmware upload is stored in the database
+  // and additionally user confirmation must be requested.
+  // Otherwise skip this section.
+  string firmware_entry = database[database_index,"firmware"]:"unknown";
+  if( "required" == firmware_entry
+      && user_confirmation
+    )
+  { Popup::AnyMessage( // Header of a Popup::AnyMessage for scanners which require a firmware upload:
+                       _("Firmware upload required"),
+                       firmware_message + "\n    man sane-" + backend_name
+                     );
+  }
+  // The hpaio backend (from the package hplip) requires the hplip service to be up and running.
+  // This makes only sense if user confirmation is requested.
+  // Otherwise skip this section.
+  if( "hpaio" == backend_name
+      && user_confirmation
+    )
+  { if( ! Popup::YesNo( hpaio_message ) )
+    { // Don't abort (i.e. return false) in this case because it is no error
+      // when the user has decided not to activate/start the hplip service
+      // because it may be already up and running or the user may want to set it up manually.
+      // Regardless of the state of the hplip service the backend can be activated in /etc/sane.d/dll.conf
+      Report::Warning(
+                       // Message of a Report::Warning for scanners which should be set up with the hpaio backend:
+                       _("If the hplip service is not running, the hpaio backend cannot work.")
+                     );
+    }
+    else
+    { if( ! ExecuteBashCommand( setup_hplip_scanner_service_commandline ) )
+      { Report::Error( sformat( // Message of a Report::Error where %1 will be replaced by the actual error message
+                                // which is usually only available in English:
+                                _("Failed to set up the hplip service.\nThe error message is:\n\n%1"),
+                                // Fallback error message if the real error message is missing:
+                                bash_result["stderr"]:_("(no message available)")
+                              )
+                     );
+        return false;
+      }
+    }
+  }
+  // The hpoj backend (from the package hp-officeJet) requires the PTAL service to be up and running.
+  // Before starting the PTAL service works it must have been initialized.
+  // Automated initialization of the PTAL stuff is only safe for USB.
+  // This makes only sense if user confirmation is requested.
+  // Otherwise skip this section.
+  if( "hpoj" == backend_name
+      && user_confirmation
+    )
+  { if( ! Popup::YesNo( hpoj_message ) )
+    { // Don't abort (i.e. return false) in this case because it is no error
+      // when the user has decided not to initialize/activate/start the PTAL system
+      // because it may be already up and running or the user may want to set it up manually.
+      // Regardless of the state of the PTAL system the backend can be activated in /etc/sane.d/dll.conf
+      Report::Warning(
+                       // Message of a Report::Warning for scanners which should be set up with the hpoj backend:
+                       _("If the ptal service is not running, the hpoj backend cannot work.")
+                     );
+    }
+    else
+    { if( ! ExecuteBashCommand( setup_ptal_scanner_service_commandline ) )
+      { Report::Error( sformat( // Message of a Report::Error where %1 will be replaced by the actual error message
+                                // which is usually only available in English:
+                                _("Failed to set up the PTAL system.\nThe error message is:\n\n%1"),
+                                // Fallback error message if the real error message is missing:
+                                bash_result["stderr"]:_("(no message available)")
+                              )
+                     );
+        return false;
+      }
+    }
+  }
+  // Activate the backend via bash script:
+  if( ! ExecuteBashCommand( activate_backend_commandline + " " + backend_name ) )
+  { return false;
+  }
+  // Determine active scanners and active backends anew.
+  // Return successfully regardless of the result of this steps
+  // because the backend was successfully activated.
+  if( ! DetermineActiveScanners() )
+  { active_scanners = [];
+  }
+  if( ! DetermineActiveBackends() )
+  { active_backends = [];
+  }
+  return true;
+}
+
+/**
+ * Deactivate the backend in /etc/sane.d/dll.conf
+ * according to the specified backend_name
+ * or if the specified backend_name is the empty string
+ * then set the backend_name according to a specified database_index.
+ * @param backend_name string of a backend which should be deactivated
+ *        (if backend_name is the empty string then database_index must be >= 0)
+ * @param database_index integer which points to an entry in the model database
+ *        (if backend_name is the empty string then the backend according to the database_index is used)
+ * @param user_confirmation boolean true if user confirmation popup in case of problems is requested
+ * @return true on success
+ */
+global boolean DeactivateBackend( string backend_name, integer database_index, boolean user_confirmation )
+{ if( backend_name == "" )
+  { if( database_index < 0 )
+    { y2milestone( "Error: Scanner database_index is: %1", database_index );
+      return false;
+    }
+    backend_name = database[database_index,"backend"]:"unknown";
+    if( "unknown" == backend_name )
+    { y2milestone( "Error: Cannot deactivate backend: %1", backend_name );
+      return false;
+    }
+  }
+  // To be safe assume that something will really be modified.
+  // If there is in fact nothing modified, it doesn't harm if 'modified' is 'true':
+  modified = true;
+  // Determine which of the active scanners will be deactivated.
+  list< map< string, string > > scanners_to_deactivate = [];
+  foreach( map< string, string > active_scanner,
+           active_scanners,
+           { if( active_scanner["backend"]:"unknown" == backend_name )
+             { scanners_to_deactivate = add( scanners_to_deactivate, active_scanner );
+             }
+           }
+         );
+  // If more than one active scanners will be deactivated
+  // then list the active scanners which will be deactivated
+  //      and show them to the user
+  //      and ask the user for confirmation:
+  if( size( scanners_to_deactivate ) > 1 )
+  { if( ! user_confirmation )
+    { // Return true if more than one scanner would be deactivated
+      // without asking the user for confirmation because it is the intended behaviour
+      // not to deactivate more than one scanner without explicite user confirmation.
+      // This happens for example when DeactivateBackend is called from dialogs.ycp
+      // when the user goes back from ConfigureBackendDialog to SelectModelDialog.
+      return true;
+    }
+    string message = _("The following scanners will be deactivated:");
+    foreach( map< string, string > scanner_to_deactivate,
+             scanners_to_deactivate,
+             { message = message
+                         + "\n"
+                         + scanner_to_deactivate["manufacturer"]:"unknown"
+                         + " "
+                         + scanner_to_deactivate["model"]:"unknown"
+                         + " at "
+                         + scanner_to_deactivate["device"]:"unknown";
+             }
+           );
+    if( ! Popup::YesNo( message ) )
+    { // Return true in this case because it is no error
+      // when the user has decided not to deactivate the backend:
+      return true;
+    }
+  }
+  // Deactivate the backend via bash script:
+  if( ! ExecuteBashCommand( deactivate_backend_commandline + " " + backend_name ) )
+  { Report::Error( sformat( // Message of a Report::Error where %1 will be replaced by the backend name:
+                            _("Failed to deactivate backend %1."), backend_name ) );
+    return false;
+  }
+  // Determine active scanners and active backends anew.
+  // Return successfully regardless of the result of this steps
+  // because the backend was successfully deactivated.
+  if( ! DetermineActiveScanners() )
+  { active_scanners = [];
+  }
+  if( ! DetermineActiveBackends() )
+  { active_backends = [];
+  }
+  return true;
+}
+
+/**
+ * Test the backend according to the specified backend_name.
+ * @param backend_name string of a backend which should be tested
+ * @return true on success
+ */
+global boolean TestBackend( string backend_name )
+{ string sane_device = "";
+  // It is not possible to test a backend without a matching active scanner.
+  // Build the table of active scanners of the backend (see ModelItems above):
+  list< term > scanners_to_be_tested = [];
+  boolean preselect = true;
+  foreach( map< string, string > active_scanner,
+           active_scanners,
+           { if( backend_name == active_scanner["backend"]:"unknown" )
+             { sane_device = active_scanner["device"]:"unknown";
+               if( sane_device != "unknown" )
+               { string model_string = active_scanner["manufacturer"]:"unknown"
+                                       + " "
+                                       + active_scanner["model"]:"unknown"
+                                       + " at "
+                                       + sane_device;
+                 scanners_to_be_tested = add( scanners_to_be_tested,
+                                              `item( `id( sane_device ), model_string , preselect ) );
+                 // preselect must be true only for the first matching active scanner:
+                 preselect = false;
+               }
+             }
+           }
+         );
+  y2milestone( "scanners_to_be_tested: %1", scanners_to_be_tested );
+  // If there is no active scanner for the backend
+  // then show a message but exit successfully because
+  // it is no error when there is no active scanner for the backend:
+  if( size( scanners_to_be_tested ) < 1 )
+  { Report::ShowText( sformat( // Header of a Report::ShowText where %1 will be replaced by the backend name:
+                               _("No scanner for the backend %1"), backend_name ),
+                               // Body of a Report::ShowText:
+                               _("It is not possible to test a backend without a matching active scanner.") );
+    return true;
+  }
+  // If there is more than one active scanner for the backend
+  // then ask the user which of the active scanners should be tested.
+  // If there is exactly one active scanner for the backend
+  // then don't ask because sane_device is already set to this one.
+  if( size( scanners_to_be_tested ) > 1 )
+  { UI::OpenDialog( `VBox( `HSpacing(50),
+                           `SelectionBox( `id(`device_selection),
+                                          // Header of a SelectionBox with a list of scanners:
+                                          _("&Select which scanner should be used for testing:"),
+                                          scanners_to_be_tested
+                                        ),
+                           `HBox( `PushButton( `id(`cancel_button), Label::CancelButton() ),
+                                  `PushButton( `id(`ok_button), `opt(`default), Label::OKButton() )
+                                )
+                         )
+                  );
+    if( UI::UserInput() != `ok_button )
+    { // Return true in this case because it is no error
+      // when the user has decided not to do the test:
+      UI::CloseDialog();
+      return true;
+    }
+    sane_device = (string)UI::QueryWidget( `id(`device_selection), `CurrentItem );
+    UI::CloseDialog();
+  }
+  // Test the device:
+  y2milestone( "sane_device which will be tested: %1", sane_device );
+  Popup::ShowFeedback( sformat( // Header of a Popup::ShowFeedback where %1 will be replaced by the backend name:
+                                _("Testing backend %1"), backend_name ),
+                                // Body of a Popup::ShowFeedback where %1 will be replaced by the SANE device identifier:
+                       sformat( _("Testing via 'scanimage -d %1 -T'\n\nPlease wait ... this takes some time."),
+                                sane_device
+                              )
+                     );
+  if( ! ExecuteBashCommand( "/usr/bin/scanimage -d '" + sane_device + "' -T" ) )
+  { Popup::ClearFeedback();
+    Report::Error( sformat( // Message of a Report::Error where
+                            // %1 will be replaced by the SANE device identifier
+                            // %2 will be replaced by the actual error message
+                            //    which is usually only available in English:
+                            _("Result of the test via 'scanimage -d %1 -T' :\n\n%2"),
+                            sane_device,
+                            // Fallback error message if the real error message is missing:
+                            bash_result["stderr"]:_("(no message available)")
+                          )
+                 );
+    return false;
+  }
+  Popup::ClearFeedback();
+  Report::ShowText( sformat( // Header of a Report::ShowText where %1 will be replaced by the SANE device identifier:
+                             _("Result of the test via 'scanimage -d %1 -T'"), sane_device ),
+                    // Fallback body of a Report::ShowText if the real message for the body is missing:
+                    bash_result["stderr"]:_("(no message available)")
+                  );
+  return true;
+}
+
+/**
+ * Create an overview table with all active scanners and backends
+ * @return list of table items
+ */
+global list Overview()
+{ // Build the overview table (see ModelItems above):
+  list< term > overview_items = [];
+  foreach( string backend_name,
+           active_backends,
+           { if( "" != backend_name )
+             { // Determine which of the active scanners use the backend (see DeactivateBackend above):
+               string  models_string = "";
+               foreach( map< string, string > active_scanner,
+                        active_scanners,
+                        { if( active_scanner["backend"]:"unknown" == backend_name )
+                          { if( "" != models_string )
+                            { // Insert a delimiter when more than one model uses the same backend:
+                              models_string = models_string + " , ";
+                            }
+                            models_string = models_string
+                                            + active_scanner["manufacturer"]:"unknown"
+                                            + " "
+                                            + active_scanner["model"]:"unknown"
+                                            + " at "
+                                            + active_scanner["device"]:"unknown";
+                          }
+                        }
+                      );
+               // The backend_name in the active_backends list is unique
+               // because in the determine_active_scanner_backends bash script 'sort -u' is used.
+               // Therefore the backend_name can be used as unique id for the table entries:
+               overview_items = add( overview_items, `item( `id( backend_name ), backend_name, models_string ) );
+             }
+           }
+         );
+  y2milestone( "Overview table_items: %1", overview_items );
+  return overview_items;
+}
+
+/**
+ * Autoinstallation stuff:
+ *
+ */
+
+/**
+ * Get all scanner settings from the first parameter.
+ * For use by autoinstallation.
+ * @param settings The YCP structure to be imported.
+ * @return true on success
+ */
+global boolean Import( map settings )
+{ return true;
+}
+
+/**
+ * Dump the scanner settings to a single map.
+ * For use by autoinstallation.
+ * @return map Dumped settings (later acceptable by Import ())
+ */
+global map Export( )
+{ return $[];
+}
+
+/**
+ * Return packages needed to be installed and removed during
+ * autoinstallation to insure module has all needed software installed.
+ * @return map with 2 lists.
+ */
+global map AutoPackages()
+{ return $[ "install":[], "remove":[] ];
+}
+
+/* EOF */
+
+}
+
