@@ -1521,7 +1521,7 @@ sub acquireTestImage( $ )
 
     my $tmpfile = "$prefix/tmp/y2testimage.pnm";
     
-    my $cmd = sprintf( "scanimage -d %s --mode=Color --resolution=100 > %s",
+    my $cmd = sprintf( "/usr/X11R6/bin/scanimage -d %s --mode=Color --resolution=100 > %s",
 		       $usedev, $tmpfile );
     
     system( $cmd );
