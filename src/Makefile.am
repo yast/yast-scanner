@@ -20,6 +20,8 @@ scanner_DATA =			\
 
 config_DATA = scanner.y2cc
 
+desktop_DATA = scanner.desktop
+
 agent_SCRIPTS = ag_scanner ag_sane scannerDB.pm
 
-EXTRA_DIST = $(client_DATA) $(scanner_DATA) $(config_DATA) $(agent_SCRIPTS)
+EXTRA_DIST = $(client_DATA) $(scanner_DATA) $(config_DATA) $(agent_SCRIPTS) $(desktop_DATA)
