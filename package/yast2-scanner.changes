@@ -1,4 +1,9 @@
 -------------------------------------------------------------------
+Mon Feb 17 16:34:01 CET 2003 - gs@suse.de
+
+- write USB scanner data to /etc/hotplug/usb/sane.usermap 
+
+-------------------------------------------------------------------
 Mon Feb 10 16:27:43 CET 2003 - gs@suse.de
 
 - scanner database now is dynamically created from
