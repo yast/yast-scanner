@@ -203,17 +203,27 @@ USB scanner, because only ONE is supported.") + "\n" + msg);
 		  if ( exitcode != 0 )
 		  {
 		      y2error( "command 'ptal-init setup-usb' failed" );
-		      // Text of an error popup. YaST2 automatically detects USB
-		      // connected devices, if connected to JetDirect or parallel
-		      // the user has to do the configuration manually.
-		      Popup::Error(_("No HP all-in-one device detected.
+
+		      boolean ret = Popup::ContinueCancelHeadline( Label:: ErrorMsg(),
+			   // Text of an error popup. YaST2 automatically detects USB
+			   // connected devices. If connected to JetDirect or parallel
+			   // the user has to do the configuration manually.
+			   _("No HP all-in-one device detected.
 Make sure that the device is switched on and try again.\n
 In case of a JetDirect connection or parallel-connected
 device abort the scanner configuration and call
 'ptal-init setup' manually. Configure the scanner by enabling
 the 'hpoj' driver in '/etc/sane.d/dll.conf'
 (you must be \"root\" to do this).\n\n") );
-		      go_on = true;
+		      if ( ret )
+		      {
+			  go_on = true;
+		      }
+		      else
+		      {
+			  ret = `cancel;
+			  continue;
+		      }
 		  }
 
 		  list ptal_scanner = SCR::Read(.scanner.ptal);
@@ -236,6 +246,10 @@ the 'hpoj' driver in '/etc/sane.d/dll.conf'
 		  {
 		      CreateScannerEntry( ptal_scanner[0]:$[]);
 		      ret = `manual;
+		  }
+		  else
+		  {
+		      go_on = true;
 		  }
 	      }
 	      else
