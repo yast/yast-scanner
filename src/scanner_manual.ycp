@@ -60,7 +60,7 @@
       string mstring = lookup( current_scanner, "device", "" );
       if ( mstring == "" )
       {
-	  mstring = lookup( current_scanner, "devicefile", "" );
+	  mstring = lookup( current_scanner, "dev_name", "" );
       }
       
       string scanner = vstring + " - " + mstring;
@@ -144,17 +144,22 @@ http://mostang.com/sane and http://sdb.suse.de.</p>"));
 	  else if ( ret == `next )
 	  {
 	      vendor = UI( `QueryWidget( `id(`vendor), `CurrentItem) );
-	      if ( vendor != nil )
+	      model  = UI( `QueryWidget( `id(`model ), `CurrentItem) );
+
+	      if ( vendor != nil && model != nil )
 	      {
 		  SetCurrentScannerValue( "vendor", vendor );
-	      }
-	      model  = UI( `QueryWidget( `id(`model ), `CurrentItem) );
-	      if ( model != nil )
-	      {
 		  SetCurrentScannerValue( "device", model );
 	      }
+	      else
+	      {
+		  UI(`NotifyPopup(_("Please select a vendor AND a model from the lists.")));
+		  ret = `again; 
+	      }
 	  }
-	      
+
+	  y2milestone("MANUAL scanner selection: %1 - %2", GetCurrentScannerValue("vendor"),
+		      GetCurrentScannerValue("device"));
 	  
       
       } until ( ret == `next || ret == `back || ret == `abort );

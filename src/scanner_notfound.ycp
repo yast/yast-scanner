@@ -154,7 +154,7 @@ and restart the scanner configuration.")));
 			  ret = `manual;
 		      }
 		      // create the entry for the USB scanner
-		      CreateScannerEntry( $["bus":"USB", "devicefile":"/dev/usbscanner"]);
+		      CreateScannerEntry( $["bus":"USB", "dev_name":"/dev/usbscanner"]);
 		      
 		  }
 	      }

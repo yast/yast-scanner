@@ -195,7 +195,7 @@ while ( <STDIN> )
 
 	# Not net !
 	my $driver = findInHash( "driver", \%scanner );
-	my $devicefile = findInHash( "devicefile", \%scanner );
+	my $devicefile = findInHash( "dev_name", \%scanner );
 	y2debug( "Installing driver <$driver> for scanner <$vendor/$model>" );
 
 	if( grep( /$driver/, @cfg_backends ) )
@@ -221,7 +221,7 @@ while ( <STDIN> )
     elsif( $action =~ /scanimage/ )
     {
 	y2debug( "Handling action scanimage" );
-	my $devicefile = findInHash( "devicefile", \%scanner );
+	my $devicefile = findInHash( "dev_name", \%scanner );
 	my $driver = findInHash( "driver", \%scanner );
 
 	my $devstring = sprintf( "%s:%s", lc $driver, $devicefile );
@@ -268,7 +268,7 @@ while ( <STDIN> )
 		       unique_key => "",
 		       vendor => "Umax",
 		       vendor_id => "",
-		       devicefile => "/dev/scanner",
+		       dev_name => "/dev/scanner",
 		       class => "scanner",
 		       driver => "net",
 		       host => $host );

@@ -86,6 +86,7 @@ Do you want to install the 'SANE' package now?");
 	      }
 	  }
 
+	  // TODO: check version of sane package (use PKGINFO rpm agent)
 	  // SANE should be installed by now - if not inform the user and exit
 	  if ( SCR (`Execute (.target.bash, "/bin/rpm -q sane")) != 0 )
 	  {
@@ -187,7 +188,7 @@ configuration.")));
 		  if ( (lookup( scan, "vendor", "") == lookup( scanner, "vendor", "")) &&
 		       (lookup( scan, "device", "") == lookup( scanner, "device", "")) &&
 		       (lookup( scan, "bus", "") )  == lookup( scanner, "bus", "") &&
-		       (lookup( scan, "devicefile", "") == lookup( scan, "devicefile", "")) )
+		       (lookup( scan, "dev_name", "") == lookup( scan, "dev_name", "")) )
 		  {
 		      scanner = add( scanner, "scanner_status", "installed" );
 		  }

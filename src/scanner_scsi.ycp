@@ -9,10 +9,8 @@
  *
  * This dialog is shown very rarely because the SANE library usually finds
  * all connected SCSI scanner.
- * Only for some (don't no exactly which reasons) is can be useful to
- * enter the SCSI device manually.
- * For security reasons we show a ComboBox containig only /dev/sg. entries
- * (not an inputfield for free text).
+ * Only for some reasons  (e.g. install a very new scanner) it is useful 
+ * to show a list of all SCSI devices connected to /dev/sg<n>.
  *
  * Authors:
  *   Gabriele Strattner <gs@suse.de>
@@ -33,23 +31,20 @@
    * ScannerSCSIDialog Layout	
    */
   
-  global define ScannerSCSIDialog_UI( )``{
+  global define ScannerSCSIDialog_UI( list device_list )``{
 
-      list scsi_devices = [ "/dev/sg0", "/dev/sg1", "/dev/sg2", "/dev/sg3", "/dev/sg4", "/dev/sg5",
-			  "/dev/sg6", "/dev/sg7", "/dev/sg8", "/dev/sg9", "/dev/sg10", "/dev/sg12" ];
       
-      term layout = `VBox (
+      term layout = `VBox (`VSpacing (2),
 			   // This is a label, i.e. the line length should not exceed 50 characters.
-			   `Left(`Label (`opt (`hstretch), _("You must supply the device file name before
-the scanner installation can proceed.\n
-Please select the name of the SCSI device, e.g. /dev/sg0.\n"))),
+			   `Left(`Label (`opt (`hstretch), _("YaST2 could not detect the SCSI scanner.\n
+Please select your scanner from the list below."))),
 			   `VSpacing (1),
 			   `HBox (
 				  // SCSI device input 
-				  `HWeight(4, `ComboBox(`id(`device),
-							 // Combo box label for device file selection
-							 _("&SCSI device file"),
-							 scsi_devices )),
+				  `HWeight(4, `SelectionBox(`id(`sel_scsi),
+							 // label for a list of SCSI devices
+							 _("&SCSI devices"),
+							 device_list )),
 				  `HWeight(1, `Empty())
 				  ),
 			   `VSpacing (1)
@@ -66,28 +61,80 @@ Please select the name of the SCSI device, e.g. /dev/sg0.\n"))),
  */
   global define ScannerSCSIDialog( )``{
 
+	  
       string help = "";
       
-      // helptext of dialog SCSI scanner configuration
-      string help1    = UI(_("<p>Please select the device file
-name of your SCSI scanner (e.g. /dev/sg0 ).
+      // helptext part1 of dialog SCSI scanner configuration
+      string help1    = UI(_("<p>Please select your scanner
+from the list of SCSI devices (the list contains only SCSI
+devices which are connected to /dev/s<b>g</b>? device files).
 </p>"));
 
+      // helptext part2 of dialog SCSI scanner configuration
+      string help2 = UI(_("<p>To complete the scanner data 
+continue with the \"Manual scanner selection\"
+dialog by clicking on <b>Next</b>.</p>"));
+      
       // helptext of dialog SCSI scanner configuration (continued)
-      string help2 = UI(_("<p>Information on your SCSI devices can be obtained
+      string help2_unused = UI(_("<p>Information on your SCSI devices can be obtained
 by issuing the command <b>hwinfo --scsi</b>
 (you must be 'root' to do this).</p>"));
 
       // helptext of dialog SCSI scanner configuration (continued)
       // Translators: do not translate 'Device File'
-      string help3 = UI(_("<p>You will find the <i>'Device File'</i> of your scanner in the
+      string help3_unused = UI(_("<p>You will find the <i>'Device File'</i> of your scanner in the
 respective section of the hwinfo output.</p>"));
 
-      help = help1 + help2 + help3;
+      help = help1 + help2;
+
+      // get a list of all SCSI devices
+      list scsi_devices = SCR(`Read(.probe.bybus.scsi));
+
+      if ( lookup (user_settings, "test_mode", false ) )
+      {
+	  scsi_devices =  [$["bus":"SCSI",
+			    "class_id":262,
+			    "dev_name":"/dev/sg0",
+			    "device":"UMAX S-12G",
+			    "rev":"V2.1",
+			    "sub_class_id":128,
+			    "unique_key":"1juP.UHvlo4yTZX8",
+			    "vendor":"UMAX"],
+	                   $["bus":"SCSI",
+			    "class_id":264,
+			    "dev_name":"/dev/sda",
+			    "device":"Testdisk",
+			    "rev":"V2.1",
+			    "sub_class_id":128,
+			    "unique_key":"1juP.UHvlo4yTZX8",
+			    "vendor":"TEST"]
+	                  ];
+      }
+
+      y2milestone( "SCSI devices: %1", scsi_devices );
       
+      integer no = 1;
+      string list_entry = "";
+      map  sg_devices = $[];
+      list scsi_selbox = [];
+      
+      // get all SCSI devices connected to /dev/sg..
+      foreach ( `device, scsi_devices, ``{
+	  if ( substring( lookup( device, "dev_name", "" ), 0, 7 ) == "/dev/sg" )
+	  {
+	      sg_devices = add( sg_devices, no, device );
+	      list_entry = sformat( "%1 - %2 - %3", lookup( device, "vendor", ""),
+				                    lookup( device, "device", ""),
+				                    lookup( device, "dev_name" ));
+
+	      scsi_selbox = add( scsi_selbox, `item(`id(no), list_entry ));
+	      no = no+1;
+	  }
+      } );
+
       string caption = UI(_("Manual SCSI Scanner configuration"));
 
-      term contents  = ScannerSCSIDialog_UI( );
+      term contents  = ScannerSCSIDialog_UI( scsi_selbox );
 
       UI(`SetWizardContentsButtons(caption,contents,help,BackButtonLabel(),NextButtonLabel()));
 
@@ -99,10 +146,22 @@ respective section of the hwinfo output.</p>"));
 
 	  if ( ret == `next )
 	  {
-	      string devicefile = CutBlanks( UI(`QueryWidget(`id(`device), `Value )) );
+	      any scsi_device = UI( `QueryWidget(`id(`sel_scsi), `CurrentItem) );
+	      map device = $[];
+	      
+	      if ( scsi_device == nil )
+	      {
+		  UI(`NotifyPopup(_("Please select a scanner from the list.")));
+		  ret = `again;
+	      }
+	      else
+	      {
+		  device 	= lookup( sg_devices, scsi_device );
+		  y2milestone( "Selected SCSI scanner: %1", device );  
+	      }
 
 	      // Create the entry for the SCSI scanner
-	      CreateScannerEntry( $["bus":"SCSI", "devicefile":devicefile] ); 
+	      CreateScannerEntry( device ); 
 	  }
 	  
       } until ( ret == `next || ret == `back || ret == `abort );
