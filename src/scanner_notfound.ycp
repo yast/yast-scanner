@@ -111,9 +111,11 @@ scanner at the same time.</p>"));
 
 	      if ( type == `usb )
 	      {
-                  // try again to detect a USB scanner (maybe it is switched on now)
+                  // try again to detect an USB scanner (maybe it is switched on now)
 		  list connected_scanner = SCR(`Read(.probe.scanner));
 
+		  // TODO: CheckUSBScanner() ist eigentlich nur sinnvoll, wenn wir Konfigurationen
+		  //       von Scannern berücksichtigen, die NICHT angeschlossen sind
 		  if ( size (connected_scanner) > 1 || CheckUSBScanner() )
 		  {
 		      // text of a warning popup
@@ -137,8 +139,8 @@ and restart the scanner configuration.")));
 		  {
 		      integer exit_status = 1;
 
-		      // if the scanner is recognised by hwinfo the USB module is already loaded
-		      // (scanner is listed in /etc/usbmgr/usbmgr.conf)
+		      // check first, whether the an USB scanner module is already loaded
+		      
 		      exit_status = SCR (`Execute (.target.bash, "/sbin/lsmod | /bin/egrep 'scanner|microtek'"));
 		      
 		      if ( exit_status != 0 )
