@@ -183,7 +183,7 @@ configuration.")));
 	      driver = lookup( scanner, "scanner_driver", "" ); 
 	  }
 
-	  while ( !found || m < size(installed_scanner) )
+	  while ( !found && m < size(installed_scanner) )
 	  {
 	      scan = select( installed_scanner, m );
 	      y2debug ("SCAN: %1", scan );
