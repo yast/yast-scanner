@@ -110,6 +110,7 @@
       }
       else
       {
+	  y2debug("ERR: Can not find a current scanner !" );
 	  return $[];
       }
   }
@@ -297,7 +298,7 @@
       integer key = size(scanner_info) + 1;
       
       scanner_info = add( scanner_info, key, new_entry );
-      y2debug("Scanner info added: %1", scanner_info);
+      y2debug("Scanner info added: %1 with key %2", scanner_info, key);
 
       user_settings = add( user_settings, "scannerInfo", scanner_info );
       user_settings = add( user_settings, "scannerInWork", key ); 
