@@ -48,6 +48,7 @@
       
       term layout = `VBox (
 			   `VSpacing (1),
+			   // label: the scanner model
 			   `Left(`Label (`opt (`hstretch), _("Scanner model"))),
 			   `VSpacing(0.3),
 			   `HBox (`HSpacing(2.5),
@@ -55,6 +56,7 @@
 				  `HWeight(1, `Empty())
 				  ),
 			   `VSpacing(0.5),
+			   // label: vendor of the scanner
 			   `Left(`Label (`opt (`hstretch), _("Vendor"))),
 			   `VSpacing(0.3),
 			   `HBox (`HSpacing(2.5),
@@ -62,6 +64,7 @@
 				  `HWeight(1, `Empty())
 				  ),
 			   `VSpacing(0.5),
+			   // label: the driver (do not translate 'SANE', it's a package name)
 			   `Left(`Label (`opt (`hstretch), _("SANE driver"))),
 			   `VSpacing(0.3),
 			   `HBox (`HSpacing(2.5),
@@ -117,7 +120,8 @@ a manual configuration.
 </p>");
       
       help = help1 + help2 + help3 + help4;
-      
+
+      // headline of the dialog
       string caption = _("Scanner installation");
 
       y2debug( "New scanner: %1, %2", GetCurrentScannerValue( "vendor" ),
@@ -152,6 +156,7 @@ a manual configuration.
 		      }
 		      else
 		      {
+			  // text of an error popup
 			  UI::ErrorPopup(_("The scanner configuration was not successful."));
 			  ret = `abort;
 		      }

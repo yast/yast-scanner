@@ -1,4 +1,9 @@
 -------------------------------------------------------------------
+Mon Jul 29 15:12:59 CEST 2002 - gs@suse.de
+
+- comments for translators added
+
+-------------------------------------------------------------------
 Mon Jul 29 11:28:01 CEST 2002 - gs@suse.de
 
 - remove yast2-runlevel from Requires list

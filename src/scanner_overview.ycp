@@ -42,12 +42,15 @@
 
       layout = `VBox(
 		     `VSpacing( 0.2 ),
+		     // headline of a list showing installed / configured scanners
 		     `Left(`Label(_("List of installed / configured scanners"))),
 		     `VSpacing( 0.2 ),
 		     `ReplacePoint(`id(`scanner_table_rp),table),		     
 		     `HBox(
 			   //`HWeight(1, `PushButton(`id(`edit), _("&Edit"))),
+			   // button label
 			   `HWeight(1, `PushButton(`id(`delete), _("&Delete"))),
+			   // button label
 			   `HWeight(1, `PushButton(`id(`add), `opt(`default), _("&Add"))),
 			   `HStretch()
 			   ),
@@ -81,7 +84,8 @@
 	}
     });
 
-    return `Table(`id(`scanner_table),`opt(`notify, `hvstretch), 
+    return `Table(`id(`scanner_table),`opt(`notify, `hvstretch),
+		  // column headers
 			    `header( _("Vendor"), _("Model"), _("Connected to") ),
 			    scanner_table
 			    );
@@ -116,7 +120,7 @@ will be discarded and your system will be reverted to the previous state.
 </p>");
       help = help1 + help2 + help3 + help4;
       
-       
+      // headline of the dialog
       string caption = _("Scanner Overview");
 
       term contents = ScannerOverviewDialog_UI( CreateScannerTable(scanner_map) );
@@ -143,6 +147,7 @@ will be discarded and your system will be reverted to the previous state.
 	      scanner_id = UI::QueryWidget( `id(`scanner_table), `CurrentItem );
 	      if ( scanner_id == nil )
 	      {
+		  // text of a popup
 		  UI::NotifyPopup(_("Please select a scanner from the list."));
 	      }
 	      else
@@ -150,6 +155,8 @@ will be discarded and your system will be reverted to the previous state.
 		  user_settings = add(user_settings, "scannerInWork", scanner_id);
 		  y2debug( "DELETE scanner: %1", GetCurrentScannerValue("device") );
 
+		  // text of a popup: ask the user whether to delete the sacnner
+		  // configuration (%1: the vendor, %2: the device) 
 		  string message = sformat( _("Do you really want to remove the
 configuration of the scanner %1, %2 ?\n"), GetCurrentScannerValue("vendor"),
 					    GetCurrentScannerValue("device") );   
@@ -168,7 +175,7 @@ configuration of the scanner %1, %2 ?\n"), GetCurrentScannerValue("vendor"),
 	  }
 	  else if ( ret == `finish )
 	  {
-	      // TODO: is there anything to do ???? 
+	      // text of a popup with Yes/No button 
 	      any ret = UI::YesNoPopup(_("Save all settings and exit?"));
 	      if ( ret )
 	      {
