@@ -120,8 +120,9 @@ offers more scan and image processing functionality.
 
 	// headline of the test dialog
 	string caption = _("Scanner Test");
+	map installed = GetCurrentScanner();
 
-	term contents  = ScannerInstallDialog_UI( GetCurrentScanner(),
+	term contents  = ScannerInstallDialog_UI( installed,
 						  Read( .local.byte,
 							"/usr/share/doc/packages/sane/sane-backends/umax/sane-logo2.jpg"));
 
@@ -131,7 +132,10 @@ offers more scan and image processing functionality.
 	// -> we do not need this any longer - the `Image widget does all the work 
 	  
 	// Check whether a firmware is needed
-	string firmware_req = SCR::Read(.sane.firmware);
+	string firmware_req = SCR::Read(.sane.firmware, installed );
+
+	y2milestone( "Installed scanner: %1 driver: %2 needs firmware: %3",
+		     installed["vendor"]:"", installed["scanner_driver"]:"", firmware_req );
 
 	if ( firmware_req != "none" )
 	{
@@ -144,7 +148,7 @@ You shouldn't test the scanner now.\n
 Finish the scanner installation first.
 After that check 'http://snapscan.sourceforge.net'
 whether an upload is required.
-'man sane-snapscan' also provides detailed information.\n");
+'man sane-snapscan' also provides detailed information.\n\n");
 	    }
 	    else if ( firmware_req == "all" )
 	    {
@@ -153,7 +157,7 @@ whether an upload is required.
 You cannot test the scanner now.\n
 Finish the scanner installation first. After that
 do the firmware upload. See 'man sane-gt68xx' or
-'man sane-artec_eplus48u' for details.\n");
+'man sane-artec_eplus48u' for details.\n\n");
 	    }
 	    Popup::Message ( msg_str );
 	    // disable the test button
