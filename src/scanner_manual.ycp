@@ -178,7 +178,7 @@ http://mostang.com/sane and http://sdb.suse.de.</p>");
 		      GetCurrentScannerValue("device"));
 	  
       
-      } until ( ret == `next || ret == `back || ret == `abort );
+      } until ( ret == `next || ret == `back || ret == `abort || ret == `cancel );
 
       return ret;
       

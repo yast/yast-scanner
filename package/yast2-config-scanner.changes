@@ -1,4 +1,50 @@
 -------------------------------------------------------------------
+Tue Mar 26 14:02:20 CET 2002 - gs@suse.de
+
+- (#15510) mark installed scanner as configured for hardware detection 
+
+-------------------------------------------------------------------
+Mon Mar 25 15:51:36 CET 2002 - kkaempf@suse.de
+
+- use 'config aware' libhd calls when probing for usb/scsi devices
+  (#15483).
+
+-------------------------------------------------------------------
+Tue Mar 19 14:02:25 CET 2002 - gs@suse.de
+
+- bugfixes: the test scan for network scanners is working again,
+  ignore case while comparing installed and connected scanner
+- removed dependency on ImageMagick tool convert since the image
+  widget is now able to scale by itself 
+- #14937: it is possible now to close the scanner configuration with
+  the window manager 
+
+-------------------------------------------------------------------
+Fri Mar 15 11:02:02 CET 2002 - gs@suse.de
+
+- reworked the config file templates to use the ones from 1.0.7
+ (fixing bug #14899)
+- parenthesises removed since they break the ycp-perl interface 
+
+-------------------------------------------------------------------
+Fri Mar  1 15:03:30 CET 2002 - gs@suse.de
+
+- some internal changes and bugfixes (hwinfo now also detects
+  SCSI scanner, look for exactly matching key in scanner map,
+  use correct key "scanner_driver")
+
+-------------------------------------------------------------------
+Mon Feb 25 15:44:28 CET 2002 - gs@suse.de
+
+- scannerDB: adapt to sane version 1.07  
+
+-------------------------------------------------------------------
+Mon Feb 18 17:32:31 CET 2002 - freitag@suse.de
+
+- bugfix: Printing lines with only comments again, which were blank
+  before. Changed call to scanimage for sane version 1.0.7 
+
+-------------------------------------------------------------------
 Tue Feb  5 11:07:17 CET 2002 - gs@suse.de
 
 - bugfix for the scanner agent, internal changes in ycp modules,

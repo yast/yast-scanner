@@ -42,7 +42,7 @@
 	  if ( driver == "" )
 	  {
 	      driver = SCR::Read(.sane.driver, new_scanner);
-	      SetCurrentScannerValue( "driver", driver );
+	      SetCurrentScannerValue( "scanner_driver", driver );
 	  }
       }
       
@@ -163,7 +163,7 @@ a manual configuration.
 		  }
 	      }
 	  }
-      } until ( ret == `next || ret == `back || ret == `abort || ret == `notfound );
+      } until ( ret == `next || ret == `back || ret == `abort || ret == `notfound || ret == `cancel );
       
       return ret;
   };

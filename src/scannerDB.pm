@@ -27,7 +27,7 @@ use English;
 		      findInHash
 		      trim
 		      readNetconf
-		      writeNetconf
+		      writeNetConf
 		      readDllconf
 		      writeDllconf
 		      writeIndividualConf
@@ -86,7 +86,8 @@ $driver{SCSI}{Avision}{"AV 620 CS"} = "avision";
 # Bell & Howell
 $driver{SCSI}{"B&H SCSI"}{"COPISCAN II 6338"} = "bh";
 $driver{SCSI}{"B&H SCSI"}{"COPISCAN II 2135"} = "bh";
-$driver{SCSI}{"B&H SCSI"}{"COPISCAN II 2137(A)"} = "bh";
+$driver{SCSI}{"B&H SCSI"}{"COPISCAN II 2137"} = "bh";
+$driver{SCSI}{"B&H SCSI"}{"COPISCAN II 2137A"} = "bh";
 $driver{SCSI}{"B&H SCSI"}{"COPISCAN II 2138A"} = "bh";
 $driver{SCSI}{"B&H SCSI"}{"COPISCAN II 3238"} = "bh";
 $driver{SCSI}{"B&H SCSI"}{"COPISCAN II 3338"} = "bh";
@@ -209,12 +210,12 @@ $driver{SCSI}{Microtek}{"Scanmaker IIHR"} = "microtek";
 $driver{SCSI}{Microtek}{"Scanmaker IIG"} = "microtek";
 $driver{SCSI}{Microtek}{"Scanmaker II"} = "microtek";
 
-$driver{SCSI}{Microtek}{"Scanmaker 600Z(S)"} = "microtek";
+$driver{SCSI}{Microtek}{"Scanmaker 600Z S"} = "microtek";
 $driver{SCSI}{Microtek}{"Scanmaker 600ZS"} = "microtek";
 $driver{SCSI}{Microtek}{"Scanmaker 600Z"} = "microtek";
 $driver{SCSI}{Microtek}{"Scanmaker 600S"} = "microtek";
 
-$driver{SCSI}{Microtek}{"Scanmaker 600G(S)"} = "microtek";
+$driver{SCSI}{Microtek}{"Scanmaker 600G S"} = "microtek";
 $driver{SCSI}{Microtek}{"Scanmaker 600S"} = "microtek";
 $driver{SCSI}{Microtek}{"Scanmaker 600G"} = "microtek";
 $driver{SCSI}{Microtek}{"Scanmaker 600GS"} = "microtek";
@@ -422,7 +423,9 @@ $driver{SCSI}{UMAX}{"Astra 610S"} = "umax";
 $driver{SCSI}{UMAX}{"Astra 1200S"} = "umax";
 $driver{SCSI}{UMAX}{"Astra 1220S"} = "umax";
 $driver{SCSI}{UMAX}{"Astra 2100S"} = "umax";
-$driver{SCSI}{UMAX}{"Astra 2200 (SU)"} = "umax";
+$driver{SCSI}{UMAX}{"Astra 2200 U"} = "umax";
+$driver{SCSI}{UMAX}{"Astra 2200 S"} = "umax";
+$driver{SCSI}{UMAX}{"Astra 2200"} = "umax";
 $driver{SCSI}{UMAX}{"Astra 2400S"} = "umax";
 $driver{SCSI}{UMAX}{"Mirage D-16L"} = "umax";
 $driver{SCSI}{UMAX}{"Mirage II"} = "umax";
@@ -462,7 +465,7 @@ $driver{SCSI}{EDGE}{"KTX-9600US"} = "umax";
 $driver{SCSI}{Epson}{"Perfection 600"} = "umax";
 $driver{SCSI}{Escom}{"Image Scanner 256"} = "umax";
 $driver{SCSI}{Escort}{"Galleria 600"} = "umax";
-$driver{SCSI}{Genius}{"ColorPage-HR5 (Pro)"} = "umax";
+$driver{SCSI}{Genius}{"ColorPage-HR5 Pro"} = "umax";
 $driver{SCSI}{Nikon}{"AX-210"} = "umax";
 
 # More parallel-port:
@@ -493,16 +496,16 @@ $config{microtek} = <<"EndOfConf";
 #noprecal
 #   Using "norealcal" will revert backend to pre-0.11.0 calibration code.
 scsi * * Scanner
-YAST2_DEVICE # /dev/scanner
+YAST2_DEVICE
 EndOfConf
 
 $config{s9036} = <<"EndOfConf";
-YAST2_DEVICE # /dev/scanner
+YAST2_DEVICE 
 EndOfConf
 
 $config{coolscan} = <<"EndOfConf";
 scsi Nikon * Scanner
-YAST2_DEVICE # /dev/scanner
+YAST2_DEVICE 
 EndOfConf
 
 $config{microtek2} = <<"EndOfConf";
@@ -516,7 +519,7 @@ EndOfConf
 
 $config{artec} = <<"EndOfConf";
 scsi ULTIMA
-YAST2_DEVICE # /dev/scanner
+YAST2_DEVICE
 EndOfConf
 
 $config{sp15c} = <<"EndOfConf";
@@ -611,67 +614,66 @@ $config{saned} = <<"EndOfConf";
 # saned.conf
 #
 # The contents of the saned.conf file is a list of host
-# names that are permitted by saned to use local SANE
-# devices in a networked configuration.  The hostname
-# matching is NO LONGER case-sensitive.
+# names or IP addresses that are permitted by saned to
+# use local SANE devices in a networked configuration.
+# The hostname matching is not case-sensitive.
 #
 #scan-client.somedomain.firm
-#localhost
+#192.168.0.1
 #
-# NOTE: saned.conf and /etc/services must also
-# be properly configured to start the saned daemon as
-# documented in saned(1), services(4) and inetd.conf(4)
-#
-# for example, /etc/services might contain a line:
-# sane	6566/tcp	# network scanner daemon
-#
-# and /etc/inetd.conf might contain a line:
-# sane stream tcp nowait root /usr/local/sbin/saned saned
+# NOTE: /etc/inetd.conf (or /etc/xinetd.conf) and
+# /etc/services must also be properly configured to start
+# the saned daemon as documented in saned(1), services(4)
+# and inetd.conf(4) (or xinetd.conf(5)).
 EndOfConf
 
 $config{pie} = <<"EndOfConf";
 scsi DEVCOM * Scanner
 scsi PIE * Scanner
 scsi ADLIB * Scanner
-YAST2_DEVICE # /dev/scanner
+YAST2_DEVICE
 EndOfConf
 
 $config{avision} = <<"EndOfConf";
 scsi AVISION
-YAST2_DEVICE # /dev/scanner
+YAST2_DEVICE 
 EndOfConf
 
 $config{nec} = <<"EndOfConf";
-YAST2_DEVICE #/dev/scanner
+YAST2_DEVICE
 EndOfConf
 
 $config{mustek} = <<"EndOfConf";
 # See sane-mustek(5) for documentation.
 
 #--------------------------- Global options ---------------------------------
-option strip-height 1           # some SCSI adapters need this; scanning may 
-                                # be faster without this option
-#option force-wait              # wait for scanner to be ready (only necessary
-                                # when scanner freezes)
+#option strip-height 1           # some SCSI adapters need this; scanning may 
+                                 # be faster without this option
+#option force-wait               # wait for scanner to be ready (only necessary
+                                 # when scanner freezes)
+#option disable-double-buffering # try this if you have SCSI trouble
 
 #-------------------------- SCSI scanners -----------------------------------
 scsi MUSTEK * Scanner
-# option linedistance-fix       # stripes may go away in color mode
-# option buffersize 1024        # set non standard buffer size (in kb)
-# option blocksize 2048         # set non standard block size (in kb)
-  option lineart-fix		# lineart may be faster with this option off.
+# option linedistance-fix        # stripes may go away in color mode
+# option buffersize 1024         # set non standard buffer size (in kb)
+# option blocksize 2048          # set non standard block size (in kb)
+# option lineart-fix             # lineart may be faster with this option off.
+# option disable-backtracking    # faster, but may produce stripes
 
 scsi SCANNER
-# option linedistance-fix       # stripes may go away in color mode
-# option buffersize 1024        # set non standard buffer size (in kb)
-# option blocksize 2048         # set non standard block size (in kb)
-  option lineart-fix		# lineart may be faster with this option off.
+# option linedistance-fix        # stripes may go away in color mode
+# option buffersize 1024         # set non standard buffer size (in kb)
+# option blocksize 2048          # set non standard block size (in kb)
+# option lineart-fix             # lineart may be faster with this option off.
+# option disable-backtracking    # faster, but may produce stripes
 
-YAST2_DEVICE #/dev/scanner
-# option linedistance-fix       # stripes may go away in color mode
-# option buffersize 1024        # set non standard buffer size (in kb)
-# option blocksize 2048         # set non standard block size (in kb)
-  option lineart-fix		# lineart may be faster with this option off.
+/dev/scanner
+# option linedistance-fix        # stripes may go away in color mode
+# option buffersize 1024         # set non standard buffer size (in kb)
+# option blocksize 2048          # set non standard block size (in kb)
+# option lineart-fix             # lineart may be faster with this option off.
+# option disable-backtracking    # faster, but may produce stripes
 
 #-------------------------- 600 II N ----------------------------------------
 #0x2eb
@@ -682,19 +684,68 @@ EndOfConf
 
 $config{ricoh} = <<"EndOfConf";
 scsi RICOH IS60
-YAST2_DEVICE #/dev/scanner
+YAST2_DEVICE 
 EndOfConf
 
 $config{plustek} = <<"EndOfConf";
 # Plustek-SANE Backend configuration file
+# For use with Plustek parallel-port scanners and
+# LM9831/2 based USB scanners
 #
-# for multiple devices use
-# /dev/pt_drv0
-# /dev/pt_drv1
-# /dev/pt_drv2
+# For parport devices use the parport section
+#
+[parport]
+device /dev/pt_drv
+
+#
+# leave the default values as specified in /etc/modules.conf
+#
+warmup    -1
+lOffOnEnd -1
+lampOff   -1
+
+
+#
+# The USB section
+# each device needs at least two lines:
+# - [usb] vendor-ID and product-ID
+# - device devicename
+# i.e. for Plustek (0x07B3) UT12/16/24 (0x0017)
+# [usb] 0x07B3 0x0017
+# device /dev/usbscanner
+#
+# additionally you can specify some options
+# warmup, lOffOnEnd, lampOff
+#
+# For autodetection
+# [usb]
+# device /dev/usbscanner
 #
 
-/dev/pt_drv
+[usb] 0x07B3 0x0017
+
+#
+# options for the previous USB entry
+#
+# switch lamp off after xxx secs, 0 disables the feature
+option lampOff 0
+
+# warmup period in seconds, 0 means no warmup
+option warmup 180
+
+# 0 means leave lamp-status untouched, not 0 means switch off
+# on sane_close
+option lOffOnEnd 0
+
+#
+# and of course the device-name
+#
+device YAST2_DEVICE
+
+#
+# to define a new device, start with a new section:
+# [usb] or [parport]
+#
 EndOfConf
 
 $config{umax_pp} = <<"EndOfConf";
@@ -769,7 +820,7 @@ option readqueue 2
 # look for all devices with vendor ID "SHARP" and type "Scanner"
 scsi SHARP * Scanner
 # no options specific to these devices listed -> use global options
-YAST2_DEVICE #/dev/scanner
+YAST2_DEVICE
 # options specific to /dev/scanner
   option buffers 6
   option buffersize 262144
@@ -819,28 +870,35 @@ sp15c
 tamarack
 umax
 #umax_pp
+umax_pp
+umax1220u
 v4l
 EndOfConf
 
 $config{agfafocus} = <<"EndOfConf";
-YAST2_DEVICE #/dev/scanner
+YAST2_DEVICE
 
 EndOfConf
 
 $config{snapscan} = <<"EndOfConf";
-scsi AGFA
-scsi COLOR
-scsi ACERPERI
-
 # If not automatically found from above, then you may manually specify
 # a device name.
-YAST2_DEVICE #/dev/scanner
+
+# For USB devices, make sure that the name contains 'usb' somewhere, as in
+# '/dev/usbscanner' or '/dev/usb/scanner0'. Do not use a link
+# from /dev/scanner to your USB device.
+# For SCSI, use the generic device (e.g. /dev/sg0 in Linux).
+
+YAST2_DEVICE
 #/dev/usbscanner
-#/dev/sga
+
+# Change to the fully qualified filename of your firmware file, if
+# firmware upload is needed by the scanner
+firmware /path/to/your/firmware/file
 EndOfConf
 
 $config{dmc} = <<"EndOfConf";
-YAST2_DEVICE #/dev/camera
+YAST2_DEVICE 
 EndOfConf
 
 $config{net} = <<"EndOfConf";
@@ -909,7 +967,7 @@ scsi ESCORT "Galleria 600S"
 
 #
 # device list for non-linux-systems:
-YAST2_DEVICE #/dev/scanner
+YAST2_DEVICE
 
 EndOfConf
 
@@ -935,12 +993,12 @@ EndOfConf
 
 $config{bh} = <<"EndOfConf";
 scsi "B&H SCSI"
-YAST2_DEVICE #/dev/scanner
+YAST2_DEVICE
 EndOfConf
 
 $config{canon} = <<"EndOfConf";
-#
-YAST2_DEVICE #/dev/scanner
+#canon.conf
+YAST2_DEVICE
 #/dev/sg0
 EndOfConf
 
@@ -1212,7 +1270,7 @@ sub findInHash( $$ )
     # y2debug( "findInHash: Keys: " . join( "-", @hkeys ));
 
     my $entry = "";
-    my ($hkey) = grep( /$searchkey/i, @hkeys );
+    my ($hkey) = grep( /^$searchkey$/i, @hkeys ); # key must fit exactly (exception: ignore case)
 
     if( defined $hkey )
     {
@@ -1355,51 +1413,52 @@ sub getModel( $$ )
 {
     my ( $bus, $vendor ) = @_;
 
+    my %foundscanner = ();
+
     y2debug("getModel called with <$bus> <$vendor>" );
 
     if( !defined $vendor || $vendor =~ /^\s*$/ ) {
-	y2debug( "getModel: Vendor is empty !" );
-	exit;
+	y2debug( "getModel: Vendor is empty - can not find model!" );
     }
-
-    my %foundscanner = ();
-    
-    if( $bus !~ /net/i )
+    else
     {
-	my $bus_scanners = findInHash( $bus, \%driver ); # { uc $bus };
-	if( ref( $bus_scanners ) eq "HASH" )
+	if( $bus !~ /net/i )
 	{
-	    my $mfg_scanner_ref = findInHash( $vendor, $bus_scanners ); # ->{ uc $vendor};
+	    my $bus_scanners = findInHash( $bus, \%driver ); # { uc $bus };
+	    if( ref( $bus_scanners ) eq "HASH" )
+	    {
+		my $mfg_scanner_ref = findInHash( $vendor, $bus_scanners ); # ->{ uc $vendor};
 
-	    if( ref($mfg_scanner_ref)  eq "HASH" ) # defined $mfg_scanner_ref )
-	    {
-		%foundscanner = %$mfg_scanner_ref;
-	    }
-	    else
-	    {
-		if( $vendor =~ /generic/i )
+		if( ref($mfg_scanner_ref)  eq "HASH" ) # defined $mfg_scanner_ref )
 		{
-                    # In case of generic all entries are required with
-                    # all the same items as driver entry ;)
-		    foreach my $d ( sort @all_drivers )
-		    {
-			$foundscanner{ $d } = $d;
-		    }
+		    %foundscanner = %$mfg_scanner_ref;
 		}
 		else
 		{
-		    y2debug( "Can not find scanner for Vendor " . uc $vendor );
+		    if( $vendor =~ /generic/i )
+		    {
+			# In case of generic all entries are required with
+                        # all the same items as driver entry ;)
+			foreach my $d ( sort @all_drivers )
+			{
+			    $foundscanner{ $d } = $d;
+			}
+		    }
+		    else
+		    {
+			y2debug( "Can not find scanner for Vendor " . uc $vendor );
+		    }
 		}
+	    }
+	    else
+	    {
+		y2debug( "Can not find scanner for bus " . uc $bus );
 	    }
 	}
 	else
 	{
-	    y2debug( "Can not find scanner for bus " . uc $bus );
+	    y2debug(" No models available for Network scanner !" );
 	}
-    }
-    else
-    {
-	y2debug(" No models available for Network scanner !" );
     }
     return %foundscanner;
 }
@@ -1536,13 +1595,14 @@ sub writeNetConf( $ )
 # written by YaST2, $t
 #
 ";
-
-	print F join( "\n", @$net_stations );
+	my $nstats = join( "\n", @$net_stations );
+	y2debug("Writing net stations: $nstats" );
+	print F $nstats;
 	$res = close F;
     }
     else
     {
-	y2debug( "Open of /etc/sane.d/dll.conf failed: $!" );
+	y2debug( "Open of /etc/sane.d/net.conf failed: $!" );
 	$res = 0;
     }
     
@@ -1870,18 +1930,13 @@ sub acquireTestImage( $$ )
     y2debug( "Scanning test image from <$usedev>" );
 
     my $tmpfile = "$prefix" . "$tmpdir/y2testimage_$PID.pnm";
-    my $tmpfile2 = "$prefix" . "$tmpdir/y2testimage_$PID.png";
-    my $w = 210; my $h = 295;
 
-    my $cmd = sprintf( "/usr/X11R6/bin/scanimage -d %s > %s && /usr/bin/convert -border 3x3 -bordercolor darkgreen -geometry %dx%d "
-		       ." %s %s", $usedev, $tmpfile, $w, $h, $tmpfile, $tmpfile2 );
+    my $cmd = sprintf( "/usr/X11R6/bin/scanimage -d %s > %s", $usedev, $tmpfile );
 
     y2debug( "Scanning test image with command <$cmd>" );
  
     system( $cmd );
-    unlink( $tmpfile );
-
-    return( $tmpfile2 );
+    return( $tmpfile );
 
 }
 
@@ -1942,9 +1997,11 @@ sub getNetInfo( $ )
 
     my @origNetStations = readNetConf();
 
+    y2debug("Enabling net scanner for <$host>" );
     if( enableNetScan( $host ) )
     {
 	# now the net station should be enalbed.
+	y2debug("Netscanning for <$host> enabled successfully");
     }
     
     unless( grep ( /$host/i, @origNetStations ))
@@ -2100,7 +2157,6 @@ sub performScanimage( ;$ )
 	    my ($name, $vendor, $model, $class ) = split( /"\s+"/ );
 	    $name =~ s/\"//g;
 	    $name =~ s/^\s+|\s+$//g;
-	    
 	    my ($driver, $devfile);
             # bus defaults to SCSI, switched later
 	    my $bus = "SCSI";
@@ -2151,7 +2207,7 @@ sub performScanimage( ;$ )
 		  vendor_id => "",
 		  dev_name => trim($devfile),
 		  class => trim($class),
-		  driver => trim($driver),
+		  scanner_driver => trim($driver),
 		  host => $host 
 		  } );
 	    $cnt++;

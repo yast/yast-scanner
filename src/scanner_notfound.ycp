@@ -41,7 +41,7 @@ manual configuration is required.")),
 									       _("&SCSI scanner"),  false) ),
 							    `VSpacing (1.2),
 							    `Left(`RadioButton(`id(`net),`opt(`hstretch),
-									       _("&Network scan station") ,  false) ),
+									       _("N&etwork scan station") ,  false) ),
 							    `VSpacing (0.6)
 							    )
 						      )
@@ -99,7 +99,7 @@ scanner at the same time.</p>");
 	  
 	  ret = UI::UserInput();
 
-	  if ( ret == `next || ret == `abort || ret == `back )
+	  if ( ret == `next || ret == `abort || ret == `back || ret == `cancel )
 	  {
 	      go_on = false;
 	  }

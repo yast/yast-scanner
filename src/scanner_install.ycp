@@ -54,31 +54,37 @@
 	  
 
       term contents = `HBox (
-			 `VBox (
-			     // label of an outpufield
-			     `Left(`Label (`opt (`hstretch), _("Scanner"))),
-			     `VSpacing(0.3),
-			     `HBox (`HSpacing(2.5),
-				    `HWeight(5, `Label (`opt (`outputField, `hstretch), scanner)),
-				    `HWeight(1, `Empty())
-				    ),
-			     `VSpacing(0.5),
-			     `Left(`Label (`opt (`hstretch), label)),
-			     `VSpacing(0.3),
-			     `HBox (`HSpacing(2.5),
-				    `HWeight(5, `Label (`opt (`outputField, `hstretch),
-							info )),
-				    `HWeight(1, `Empty())
-				    ),
-			     `VSpacing (1),
-			     `PushButton (`id (`test), _("&Test"))
-			   ),
-			 
-				    `ReplacePoint(`id(`replace),`Image( image, _("Test picture")) ),
-				    `HSpacing (2.0)
-				    );
+			     `HWeight(1, `VBox (
+						// label of an outpufield
+						`Left(`Label (`opt (`hstretch), _("Scanner"))),
+						`VSpacing(0.3),
+						`HBox (`HSpacing(2.5),
+						       `HWeight(10, `Label (`opt (`outputField, `hstretch), scanner)),
+						       `HWeight(1, `Empty())
+						       ),
+						`VSpacing(0.5),
+						`Left(`Label (`opt (`hstretch), label)),
+						`VSpacing(0.3),
+						`HBox (`HSpacing(2.5),
+						       `HWeight(10, `Label (`opt (`outputField, `hstretch),
+									    info )),
+						       `HWeight(1, `Empty())
+						       ),
+						`VSpacing (1),
+						`PushButton (`id (`test), _("&Test"))
+						)
+				      ),
+			     `HWeight( 1, `VBox (
+						 `VSpacing (2),
+						 `ReplacePoint(`id(`replace), `Image( image, _("Test picture"))),
+						 `VSpacing (2)
+						 )
+				       ),
+			     `HSpacing(2.0)
 
+			     );
       return contents;
+
   }
 
 /**
@@ -112,15 +118,10 @@ The <b>Gimp</b> also provides scan support.</p>");
 						Read( .local.byte,
 						      "/usr/share/doc/packages/sane/sane-backends/umax/sane-logo2.jpg"));
 
-      //"/usr/lib/YaST2/images/lvm-config.png"
-      // Check if tool convert exists, otherwise do disable test button.
       Wizard::SetContentsButtons(caption,contents,help,BackButtonLabel(),NextButtonLabel());
-      integer magic_installed = SCR::Execute( .target.bash, "test -x /usr/bin/convert" );
-      y2debug( "Test for convert from imageMagick results in %1", magic_installed );
-      if( magic_installed == 1 )
-      {
-	  UI::ChangeWidget(`id(`test), `Enabled,false);
-      }
+
+      // Check if tool convert exists, otherwise do disable test button.
+      // -> we do not need this any longer - the `Image widget does all the work 
 	  
 
       any ret = nil;
@@ -143,15 +144,14 @@ The <b>Gimp</b> also provides scan support.</p>");
 	      if ( filename != "" )
 	      {
 		  byteblock image_data = Read(.local.byte, filename);
-		  image = `Image(  image_data, _("Test picture"));
+		  image = `Image( `opt(`scaleToFit), image_data, _("Test picture"));
 
 		  UI::ReplaceWidget(`id(`replace), image );
 	      }
 	  }
 	  
-      } until ( ret == `next || ret == `back || ret == `abort );
+      } until ( ret == `next || ret == `back || ret == `abort || ret == `cancel );
 
-      SCR::Execute( .target.bash, "/bin/rm -rf " + tmpdir );
 
       return ret;
   }
