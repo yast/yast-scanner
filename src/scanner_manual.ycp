@@ -171,6 +171,9 @@ http://mostang.com/sane and http://sdb.suse.de.</p>");
 	      {
 		  SetCurrentScannerValue( "vendor", vendor );
 		  SetCurrentScannerValue( "device", model );
+		  // get driver for current scanner
+		  string driver = (string) SCR::Read(.sane.driver, GetCurrentScanner() );
+		  SetCurrentScannerValue( "scanner_driver", driver );
 	      }
 	      else
 	      {

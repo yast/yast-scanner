@@ -152,7 +152,7 @@ offers more scan and image processing functionality.
 				  // text of an info popup
 				  _("Some %1 %2 scanners require a firmware upload.
 
-You should not test the scanner now but finish the
+You should not test the scanner now, but finish the
 scanner installation first.
 Check 'http://snapscan.sourceforge.net' to see whether
 an upload is required.

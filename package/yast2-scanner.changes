@@ -1,4 +1,22 @@
 -------------------------------------------------------------------
+Wed May  5 14:23:45 CEST 2004 - gs@suse.de
+
+- V 2.9.17
+- messages from proof reading merged back 
+
+-------------------------------------------------------------------
+Tue May  4 15:58:12 CEST 2004 - gs@suse.de
+
+- V 2.9.16
+- set scanner driver in manual configuration dialog (bug #39940)
+
+-------------------------------------------------------------------
+Wed Apr  7 18:14:24 CEST 2004 - gs@suse.de
+
+- V 2.9.15
+- bugfix for #38634 (remove blank in scanner_notfound.ycp)
+
+-------------------------------------------------------------------
 Fri Apr  2 16:11:52 CEST 2004 - gs@suse.de
 
 - V 2.9.14
