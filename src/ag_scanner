@@ -26,22 +26,7 @@ BEGIN { unshift @INC, "/usr/lib/YaST2/agents_non_y2/"; }
 use strict;
 use ycp;
 
-
-#
-# Simple sub to cut off whitespaces in front and at the end of
-# of a string.
-#
-sub trim( $ )
-{
-    my ($str) = @_;
-    $str =~ s/\"//g;
-    $str =~ s/^\s+//;
-    
-    $str =~ s/\s+$//;
-    y2debug("Trim: Trimmed string to <$str>");
-    return( $str );
-}
-
+use scannerDB;
 # ##############################################################################
 
 my @scanners;
@@ -115,78 +100,7 @@ while ( <STDIN> )
     }
     elsif( $action =~ /configured/i )
     {
-        y2debug( "Searching for configured scanners!" );
-        my $cmd = "/usr/X11R6/bin/scanimage -s";
-	@scanners = ();
-
-        if( open( CMD, "$cmd |" ) )
-        {
-	    my $cnt = 0;
-	    while( <CMD> )
-	    {
-		chomp;
-		my ($name, $vendor, $model, $class ) = split( /"\s+"/ );
-		$name =~ s/\"//g;
-		$name =~ s/^\s+|\s+$//g;
-	    
-		my ($driver, $devfile);
-		# bus defaults to SCSI, switched later
-		my $bus = "SCSI";
-		my $host = uc "localhost";
-
-		if( $name =~ /(\S+):(\S+):(\S+):(\S+)/ )
-		{
-                    # A Network scanner was found with a name like 
-                    # net:d213.suse.de:umax:/dev/sg0
-		    $bus = "Net";
-		    $host =  $2;
-		    $driver =  $3;
-		    $devfile =  $4;
-		    y2debug( "Found network scanner: $bus:$host:$driver:$devfile" );
-		}
-		else
-		{
-		    # split up a name-string like umax:/dev/scanner to driver and device
-		    ($driver, $devfile) = split( /:/, $name );
-		}
-
-		if( $devfile =~ /dev.+usb/i )
-		{
-		    $bus = "USB";
-		}
-		y2debug( "Found scanner $vendor $model on $devfile" );
-	    
-                # Push anonym hashes to the array. The array contains references to
-                # the hashes then.
-		push ( @scanners , 
-		       { bus => $bus, 
-			 class_id => "",
-			 device => trim($model),
-			 device_id => "",
-			 resource =>"",
-			 rev => "",
-			 sub_class_id => "",
-			 sub_device => trim($model),
-			 sub_vendor => trim($vendor),
-			 unique_key => "",
-			 vendor => trim($vendor),
-			 vendor_id => "",
-			 dev_name => trim($devfile),
-			 class => trim($class),
-			 driver => trim($driver),
-			 host => $host 
-			 } );
-		$cnt++;
-	    }
-	    close CMD;
-	    y2debug( "found $cnt configured scanners !" );
-	}
-        else
-        {
-	    y2debug( "ERROR: Could not open scanimage!" );
-	    @scanners = ();
-	}
-
+         @scanners = performScanimage();
     }
     else
     {
