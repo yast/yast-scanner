@@ -55,7 +55,7 @@
 	  {
 	      if ( usb_module != "" && usb_options != $[] )
 	      {
-		  ret = SCR(`Write(.modules.options, usb_options , usb_module ));
+		  ret = SCR::Write(.modules.options, usb_options , usb_module );
 		  y2debug( "Write /etc/modules.conf: %1 %2", usb_options , usb_module );
 		  if ( ret )
 		  {
@@ -166,7 +166,7 @@
       list table_contents =  maplist( `key, `value, scanners,
 				 ``(`item(`id(key), lookup(value, "vendor", ""),lookup(value, "device", ""), lookup(value, "bus", ""))) );
 
-      UI(`OpenDialog(`opt( `decorated),
+      UI::OpenDialog(`opt( `decorated),
 		     `HBox(`VSpacing(15),
 			   `VBox( `HSpacing(50),
 				  `Left(`Heading(title)),
@@ -181,22 +181,21 @@
 					 )
 				  )
 			   )
-		     )
-	 );
+		     );
       // select first list entry
-      UI( `ChangeWidget(`id(`table), `CurrentItem, select(select(select(table_contents,0) ,0) ,0)) );
+      UI::ChangeWidget(`id(`table), `CurrentItem, select(select(select(table_contents,0) ,0) ,0));
 	  
-      any r = UI(`UserInput());
+      any r = UI::UserInput();
 
       if ( r == `ok )
       {
-	  any ret = UI(`QueryWidget( `id(`table), `CurrentItem ));
-	  UI(`CloseDialog());
+	  any ret = UI::QueryWidget( `id(`table), `CurrentItem );
+	  UI::CloseDialog();
 	  return( ret );
       }
       else
       {
-	  UI(`CloseDialog());
+	  UI::CloseDialog();
 	  return ( r );
       }
   };
@@ -365,7 +364,7 @@
     if(!ok)
     {
       //TRANSLATOR: %1 stands for the driver name
-      UI(`MessagePopup(sformat(_("It was not possible to deactive the driver %1"), driver)));
+      UI::MessagePopup(sformat(_("It was not possible to deactive the driver %1"), driver));
     }
 
 //    SCR::Write(.dumpto.tmp.newscanner_info, newscanner_info );

@@ -96,37 +96,37 @@
       
       string help = "";
       // help part1 of scanner overview dialog
-      string help1    = UI(_("<p>This overview dialog shows the
+      string help1    = _("<p>This overview dialog shows the
  currently configured and/or installed scanners.</p>"
-			     ));
+			     );
        // help part2 of scanner overview dialog
-      string help2 = UI(_("<p>
+      string help2 = _("<p>
 If you want to remove a scanner configuration,
 select the corresponding entry from the list and press <b>Delete</b>.
 If you want to install a new scanner,
 press the <b>Add</b> button.
-</p>"));
+</p>");
        // help part3 of scanner overview dialog
-      string help3 = UI(_("<p>Press the <b>Finish</b> button to save the
-new configuration.</p>"));
+      string help3 = _("<p>Press the <b>Finish</b> button to save the
+new configuration.</p>");
       // help part4 of scanner overview dialog
-      string help4 = UI(_("<p>
+      string help4 = _("<p>
 If you leave this dialog with <b>Abort</b>, all changes made in this dialog
 will be discarded and your system will be reverted to the previous state.
-</p>"));
+</p>");
       help = help1 + help2 + help3 + help4;
       
        
-      string caption = UI(_("Scanner Overview"));
+      string caption = _("Scanner Overview");
 
       term contents = ScannerOverviewDialog_UI( CreateScannerTable(scanner_map) );
 
-      UI(`SetWizardContentsButtons(caption,contents,help,
+      Wizard::SetContentsButtons(caption,contents,help,
 				   BackButtonLabel(),
-				   NextButtonLabel()));
+				   NextButtonLabel());
 
       term finish_button = `PushButton(`id(`finish), FinishButtonLabel() );
-      UI(`ReplaceWizardNextButton( finish_button ));
+      Wizard::ReplaceNextButton( finish_button );
       
       any ret = nil;
       boolean go_on = true;
@@ -135,26 +135,26 @@ will be discarded and your system will be reverted to the previous state.
       {
 	  integer scanner_id = 0;
 
-	  ret = UI(`UserInput());
+	  ret = UI::UserInput();
 
 	  if ( ret == `delete )
 	  {
 	      // which scanner is selected?
-	      scanner_id = UI(`QueryWidget( `id(`scanner_table), `CurrentItem ));
+	      scanner_id = UI::QueryWidget( `id(`scanner_table), `CurrentItem );
 	      if ( scanner_id == nil )
 	      {
-		  UI(`NotifyPopup(_("Please select a scanner from the list.")));
+		  UI::NotifyPopup(_("Please select a scanner from the list."));
 	      }
 	      else
 	      {
 		  user_settings = add(user_settings, "scannerInWork", scanner_id);
 		  y2debug( "DELETE scanner: %1", GetCurrentScannerValue("device") );
 
-		  string message = sformat( UI(_("Do you really want to remove the
-configuration of the scanner %1, %2 ?\n")), GetCurrentScannerValue("vendor"),
+		  string message = sformat( _("Do you really want to remove the
+configuration of the scanner %1, %2 ?\n"), GetCurrentScannerValue("vendor"),
 					    GetCurrentScannerValue("device") );   
 
-		  boolean yesnoret = UI(`YesNoHeadlinePopup( WarningMsg(), message) );
+		  boolean yesnoret = UI::YesNoHeadlinePopup( WarningMsg(), message);
 		  if(yesnoret==true)
 		  {
 		    // remove scanner_id form scannerInfo
@@ -162,14 +162,14 @@ configuration of the scanner %1, %2 ?\n")), GetCurrentScannerValue("vendor"),
 		    // get new scanner_map
 		    scanner_map = lookup( user_settings, "scannerInfo", $[] );
 		    // update widget
-		    UI(`ReplaceWidget(`id(`scanner_table_rp),CreateScannerTable(scanner_map)));
+		    UI::ReplaceWidget(`id(`scanner_table_rp),CreateScannerTable(scanner_map));
 		  }
 	      }
 	  }
 	  else if ( ret == `finish )
 	  {
 	      // TODO: is there anything to do ???? 
-	      any ret = UI(`YesNoPopup(_("Save all settings and exit?")));
+	      any ret = UI::YesNoPopup(_("Save all settings and exit?"));
 	      if ( ret )
 	      {
 		  y2debug( "FINISH scanner workflow" );
@@ -192,7 +192,7 @@ configuration of the scanner %1, %2 ?\n")), GetCurrentScannerValue("vendor"),
 
       // restore Next button
       term next_button = `PushButton(`id(`next), NextButtonLabel() );
-      UI(`ReplaceWizardNextButton( next_button ));
+      Wizard::ReplaceNextButton( next_button );
 
       return ret;
   }

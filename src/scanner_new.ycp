@@ -41,7 +41,7 @@
 	  driver = lookup( new_scanner, "scanner_driver", "" );
 	  if ( driver == "" )
 	  {
-	      driver = SCR(`Read(.sane.driver, new_scanner));
+	      driver = SCR::Read(.sane.driver, new_scanner);
 	      SetCurrentScannerValue( "driver", driver );
 	  }
       }
@@ -97,46 +97,46 @@
       string help = "";
       
       // part 1 of helptext of dialog Scanner installation
-      string help1    = UI(_("<p>All required scanner data
+      string help1    = _("<p>All required scanner data
 were detected. Please check whether the vendor and model
 settings are correct and proceed with the installation if 
-the data are <i>OK</i>.</p>"));
+the data are <i>OK</i>.</p>");
 
       // part 2 of helptext of dialog scanner installation
-      string help2 = UI(_("<p>If you press <b>Next</b>, YaST2 will install the
-scanner and automatically set reasonable values for all options.</p>"));
+      string help2 = _("<p>If you press <b>Next</b>, YaST2 will install the
+scanner and automatically set reasonable values for all options.</p>");
 
       // part 3 of helptext of dialog scanner installation
-      string help3 =  UI(_("<p>In case the data are incorrect or you want
+      string help3 =  _("<p>In case the data are incorrect or you want
 to install a different scanner please click on the appropriate button.
-</p>"));
+</p>");
 
        // part 4 of helptext of dialog scanner installation
-      string help4 =  UI(_("<p>You will have the possibilty to do
+      string help4 =  _("<p>You will have the possibilty to do
 a manual configuration.
-</p>"));
+</p>");
       
       help = help1 + help2 + help3 + help4;
       
-      string caption = UI(_("Scanner installation"));
+      string caption = _("Scanner installation");
 
       y2debug( "New scanner: %1, %2", GetCurrentScannerValue( "vendor" ),
 	       GetCurrentScannerValue( "device" ));
 
       term contents  = ScannerNewDialog_UI( GetCurrentScanner() );
 
-      UI(`SetWizardContentsButtons(caption,contents,help,BackButtonLabel(),NextButtonLabel()));
+      Wizard::SetContentsButtons(caption,contents,help,BackButtonLabel(),NextButtonLabel());
 
       boolean go_on = true;
       any ret = nil;
       
       repeat  {
 
-	  ret = UI(`UserInput());
+	  ret = UI::UserInput();
 	  
 	  if ( ret == `next )
 	  {
-	      symbol choice = UI(`QueryWidget(`id(`action), `CurrentButton ));
+	      symbol choice = UI::QueryWidget(`id(`action), `CurrentButton );
 	      y2debug( "CHOICE: %1", choice );
 
 	      if ( !test_mode )
@@ -152,7 +152,7 @@ a manual configuration.
 		      }
 		      else
 		      {
-			  UI(`ErrorPopup(_("The scanner configuration was not successful.")));
+			  UI::ErrorPopup(_("The scanner configuration was not successful."));
 			  ret = `abort;
 		      }
 		  }

@@ -114,12 +114,12 @@ The <b>Gimp</b> also provides scan support.</p>");
 
       //"/usr/lib/YaST2/images/lvm-config.png"
       // Check if tool convert exists, otherwise do disable test button.
-      UI(`SetWizardContentsButtons(caption,contents,help,BackButtonLabel(),NextButtonLabel()));
+      Wizard::SetContentsButtons(caption,contents,help,BackButtonLabel(),NextButtonLabel());
       integer magic_installed = SCR::Execute( .target.bash, "test -x /usr/bin/convert" );
       y2debug( "Test for convert from imageMagick results in %1", magic_installed );
       if( magic_installed == 1 )
       {
-	  UI(`ChangeWidget(`id(`test), `Enabled,false));
+	  UI::ChangeWidget(`id(`test), `Enabled,false);
       }
 	  
 
@@ -127,7 +127,7 @@ The <b>Gimp</b> also provides scan support.</p>");
 
       repeat {
 
-	  ret = UI(`UserInput());
+	  ret = UI::UserInput();
 
 	  term image = `Empty();
 
@@ -139,13 +139,13 @@ The <b>Gimp</b> also provides scan support.</p>");
 	      y2debug("TmpDir is tmpdir %1", tmpdir );
 	      
 	      scanner = add( scanner, "tmpdir", tmpdir );
-	      string filename = SCR(`Read(.sane.scanimage, scanner ));
+	      string filename = SCR::Read(.sane.scanimage, scanner );
 	      if ( filename != "" )
 	      {
 		  byteblock image_data = Read(.local.byte, filename);
 		  image = `Image(  image_data, _("Test picture"));
 
-		  UI( `ReplaceWidget(`id(`replace), image ));
+		  UI::ReplaceWidget(`id(`replace), image );
 	      }
 	  }
 	  
