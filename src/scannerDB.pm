@@ -1068,7 +1068,7 @@ scsi HP
 #   option dumb-read
 #
 # The usual place for a SCSI-scanner on Linux
-YAST2_DEVICE 
+IF bus = scsi YAST2_DEVICE 
 #
 # USB-scanners supported by the hp-backend
 # HP ScanJet 4100C
@@ -2592,6 +2592,7 @@ $prefix = $ENV{PREFIX_DIR} if( exists $ENV{PREFIX_DIR} );
 undef @all_drivers;
 undef %driver;
 populateDriverInfo( "/usr/share/sane/descriptions/" );
+populateDriverInfo( "/usr/share/sane/descriptions-external/" );
 
 # print "\nKnown Interfaces:\n";
 # foreach my $k ( keys %knownIFaces )
