@@ -1,0 +1,76 @@
+/**
+ * File:
+ *   scanner_manual.ycp
+ *
+ * Module:
+ *   Configuration of scanner
+ *
+ * Summary:
+ *   
+ *
+ * Authors:
+ *   Gabriele Strattner <gs@suse.de>
+ *
+ * $Id$
+ *
+ * 
+ */
+
+{
+
+  global define ScannerUSBDialog_UI() ``{
+
+      term layout = `Empty();
+
+      layout = `VBox( `Label(`opt (`hstretch), _("YaST2 could not load the USB scanner module automatically.\n
+Please enter required scanner data.")),
+		      `VSpacing(1.5),
+		      `HBox(`HSpacing(0.5),
+			    `VBox(
+				  `VSpacing(0.3),
+				  `Empty(),
+				  `VSpacing(0.3)   
+				  ),
+			    `HSpacing(3.0)
+			    ),
+		      `VSpacing(1.0)
+		      );
+      return layout;
+  }
+
+/**
+ * ScannerStartDialog
+ */
+  global define ScannerUSBDialog()``{
+      string help = "";
+      string help1    = UI(_("<p>YaST2 could not load the scanner module
+for your USB scanner.</p> "));
+      string help2    = UI(_("<p>Please enter the Product-ID,
+the Vendor-ID and the USB module name (usually named
+'scanner') and try to load the module.</p>"));
+      string help3    = UI(_("<p>If the loading of the scanner
+module was successful you can go <b>Next</b> to dialog
+\"Select scanner driver\".</p>"));
+
+      help = help1 + help2 + help3;
+      
+      string caption = UI(_("Manual USB scanner configuration"));
+      term contents  = ScannerUSBDialog_UI();
+
+      UI(`SetWizardContentsButtons(caption,contents,help,BackButtonLabel(),NextButtonLabel()));
+
+      any ret = nil;
+
+      ret = UI(`UserInput());
+
+      if ( ret == `next )
+      {
+	  return ( UI(`QueryWidget(`id(`scanner), `CurrentButton)) );
+      }
+      else
+      {
+	  return ret;
+      }
+  }
+
+}

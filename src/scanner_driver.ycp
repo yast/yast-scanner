@@ -1,0 +1,75 @@
+/**
+ * File:
+ *   scanner_manual.ycp
+ *
+ * Module:
+ *   Configuration of scanner
+ *
+ * Summary:
+ *   
+ *
+ * Authors:
+ *   Gabriele Strattner <gs@suse.de>
+ *
+ * $Id$
+ *
+ * 
+ * Manual scanner detection. 
+ * 
+ *
+ */
+
+{
+
+  global define ScannerDriverDialog_UI() ``{
+
+      term layout = `Empty();
+
+      layout = `VBox( `Label(`opt (`hstretch), _("Select Scanner driver")),
+		      `VSpacing(1.5),
+		      `HBox(`HSpacing(0.5),
+			     `Frame (_("Select the scanner driver"),
+				     `VBox(
+					   `VSpacing(0.3),
+					   `Empty(),
+					   `VSpacing(0.3)
+					   )),
+			    `HSpacing(3.0)
+			    ),
+		      `VSpacing(1.0)
+		      );
+      return layout;
+  }
+
+/**
+ * ScannerStartDialog
+ */
+  global define ScannerDriverDialog()``{
+      string help = "";
+      string help1    = UI(_("<p></p> "));
+      string help2    = UI(_("<p></p>"));
+      string help3    = UI(_("<p></p>"));
+
+      help = help1 + help2 + help3;
+      
+      string caption = UI(_("Select scanner driver"));
+      term contents  = ScannerDriverDialog_UI();
+
+      UI(`SetWizardContentsButtons(caption,contents,help,BackButtonLabel(),NextButtonLabel()));
+
+      any ret = nil;
+
+      ret = UI(`UserInput());
+
+      if ( ret == `next )
+      {
+	  return ( UI(`QueryWidget(`id(`scanner), `CurrentButton)) );
+      }
+      else
+      {
+	  return ret;
+      }
+	      
+  }
+
+}
