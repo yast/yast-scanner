@@ -908,7 +908,7 @@ writeNetConf, readNetConf
 sub writeIndividualConf( $$$ )
 {
     my ( $bus, $vendor, $device ) = @_;
-    my $res = 0;
+    my $res = 1;
 
     $vendor = lc $vendor;
 
@@ -1006,6 +1006,7 @@ sub writeIndividualConf( $$$ )
 	    else
 	    {
 		y2debug("ERR <$device> is not a character device !" );
+		$res = 0;
 	    }
 	}
     }
