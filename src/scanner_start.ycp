@@ -107,7 +107,7 @@ with the YaST2 module 'Install/Remove Software'.\n")));
       list connected_scanner = [];
       if ( !test_mode )
       {
-	  // probe USB ports; command is hwinfo --scanner
+	  // pobe USB ports; command is hwinfo --scanner
 	  connected_scanner = SCR(`Read(.probe.scanner));
 	  
 	  if ( size(connected_scanner) > 1 ) 
@@ -137,7 +137,15 @@ configuration.")));
           // check SCSI ports
 	  list scsi_scanner = SCR(`Read(.scanner.scsi));
 	  connected_scanner = union(connected_scanner, scsi_scanner);
-	  y2milestone( "SCSI Scanner: %1", scsi_scanner );
+          y2milestone( "SCSI Scanner: %1", scsi_scanner );
+
+	  // also add net scanner
+          list net_scanner = SCR(`Read(.scanner.net));
+	  y2debug( "Netscanner %1", net_scanner );
+	  connected_scanner = union(connected_scanner, net_scanner);
+
+	  y2milestone( "Net Scanner: %1", net_scanner );
+
       }
       else
       {
