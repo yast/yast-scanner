@@ -109,7 +109,6 @@ with the YaST2 module 'Install/Remove Software'.\n")));
       {
 	  // probe USB ports; command is hwinfo --scanner
 	  connected_scanner = SCR(`Read(.probe.scanner));
-	  y2milestone( "USB Scanner: %1", connected_scanner);
 	  
 	  if ( size(connected_scanner) > 1 ) 
 	  {
@@ -126,7 +125,16 @@ configuration.")));
 	      return `cancel;
 	    
 	  }
-	  // check SCSI ports
+else if ( size(connected_scanner) == 1 )
+{
+    // add the devicefile - rebuild the list
+	map usb_scanner = select( connected_scanner, 0 );
+	connected_scanner = [];
+    usb_scanner = add( usb_scanner, "dev_name", "/dev/usbscanner" );
+    connected_scanner = add( connected_scanner, usb_scanner );
+}
+ y2milestone( "USB Scanner: %1", connected_scanner);
+// check SCSI ports
 	  list scsi_scanner = SCR(`Read(.scanner.scsi));
 	  connected_scanner = union(connected_scanner, scsi_scanner);
 	  y2milestone( "SCSI Scanner: %1", scsi_scanner );
