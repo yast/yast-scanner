@@ -19,7 +19,9 @@ use Exporter;
 use ycp;
 
 @ISA            = qw(Exporter);
-@EXPORT         = qw( getModel findKeyInHash);
+@EXPORT         = qw( getModel 
+		      findInHash
+		      trim);
 
 use vars qw ( %driver );
 
@@ -355,13 +357,45 @@ $driver{SCSI}{UMAX}{"Linoscan 1400"} = "umax";
 # case INsensitive search function in a hash
 #
 #
-sub findKeyInHash( $$ )
+
+
+=head1 NAME
+
+findInHash - case insensitive hash search
+
+=head1 SYNOPSIS
+
+    my $value = findInHash( 'goofy', \%bighash );
+
+=head1 DESCRIPTION
+
+findInHash searches the keys of a given hash for the 
+given searchkey parameter caseinsensitive and returns the
+entry, if it finds one.
+
+That means, that the string 'goofy' would be found even if
+it is stored with the key 'GOOFY' in the hash.
+
+=head1 PRARMETER
+
+The first parameter is the string which is searched for the 
+hash keys.
+
+The second parameter is a reference to a hash.
+
+=head1 RETURN VALUE
+
+The value of the found key if it exists, an empty string else.
+
+=cut
+
+sub findInHash( $$ )
 {
     my ( $searchkey, $hashref ) = @_;
 
     my @hkeys = keys %$hashref;
     
-    y2debug( "KKK: " . join( "-", @hkeys ));
+    y2debug( "findInHash: Keys: " . join( "-", @hkeys ));
 
     my $entry = "";
     my ($hkey) = grep( /$searchkey/i, @hkeys );
@@ -380,6 +414,37 @@ sub findKeyInHash( $$ )
     return( $entry );
 }
 
+
+
+=head1 NAME
+
+getModel - find a hash of scanner - drivers
+
+=head1 SYNOPSIS
+
+    my %modelsnDrivers = getModel( 'SCSI', 'Umax' );
+
+=head1 DESCRIPTION
+
+getModel is a specialised utility function that returns a hash
+containing scanner driver data related to scanner models.
+
+The hash is taken from the scanner driver 'database'.
+
+The function is case insensitive, you do not have to care
+about.
+
+=head1 PRARMETER
+
+The first parameter is the name of the bus, e.g. "SCSI" or "USB"
+The second parameter is the vendor string.
+
+=head1 RETURN VALUE
+
+a hash that contains the name of the driver to use for all models
+at the given bus of the given vendor.
+
+=cut
 
 
 sub getModel( $$ )
@@ -414,6 +479,39 @@ sub getModel( $$ )
 	y2debug( "Can not find scanner for bus " . uc $vendor );
     }
     return %foundscanner;
+}
+
+
+=head1 NAME
+
+trim - cut off whitespaces from a string
+
+=head1 SYNOPSIS
+
+    my $trimmedstring = trim( '    untrimmed    ' );
+
+=head1 DESCRIPTION
+
+trim takes a string and returns it after having cut off all whitespace
+in front and at the end.
+
+=head1 PRARMETER
+
+the string to trim
+
+=head1 RETURN VALUE
+
+the trimmed string
+
+=cut
+
+sub trim( $ )
+{
+    my ($str) = @_;
+    $str =~ s/^\s+//;
+    $str =~ s/\s+$//;
+    y2debug("Trim: Trimmed string to <$str>");
+    return( $str );
 }
 
 
