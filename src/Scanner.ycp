@@ -89,7 +89,7 @@ global list< map< string, string > > database = [];
  * which outputs on stdout a YCP list of scanner maps in the following format:
  * [
  *   $[ "backend":"The name of the backend (required)",
- *      "device":"The SANE device (required)",
+ *      "sane_device":"The SANE device (required)",
  *      "manufacturer":"The manufacturer name of the scanner (required)",
  *      "model":"The model name of the scanner (required)",
  *   ],
@@ -132,6 +132,7 @@ global list< string > active_backends = [];
  * The result is a YCP list of scanner maps in the following format:
  * [
  *   $[ "connection":"Either USB or SCSI (required)",
+ *      "device":"The device, e.g. '/dev/sg0' or 'libusb:001:002' (may be the empty string)"
  *      "manufacturer":"The manufacturer name of the scanner (may be the empty string)",
  *      "model":"The model name of the scanner (may be the empty string)",
  *      "description":"The sane-find-scanner output description string (required)"
@@ -486,7 +487,7 @@ boolean SetScsiScannerAccessPermissions()
 { boolean run_and_activate_sane_dev = false;
   foreach( map< string, string > active_scanner,
            active_scanners,
-           { if( issubstring( active_scanner["device"]:"", "/dev/" ) )
+           { if( issubstring( active_scanner["sane_device"]:"", "/dev/" ) )
              { run_and_activate_sane_dev = true;
              }
            }
@@ -692,29 +693,47 @@ global boolean Write()
 global list Summary()
 { // Make a list of the autodetected scanners:
   list< term > detected_scanners = [];
-  integer autodetected_scanners_index = 0;
+  integer autodetected_scanners_index = -1;
+  boolean preselected = false;
   foreach( map< string, string > autodetected_scanner,
            autodetected_scanners,
-           { string description = autodetected_scanner["description"]:"";
+           { // Set the autodetected_scanners_index to the index number
+             // of the actual autodetected_scanner in autodetected_scanners:
+             autodetected_scanners_index = autodetected_scanners_index +1;
+             // Use local variables to have shorter variable names:
+             string description = autodetected_scanner["description"]:"";
+             string device = autodetected_scanner["device"]:"";
              if( "" != description )
-             { if( selected_autodetected_scanners_index == autodetected_scanners_index )
-               { // If there was already a scanner selected before then preselect it.
-                 // This happens for example when going 'back' to the summary screen.
-                 detected_scanners = add( detected_scanners,
-                                          `item( `id( autodetected_scanners_index ), description, true )
-                                        );
+             { // Test whether the autodetected_scanner is one of the active_scanners.
+               // If yes, then there is no need to set it up again
+               // and then don't show it in the list of detected_scanners:
+               boolean show_as_detected_scanner = true;
+               foreach( map< string, string > active_scanner,
+                        active_scanners,
+                        { if( issubstring( active_scanner["sane_device"]:"unknown", device ) )
+                          { show_as_detected_scanner = false;
+                          }
+                        }
+                      );
+               if( show_as_detected_scanner )
+               { if( selected_autodetected_scanners_index == autodetected_scanners_index )
+                 { // If there was already a scanner selected before then preselect it.
+                   // This happens for example when going 'back' to the summary screen.
+                   detected_scanners = add( detected_scanners,
+                                            `item( `id( autodetected_scanners_index ), description, true )
+                                          );
+                   preselected = true;
+                 }
+                 else
+                 { detected_scanners = add( detected_scanners,
+                                            `item( `id( autodetected_scanners_index ), description )
+                                          );
+                 }
                }
-               else
-               { detected_scanners = add( detected_scanners,
-                                          `item( `id( autodetected_scanners_index ), description )
-                                        );
-               }
-               // Increase the autodetected_scanners_index only if a new item was added:
-               autodetected_scanners_index = autodetected_scanners_index +1;
              }
            }
          );
-  if( selected_autodetected_scanners_index < 0 )
+  if( ! preselected )
   { detected_scanners = add( detected_scanners, `item( `id( -1 ), "Other (not detected)", true ) );
   }
   else
@@ -742,7 +761,7 @@ global list Summary()
                                               // Fallback model name if the real model name is missing:
                                               active_scanner["model"]:_("unknown model"),
                                               // Fallback device name if the real device name is missing:
-                                              active_scanner["device"]:_("unknown device")
+                                              active_scanner["sane_device"]:_("unknown device")
                                             );
                summary_text = summary_text + active_scanner_text;
              }
@@ -1238,7 +1257,7 @@ global boolean DeactivateBackend( string backend_name, integer database_index, b
                          + " "
                          + scanner_to_deactivate["model"]:"unknown"
                          + " at "
-                         + scanner_to_deactivate["device"]:"unknown";
+                         + scanner_to_deactivate["sane_device"]:"unknown";
              }
            );
     if( ! Popup::YesNo( message ) )
@@ -1294,7 +1313,7 @@ global boolean TestBackend( string backend_name )
   foreach( map< string, string > active_scanner,
            active_scanners,
            { if( backend_name == active_scanner["backend"]:"unknown" )
-             { sane_device = active_scanner["device"]:"unknown";
+             { sane_device = active_scanner["sane_device"]:"unknown";
                if( sane_device != "unknown" )
                { string model_string = active_scanner["manufacturer"]:"unknown"
                                        + " "
@@ -1409,7 +1428,7 @@ global list Overview()
                                             + " "
                                             + active_scanner["model"]:"unknown"
                                             + " at "
-                                            + active_scanner["device"]:"unknown";
+                                            + active_scanner["sane_device"]:"unknown";
                           }
                         }
                       );

@@ -1,4 +1,13 @@
 -------------------------------------------------------------------
+Mon Feb 28 11:52:42 CET 2005 - jsmeix@suse.de
+
+- V 2.11.5
+- Removed already configured scanners (i.e. active scanners)
+  from list of shown autodetected scanners.
+- Added time bombs where external programs may hang up.
+- Several bug fixes.
+
+-------------------------------------------------------------------
 Tue Feb 15 10:39:03 CET 2005 - jsmeix@suse.de
 
 - V 2.11.4

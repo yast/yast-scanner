@@ -3,7 +3,7 @@
 # Johannes Meixner <jsmeix@suse.de>, 2005
 
 #set -x
-export PATH="/sbin:/usr/sbin:/usr/bin:/bin"
+export PATH="/usr/sbin:/bin:/usr/bin:/sbin"
 export LC_ALL="POSIX"
 export LANG="POSIX"
 
@@ -15,11 +15,17 @@ then /etc/init.d/hplip stop
 fi
 
 # Setup ptal USB devices:
+MAXIMUM_WAIT="120"
+# 'ptal-init setup-usb' exits with non-zero exit code when it is running in the background.
+# Therefore a simple time bomb is started before it:
 if [ -x /usr/sbin/ptal-init ]
-then ptal-init setup-usb &>/dev/null || { echo "failed: ptal-init setup-usb" 1>&2 ; exit 2 ; }
+then ( sleep $MAXIMUM_WAIT ; killall -9 -v -q ptal-init ) &
+     timebombPID=$!
+     ptal-init setup-usb &>/dev/null || { echo "failed: ptal-init setup-usb" 1>&2 ; exit 2 ; }
 else echo "cannot execute /usr/sbin/ptal-init" 1>&2
      exit 1
 fi
+kill -9 $timebombPID
 
 # Setup the ptal service:
 if [ -x /etc/init.d/ptal ] 
