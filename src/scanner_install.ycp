@@ -140,8 +140,9 @@ The <b>Gimp</b> also provides scan support.</p>");
 
 	  term image = `Empty();
 
-	  if ( ret == `test )
+	  if ( ret == `test || ret == `next )
 	  {
+	      string filename = SCR(`Read(.sane.scanimage, GetCurrentScanner()));
 	      // get the test picture from SANE
 	      byteblock image_data = SCR(`Read(.sane.scanimage, GetCurrentScanner()));
 	      image = `Image(  image_data, _("Test picture"));

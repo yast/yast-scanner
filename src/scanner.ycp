@@ -211,8 +211,13 @@
  * Abort dialog
  */
   global define AbortDialog() ``{
+
       any ret = UI(`ReallyAbortPopup(true));
-      if(ret==true) return `yes;
+      if ( ret==true )
+      {
+	  y2milestone("ABORT the scanner installation - undo all changes.");
+	  return `yes;
+      }
       return `back;
   }
 
@@ -299,14 +304,11 @@
       string message = UI(_("Please wait while the configuration files are updated..."));
       UI(`OpenDialog(`opt(`decorated), `Label(message)));
 
+      y2milestone("FINISH the scanner installation - confirm all changes." );
+      
       any ret = ScannerWrite(lookup(user_settings, "scannerInfo", $[]));
 
-      y2debug("Scanner write=%1", ret );
-
-      y2debug("Scanner finish=%1",ScannerFinish());
-      UI(`CloseDialog());
   }
 
-/* Finish */
-  y2debug("Scanner module finished.");
+  UI(`CloseDialog());
 }

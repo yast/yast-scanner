@@ -114,23 +114,24 @@ scanner at the same time.</p>"));
                   // try again to detect an USB scanner (maybe it is switched on now)
 		  list connected_scanner = SCR(`Read(.probe.scanner));
 
-		  // we support only ONE USB scanner
+		  string msg = _("Please disconnect all unwanted USB scanners
+and restart the scanner configuration.");
+
+                  // we support only ONE USB scanner
 		  if ( size (connected_scanner) > 1 )
 		  {
 		      // text of a warning popup
 		      UI(`WarningPopup(_("YaST2 has detected several USB scanners, 
-but you can only use ONE of them.
-Please disconnect all unwanted USB scanners.")));
-		      go_on = true;
+but you can only use ONE of them.") + "\n" + msg));
+		      ret = `cancel;
 		  }
 		  else if ( CheckUSBScanner() )
 		  {
 		      // text of a warning popup
 		      UI(`WarningPopup(_("There is already an USB scanner in use.
 It is not possible to configure an additional
-USB scanner, because only ONE is supported.
-Please disconnect all unwanted USB scanners.")));
-		      go_on = true;
+USB scanner, because only ONE is supported.") + "\n" + msg));
+		      ret = `cancel;
 		  }
 		  else if ( size (connected_scanner) == 1 )
 		  {
