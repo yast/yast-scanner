@@ -3,7 +3,7 @@
 # neededforbuild  yast2-devel-packages
 
 @HEADER@
-Requires:	yast2 yast2-runlevel
+Requires:	yast2
 
 Provides:	yast2-config-scanner
 Obsoletes:	yast2-config-scanner
