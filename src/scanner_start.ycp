@@ -10,6 +10,7 @@
  *
  * Authors:
  *   Gabriele Strattner <gs@suse.de>
+ *   Klaas Freitag <freitag@suse.de>
  *
  * String corrections by Christian Steinruecken <cstein@suse.de>, 2001/07/28
  *
@@ -140,11 +141,11 @@ configuration.")));
           y2milestone( "SCSI Scanner: %1", scsi_scanner );
 
 	  // also add net scanner
-          list net_scanner = SCR(`Read(.scanner.net));
-	  y2debug( "Netscanner %1", net_scanner );
-	  connected_scanner = union(connected_scanner, net_scanner);
+          // list net_scanner = SCR(`Read(.scanner.net));
+	  // y2debug( "Netscanner %1", net_scanner );
+	  // connected_scanner = union(connected_scanner, net_scanner);
 
-	  y2milestone( "Net Scanner: %1", net_scanner );
+	  // y2milestone( "Net Scanner: %1", net_scanner );
 
       }
       else
@@ -174,7 +175,7 @@ configuration.")));
     
       integer no = 1;
       
-      foreach ( `scanner, connected_scanner, ``{
+      foreach( `scanner, connected_scanner, ``{
 	  string driver = "";
 	  boolean found = false;
 	  integer m = 0;
@@ -188,7 +189,7 @@ configuration.")));
 	  else
 	  {
 	      // get test data
-	      driver = lookup( scanner, "scanner_driver", "" ); 
+ 	      driver = lookup( scanner, "scanner_driver", "" ); 
 	  }
 	  //determine whether scanner is already installed
 	  while ( !found && m < size(installed_scanner) )
@@ -226,9 +227,84 @@ configuration.")));
 
 	  }
 	  scanner_info = add(scanner_info, no, scanner);
+	  
 	  no = no+1;
       });
 
+      // Net scanner handling
+      // The problem is, that one netstation can offer more than one scanner, but we
+      // can only handle stations, but not entire scanner on stations. But that's the
+      // way the SCR(Read(.scanner.net)) offers the net scanner list.
+      // Thus we have to sort out and count scanners per station.
+
+      // Get all scanners on the stations
+      list net_scanner = SCR(`Read(.scanner.net));
+      list net_stations = [];
+      foreach( `one_scanner, net_scanner, ``{
+
+	  // search for the host.
+	  string host = lookup( one_scanner, "host", "" );
+	  if ( host != "" )
+	  {
+	      // start not believing that the one is already in the known stations list.
+	      boolean found = false;
+	      foreach( `station, net_stations, ``{
+		  string station_name = lookup( station, "host", "notfound" );
+
+		  // Check if the host is already known
+		  if( station_name == host )
+		  {
+		      // ok, the host is already known, just add the device.
+		      found = true;
+		  }
+	      });
+
+	      string dev = lookup( one_scanner, "device", "" );
+	      string vend = lookup( one_scanner, "vendor", "" );
+	      if( found == true )
+	      {	
+		  list dummy = [];
+		  foreach( `station, net_stations, ``{
+		      string station_name = lookup( station, "host", "notfound" );
+		      if( station_name == host )
+		      {	
+			  // ok, the host is already known, just add the device.
+			  station = change( station, "count", lookup( station, "count", 0 ) +1 );
+			  station = change( station, "device", lookup( station, "device", "" ) + ", " + dev );
+			  station = change( station, "vendor", lookup( station, "vendor", "" ) + ", " + vend );
+		      }
+		      dummy = add( dummy, station );
+		  });
+		  net_stations = dummy;
+	      }
+	      else
+	      {
+		  net_stations = add( net_stations, $[ "host":host, "device":dev, "count":1,
+						     "scanner_status":"installed", "bus":"Net",
+						     "vendor":vend ] );
+	      }
+	      
+	  }
+	  else
+	  {
+	      y2debug( "ERROR: Host is not defined!" );
+	  }	
+	   
+      });
+
+      // finishing: put the net stations to the scanner_info - list
+      // no is still defined from above.
+      y2milestone( "Net Scanner: %1", net_scanner );
+      y2debug("Net Stations found: %1", net_stations );
+
+      foreach( `net_station, net_stations, ``{
+	  y2debug("Adding net_station to scanner_info-list as no %1", no );
+	  scanner_info = add(scanner_info, no, net_station);
+	  
+	  no = no+1;
+      });
+
+      
       // default: go next to Overview Dialog
       ret = `next;
       
