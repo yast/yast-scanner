@@ -35,9 +35,9 @@ while ( <STDIN> )
     }
 
     my $action = ycpGetPath();
-    y2debug( " vvv starting in ag_sane vvv" );
+    y2debug( " vvv starting in ag_sane with action <$action> vvv" );
 
-    $action = "driver";
+    # $action = "driver";  # TEST 
     y2debug( "Got Action = ycpPath = <$action>");
 
     unless( ycpArgIsMap() )
@@ -46,8 +46,13 @@ while ( <STDIN> )
     }
     my %scanner = ycpGetArgMap();
 
-    if( $action =~ /driver/i )
+    if( $action =~ /driver\s*$/i )
     {
+	#
+	# This action queries for the correct driver for one scanner
+	# identified by its vendor and the model, both values come as
+	# parameters.
+
 	my $vendor = findInHash( "vendor", \%scanner );
 	my $bus = findInHash( "bus", \%scanner  );
 	my $model = findInHash( "device", \%scanner );
@@ -71,6 +76,40 @@ while ( <STDIN> )
 	ycpReturnSkalarAsString( $use_driver );
 
 	# my $retdriver = $driver;
+    }
+    elsif( $action =~ /driverlist\s*$/ )
+    {
+	# Only the vendor and the bus must be set in the incoming parameter hash -
+	# returning a list of available drivers.
+	y2debug( "Handling action driverlist" );
+	my $vendor = findInHash( "vendor", \%scanner );
+	my $bus = findInHash( "bus", \%scanner  );
+
+	if( !defined $vendor || $vendor =~ /^\s+$/  )
+	{
+	    y2debug("Vendor string is empty -> assume 'generic'" );
+	    $vendor = "generic";
+	}
+	my %models = getModel( $bus, $vendor);
+
+	my @drivers;
+	# while( my ($model, $driver) = each %models )
+	# {
+	#     my %p;
+	#     $p{ model => $model, driver => $driver };
+	#     push @drivers, \%p;
+	#     y2debug( "Use <$driver> for <$model>" );
+	# }
+	@drivers = sort keys %models;
+	
+	ycpReturn( \@drivers );
+    }
+    elsif( $action =~ /vendorlist/ )
+    {
+	y2debug( "Handling action vendorlist" );
+	# Only the bus is required. Return a list of vendors for the list.
+	my @vlist = getVendorList( findInHash( "bus", \%scanner )); 
+	ycpReturn( \@vlist );
     }
     else
     {
