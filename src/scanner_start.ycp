@@ -255,6 +255,15 @@ configuration.")));
 	      }
 
 	  }
+	  // if the "device" or "vendor" entry is missing add the entry (set value of sub_....) 
+	  if ( lookup( scanner, "device", "") == "" )
+	  {
+	      scanner = add(scanner, "device", CutBlanks(lookup( scanner, "sub_device", "")) );
+	  }
+	  if ( lookup( scanner, "vendor", "") == "" )
+	  {
+	      scanner = add(scanner, "vendor", CutBlanks(lookup( scanner, "sub_vendor", "")) );
+	  }
 	  scanner_info = add(scanner_info, no, scanner);
 	  
 	  no = no+1;
