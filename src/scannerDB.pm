@@ -79,6 +79,35 @@ $driver{SCSI}{BlackWidow}{"BW4800SP"} = "artec";
 $driver{SCSI}{Plustek}{"OpticPro 19200S"} = "artec";
 
 # avision
+$driver{SCSI}{Avision}{"AV100CS"} = "avision";
+$driver{SCSI}{Avision}{"AV100IIICS"} = "avision";
+$driver{SCSI}{Avision}{"AV100S"} = "avision";
+$driver{SCSI}{Avision}{"AV240SC"} = "avision";
+$driver{SCSI}{Avision}{"AV260SC"} = "avision";
+$driver{SCSI}{Avision}{"AV360CS"} = "avision";
+$driver{SCSI}{Avision}{"AV363CS"} = "avision";
+$driver{SCSI}{Avision}{"AV420CS"} = "avision";
+$driver{SCSI}{Avision}{"AV6120"} = "avision";
+$driver{SCSI}{Avision}{"AV620CS"} = "avision";
+$driver{SCSI}{Avision}{"AV630CS"} = "avision";
+$driver{SCSI}{Avision}{"AV6240"} = "avision";
+$driver{SCSI}{Avision}{"AV660S"} = "avision";
+$driver{SCSI}{Avision}{"AV680S"} = "avision";
+$driver{SCSI}{Avision}{"AV800S"} = "avision";
+$driver{SCSI}{Avision}{"AV810C"} = "avision";
+$driver{SCSI}{Avision}{"AV820"} = "avision";
+$driver{SCSI}{Avision}{"AV820C"} = "avision";
+$driver{SCSI}{Avision}{"AV880"} = "avision";
+$driver{SCSI}{Avision}{"AV880C"} = "avision";
+$driver{SCSI}{Avision}{"AVA3"} = "avision";
+
+$driver{USB}{Minolta}{"FS-V1"} = "avision";
+$driver{SCSI}{MITSUBISHI}{"MCA-ADFC"} = "avision";
+$driver{SCSI}{MITSUBISHI}{"S1200C"} = "avision";
+$driver{SCSI}{MITSUBISHI}{"S600C"} = "avision";
+$driver{SCSI}{MITSUBISHI}{"SS600"} = "avision";
+
+
 $driver{SCSI}{Avision}{"AV 6240"} = "avision";
 $driver{SCSI}{Avision}{"AV 630 CS"} = "avision";
 $driver{SCSI}{Avision}{"AV 620 CS"} = "avision";
@@ -95,7 +124,12 @@ $driver{SCSI}{"B&H SCSI"}{"COPISCAN II 3338"} = "bh";
 # Canon
 $driver{SCSI}{Canon}{"CANOSCAN 300"} = "canon";
 $driver{SCSI}{Canon}{"CANOSCAN 600"} = "canon";
+$driver{SCSI}{Canon}{"CANOSCAN 620S"} = "canon";
 $driver{SCSI}{Canon}{"CANOSCAN 2700F"} = "canon";
+$driver{SCSI}{Canon}{"CANOSCAN 2710"} = "canon";
+
+# Canon 630U
+$driver{USB}{Canon}{"CANOSCAN FB630U"} = "canon630u";
 
 # Canon PP
 # $driver{Parport}{Canon}{"CANOSCAN FB330P"} = "canon_pp";
@@ -108,6 +142,9 @@ $driver{SCSI}{Nikon}{"LS-20"} = "coolscan";
 $driver{SCSI}{Nikon}{"LS-30"} = "coolscan";
 $driver{SCSI}{Nikon}{"LS-2000"} = "coolscan";
 $driver{SCSI}{Nikon}{"LS-1000"} = "coolscan";
+
+# Coolscan2
+$driver{USB}{Nikon}{"LS-40 ED"} = "coolscan2";
 
 # dmc
 $driver{SCSI}{Polaroid}{"DMC"} = "dmc";
@@ -140,6 +177,7 @@ $driver{USB}{Epson}{"PERFECTION 1240"} = "epson";
 $driver{USB}{Epson}{"PERFECTION 1640"} = "epson";
 $driver{SCSI}{Epson}{"PERFECTION 1650"} = "epson";
 $driver{USB}{Epson}{"PERFECTION 1650"} = "epson";
+$driver{USB}{Epson}{"PERFECTION 2450"} = "epson";
 $driver{SCSI}{Epson}{"EXPRESSION 636"} = "epson";
 $driver{SCSI}{Epson}{"EXPRESSION 800"} = "epson";
 
@@ -165,6 +203,11 @@ $driver{SCSI}{HP}{"HP ScanJet 5p"} = "hp";
 # $driver{Parport}{HP}{HP ScanJet 5100C} = "hp";
 # $driver{Parport 
 $driver{USB}{HP}{"HP SCANJET 5200C"} = "hp";
+
+$driver{USB}{HP}{"HP SCANJET 5300C"} = "avision";
+$driver{USB}{HP}{"HP SCANJET 5370C"} = "avision";
+$driver{USB}{HP}{"HP SCANJET 7400C"} = "avision";
+
 $driver{SCSI}{HP}{"HP SCANJET 6100C"} = "hp";
 $driver{SCSI}{HP}{"HP SCANJET 6200C"} = "hp";
 $driver{USB}{HP}{"HP SCANJET 6200C"} = "hp";
@@ -190,14 +233,48 @@ $driver{USB}{HP}{"HP OFFICEJET V SERIES"} = "hp";
 # $driver{SCSI}{IBM}{"2456"} = "ibm";
 # $driver{SCSI}{Ricoh}{"IS-410"} = "ibm";
 
-$driver{USB}{HP}{"HP4200"} = "hp4200";
 
-$driver{SCSI}{"Fujitsu"}{"M3091DCD"} = "m3091";
+# Fujitsu
+$driver{SCSI}{"Fujitsu"}{"M3091DCD"} = "fujitsu";
+$driver{SCSI}{"Fujitsu"}{"M3096G"} = "fujitsu";
+$driver{SCSI}{"Fujitsu"}{"M3093GXim"} = "fujitsu";
+$driver{SCSI}{"Fujitsu"}{"M3093GDim"} = "fujitsu";
+$driver{SCSI}{"Fujitsu"}{"fi-4340C"} = "fujitsu";
 
-$driver{SCSI}{"Fujitsu"}{"M3096G"} = "m3096g";
 $driver{SCSI}{"Fujitsu"}{"SP15C"} = "sp15c";
 
+$driver{SCSI}{"Fujitsu"}{"SCANPARTNER"} = "avision";
+$driver{SCSI}{"Fujitsu"}{"SCANPARTNER 10"} = "avision";
+$driver{SCSI}{"Fujitsu"}{"SCANPARTNER 10C"} = "avision";
+$driver{SCSI}{"Fujitsu"}{"SCANPARTNER 15C"} = "avision";
+$driver{SCSI}{"Fujitsu"}{"SCANPARTNER 300C"} = "avision";
+$driver{SCSI}{"Fujitsu"}{"SCANPARTNER 600C"} = "avision";
+$driver{SCSI}{"Fujitsu"}{"SCANPARTNER JR"} = "avision";
+$driver{SCSI}{"Fujitsu"}{"SCANSTATION"} = "avision";
 
+#
+# Leo
+#
+$driver{SCSI}{"LEO"}{"FS-1130"} = "leo";
+$driver{SCSI}{"Across Technologies"}{"FS-1130"} = "leo";
+$driver{SCSI}{"Genius"}{"FS-1130 Colorpage Scanner"} = "leo";
+
+
+#
+# Matsushita
+# 
+$driver{SCSI}{Panasonic}{"KV-SS25"} = "matsushita";
+$driver{SCSI}{Panasonic}{"KV-SS25D"} = "matsushita";
+$driver{SCSI}{Panasonic}{"KV-SS50"} = "matsushita";
+$driver{SCSI}{Panasonic}{"KV-SS55"} = "matsushita";
+$driver{SCSI}{Panasonic}{"KV-SS50EX"} = "matsushita";
+$driver{SCSI}{Panasonic}{"KV-SS55EX"} = "matsushita";
+$driver{SCSI}{Panasonic}{"KV-SS850"} = "matsushita";
+$driver{SCSI}{Panasonic}{"KV-SS855"} = "matsushita";
+
+#
+# Microtek
+#
 $driver{SCSI}{Microtek}{"Scanmaker E6"} = "microtek";
 $driver{SCSI}{Microtek}{"Scanmaker E3"} = "microtek";
 $driver{SCSI}{Microtek}{"Scanmaker E2"} = "microtek";
@@ -255,9 +332,6 @@ $driver{SCSI}{Scanport}{"SQ4836"} = "microtek2";
 # $driver{Parport}{Microtek}{SlimScan C3} = "microtek2";
 # $driver{Parport}{Microtek}{Phantom 636CX} = "microtek2";
 
-# sm36000
-$driver{USB}{Microtek}{"ScanMaker 3600"} = "sm3600";
-
 
 # Mustek SCSI
 $driver{SCSI}{Mustek}{"Paragon MFS-6000CX"} = "mustek";
@@ -285,12 +359,13 @@ $driver{SCSI}{Mustek}{"Paragon 1200 A3 Pro"} = "mustek";
 
 $driver{USB}{Mustek}{"600 CU"} = "mustek_usb";
 $driver{USB}{Mustek}{"1200 UB"} = "mustek_usb";
+$driver{USB}{Mustek}{"1200 USB"} = "mustek_usb";
 $driver{USB}{Mustek}{"1200 CU"} = "mustek_usb";
 $driver{USB}{Mustek}{"1200 CU Plus"} = "mustek_usb";
 $driver{USB}{Trust}{"Compact Scan USB 19200"} = "mustek_usb";
 
 
-
+$driver{SCSI}{Trust}{"Imagery 1200"} = "mustek";
 $driver{SCSI}{Trust}{"Imagery 1200 SP"} = "mustek";
 $driver{SCSI}{Trust}{"Imagery 4800 SP"} = "mustek";
 $driver{SCSI}{Trust}{"SCSI Connect 19200"} = "mustek";
@@ -331,6 +406,27 @@ $driver{SCSI}{Pie}{"ScanAce 630S"} = "pie";
 $driver{SCSI}{Pie}{"ScanAce 636S"} = "plustek";
 
 # Plustek
+$driver{SCSI}{Plustek}{"OpticPro 19200S"} = "plustek";
+$driver{USB} {Plustek}{"OpticPro 1212U"}  = "plustek";
+$driver{USB} {Plustek}{"OpticPro U12"}    = "plustek";
+$driver{USB} {Plustek}{"OpticPro UT12"}   = "plustek";
+$driver{USB} {Plustek}{"OpticPro U16"}    = "plustek";
+$driver{USB} {Plustek}{"OpticPro U24"}    = "plustek";
+$driver{USB} {Plustek}{"OpticPro UT24"}   = "plustek";
+
+$driver{USB}{Genius}{"Colorpage HR6V2"} = "plustek";
+
+$driver{USB}{Mustek}{"BearPaw 1200"} = "plustek";
+$driver{USB}{Mustek}{"BearPaw 2400"} = "plustek";
+$driver{USB}{Mustek}{"BearPaw 1200"} = "plustek";
+
+$driver{USB}{HP}{"HP ScanJet2100C"} = "plustek";
+$driver{USB}{HP}{"HP ScanJet2200C"} = "plustek";
+
+$driver{USB}{Epson}{"Perfection 1250"} = "plustek";
+$driver{USB}{Epson}{"Perfection 1250Photo"} = "plustek";
+$driver{USB}{Umax}{"UMAX 3400"} = "plustek";
+
 # $driver{Parport (SPP, EPP)}{Plustek}{OpticPro 4800P} = "plustek";
 # $driver{Parport (SPP, EPP)}{Plustek}{OpticPro 4830P} = "plustek";
 # $driver{Parport (SPP, EPP)}{Plustek}{OpticPro 600P/6000P} = "plustek";
@@ -348,15 +444,19 @@ $driver{SCSI}{Pie}{"ScanAce 636S"} = "plustek";
 # $driver{Parport}{Plustek}{OpticPro P8} = "plustek";
 # $driver{Parport (SPP, EPP)}{Plustek}{OpticPro P12} = "plustek";
 # $driver{Parport (SPP, EPP)}{Plustek}{OpticPro PT12} = "plustek";
+# $driver{Parport (SPP, EPP)}{Aries}{Compact 9600 Direct-30} = "plustek";
+
+# Primax
 # $driver{Parport (SPP, EPP)}{Primax}{Colorado 4800} = "plustek";
 # $driver{Parport (SPP, EPP)}{Primax}{Compact 4800 Direct} = "plustek";
 # $driver{Parport (SPP, EPP)}{Primax}{Compact 4800 Direct-30} = "plustek";
-# $driver{Parport (SPP, EPP)}{Aries}{Compact 9600 Direct-30} = "plustek";
-
 
 # Ricoh
 $driver{SCSI}{Ricoh}{"Ricoh IS50"} = "ricoh";
 $driver{SCSI}{Ricoh}{"Ricoh IS60"} = "ricoh";
+
+# Sceptre
+$driver{SCSI}{Sceptre}{"Vividscan S1200"} = "sceptre";
 
 # Siemens
 $driver{SCSI}{Siemens}{"9036 Flatbed scanner"} = "s9036";
@@ -381,8 +481,11 @@ $driver{USB}{Agfa}{"SnapScan 1212u"} = "SnapScan";
 
 $driver{USB}{Agfa}{"SnapScan e20"} = "SnapScan";
 $driver{USB}{Agfa}{"SnapScan e25"} = "SnapScan";
+$driver{USB}{Agfa}{"SnapScan e26"} = "SnapScan";
 $driver{USB}{Agfa}{"SnapScan e40"} = "SnapScan";
+$driver{USB}{Agfa}{"SnapScan e42"} = "SnapScan";
 $driver{USB}{Agfa}{"SnapScan e50"} = "SnapScan";
+$driver{USB}{Agfa}{"SnapScan e52"} = "SnapScan";
 $driver{USB}{Agfa}{"SnapScan e60"} = "SnapScan";
 $driver{SCSI}{Vuego}{"Close SnapScan 310 compatible."} = "SnapScan";
 
@@ -400,7 +503,8 @@ $driver{USB}{Acer}{"Prisa 1240"} = "SnapScan";
 $driver{USB}{Acer}{"Prisa 3300"} = "SnapScan";
 $driver{USB}{Acer}{"Prisa 4300"} = "SnapScan";
 $driver{USB}{Acer}{"Prisa 5300"} = "SnapScan";
-$driver{USB}{Guillemot}{"Maxi Scan A4 Deluxe"} ="SnapScan";
+$driver{SCSI}{Guillemot}{"Maxi Scan A4 Deluxe"} ="SnapScan";
+$driver{USB}{Guillemot}{"Scan\@home Touch 1248"} ="SnapScan";
 
 # Tamarack
 $driver{SCSI}{Tamarack}{"Artiscan 6000C"} = "tamarack";
@@ -427,6 +531,8 @@ $driver{SCSI}{UMAX}{"Astra 2200 U"} = "umax";
 $driver{SCSI}{UMAX}{"Astra 2200 S"} = "umax";
 $driver{SCSI}{UMAX}{"Astra 2200"} = "umax";
 $driver{SCSI}{UMAX}{"Astra 2400S"} = "umax";
+$driver{SCSI}{UMAX}{"Astra MX3"} = "umax";
+$driver{USB} {UMAX}{"Astra MX3"} = "umax";
 $driver{SCSI}{UMAX}{"Mirage D-16L"} = "umax";
 $driver{SCSI}{UMAX}{"Mirage II"} = "umax";
 $driver{SCSI}{UMAX}{"Mirage IIse"} = "umax";
@@ -446,7 +552,7 @@ $driver{SCSI}{UMAX}{"UC 840"} = "umax";
 $driver{SCSI}{UMAX}{"UC 1200S"} = "umax";
 $driver{SCSI}{UMAX}{"UC 1200SE"} = "umax";
 $driver{SCSI}{UMAX}{"UC 1260"} = "umax";
-$driver{SCSI}{"Linotype Hell"}{"Jade"} = "umax";
+
 $driver{SCSI}{"Linotype Hell"}{"Jade"} = "umax";
 $driver{SCSI}{"Linotype Hell"}{"Jade2"} = "umax";
 $driver{SCSI}{"Linotype Hell"}{"Saphir"} = "umax";
@@ -477,12 +583,13 @@ $driver{SCSI}{Nikon}{"AX-210"} = "umax";
 
 ################################################################################
 
-my @all_drivers = ("abaton","agfafocus","apple","artec","avision","bh","canon",
-		   "coolscan","dc210","dc240","dc25","dll","dmc","epson","hp", "hp4200", "ibm",
-		   "m3096g", "m3091" ,"microtek","microtek2", "mustek_usb", "mustek", 
-		   "nec", "net","pie","plustek","qcam", "sm3600" ,"ricoh","s9036","saned","sharp",
-		   "snapscan","sp15c","st400","tamarack","umax","umax_pp","v4l"
-		   );
+my @all_drivers = ("abaton","agfafocus","apple","artec","avision","bh","canon", "canon630u",
+		   "coolscan", "coolscan2", "dc210","dc240","dc25","dll","dmc","epson","hp", 
+		   , "fujitsu" , "leo", "microtek","microtek2", "mustek_usb", 
+                   "mustek", "matsushita",
+		   "nec", "net","pie","plustek","qcam", "ricoh","s9036","saned", 
+		   "sceptre", "sharp", "snapscan","sp15c","st400","tamarack","umax","umax_pp",
+		   "v4l" );
 # Here starts the configuration database.
 #
 #
@@ -506,6 +613,29 @@ EndOfConf
 $config{coolscan} = <<"EndOfConf";
 scsi Nikon * Scanner
 YAST2_DEVICE 
+EndOfConf
+
+$config{coolscan2} = <<"EndOfConf";
+# coolscan2.conf: sample configuration file for coolscan2 backend
+#
+# The following entrie checks for your scanner by manufacturer (SCSI)
+# and by vendor and product ID (USB). This is what the backend does when
+# no configuration file can be found.
+#
+auto
+
+# You can also configure the backend for specific device files, but this
+# should not normally be necessary (under Linux at least).
+# Syntax for specific devices: <interface>:<device>
+#
+# For a SCSI scanner, uncomment and edit the following line:
+#scsi:/dev/scanner
+#
+# For a USB scanner, uncomment and edit the following line:
+#usb:/dev/usbscanner
+#
+# For an IEEE 1394 scanner, use the SBP2 protocol (under Linux, use the
+# sbp2 kernel module), and your scanner will be handled as a SCSI device.
 EndOfConf
 
 $config{microtek2} = <<"EndOfConf";
@@ -630,18 +760,36 @@ EndOfConf
 $config{pie} = <<"EndOfConf";
 scsi DEVCOM * Scanner
 scsi PIE * Scanner
-scsi ADLIB * Scanner
+scsi Adlib * Scanner
 YAST2_DEVICE
 EndOfConf
 
 $config{avision} = <<"EndOfConf";
 scsi AVISION
+scsi MITSBISH MCA-S600C
+scsi MITSBISH MCA-SS600
+scsi HP
+scsi hp
+
 YAST2_DEVICE 
+
+#option disable-gamma-table
+#option disable-calibration
+#option force-a4
+
 EndOfConf
 
 $config{nec} = <<"EndOfConf";
 YAST2_DEVICE
 EndOfConf
+
+$config{leo} = <<"EndOfConf";
+# The FS-1130 respond to all luns
+scsi ACROSS * Scanner * * * 0
+
+YAST2_DEVICE
+EndOfConf
+
 
 $config{mustek} = <<"EndOfConf";
 # See sane-mustek(5) for documentation.
@@ -794,6 +942,13 @@ option blue-highlight 1
 option astra 1220
 EndOfConf
 
+
+$config{sceptre} = <<"EndOfConf";
+scsi "KINPO   " "Vividscan S120  "
+YAST2_DEVICE
+EndOfConf
+
+
 $config{sharp} = <<"EndOfConf";
 # The options are only meaningful if the backend was
 # compiled with USE_FORK defined
@@ -840,6 +995,7 @@ artec
 as6e
 bh
 canon
+canon630u
 coolscan
 #dc25
 #dc210
@@ -864,7 +1020,6 @@ qcam
 ricoh
 s9036
 sharp
-sm3600
 snapscan
 sp15c
 tamarack
@@ -881,20 +1036,70 @@ YAST2_DEVICE
 EndOfConf
 
 $config{snapscan} = <<"EndOfConf";
-# If not automatically found from above, then you may manually specify
-# a device name.
-
-# For USB devices, make sure that the name contains 'usb' somewhere, as in
-# '/dev/usbscanner' or '/dev/usb/scanner0'. Do not use a link
-# from /dev/scanner to your USB device.
-# For SCSI, use the generic device (e.g. /dev/sg0 in Linux).
-
-YAST2_DEVICE
-#/dev/usbscanner
+#------------------------------ General -----------------------------------
 
 # Change to the fully qualified filename of your firmware file, if
 # firmware upload is needed by the scanner
-firmware /path/to/your/firmware/file
+firmware /path/to/your/firmware/file.bin
+
+# If not automatically found you may manually specify a device name.
+
+# For USB scanners also specify bus=usb, e.g.
+# /dev/usb/scanner0 bus=usb
+
+# For SCSI scanners specify the generic device, e.g. /dev/sg0 on Linux.
+# /dev/sg0
+
+#---------------------------------------------------------------------------
+# No changes should be necessary below this line
+#---------------------------------------------------------------------------
+
+#-------------------------- SCSI scanners ----------------------------------
+# These SCSI devices will be probed automatically
+scsi AGFA * Scanner
+scsi COLOR * Scanner
+scsi Color * Scanner
+scsi ACERPERI * Scanner
+
+#--------------------------- USB scanners -----------------------------------
+# These USB devices will be probed automatically
+# (This will currently work only on Linux)
+
+# Benq/Acer/Vuego 320U
+usb 0x04a5 0x2022
+# Benq/Acer/Vuego 620U / 620UT
+usb 0x04a5 0x1a2a
+usb 0x04a5 0x2040
+# Benq/Acer/Vuego 640U
+usb 0x04a5 0x2060
+# Benq/Acer/Vuego 640BU
+usb 0x04a5 0x207e
+# Benq/Acer/Vuego 1240U
+usb 0x04a5 0x20c0
+# Benq/Acer/Vuego 3300 / 4300
+usb 0x04a5 0x20b0
+# Benq/Acer/Vuego 4300
+usb 0x04a5 0x20de
+# Agfa 1236U
+usb 0x06bd 0x0002
+# Agfa 1212U
+usb 0x06bd 0x0001
+usb 0x06bd 0x2061
+# Agfa Snapscan e20
+usb 0x06bd 0x2091
+# Agfa Snapscan e25
+usb 0x06bd 0x2095
+# Agfa Snapscan e26
+usb 0x06bd 0x2097
+# Agfa Snapscan e40
+usb 0x06bd 0x208d
+# Agfa Snapscan e42
+usb 0x06bd 0x20ff
+# Agfa Snapscan e50
+usb 0x06bd 0x208f
+# Agfa Snapscan e52
+usb 0x06bd 0x20fd
+
 EndOfConf
 
 $config{dmc} = <<"EndOfConf";
@@ -907,6 +1112,22 @@ $config{net} = <<"EndOfConf";
 # directly or through the net backend.  Going through the net backend
 # may be necessary to access devices that need special privileges.
 # localhost
+EndOfConf
+
+$config{qcam} =<<"EndOfConf";
+#
+# In order to use the qcam backend, you'll need to enable to line with
+# the port address for your scanner.  You can enable multiple lines if
+# you really have a QuickCam connect to each port.
+#
+#u0x37b # /dev/lp0 forced in unidir mode
+#u0x378 # /dev/lp1 forced in unidir mode
+#u0x278 # /dev/lp2 forced in unidir mode
+#0x37b  # /dev/lp0
+#0x378  # /dev/lp1
+#0x278  # /dev/lp2
+0x3bc   # /dev/lp0
+
 EndOfConf
 
 $config{dc240} = <<"EndOfConf";
@@ -942,16 +1163,85 @@ EndOfConf
 $config{umax} = <<"EndOfConf";
 #
 # Options for the umax backend
+#
+
+# define scsi queueing depth
 #option scsi-maxqueue 2
+
+# define scsi buffer size in bytes
 #option scsi-buffer-size-min 65536
 #option scsi-buffer-size-max 262144
+
+# define scan lines that shall be read in one block
 #option scan-lines 100
 #option preview-lines 20
+
+# define how to handle bad sense codes
+#   0 = handle as device busy
+#   1 = handle as ok
+#   2 = handle as i/o error
+#   3 = ignore bad error code - continue sense handler,  
 #option handle-bad-sense-error 0
+
+# define if a request sense command shall be executed
 #option execute-request-sense 0
+
+# define if the preview bit shall be set when scanning in rgb mode
 #option force-preview-bit-rgb 0
+
+# define if slow speed flag shall be set
+# BE CAREFUL WITH THIS OPTION, IT MAY DESTROY YOUR SCANNER WHEN SET FALSE
+# -1 = automatically set by driver - if known
+#  0 = disabled
+#  1 = enabled
+#option slow-speed 0
+
+# define if care-about-smeraring flag shall be set
+# BE CAREFUL WITH THIS OPTION, IT MAY DESTROY YOUR SCANNER WHEN SET FALSE
+# -1 = automatically set by driver - if known
+#  0 = disabled
+#  1 = enabled
+#option care-about-smearing 0
+
+# define if the calibration shall be done for selected scanarea or for each ccd pixel
+# -1 = automatically set by driver - if known
+#  0 = disabled
+#  1 = enabled    
+#option calibration-full-ccd 1
+
+# define if an offset of the calculate calibration with has to be used
+# -99999 = auto
+#option calibration-width-offset -99999
+
+# define the number of pixels that is used for calibration
+# -1 = disabled
+#  0 = not set
+#  1 = 1 byte/pixel,
+#  2 = 2 bytes/pixel  
+#option calibration-bytes-pixel -1
+
+# define if shading data shall be inverted befor sending it back to the scanner
+# -1 = automatically set by driver - if known
+#  0 = disabled
+#  1 = enabled 
+#option invert-shading-data
+
+# define if the scanner supports lamp control commands
+# 0 = automatically set by driver - if known
+# 1 = enabled 
 #option lamp-control-available 0
-#
+
+# define how 16 bit gamma data is padded
+# -1 = automatically set by driver - if known
+#  0 = gamma data is msb padded
+#  1 = gamma data is lsb padded 
+#option gamma-lsb-padded 0
+
+# define connection type of following devices
+# 1 = scsi
+# 2 = usb
+#option connection-type 1
+
 # linux device identification:
 #scsi vendor model type bus channel id lun
 scsi UMAX * Scanner
@@ -960,13 +1250,20 @@ scsi LinoHell Office
 scsi LinoHell Office2
 scsi LinoHell SAPHIR2
 scsi HDM LS4H1S
+scsi Nikon AX-110
 scsi Nikon AX-210
 scsi KYE ColorPage-HR5
 scsi EPSON Perfection600
 scsi ESCORT "Galleria 600S"
 
-#
-# device list for non-linux-systems:
+# Umax Astra 2200 via USB:
+# usb vendor product
+usb 0x1606 0x0230
+
+# scsi device list
+IF bus = scsi option connection-type 1
+IF bus = usb  option connection-type 2
+
 YAST2_DEVICE
 
 EndOfConf
@@ -981,6 +1278,15 @@ $config{m3091} = "";
 
 $config{m3096g} = <<"EndOfConf";
 scsi FUJITSU
+EndOfConf
+
+$config{fujitsu} = <<"EndOfConf";
+
+#option force-model fi-4340Cdi
+#/dev/sg1
+scsi FUJITSU
+
+YAST2_DEVICE
 EndOfConf
 
 $config{hp} = <<"EndOfConf";
@@ -1001,6 +1307,19 @@ $config{canon} = <<"EndOfConf";
 YAST2_DEVICE
 #/dev/sg0
 EndOfConf
+
+
+$config{canon630u} = <<"EndOfConf";
+# Options for the canonusb backend
+
+# Autodetect the Canon CanoScan FB630u
+usb 0x04a9 0x2204
+
+# device list for non-linux-systems (enable if autodetect fails):
+# YAST2_DEVICE
+#/dev/usb/scanner0
+EndOfConf
+
 
 $config{st400} = <<"EndOfConf";
 # the ST400 is fixed to ID 3
@@ -2145,7 +2464,9 @@ sub performScanimage( ;$ )
     my ($netOnly) = @_;
 
     y2debug( "Searching for configured scanners!" );
-    my $cmd = '/usr/X11R6/bin/scanimage -f "\"%d\" \"%v\" \"%m\" \"%t\""';
+    my $cmd = '/usr/X11R6/bin/scanimage -f $\'"%d" "%v" "%m" "%t"\n\'';
+    y2debug( "Using command <$cmd>!" );
+
     my @scanners = ();
 
     if( open( CMD, "$cmd |" ) )
