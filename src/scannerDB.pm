@@ -2285,7 +2285,7 @@ sub acquireTestImage( $$ )
 
     my $tmpfile = "$prefix" . "$tmpdir/y2testimage_$PID.pnm";
 
-    my $cmd = sprintf( "/usr/X11R6/bin/scanimage -d %s > %s", $usedev, $tmpfile );
+    my $cmd = sprintf( "/usr/bin/scanimage -d %s > %s", $usedev, $tmpfile );
 
     y2debug( "Scanning test image with command <$cmd>" );
  
@@ -2499,7 +2499,7 @@ sub performScanimage( ;$ )
     my ($netOnly) = @_;
 
     y2debug( "Searching for configured scanners!" );
-    my $cmd = '/usr/X11R6/bin/scanimage -f $\'"%d" "%v" "%m" "%t"\n\''; # '
+    my $cmd = '/usr/bin/scanimage -f $\'"%d" "%v" "%m" "%t"\n\''; # '
     y2debug( "Using command <$cmd>!" );
 
     my @scanners = ();
