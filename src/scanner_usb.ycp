@@ -241,27 +241,13 @@ exit the scanner configuration?"));
 		  }
 		  else
 		  {
-		      // the USB module is loaded successfully
-		      // try now to scan - because it is not sure that the scanner is supported 
-		      string filename = SCR(`Read(.sane.scanimage, GetCurrentScanner()));
-		      if (filename != "" )
-		      {
-			  // add the options to /etc/modules.conf if the user Finish the installation
-			  // -> ScannerWrite
-			  // Add vendor and device to scanner info
-			  SetCurrentScannerValue( "device", lookup(device, "device") );
-			  SetCurrentScannerValue( "vendor", lookup(device, "vendor") );
-		      }
-		      else
-		      {
-			  // unload the usb module
-			  string rmmod_cmd = sformat( "/sbin/rmmod | /bin/egrep %1",
-						GetCurrentScannerValue("usb_module") );
-			  SCR (`Execute (.target.bash, rmmod_cmd));
-			  // reset the usb entries
-			  SetCurrentScannerValue("usb_module", "");
-			  SetCurrentScannerValue("usb_options", "");
-		      }
+		      // the USB module is loaded successfully - 
+		      // add the options to /etc/modules.conf if the user Finish the installation
+		      // -> ScannerWrite
+		      
+		      // Add vendor and device to scanner info
+		      SetCurrentScannerValue( "device", lookup(device, "device") );
+		      SetCurrentScannerValue( "vendor", lookup(device, "vendor") );
 		      if ( ret == `load )
 		      {
 			  // text of a notify popup: the loading was successful
