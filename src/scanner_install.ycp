@@ -12,7 +12,7 @@
  *   Gabriele Strattner <gs@suse.de>
  *   Klaas Freitag <freitag@suse.de>
  *
- * String corrections by Christian Steinruecken <cstein@suse.de>, 2001/07/27
+ *
  *
  * $Id$
  *
@@ -194,7 +194,7 @@ do the firmware upload. See 'man sane-gt68xx' or
 		if ( filename != "" )
 		{
 		    byteblock image_data = #[00000001];
-		    image_data = (byteblock) SCR::Read(.local.byte, filename);
+		    image_data = (byteblock) SCR::Read(.target.byte, filename);
 
 		    if ( image_data == nil )
 			image_data = #[00000001];

@@ -11,13 +11,13 @@
  * Authors:
  *   Gabriele Strattner <gs@suse.de>
  *
- * New English msg strings by Christian Steinruecken <cstein@suse.de>
  *
  * $Id$
  *
  * 
  * Installation of a new scanner. 
- * 
+ * All required data are available - the scanner will be installed
+ * (ag_sane - writeconfig).
  *
  */
 
@@ -27,7 +27,7 @@
    import "Label";
 
    /**
-   * ScannerStartDialog Layout	
+   * ScannerNewDialog Layout	
    */
   
   global define term ScannerNewDialog_UI( map new_scanner )``{
@@ -149,12 +149,36 @@ a manual configuration.
 	      {
 		  if ( !test_mode )
 		  {
-		      //  *do* the scanner configuration
-		      boolean configure_ok = SCR::Write(.sane.writeconfig, GetCurrentScanner());
+		      map scanner = GetCurrentScanner();
+
+                      //  *do* the scanner configuration
+		      boolean configure_ok = SCR::Write(.sane.writeconfig, scanner );
 		      
 		      if ( configure_ok )
 		      {
 			  SetCurrentScannerValue( "scanner_status", "installed" );
+
+			  if ( lookup( scanner, "bus", "" ) == "USB" )
+			  {
+			      // write USB IDs
+			      integer vendor_id = lookup( scanner, "vendor_id", 0 );
+			      if (vendor_id != 0 )
+			      {
+				  vendor_id = vendor_id - 196608;	// subtract 0x30000
+			      }
+			      integer product_id = lookup( scanner, "device_id", 0 );
+			      if ( product_id != 0 )
+			      {
+				  product_id = product_id - 196608;	// subtract 0x30000
+			      }
+			      string usb_ids = sformat( "%1  %2", tohexstring( vendor_id ), tohexstring( product_id ) );
+			      SCR::Execute( .target.bash, sformat("echo \"usb %1\" >> /etc/sane.d/%2.conf",
+								  usb_ids, lookup(scanner, "scanner_driver", "")) );
+			      y2milestone( "WROTE /etc/sane.d/%1.conf", lookup(scanner, "scanner_driver", "") );
+
+			      // TODO get libusb device name
+			      // SetCurrentScannerValue( "dev_name", device );
+			  }
 		      }
 		      else
 		      {

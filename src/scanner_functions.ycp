@@ -12,7 +12,7 @@
  *   Gabriele Strattner <gs@suse.de>
  *   Klaas Freitag <freitag@suse.de>
  *
- * String corrections by Christian Steinruecken <cstein@suse.de>, 2001/07/27
+ *
  *
  * $Id$
  *
@@ -46,12 +46,10 @@
       boolean ret = true;
       
       foreach( any key, map scanner, scanner_info, ``{
-	  // if required write the options for the scanner kernel module to /etc/modules.conf
-	  // more than one usb scanner is not allowed, can be one usb and more scsi
-	  map usb_options = lookup(scanner, "usb_options", $[] );
+
 	  string usb_usermap = lookup( scanner, "usb_usermap", "" );
-	  string usb_module  = lookup(scanner, "usb_module", "" );
-	  string bus = lookup(scanner, "bus", "" );
+	  string bus = lookup( scanner, "bus", "" );
+	  string scanner_driver = lookup( scanner, "scanner_driver", "" ); 
 	  string is_installed = lookup( scanner, "scanner_status", "" );
 	  string unique_key =  lookup( scanner, "unique_key", "" );
 	  
@@ -62,24 +60,32 @@
 	      SCR::Write(.probe.status.configured, unique_key, `yes);
 	      y2milestone ( "Mark scanner %1 as configured",  unique_key );
 	      
-	      if ( usb_module != "" && usb_options != $[] )
+	      if ( bus == "USB"
+		   && usb_usermap != ""
+		   && scanner_driver != "" )
 	      {
-		  success = SCR::Write(.modules.options, usb_options , usb_module );
-		  y2debug( "Write /etc/modules.conf: %1 %2", usb_options , usb_module );
-		  if ( success )
-		  {
-		      // WRITE /etc/modules.conf now and call "depmod"
-                      SCR::Write(.modules, nil);
+		  // kernel 2.6: writing modules.conf is obsolete (scanner module is gone)
 
-		      // Write /etc/hotplug/usb.usermap
-		      // -> scanner module will be loaded automatically
-		      //    with options set in /etc/modules.conf
-		      string user_entry = sformat ("%1  0x0003  %2  0x0000       0x0000       0x00         0x00            0x00            0x00            0x00            0x00            0x00000000", usb_module, usb_usermap );
-		      SCR::Execute(.target.bash, sformat("echo \"%1\" >> /etc/hotplug/usb/sane.usermap", user_entry ) );
+		  integer exitcode = 0;
+		      
+		  // append USB IDs to /etc/sane.d/<driver>.conf
+		  exitcode = (integer)SCR::Execute(.target.bash, sformat("echo \"usb %1\" >> /etc/sane.d/%2.conf",
+							       usb_usermap, scanner_driver) );
+
+		  if ( exitcode == 0 )
+		  {
+	      		  string user_entry = sformat ("desktopdev  0x0003  %1  0x0000       0x0000       0x00         0x00            0x00            0x00            0x00            0x00            0x00000000", usb_usermap );
+		      // Write /etc/hotplug/usb/sane.usermap (using pseudo module name "desktopdev")
+		      exitcode = (integer)SCR::Execute(.target.bash, sformat("echo \"%1\" >> /etc/hotplug/usb/sane.usermap", user_entry ) );
+		  }
+		  if ( exitcode != 0 )
+		  {
+		      y2error( "ERROR: Manual USB configuration failed" );
+		      ret = false;   
 		  }
 		  else
 		  {
-		      ret = false;
+		      y2milestone( "Writing /etc/sane.d/%1.conf and /etc/hotplug/usb/sane.usermap" );
 		  }
 	      }
 	      else if ( bus == "SCSI" )
@@ -304,7 +310,7 @@ with the YaST2 module 'Install and Remove Software'.
  * @param symbol mode can be `start or `add.
  * @return symbol return value for the start dialog, e.g. `notfound
  */
-  global define symbol DecideDialog( symbol mode ) ``{
+  global define symbol DecideDialog( ) ``{
 
       map new_scanner = $[]; 	  //  new scanner which are supported by SANE
       map detected_scanner = $[]; //  detected scanner which are NOT supported by SANE
@@ -331,7 +337,7 @@ with the YaST2 module 'Install and Remove Software'.
       }
       y2debug( "SUPPORTED: %1, DETECTED: %2", new_scanner, detected_scanner );
 
-      if ( installed && (mode != `add) )
+      if ( installed )
       {
 	  // if one (or more) already configured scanners is/are found go to "Scanner overview"
 	  ret = `overview;

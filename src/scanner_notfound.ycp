@@ -11,7 +11,7 @@
  * Authors:
  *   Gabriele Strattner <gs@suse.de>
  *
- * String corrections by Christian Steinruecken <cstein@suse.de> 2001/07/28
+ *
  *
  * $Id$
  * 
@@ -154,31 +154,20 @@ USB scanner, because only ONE is supported.") + "\n" + msg);
 		  }
 		  else if ( size (usb_scanner) == 1 )
 		  {
-		      // try once again the scanner start dialog
-		      // -> scanner already configured -> overview dialog
-		      // -> new unsupported scanner  -> manual
-		      // -> new supported scanner  -> new
-		      if ( !lookup( user_settings, "check_again", false ) )
-			  user_settings = add(user_settings, "check_again", true);
-		      else
-			  user_settings = add(user_settings, "check_again", false);
-		      
-		      ret = `start;
+		      ret = `manual;
 		  }
 		  else
 		  {
 		      if ( Popup::AnyQuestion( Label::WarningMsg(),
 					      _("Your USB scanner cannot be configured manually.
-Do you want to go on with manual configuration dialog
-(see help text there for more information)
+Do you want to go on with manual USB configuration
+(recommended for experts only)
 or abort the scanner configuration now?"),
 			   Label::ContinueButton(),
 			   Label::AbortButton(),
 			   `focus_no ) )
 		      {
-			  ret = `manual;
-			  // create the entry for the USB scanner
-			  CreateScannerEntry( $["bus":"USB", "dev_name":"/dev/usbscanner"]);
+			  ret = `usb;
 		      }
 		      else
 		      {
