@@ -1,4 +1,10 @@
 -------------------------------------------------------------------
+Mon Nov 18 16:25:08 CET 2002 - gs@suse.de
+
+- provide SCR::Dir(.sane), SCR::Dir(.scanner),
+  improve, update the help text 
+
+-------------------------------------------------------------------
 Mon Sep  9 12:09:30 CEST 2002 - freitag@suse.de
 
 - removed some nasty warnings on console (bug #19090)
