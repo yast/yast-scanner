@@ -75,9 +75,12 @@ can be found in the SuSE support database.</p>") );
 	  {
 	      string host = CutBlanks( UI(`QueryWidget(`id(`host), `Value )) );
 
-	      // Create the entry for the Network scanner
-	      CreateScannerEntry( $["bus":"Net", "dev_name":host] ); 
+	      list net_scanner = SCR(`Read(.sane.netscannerinfo, $["bus":"Net", "dev_name":host] ) );
+
+	      y2milestone("Net Scanner: %1", net_scanner );
 	      
+	      // Create the entry for the Network scanner
+	      CreateScannerEntry( $["bus":"Net", "dev_name":host, "device":net_scanner] ); 	      
 	  }
 	  
       } until ( ret == `next || ret == `back || ret == `abort );

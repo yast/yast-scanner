@@ -91,7 +91,9 @@ The <b>Gimp</b> also provides scan support.</p>");
       UI(`SetWizardContentsButtons(caption,contents,help,BackButtonLabel(),NextButtonLabel()));
 
       any ret = nil;
-      
+
+
+       
       repeat {
 
 	  ret = UI(`UserInput());

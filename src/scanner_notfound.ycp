@@ -147,7 +147,6 @@ Please disconnect all unwanted USB scanners.")));
 		      integer exit_status = 1;
 
 		      // check first, whether an USB scanner module is already loaded
-		      
 		      exit_status = SCR (`Execute (.target.bash, "/sbin/lsmod | /bin/egrep 'scanner|microtek'"));
 		      
 		      if ( exit_status != 0 )
@@ -157,7 +156,9 @@ Please disconnect all unwanted USB scanners.")));
 		      }
 		      else
 		      {
-			  // if the USB module is already loaded we assume that it is the right one
+			  // If the USB module is already loaded we assume that it is the right one,
+			  // because the scanner module will be unloaded, if the USB scanner is
+			  // disconnected and newly loaded when a new scanner is connected (hotplug).
 			  // -> go to manual scanner selection
 			  ret = `manual;
 		      }
