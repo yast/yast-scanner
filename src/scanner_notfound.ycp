@@ -135,13 +135,15 @@ and restart the scanner configuration.")));
 		  }
 		  else
 		  {
-		      boolean usb_loaded = true;
-		      
-		      // TODO: make sure module scanner is not yet loaded -> lsmod
-		      //       ONLY go to dialog load USB module if NOT yet loaded
+		      integer exit_status = 1;
 
-		      if ( usb_loaded )
+		      // if the scanner is recognised by hwinfo the USB module is already loaded
+		      // (scanner is listed in /etc/usbmgr/usbmgr.conf)
+		      exit_status = SCR (`Execute (.target.bash, "/sbin/lsmod | /bin/egrep 'scanner|microtek'"));
+		      
+		      if ( exit_status != 0 )
 		      {
+			  // go to dialog load USB module if the module is not yet loaded
 			  ret = `usb;
 		      }
 		      else

@@ -22,11 +22,13 @@
 
   global define ScannerUSBDialog_UI() ``{
 
+      // the available modules for USB scanner support are listed in /etc/usbmgr/usbmgr.conf
+      list module_list = ["scanner", "microtek"];
       term layout = `Empty();
       // This is a label, i.e. the line length should not exceed 50 characters.
       layout = `VBox( `Label(`opt (`hstretch), _("YaST2 could not load the USB scanner
 module automatically.\n
-Please enter the required scanner data into the fields below.")),
+Please enter the required scanner data.")),
 		      `VSpacing(0.3),
 		      `HBox( `HWeight( 4, `TextEntry(`id(`model),
 						     // Input field label for the product ID
@@ -40,14 +42,19 @@ Please enter the required scanner data into the fields below.")),
 						     "" ) ),
 			     `HWeight(1, `Empty())
 			     ),
-		      `HBox( `HWeight( 4, `TextEntry(`id(`mod),
-						     // Input field label for the name of the USB module
-						     _("&USB module name"),
-						     "" ) ),
-			     `HWeight(1, `Empty())
-			     ),
-			     // button label 
-		      `Left(`PushButton (`id (`test), _("&Load"))),
+		      `VSpacing(1.0),
+		      `HBox(
+			    // Label for the selection box of the module
+			    `Left(`ComboBox(`id(`module), `opt(`notify), _("&USB module name"),
+				      module_list
+				      )),
+			    `VBox(
+				  `VSpacing(0.3),
+                                  // button label 
+				  `Left(`PushButton (`id (`test), _("&Load"))),
+				  `VSpacing(0.3)
+				  )
+			    ),
 		      `VSpacing(1.0)
 		      );
       return layout;

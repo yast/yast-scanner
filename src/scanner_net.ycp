@@ -31,7 +31,7 @@
 			   `Left(`Label (`opt (`hstretch), _("If you want to use a scanner from a network scan
 station, you must supply the IP address or hostname
 of the scan station.\n
-Please enter the information into the field below.\n"))),
+Please enter the requested information.\n"))),
 			   `VSpacing (1),
 			   `HBox (
 				  `HWeight(4, `TextEntry(`id(`host),
@@ -58,7 +58,7 @@ of that computer and click on <b>Next</b>.
 </p>") );
       string help3    = UI(_("<p>More information on setting up network scan stations
 can be found in the SuSE support database.</p>") );
-      help = help1 + help2;
+      help = help1 + help2 + help3;
       
       string caption = UI(_("Network scan station client"));
       term contents  = ScannerNetDialog_UI();
