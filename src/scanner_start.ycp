@@ -45,9 +45,10 @@
       boolean test_mode = lookup( user_settings, "test_mode", false );
 
       // Help text for start dialog (checking and probing)
-      string help_text = _("<p>YaST2 is doing some checks, e.g. the
-hardware probing of 'USB' and/or the 'SCSI' port(s).
-</p>");
+      string help_text = _("<p>YaST2 is doing some checks, such as the
+hardware probing of 'USB' or 'SCSI' ports.
+</p>
+");
 
       Progress::New(
 		    // Headline for start dialog of scanner configuration
