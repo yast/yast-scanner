@@ -26,18 +26,18 @@
 
   import "Label";
     
-  global define list<term> CreateVendorList( ) ``{
+  define list<term> CreateVendorList( ) ``{
       list<term> list_input = [];
-      list<any> vlist = (list<any>) SCR::Read(.sane.vendorlist, GetCurrentScanner());
+      list<string> vlist = (list<string>) SCR::Read(.sane.vendorlist, GetCurrentScanner());
       //used to preselect first entry
       boolean isfirst = true;
 
       //sort list alphabetically
-      vlist=sort(`a,`b,vlist,``(a<b));
+      vlist=sort( string a, string b, vlist,``(a<b));
 
       y2debug( "Vendorlist: %1", vlist );
       
-      foreach( any vendor, vlist, ``{
+      foreach( string vendor, vlist, ``{
 		  if(isfirst)
 		  {
 		    list_input = add( list_input, `item(`id(vendor), vendor, true));
@@ -50,24 +50,24 @@
       return list_input; 
   }
 
-  global define list<term> CreateModelList( string vendor ) ``{
+  define list<term> CreateModelList( string vendor ) ``{
       list<term> list_input = [];
       SetCurrentScannerValue( "vendor", vendor );
-      list<any> mlist = (list<any>) SCR::Read(.sane.modellist, GetCurrentScanner());
+      list<string> mlist = (list<string>) SCR::Read(.sane.modellist, GetCurrentScanner());
       
       //sort list alphabetically
-      mlist=sort(`a,`b,mlist,``(a<b));
+      mlist=sort( string a, string b,mlist,``(a<b));
 
       y2debug( "Modellist: %1", mlist );
 
-      foreach(any model, mlist, ``{
+      foreach(string model, mlist, ``{
 		  list_input = add( list_input, `item(`id(model), model));
 	      });
 
       return list_input; 
   }
   
-  global define term ScannerManualDialog_UI( map current_scanner ) ``{
+  define term ScannerManualDialog_UI( map current_scanner ) ``{
 
       string vstring =  lookup( current_scanner, "vendor", "" );
       
@@ -117,7 +117,7 @@
 /**
  * ScannerManualDialog
  */
-  global define symbol ScannerManualDialog()``{
+  define symbol ScannerManualDialog()``{
       string help	= "";
       // help text1 for dialog Manual scanner selection
       // - don't translate SANE (Scanner Access Now Easy) - 

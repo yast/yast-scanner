@@ -30,7 +30,7 @@
    * ScannerNewDialog Layout	
    */
   
-  global define term ScannerNewDialog_UI( map new_scanner )``{
+  define term ScannerNewDialog_UI( map new_scanner )``{
 
       string model  = "default_model";
       string vendor = "default_vendor";
@@ -95,7 +95,7 @@
 /**
  * ScannerStartDialog	
  */
-  global define symbol ScannerNewDialog( )``{
+  define symbol ScannerNewDialog( )``{
 
       boolean test_mode = lookup( user_settings, "test_mode", false );
 

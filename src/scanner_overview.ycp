@@ -38,7 +38,7 @@
 
   import "Label";
   
-  global define term ScannerOverviewDialog_UI( term table ) ``{
+  define term ScannerOverviewDialog_UI( term table ) ``{
 
       term layout = `Empty();
 
@@ -63,7 +63,7 @@
   };
 
   // creates the table widget from scanner map
-  global define term CreateScannerTable (map scanner_map) ``{
+  define term CreateScannerTable (map scanner_map) ``{
     list scanner_table = [];
     string vendor_prefix = "";
     foreach (any key, map value, scanner_map, ``{

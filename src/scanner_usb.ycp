@@ -38,7 +38,7 @@
   import "Label";
   import "String";
 
-  global define term ScannerUSBDialog_UI( list device_list ) ``{
+  define term ScannerUSBDialog_UI( list device_list ) ``{
 
       term layout = `Empty();
 
@@ -61,7 +61,7 @@ Please select your scanner from the list below.")),
 /**
  * ScannerStartDialog
  */
-  global define symbol ScannerUSBDialog()``{
+  define symbol ScannerUSBDialog()``{
       string help = "";
 
       // help part 1 of dialog manual USB Scanner configuration

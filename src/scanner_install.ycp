@@ -30,7 +30,7 @@
  * ScannerInstallDialog
  */
 
-    global define term ScannerInstallDialog_UI( map installed_scanner, byteblock image ) ``{
+    define term ScannerInstallDialog_UI( map installed_scanner, byteblock image ) ``{
 
 	string scanner = "";
 	string info = "";
@@ -92,7 +92,7 @@
 /**
  * ScannerInstallDialog
  */
-    global define symbol ScannerInstallDialog()``{
+    define symbol ScannerInstallDialog()``{
 	string help    = "";
       
 	// help part 1 of dialog scanner test

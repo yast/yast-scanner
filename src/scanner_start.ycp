@@ -38,7 +38,7 @@
 /**
  * ScannerStartDialog
  */
-  global define any ScannerStartDialog( )``{
+  define any ScannerStartDialog( )``{
 
       any ret = nil;
       boolean test_mode = lookup( user_settings, "test_mode", false );
@@ -311,7 +311,7 @@ the scanner configuration\n."));
 	      string vend = lookup( one_scanner, "vendor", "" );
 	      if( found == true )
 	      {
-		  list dummy = [];
+		  list<map> dummy = [];
 		  foreach(map station, net_stations, ``{
 		      string station_name = lookup( station, "host", "notfound" );
 		      if( station_name == host )
