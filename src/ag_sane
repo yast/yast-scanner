@@ -35,6 +35,10 @@ while ( <STDIN> )
     }
 
     my $action = ycpGetPath();
+    my $vendor = findInHash( "vendor", \%scanner );
+    my $bus    = findInHash( "bus", \%scanner  );
+    my $model  = findInHash( "device", \%scanner );
+
     y2debug( " vvv starting in ag_sane with action <$action> vvv" );
 
     # $action = "driver";  # TEST 
@@ -52,11 +56,6 @@ while ( <STDIN> )
 	# This action queries for the correct driver for one scanner
 	# identified by its vendor and the model, both values come as
 	# parameters.
-
-	my $vendor = findInHash( "vendor", \%scanner );
-	my $bus = findInHash( "bus", \%scanner  );
-	my $model = findInHash( "device", \%scanner );
-
 	y2debug( "Bus is $bus" );
 	y2debug( "Model is $model" );
 	y2debug( "Vendor is $vendor" );
@@ -77,13 +76,11 @@ while ( <STDIN> )
 
 	# my $retdriver = $driver;
     }
-    elsif( $action =~ /driverlist\s*$/ )
+    elsif( $action =~ /modellist\s*$/ )
     {
 	# Only the vendor and the bus must be set in the incoming parameter hash -
 	# returning a list of available drivers.
-	y2debug( "Handling action driverlist" );
-	my $vendor = findInHash( "vendor", \%scanner );
-	my $bus = findInHash( "bus", \%scanner  );
+	y2debug( "Handling action modellist" );
 
 	if( !defined $vendor || $vendor =~ /^\s+$/  )
 	{
@@ -110,6 +107,11 @@ while ( <STDIN> )
 	# Only the bus is required. Return a list of vendors for the list.
 	my @vlist = getVendorList( findInHash( "bus", \%scanner )); 
 	ycpReturn( \@vlist );
+    }
+    elsif( $action =~ /writeconfig/ )
+    {
+	# valid are:
+	# 
     }
     else
     {
