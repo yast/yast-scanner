@@ -143,6 +143,10 @@ with the YaST2 module 'Install and Remove Software'.\n"));
 			  foreach (map device, ptal_devices, ``{
 			      if ( lookup( device, "device", "") == lookup( scanner, "sub_device", "" ) )
 			      {
+				  if ( lookup( device, "scanner_driver", "" ) != "" )
+				  {
+				      device = add( device, "scanner_status", "supported" );
+				  }
 				  y2milestone ("PTAL device found: %1", device );
 				  scanner_list = add(scanner_list, device);
 			      }
@@ -267,8 +271,9 @@ the scanner configuration\n."));
 		  scanner = add( scanner, "scanner_status", "supported" );
 		  scanner = add( scanner, "scanner_driver", driver );
 	      }
-	      else
+	      else if ( lookup( scanner, "scanner_status", "" ) == "" )
 	      {
+		  // only set  status if not yet set (PTAL devices already have status "supported")
 		  scanner = add( scanner, "scanner_status", "detected" );
 	      }
 
