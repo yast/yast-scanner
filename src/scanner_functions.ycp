@@ -1,6 +1,6 @@
 /**
  * File:
- *   io.ycp
+ *   scanner_functions.ycp
  *
  * Module:
  *   Configuration of scanner
@@ -10,6 +10,8 @@
  *
  * Authors:
  *   Gabriele Strattner <gs@suse.de>
+ *
+ * String corrections by Christian Steinruecken <cstein@suse.de>, 2001/07/27
  *
  * $Id$
  *
@@ -182,12 +184,12 @@
 
       if ( installed && (mode != `add) )
       {
-	  // if one (or more) already configured scanner is/are found go to "Scanner overview"
+	  // if one (or more) already configured scanners is/are found go to "Scanner overview"
 	  ret = `overview;
       }
       else if ( new_scanner != $[] )
       {
-	  // if one (or more) new supported scanner is/are found go to "Scanner installation"
+	  // if one (or more) new supported scanners is/are found go to "Scanner installation"
 	  integer scan_id = 0;
 	  if ( size(new_scanner) == 1 ) 
 	  {
