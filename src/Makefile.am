@@ -1,16 +1,12 @@
 #
-# Makefile.am for y2c_scanner/src
+# Makefile.am for scanner/src
 #
 
-clientsdir = $(YAST2DIR)/clients
-includedir = $(YAST2DIR)/include/scanner
-menudir = $(YAST2DIR)/menuentries
-agentdir = $(YAST2DIR)/servers_non_y2
-
-clients_DATA =		\
+client_DATA =	\
 	scanner.ycp
 
-include_DATA =		\
+scannerdir = $(yncludedir)/scanner
+scanner_DATA =			\
 	scanner_start.ycp	\
 	scanner_overview.ycp	\
 	scanner_new.ycp		\
@@ -22,7 +18,9 @@ include_DATA =		\
 	scanner_notfound.ycp	\
 	scanner_functions.ycp
 
-menu_DATA = menuentry_scanner.y2cc
+config_DATA = menuentry_scanner.y2cc
+
+agentdir = $(yast2dir)/servers_non_y2
 agent_SCRIPTS = ag_scanner ag_sane scannerDB.pm
 
-EXTRA_DIST = $(clients_DATA) $(include_DATA) $(menu_DATA) $(agent_SCRIPTS)
+EXTRA_DIST = $(client_DATA) $(scanner_DATA) $(config_DATA) $(agent_SCRIPTS)
