@@ -193,7 +193,7 @@ or abort the scanner configuration now?"),
 		  {
 		      y2error( "command 'ptal-init setup-usb' failed" );
 
-		      boolean ret_bool = Popup::AnyQuestion( Label:: ErrorMsg(),
+		      boolean ret_bool = Popup::AnyQuestion( Label::ErrorMsg(),
 			   // Text of an error popup. YaST2 should automatically detect
 			   // HP all-in-one devices connected to USB (if switched on).
 		           // If an error occurs or if connected to JetDirect the
