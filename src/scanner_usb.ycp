@@ -156,7 +156,17 @@ successfully you can proceed to the
 	  if ( lookup( device, "drivers", [] ) == [] )
 	  {
 	      usb_unknown = add( usb_unknown, no, device );
-	      list_entry = sformat( "%1 - %2", lookup( device, "vendor", ""), lookup( device, "device", ""));
+	      string device_str = lookup( device, "device", "");
+	      if ( device_str == "" )
+	      {
+		  device_str = lookup( device, "sub_device", "");  
+	      }
+	      string vendor_str = lookup( device, "vendor", "");
+	      if ( vendor_str == "" )
+	      {
+		  vendor_str = lookup( device, "sub_vendor", "");  
+	      }
+	      list_entry = sformat( "%1 - %2", vendor_str, device_str );
 	      usb_selbox = add( usb_selbox, `item(`id(no), list_entry ));
 	      no = no+1;
 	  }
