@@ -216,7 +216,9 @@ successfully you can proceed to the
 		  if ( vendor_id != 0 && product_id != 0 )
 		  {
 		      SetCurrentScannerValue("usb_module", module_name);
-		      SetCurrentScannerValue("usb_options", $["vendor":tostring(vendor_id), "product":tostring(product_id)]);
+		      // TODO !!!
+		      // tostring(hex)
+		      SetCurrentScannerValue("usb_options", $["vendor":"0x1606", "product":"0x0130"]);
 		      
 		      success = SCR::Execute(.target.modprobe, module_name, options );
 		  }
