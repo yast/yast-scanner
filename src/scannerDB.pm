@@ -34,7 +34,8 @@ use English;
 		      performScanimage 
 		      getNetInfo 
 		      revertAll
-		      enableNetScan );
+		      enableNetScan 
+		      disableNetScan );
 
 use vars qw ( %driver $prefix);
 
@@ -1343,7 +1344,7 @@ sub readNetConf
 {
     my @res;
 
-    if( open( F, "$prefix/etc/sane.d/net.dll" ))
+    if( open( F, "$prefix/etc/sane.d/net.conf" ))
     {
 	foreach my $l ( <F> )
 	{
@@ -1356,7 +1357,7 @@ sub readNetConf
     }
     else
     {
-	y2debug( "No file /etc/sane.d/net.conf yet." );
+	y2debug( "Could not open file $prefix/etc/sane.d/net.conf: $!" );
     }
     return( @res );
 }
@@ -1597,7 +1598,9 @@ sub acquireTestImage( $ )
 
 }
 
-
+#
+# enable one single station to be scanned from
+#
 sub enableNetScan( $ )
 {
     my ($host) = @_;
@@ -1621,6 +1624,24 @@ sub enableNetScan( $ )
 	$ok = writeDllconf( \@cfg_backends );
     }
     return( $ok );
+}
+
+
+sub disableNetScan( $ )
+{
+    my ($host) = @_;
+
+    my $ok = 1;
+
+    my @already_conf = readNetConf();
+
+    # Take all _but_ host from the list
+    @already_conf = grep ( !/$host/i, @already_conf );
+
+    $ok = writeNetConf( \@already_conf );
+
+    return( $ok );
+    
 }
 
 
