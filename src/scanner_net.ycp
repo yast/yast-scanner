@@ -118,7 +118,8 @@ can be found in the SuSE support database.</p>");
 		  y2milestone( "NO network scanner available." );
 		  // popup text
 		  boolean r = Popup::ContinueCancel(sformat(_("No network scanner found on host %1
-(or the scanner is switched off)"), host));
+or the scanner is switched off.
+"), host));
 		  if ( r )
 		  {
 		      ret = `again;
