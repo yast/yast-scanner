@@ -1,4 +1,19 @@
 -------------------------------------------------------------------
+Fri Sep 14 15:33:02 CEST 2001 - freitag@suse.de
+
+- manual USB scanner install works for Scanners not reporting a 
+  proper vendor/model name 
+
+-------------------------------------------------------------------
+Wed Sep 12 10:26:17 CEST 2001 - freitag@suse.de
+
+- fixed bugs in reverting the installation, created files for the
+  sane startup and shutdown scripts that fix permissions. 
+  Bugfix that removes temporaer files, setting the sane permission
+  fix variable in rc.config and behaviour in case no scsi device
+  was found in manual scanner configuration (bzilla #10310)
+
+-------------------------------------------------------------------
 Tue Sep  4 17:06:53 CEST 2001 - freitag@suse.de
 
 - installation of scsi and usb scanners work now, deletion is also
