@@ -64,7 +64,7 @@ while ( <STDIN> )
 		if( $cmd =~ m{
 		    ^
 			(\S+)               # The device file, starts with /dev/
-			    \s              # followed by one whitespace
+			    \s+             # followed by one whitespace
 			(                   # 
 			 (?:SCSI)|(?:USB)   # and the bus: SCSI or USB by now
 			)                   # 
@@ -81,7 +81,7 @@ while ( <STDIN> )
 		    my $class = $3;
 		    my $vendor  = $4;
 		    my $model   =  $5;
-		    print ("Found $class $vendor $model on $devfile\n" );
+		    # print ("Found $class $vendor $model on $devfile\n" );
 		    y2debug( "Found $class $vendor $model on $devfile" );
 		    
 		    next if( $bus ne "SCSI" ); # only scsi here, USB is handled by hwinfo
@@ -110,10 +110,10 @@ while ( <STDIN> )
 			  dev_name => $devfile } );
 		    $cnt ++;
 		}
-		close CMD;
 		y2debug( "Found $cnt scsi-scanners !");
 	    }
 	    # '
+	    close CMD;
 	}
 	else
 	{
