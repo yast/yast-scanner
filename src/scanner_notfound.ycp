@@ -123,7 +123,7 @@ and restart the scanner configuration.");
 		      // text of a warning popup
 		      UI(`WarningPopup(_("YaST2 has detected several USB scanners, 
 but you can only use ONE of them.") + "\n" + msg));
-		      ret = `cancel;
+		      ret = `back;
 		  }
 		  else if ( CheckUSBScanner() )
 		  {
@@ -131,7 +131,7 @@ but you can only use ONE of them.") + "\n" + msg));
 		      UI(`WarningPopup(_("There is already an USB scanner in use.
 It is not possible to configure an additional
 USB scanner, because only ONE is supported.") + "\n" + msg));
-		      ret = `cancel;
+		      ret = `back;
 		  }
 		  else if ( size (connected_scanner) == 1 )
 		  {
@@ -168,8 +168,24 @@ USB scanner, because only ONE is supported.") + "\n" + msg));
 		      
 		  }
 	      }
+	      else if( type == `scsi )
+	      {
+		  list connected_scanner = SCR(`Read(.probe.bybus.scsi));
+		  y2debug( "Found a SCSI-Scanner, connected_scanner is %1", size( connected_scanner ) );
+		  if( size( connected_scanner ) == 0 )
+		  {		      
+		      UI(`WarningPopup(_("\nThere where no SCSI-devices found.\n")));
+		      ret = `back;
+		  }
+		  else
+		  {
+		      ret = type;
+		  }
+		  
+	      }
 	      else
 	      {
+		  y2debug( "Retruning type %1", type );
 		  ret = type;
 	      }
 	  }
