@@ -65,6 +65,8 @@ while ( <STDIN> )
 
 	  if( $dev ) {
 	    my ($mlc, $device, $model) = split( /\:/, $dev );
+	    # get rid of _ in model string (FIXME ???)
+	    $model =~ s/_/ /g;
 	    push ( @scanners , 
 		   { bus => "PTAL", 
 		     class_id => "",
@@ -78,7 +80,7 @@ while ( <STDIN> )
 		     unique_key => "",
 		     vendor => "Hewlett-Packard",
 		     vendor_id => "",
-		     dev_name => $dev,
+		     dev_name => trim($dev),
 		     class => "scanner",
 		     scanner_driver => "hpoj",
 		     host => ""
@@ -95,7 +97,8 @@ while ( <STDIN> )
     
     # Dir command
     elsif ( $action eq "Dir" ) {
-	my @paths = ("scsi","net","configured");
+	my @paths = ("net","ptal","configured");
+
 	ycp::Return( \@paths );
       }
     
