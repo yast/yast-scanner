@@ -1682,7 +1682,8 @@ sub modify_rc_cmdfile( $ )
     }
 
     my $oriline = shift @lines;
-    
+    $oriline = "" unless( defined $oriline );
+ 
     y2debug( "Found in /var/lib/sane/devices: <$oriline>" );
     
     my @devs = split( /\s+/, $oriline );
