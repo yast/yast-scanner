@@ -92,6 +92,8 @@
  */
   global define ScannerNewDialog( )``{
 
+      boolean test_mode = lookup( user_settings, "test_mode", false );
+
       string help = "";
       
       // part 1 of helptext of dialog Scanner installation
@@ -136,25 +138,28 @@ a manual configuration.
 	  {
 	      symbol choice = UI(`QueryWidget(`id(`action), `CurrentButton ));
 	      y2debug( "CHOICE: %1", choice );
-	      
-	      if ( choice == `install )
+
+	      if ( !test_mode )
 	      {
-		  //  *do* the scanner configuration
-		  boolean configure_ok = SCR(`Read(.sane.writeconfig, GetCurrentScanner() ) );
-		  if ( configure_ok )
+		  if ( choice == `install )
 		  {
-		      SetCurrentScannerValue( "scanner_status", "installed" );
+		      //  *do* the scanner configuration
+		      boolean configure_ok = SCR(`Read(.sane.writeconfig, GetCurrentScanner() ) );
+		      if ( configure_ok )
+		      {
+			  SetCurrentScannerValue( "scanner_status", "installed" );
+		      }
+		      else
+		      {
+			  UI(`ErrorPopup(_("The scanner configuration was not successful.")));
+			  ret = `abort;
+		      }
 		  }
 		  else
 		  {
-		      UI(`ErrorPopup(_("The scanner configuration was not successful.")));
-		      ret = `abort;
+		      // go on with manual configuration
+		      ret = `notfound;
 		  }
-	      }
-	      else
-	      {
-		  // go on with manual configuration
-		  ret = `notfound;
 	      }
 	  }
       } until ( ret == `next || ret == `back || ret == `abort || ret == `notfound );
