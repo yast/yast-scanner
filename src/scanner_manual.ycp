@@ -37,7 +37,7 @@
 
       y2debug( "Vendorlist: %1", vlist );
       
-      foreach( `vendor, vlist, ``{
+      foreach( any vendor, vlist, ``{
 		  if(isfirst)
 		  {
 		    list_input = add( list_input, `item(`id(vendor), vendor, true));
