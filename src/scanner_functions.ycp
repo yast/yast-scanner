@@ -42,7 +42,7 @@
  * @param m a map of all scanner settings
  * @return boolean success of operation
  */
-  define boolean ScannerWrite(map scanner_info) ``{
+  define boolean ScannerWrite(map<any, map> scanner_info) ``{
       boolean ret = true;
 
       foreach( any key, map scanner, scanner_info, ``{
@@ -287,7 +287,7 @@ with the YaST2 module 'Install and Remove Software'.
  * @return boolean already USB scanner installed or not
  */
   define boolean CheckUSBScanner( ) ``{
-      map scanner_map = lookup( user_settings, "scannerInfo", $[] );
+      map<any, map> scanner_map = lookup( user_settings, "scannerInfo", $[] );
       boolean already_usb = false;
 
       if ( scanner_map != $[] )
