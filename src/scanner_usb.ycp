@@ -33,7 +33,6 @@
 
   global define ScannerUSBDialog_UI( list device_list ) ``{
 
-      // the available modules for USB scanner support are listed in /etc/usbmgr/usbmgr.conf
       list module_list = ["scanner", "microtek"];
       term layout = `Empty();
       
