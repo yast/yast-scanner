@@ -303,4 +303,65 @@
       user_settings = add( user_settings, "scannerInWork", key ); 
   }
   
+
+/**
+ * - Delete scanner from global "scannerInfo" map and lower the id's
+ *   of all scanners after the deleted one
+ * - call ag_sane to remove driver from /etc/sane.d/dll.conf
+ * @param scanner id to be deleted
+ */
+
+  global define DeleteScannerEntry (integer delete_id) ``{
+
+    y2debug("Scanner to be deleted: %1", delete_id);
+    if (delete_id == 0) return;
+    
+//      integer current_id = lookup( user_settings, "scannerInWork", 0 );
+    map oldscanner_info = lookup( user_settings, "scannerInfo", $[] );
+    map newscanner_info = $[];
+    map deleted_entry = $[];
+
+//    SCR::Write(.dumpto.tmp.oldscanner_info, oldscanner_info );
+
+    //walk through all scanner entries
+    foreach (`id,`entrymap,oldscanner_info,
+      ``{
+	// delete it
+	if ( id == delete_id )
+	{
+	  deleted_entry = entrymap;
+	  return;
+	}
+	// this one is after the deleted entry, so lower its id
+	else if(id>delete_id)
+	{
+	  change(newscanner_info,id-1,entrymap);
+	}
+	// copy all entries before the deleted one
+	else
+	{
+	  change(newscanner_info,id,entrymap);
+	}
+      });
+
+    string driver=lookup(deleted_entry,"scanner_driver","");
+    if( driver != "" )
+    {
+      boolean ok = SCR::Read(.sane.removeDriver, $[ "driver":driver ]);
+      if(!ok)
+      {
+	//TRANSLATOR: %1 stands for the driver name
+	UI(`MessagePopup(sformat(_("It was not possible to deactive the driver %1"), driver)));
+      }
+    }
+    else
+    {
+      y2debug("no driver to deactivate");
+    }
+
+//    SCR::Write(.dumpto.tmp.newscanner_info, newscanner_info );
+
+    user_settings = add( user_settings, "scannerInfo", newscanner_info ); 
+    user_settings = add( user_settings, "scannerInWork", 0 ); 
+  }
 }

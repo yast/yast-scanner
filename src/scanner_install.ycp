@@ -61,7 +61,8 @@
 	   
 	  
 
-      term contents = `VBox (
+      term contents = `HBox (
+			 `VBox (
 			     // label of an outpufield
 			     `Left(`Label (`opt (`hstretch), _("Scanner"))),
 			     `VSpacing(0.3),
@@ -78,13 +79,12 @@
 				    `HWeight(1, `Empty())
 				    ),
 			     `VSpacing (1),
-			     `HBox (
+			     `PushButton (`id (`test), _("&Test"))
+			   ),
+			 
 				    `ReplacePoint(`id(`replace),`Image( image, _("Test picture")) ),
-				    `PushButton (`id (`test), _("&Test")),
-				    `HSpacing (1.0)
-				    ),
-			     `VSpacing (3.0)
-			     );
+				    `HSpacing (2.0)
+				    );
 
       return contents;
   }

@@ -182,7 +182,7 @@ configuration.")));
 	      // get test data
 	      driver = lookup( scanner, "scanner_driver", "" ); 
 	  }
-
+	  //determine whether scanner is already installed
 	  while ( !found && m < size(installed_scanner) )
 	  {
 	      scan = select( installed_scanner, m );
@@ -193,12 +193,19 @@ configuration.")));
 		   ( lookup( scan, "dev_name", "") 	== lookup( scanner, "dev_name", "") ) )
 	      {
 		  scanner = add( scanner, "scanner_status", "installed" );
+		  if(driver != "")
+		  {
+		    scanner = add( scanner, "scanner_driver", driver );
+		  }
 		  found = true;
 	      }
 	      m = m+1;
 	  }
+
+	  // scanner ist not installed
 	  if (!found )
 	  {
+	      // scanner is supported if driver is available
 	      if ( driver != "" )
 	      {
 		  scanner = add( scanner, "scanner_status", "supported" );
