@@ -348,6 +348,7 @@ $driver{SCSI}{Agfa}{"SnapScan 300"} = "SnapScan";
 $driver{SCSI}{Agfa}{"SnapScan 310"} = "SnapScan";
 $driver{SCSI}{Agfa}{"SnapScan 600"} = "SnapScan";
 $driver{SCSI}{Agfa}{"SnapScan 1236s"} = "SnapScan";
+$dirver{SCSI}{Agfa}{"SnapScan 1236u"} = "SnapScan";
 $driver{USB}{Agfa}{"SnapScan 1212u"} = "SnapScan";
 
 $driver{USB}{Agfa}{"SnapScan e20"} = "SnapScan";
