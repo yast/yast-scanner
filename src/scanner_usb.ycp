@@ -218,7 +218,8 @@ successfully you can proceed to the
 		      SetCurrentScannerValue("usb_module", module_name);
 		      // TODO !!!
 		      // tostring(hex)
-		      SetCurrentScannerValue("usb_options", $["vendor":"0x1606", "product":"0x0130"]);
+		      SetCurrentScannerValue("usb_options", $["vendor" : tohexstring(vendor_id),
+							      "product": tohexstring(product_id)]);
 		      
 		      success = SCR::Execute(.target.modprobe, module_name, options );
 		  }
