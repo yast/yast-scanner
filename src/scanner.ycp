@@ -273,7 +273,7 @@
 				       `next      :   "scanner_install"],
 		   "scanner_notfound" : $[
 					`scsi	:	"scanner_scsi",
-					`usb   	:	"scanner_usb",
+					//`usb 	:	"scanner_usb",
 					`manual :	"scanner_manual",
 					`net	:	"scanner_net",
 					`start  : 	"scanner_start",
