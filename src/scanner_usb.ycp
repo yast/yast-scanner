@@ -168,9 +168,12 @@ successfully you can proceed to the
 	      {
 		  vendor_str = lookup( device, "sub_vendor", "");  
 	      }
-	      list_entry = sformat( "%1 - %2", vendor_str, device_str );
-	      usb_selbox = add( usb_selbox, `item(`id(no), list_entry ));
-	      no = no+1;
+	      if ( vendor_str != "" && device_str != "" )
+	      {
+		  list_entry = sformat( "%1 - %2", vendor_str, device_str );
+		  usb_selbox = add( usb_selbox, `item(`id(no), list_entry ));
+		  no = no+1;
+	      }
 	  }
       } );
 
