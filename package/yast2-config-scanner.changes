@@ -1,4 +1,11 @@
 -------------------------------------------------------------------
+Tue Sep  4 17:06:53 CEST 2001 - freitag@suse.de
+
+- installation of scsi and usb scanners work now, deletion is also
+  working. Networkstation-scanners will be detected and installed.
+  Abort also works. 
+
+-------------------------------------------------------------------
 Mon Aug 20 19:31:00 CEST 2001 - gs@suse.de
 
 - installation works (except setting the permissions of /dev/sg_
