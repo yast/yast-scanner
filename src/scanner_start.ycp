@@ -32,7 +32,7 @@
 
 {
   textdomain "scanner";
-  include "ui/progress.ycp";
+  import "Progress";
 
 
 /**
@@ -48,21 +48,22 @@
 hardware probing of 'USB' and/or the 'SCSI' port(s).
 </p>");
 	
-      UI::ProgressSetupUI(
-			  // Headline for start dialog of scanner configuration
-			  _("Initializing scanner module ..."),
-			  "",	// progress_title
-			  1000,	// length
-			  [
-                           // Translators: Please do not translate 'SANE'!
-			   _("Checking whether SANE library is installed..."),
-			   _("Probing hardware - looking for connected scanners..."),
-			   _("Checking already installed scanners...")
-			  ],
-			  help_text );
+      Progress::New(
+		    // Headline for start dialog of scanner configuration
+		    _("Initializing scanner module ..."),
+		    "",	// progress_title
+		    1000,	// length
+		    [
+		     // Translators: Please do not translate 'SANE'!
+		     _("Checking whether SANE library is installed..."),
+		     _("Probing hardware - looking for connected scanners..."),
+		     _("Checking already installed scanners...")
+		    ],
+		    help_text );
 
-      UI::ProgressMilestoneUI( 100, _("Checking SANE library..."), 0 );
-      //sleep(100);
+      Progress::NextStep( );
+      // text for a progress bar label (please do not translate 'SANE')
+      Progress::Title( _("Checking SANE library...") );
     
       if ( !test_mode )
       {
@@ -129,10 +130,10 @@ with the YaST2 module 'Install/Remove Software'.\n"));
 	  }
       }
     
-      // Progress bar (1)
-      UI::ProgressMilestoneUI( 200, _("Probing hardware"), 1 );
-      //sleep(100);
-      
+      Progress::NextStep();
+      // text for a progress bar label
+      Progress::Title( _("Probing hardware") );
+  
       list connected_scanner = [];
       if ( !test_mode )
       {
@@ -176,8 +177,9 @@ the scanner configuration\n."));
 	  connected_scanner = lookup( user_settings, "test_connected", [] );
       }
 
-      UI::ProgressMilestoneUI( 300, _("Checking already installed scanners"), 2 );
-      //sleep(100);
+      Progress::NextStep( );
+      // text for a progress bar label
+      Progress::Title(_("Checking already installed scanners")); 
 
       list installed_scanner = [];
       if ( !test_mode )
@@ -189,8 +191,10 @@ the scanner configuration\n."));
       {
 	  installed_scanner = lookup( user_settings, "test_installed", [] );	
       }
-      
-      UI::ProgressMilestoneUI( 1000, _("Finishing the check procedure"), 2 );
+
+      Progress::NextStep();
+      // text for a progress bar label
+      Progress::Title( _("Finishing the check procedure") );
       sleep(300);
 
       // find out which scanner is already installed / which is new / which is supported
