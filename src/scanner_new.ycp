@@ -94,19 +94,19 @@
 were detected. Please check whether the vendor and model
 settings are correct and proceed with the installation by
 clicking on <b>Next</b>.</p>"));
-      
-       // part 2 of helptext of dialog scanner installation
-      string help2 =  UI(_("<p>In case the data are incorrect, you can select
-a different scanner.
-</p>"));
 
-      // part 3 of helptext of dialog scanner installation
-      string help3 = UI(_("<p>If you press <b>Next</b>, YaST2 will install the
+      // part 2 of helptext of dialog scanner installation
+      string help2 = UI(_("<p>If you press <b>Next</b>, YaST2 will install the
 scanner and automatically set reasonable values for all options.</p>"));
 
-      // part 4 of helptext of dialog scanner installation
-      string help4 =  UI(_("<p>If desired, you can also configure the options
-manually.
+      // part 3 of helptext of dialog scanner installation
+      string help3 =  UI(_("<p>In case the data are incorrect or you want
+to install a different scanner please click on the appropriate button.
+</p>"));
+
+       // part 4 of helptext of dialog scanner installation
+      string help4 =  UI(_("<p>You will have the possibilty to do
+a manual configuration.
 </p>"));
       
       help = help1 + help2 + help3 + help4;
