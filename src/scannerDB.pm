@@ -16,15 +16,21 @@ package scannerDB;
 use strict;
 use vars qw(@ISA @EXPORT @EXPORT_OK $VERSION);
 use Exporter;
+use File::Copy;
 use ycp;
 
 @ISA            = qw(Exporter);
 @EXPORT         = qw( getModel 
 		      getVendorList
 		      findInHash
-		      trim);
-
-use vars qw ( %driver );
+		      trim
+		      readNetconf
+		      writeNetconf
+		      readDllconf
+		      writeDllconf
+		      writeIndividualConf
+		      acquireTestImage );
+use vars qw ( %driver $prefix);
 
 
 # Abaton
@@ -355,10 +361,662 @@ $driver{SCSI}{UMAX}{"Linoscan 1400"} = "umax";
 # $driver{Parport (EPP)}{UMAX}{Astra 1600P} = "umax_pp";
 # $driver{Parport (EPP)}{UMAX}{ASTRA 610 P} = "umax_pp";
 
+################################################################################
+
+my @all_drivers = ("abaton","agfafocus","apple","artec","avision","bh","canon",
+		   "coolscan","dc210","dc240","dc25","dll","dmc","epson","hp",
+		   "m3096g","microtek","microtek2","mustek","mustek_pp","nec",
+		   "net","pie","plustek","qcam","ricoh","s9036","saned","sharp",
+		   "snapscan","sp15c","st400","tamarack","umax","umax_pp","v4l"
+		   );
+# Here starts the configuration database.
+#
+#
+#
+my %config;
+
+$config{microtek} = <<"EndOfConf";
+# Uncomment following line to disable "real calibration" routines...
+#norealcal
+# Uncomment following line to disable "clever precalibration" routines...
+#noprecal
+#   Using "norealcal" will revert backend to pre-0.11.0 calibration code.
+scsi * * Scanner
+YAST2_DEVICE # /dev/scanner
+EndOfConf
+
+$config{s9036} = <<"EndOfConf";
+YAST2_DEVICE # /dev/scanner
+EndOfConf
+
+$config{coolscan} = <<"EndOfConf";
+scsi Nikon * Scanner
+YAST2_DEVICE # /dev/scanner
+EndOfConf
+
+$config{microtek2} = <<"EndOfConf";
+# See sane-microtek2(5) for a description of the options
+
+option dump 1
+# option lightlid-35 on
+# option no-backtrack-option on
+scsi * * Scanner
+EndOfConf
+
+$config{artec} = <<"EndOfConf";
+scsi ULTIMA
+YAST2_DEVICE # /dev/scanner
+EndOfConf
+
+$config{sp15c} = <<"EndOfConf";
+scsi FCPA
+EndOfConf
+
+$config{dc25} = <<"EndOfConf";
+# Serial port where the camera is connected
+## Linux
+port=/dev/ttyS0
+## IRIX
+#port=/dev/ttyd1
+## Solaris
+#port=/dev/term/a
+## HP-UX
+#port=/dev/tty0p0
+## Digital UNIX
+#port=/dev/tty01
+# Max baud rate for download.  Camera always starts at 9600 baud, then
+# switches to the higher rate
+## This works for Linux and some versions of IRIX (6.3 or higher)
+baud=115200
+## This works for most UNIX's
+#baud=38400
+# Prints some extra information during the init phase.  This can be
+# handy, but note that printing anything to stderr breaks the saned 
+# network scanning.
+#dumpinquiry
+EndOfConf
+
+$config{dc210} = <<"EndOfConf";
+# Serial port where the camera is connected
+## Linux
+port=/dev/ttyS0
+## IRIX
+#port=/dev/ttyd1
+## Solaris
+#port=/dev/term/a
+## HP-UX
+#port=/dev/tty0p0
+## Digital UNIX
+#port=/dev/tty01
+# Max baud rate for download.  Camera always starts at 9600 baud, then
+# switches to the higher rate
+## This works for Linux and some versions of IRIX (6.3 or higher)
+baud=115200
+## This works for most UNIX's
+#baud=38400
+# Prints some extra information during the init phase.  This can be
+# handy, but note that printing anything to stderr breaks the saned 
+# network scanning.
+#dumpinquiry
+# How many usec (1,000,000ths of a) between writing the command and reading the
+# result. 125000 seems to be the lowest I could go reliably.
+cmdrespause=125000
+# How many usec (1,000,000ths of a) between sending the "back to default" break
+# sending commands.
+breakpause=1000000;
+EndOfConf
+
+
+$config{v4l} = <<"EndOfConf";
+#
+# In order to use the v4linux backend you have to give the device
+# You can enable multiple lines if
+# you really have multible v4l devices.
+#
+/dev/bttv0
+/dev/video0
+/dev/video1
+/dev/video2
+/dev/video3
+EndOfConf
+
+$config{qcam} = <<"EndOfConf";
+#
+# In order to use the qcam backend, you'll need to enable to line with
+# the port address for your scanner.  You can enable multiple lines if
+# you really have a QuickCam connect to each port.
+#
+#u0x37b # /dev/lp0 forced in unidir mode
+#u0x378	# /dev/lp1 forced in unidir mode
+#u0x278	# /dev/lp2 forced in unidir mode
+#0x37b	# /dev/lp0
+#0x378	# /dev/lp1
+#0x278	# /dev/lp2
+0x3bc	# /dev/lp0
+EndOfConf
+
+$config{saned} = <<"EndOfConf";
+#
+# saned.conf
+#
+# The contents of the saned.conf file is a list of host
+# names that are permitted by saned to use local SANE
+# devices in a networked configuration.  The hostname
+# matching is NO LONGER case-sensitive.
+#
+#scan-client.somedomain.firm
+#localhost
+#
+# NOTE: saned.conf and /etc/services must also
+# be properly configured to start the saned daemon as
+# documented in saned(1), services(4) and inetd.conf(4)
+#
+# for example, /etc/services might contain a line:
+# sane	6566/tcp	# network scanner daemon
+#
+# and /etc/inetd.conf might contain a line:
+# sane stream tcp nowait root /usr/local/sbin/saned saned
+EndOfConf
+
+$config{pie} = <<"EndOfConf";
+scsi DEVCOM * Scanner
+scsi PIE * Scanner
+scsi ADLIB * Scanner
+YAST2_DEVICE # /dev/scanner
+EndOfConf
+
+$config{avision} = <<"EndOfConf";
+scsi AVISION
+YAST2_DEVICE # /dev/scanner
+EndOfConf
+
+$config{nec} = <<"EndOfConf";
+YAST2_DEVICE #/dev/scanner
+EndOfConf
+
+$config{mustek} = <<"EndOfConf";
+# See sane-mustek(5) for documentation.
+
+#--------------------------- Global options ---------------------------------
+option strip-height 1           # some SCSI adapters need this; scanning may 
+                                # be faster without this option
+#option force-wait              # wait for scanner to be ready (only necessary
+                                # when scanner freezes)
+
+#-------------------------- SCSI scanners -----------------------------------
+scsi MUSTEK * Scanner
+# option linedistance-fix       # stripes may go away in color mode
+# option buffersize 1024        # set non standard buffer size (in kb)
+# option blocksize 2048         # set non standard block size (in kb)
+  option lineart-fix		# lineart may be faster with this option off.
+
+scsi SCANNER
+# option linedistance-fix       # stripes may go away in color mode
+# option buffersize 1024        # set non standard buffer size (in kb)
+# option blocksize 2048         # set non standard block size (in kb)
+  option lineart-fix		# lineart may be faster with this option off.
+
+YAST2_DEVICE #/dev/scanner
+# option linedistance-fix       # stripes may go away in color mode
+# option buffersize 1024        # set non standard buffer size (in kb)
+# option blocksize 2048         # set non standard block size (in kb)
+  option lineart-fix		# lineart may be faster with this option off.
+
+#-------------------------- 600 II N ----------------------------------------
+#0x2eb
+                                # For the 600 II N try one of 0x26b, 0x2ab,
+                                # 0x2eb, 0x22b, 0x32b, 0x36b,  0x3ab, 0x3eb.
+# option linedistance-fix       # only neccessary with firmware 2.x
+EndOfConf
+
+$config{ricoh} = <<"EndOfConf";
+scsi RICOH IS60
+YAST2_DEVICE #/dev/scanner
+EndOfConf
+
+$config{plustek} = <<"EndOfConf";
+# Plustek-SANE Backend configuration file
+#
+# for multiple devices use
+# /dev/pt_drv0
+# /dev/pt_drv1
+# /dev/pt_drv2
+#
+
+/dev/pt_drv
+EndOfConf
+
+$config{umax_pp} = <<"EndOfConf";
+# For documentation see sane-umax_pp(5)
+
+# GLOBAL #
+
+# size (in bytes) of scan buffer (default: 2 megabyte)
+option buffer 2097152
+
+
+# DEVICES #
+
+# specify the port your scanner is connected to. Possible are 0x378 (lp1)
+# 0x278 (lp2) and 0x3c8 (lp0)
+port 0x378
+
+# the following options are local to this scanner
+# gain for red channel, if not given, will be automatically computed
+# must be between 0 and 15
+option red-gain 8
+# gain for red channel, if not given, will be automatically computed
+# must be between 0 and 15
+option green-gain 4
+# gain for red channel, if not given, will be automatically computed
+# must be between 0 and 15
+option blue-gain 8
+
+# highlight for red channel, if not given, will default to 0
+# must be between 0 and 15
+option red-highlight 2
+# highlight for red channel, if not given, will default to 0
+# must be between 0 and 15
+option green-highlight 1
+# highlight for red channel, if not given, will default to 0
+# must be between 0 and 15
+option blue-highlight 1
+
+
+#
+#
+# model number
+#
+# valid values are 610, 1220, 1600 and 2000
+#
+option astra 1220
+EndOfConf
+
+$config{sharp} = <<"EndOfConf";
+# The options are only meaningful if the backend was
+# compiled with USE_FORK defined
+#
+# option buffersize: size of one buffer allocated as shared
+#    memory for data transfer between the reader process
+#    and the parent process
+# option buffers: number of these buffers
+#    The minimum is 2
+# option readqueue: number of queued read requests. This is
+#    with the current SANE version (1.01) only useful for
+#    Linux, since queued read requests are not supported
+#    for other operating systems. 
+#
+#    For Linux, a value of 2 is recommended, at least if a
+#    JX-250 is used. Bigger values are only a waste of memory.
+#
+#    For other operationg systems, set this value to zero
+#    
+# global options:
+option buffers 4
+option buffersize 131072
+option readqueue 2
+# look for all devices with vendor ID "SHARP" and type "Scanner"
+scsi SHARP * Scanner
+# no options specific to these devices listed -> use global options
+YAST2_DEVICE #/dev/scanner
+# options specific to /dev/scanner
+  option buffers 6
+  option buffersize 262144
+  option readqueue 2
+# example for another (Linux) device name:
+#/dev/sg1
+EndOfConf
+
+$config{dll} = <<"EndOfConf";
+# enable the next line if you want to allow access through the network:
+net
+abaton
+agfafocus
+apple
+avision
+artec
+as6e
+bh
+canon
+coolscan
+#dc25
+#dc210
+#dc240
+dmc
+epson
+hp
+m3096g
+microtek
+microtek2
+mustek
+#mustek_pp
+nec
+pie
+pint
+plustek
+#pnm
+qcam
+ricoh
+s9036
+sharp
+sm3600
+snapscan
+sp15c
+tamarack
+umax
+#umax_pp
+v4l
+EndOfConf
+
+$config{agfafocus} = <<"EndOfConf";
+YAST2_DEVICE #/dev/scanner
+
+EndOfConf
+
+$config{snapscan} = <<"EndOfConf";
+scsi AGFA
+scsi COLOR
+scsi ACERPERI
+
+# If not automatically found from above, then you may manually specify
+# a device name.
+YAST2_DEVICE #/dev/scanner
+#/dev/usbscanner
+#/dev/sga
+EndOfConf
+
+$config{dmc} = <<"EndOfConf";
+YAST2_DEVICE #/dev/camera
+EndOfConf
+
+$config{net} = <<"EndOfConf";
+# This is the net config file.  Each line names a host to attach to.
+# If you list "localhost" then your backends can be accessed either
+# directly or through the net backend.  Going through the net backend
+# may be necessary to access devices that need special privileges.
+# localhost
+EndOfConf
+
+$config{dc240} = <<"EndOfConf";
+# Serial port where the camera is connected
+## Linux
+port=/dev/ttyS0
+## IRIX
+#port=/dev/ttyd1
+## Solaris
+#port=/dev/term/a
+## HP-UX
+#port=/dev/tty0p0
+## Digital UNIX
+#port=/dev/tty01
+# Max baud rate for download.  Camera always starts at 9600 baud, then
+# switches to the higher rate
+## This works for Linux and some versions of IRIX (6.3 or higher)
+baud=115200
+## This works for most UNIX's
+#baud=38400
+# Prints some extra information during the init phase.  This can be
+# handy, but note that printing anything to stderr breaks the saned 
+# network scanning.
+#dumpinquiry
+# How many usec (1,000,000ths of a) between writing the command and reading the
+# result. 125000 seems to be the lowest I could go reliably.
+cmdrespause=125000
+# How many usec (1,000,000ths of a) between sending the "back to default" break
+# sending commands.
+breakpause=1000000;
+EndOfConf
+
+$config{umax} = <<"EndOfConf";
+#
+# Options for the umax backend
+#option scsi-maxqueue 2
+#option scsi-buffer-size-min 65536
+#option scsi-buffer-size-max 262144
+#option scan-lines 100
+#option preview-lines 20
+#option handle-bad-sense-error 0
+#option execute-request-sense 0
+#option force-preview-bit-rgb 0
+#option lamp-control-available 0
+#
+# linux device identification:
+#scsi vendor model type bus channel id lun
+scsi UMAX * Scanner
+scsi LinoHell JADE
+scsi LinoHell Office
+scsi LinoHell Office2
+scsi LinoHell SAPHIR2
+scsi HDM LS4H1S
+scsi Nikon AX-210
+scsi KYE ColorPage-HR5
+scsi EPSON Perfection600
+scsi ESCORT "Galleria 600S"
+
+#
+# device list for non-linux-systems:
+YAST2_DEVICE #/dev/scanner
+
+EndOfConf
+
+$config{apple} = <<"EndOfConf";
+scsi APPLE
+YAST2_DEVICE #/dev/scanner
+EndOfConf
+
+$config{m3096g} = <<"EndOfConf";
+scsi FUJITSU
+EndOfConf
+
+$config{hp} = <<"EndOfConf";
+scsi HP
+YAST2_DEVICE #/dev/scanner
+EndOfConf
+
+$config{bh} = <<"EndOfConf";
+scsi "B&H SCSI"
+YAST2_DEVICE #/dev/scanner
+EndOfConf
+
+$config{canon} = <<"EndOfConf";
+#canon} = <<"EndOfConf";
+YAST2_DEVICE #/dev/scanner
+#/dev/sg0
+EndOfConf
+
+$config{st400} = <<"EndOfConf";
+# the ST400 is fixed to ID 3
+scsi SIEMENS "ST 400" Scanner * * 3 *
+scsi SIEMENS "ST 800" Scanner * * 3 *
+
+# The following options are for testing and bug-hunting.  If your scanner
+# needs one of these options to function reliably, please let me know.
+
+# Maximum amount of data to read in a single SCSI command.  If not set
+# (or set to 0), the backend will read as much data as allowed by the
+# scanner model or the OS.  WARNING: Using this option overrides the
+# hardcoded # maxread limits for all scanner models!  With more than
+# 65536 bytes, my ST400 locks up (itself, the SCSI bus, the sg driver,
+# and the machine). Use with caution.
+#option maxread 65536
+
+# Use this to switch the scanner lights on with a separate MODE SELECT call
+# and wait for some time before starting to scan (to allow the lights to go
+# to full intensity).  The time is in 1/10 seconds (i.e. 20 means 2 seconds).
+# If not set, scanning starts immediately (works with my ST400).
+#option delay 20
+
+# The following are hacks that affect all scanners of the same model as the
+# last attached device.  Used like this (assume ST800's had 8bit depth and
+# 4MB internal buffer):
+#   scsi SIEMENS "ST 400" Scanner * * 3 *
+#   option scanner_bufsize 2097152
+#   option scanner_bits 6
+#   scsi SIEMENS "ST 800" Scanner * * 3 *
+#   option scanner_bufsize 4194304
+#   option scanner_bits 8
+# Currently, the backend has entries for ST400, ST800 and "everything else".
+# To add more scanners, you have to add a line in the st400_models array.
+# Please note that these options are only for testing unknown devices with
+# this backend.
+
+# Internal scanner buffer:
+#option scanner_bufsize 2097152
+
+# Bit depth:
+#option scanner_bits 6
+
+# Maximum bytes to read in a single SCSI command (see also maxread above).
+#option scanner_maxread 65536
+
+# Supported resolutions (upto 15 different values).  If you specify an
+# illegal value here, most likely the scanner will not report an error,
+# but only scan a small sub-area of the requested area (at least my ST400
+# does this).
+#option scanner_resolutions 200 300 400
+
+# This option causes the SCSI inquiry response to be written to
+# "/tmp/st400.dump" (as binary data).  For debugging purposes.
+#option dump_inquiry
+EndOfConf
+
+$config{mustek_pp} = <<"EndOfConf";
+# For documentation see sane-mustek_pp(5)
+
+# GLOBAL #
+
+# option io-mode [mode] must come before all port definitions, or it won't
+# have the effect you'd expect
+
+# enable this option, if you think your scanner supports the UNI protocol
+# note however that this might disable the better EPP protocol
+#option io-mode try_mode_uni
+
+# choose between two different ways to lock to port
+option io-mode alt_lock
+
+# set the maximal height (in lines) of a strip scanned (default: no limit)
+#option strip-height 0
+
+# wait n msecs for bank to change (default: 700 msecs)
+# if this value is to low, stripes my appear in the scanned image
+#option wait-bank 700
+
+# size (in bytes) of scan buffer (default: 1 megabyte)
+#option buffer 1048576
+
+# try to avoid to heavy load. Note that this reduces scan speed
+option niceload
+
+# Define the time the lamp has to be on before scan starts (default 5 secs)
+#option wait-lamp 5
+
+
+# DEVICES #
+
+# specify the port your scanner is connected to. Possible are 0x378 (lp1)
+# 0x278 (lp2) and 0x3bc (lp0)
+port 0x378
+
+ # the following options are local to this scanner
+
+# WELL KNOWN OPTIONS #
+
+ # most scanners only need 200 - 250 msecs to change bank -> try it out
+
+ # Mustek ScanExpress 6000 P
+ # name SE-6000P
+ # vendor Mustek
+ # option wait-lamp 15
+
+ # Mustek ScanExpress 600 SEP
+ # name SE-600SEP
+ # vendor Mustek
+ # option wait-lamp 15
+
+ # Mustek ScanMagic 4800 P
+ # name SM-4800P
+ # vendor Mustek
+ # option wait-lamp 15
+
+ # Mustek 600 III EP Plus
+ # name 600IIIEPP
+ # vendor Mustek
+ # option wait-lamp 15 # some models only need 5 secs...
+
+ # Mustek ScanMagic/Express 1200 ED Plus (this scanner isn't yet supported!!!)
+ # name SM-1200EDP
+ # name SE-1200EDP
+ # vendor Mustek
+ # this scanner has an optical resolution of 600 dpi
+ # option use600
+ # this scanner *must* use option niceload
+ # option niceload
+
+ # Fidelity Imaging Solutions Inc. Gallery 4800
+ # name Gallery-4800
+ # vendor Fidelity-Imaging-Solutions
+
+ # Viviscan Compact II
+ # name Compact-II
+ # vendor Viviscan
+
+ # Medion MD9848 (aka Aldi-Scanner)
+  name MD9848
+  vendor Medion
+  option wait-bank 250
+
+ # scan maximal 16 lines for one sane_read() call
+ option strip-height 16
+
+ # we just need 16 lines * 3 (rgb) colors * 300 dpi * 8.5 inch bytes
+ option buffer 122400
+
+ # Enable this option, if you want user authentification *and* if it's
+ # enabled at compile time
+ #option auth
+
+ # use this option to define the maximal black value for lineart scans
+ #option bw 127
+EndOfConf
+
+$config{tamarack} = <<"EndOfConf";
+scsi TAMARACK
+YAST2_DEVICE #/dev/scanner
+EndOfConf
+
+$config{abaton} = <<"EndOfConf";
+scsi ABATON
+YAST2_DEVICE #/dev/scanner
+EndOfConf
+
+$config{epson} = <<"EndOfConf";
+# epson} = <<"EndOfConf";
+#
+# here are some examples for how to configure the EPSON backend
+#
+# SCSI scanner:
+scsi EPSON
+#
+# Parallel port scanner:
+#pio 0x278
+#pio 0x378
+#pio 0x3BC
+#
+# USB scanner - only enable this if you have an EPSON scanner. It could
+#               otherwise block your non-EPSON scanner from being 
+#               recognized.
+#usb /dev/usbscanner0
+YAST2_BUS YAST2_DEVICE 
+EndOfConf
+
+
+
+
+################################################################################
 # case INsensitive search function in a hash
 #
 #
-
 
 =head1 NAME
 
@@ -472,12 +1130,24 @@ sub getModel( $$ )
 	}
 	else
 	{
-	    y2debug( "Can not find scanner for Vendor " . uc $vendor );
+	    if( $vendor =~ /generic/i )
+	    {
+		# In case of generic all entries are required with
+		# all the same items as driver entry ;)
+		foreach my $d ( sort @all_drivers )
+		{
+		    $foundscanner{ $d } = $d;
+		}
+	    }
+	    else
+	    {
+		y2debug( "Can not find scanner for Vendor " . uc $vendor );
+	    }
 	}
     }
     else
     {
-	y2debug( "Can not find scanner for bus " . uc $vendor );
+	y2debug( "Can not find scanner for bus " . uc $bus );
     }
     return %foundscanner;
 }
@@ -553,6 +1223,270 @@ sub trim( $ )
     y2debug("Trim: Trimmed string to <$str>");
     return( $str );
 }
+
+
+#
+# Add one single host/ip to net.conf
+sub writeNetConf( $ )
+{
+    my ($net_stations) = @_;
+    my $res = 0;
+
+    if( -e "$prefix/etc/sane.d/net.conf" )
+    {
+	move ( "$prefix/etc/sane.d/net.conf", 
+	       "$prefix/etc/sane.d/net.conf.yast2save" );
+	y2debug( "Backup file of previous net.conf in net.conf.yast2save" );
+    }	
+    
+    my $fi = "$prefix/etc/sane.d/net.conf";
+    y2debug( "Try to open <$fi>" );
+
+    if( open( F, "> $fi" ) )
+    {
+	my $t = localtime;
+	print F "#
+#
+# SANE net config
+# written by YaST2, $t
+#
+";
+
+	print F join( "\n", @$net_stations );
+	$res = close F;
+    }
+    else
+    {
+	y2debug( "Open of /etc/sane.d/dll.conf failed: $!" );
+	$res = 0;
+    }
+    
+    return $res;
+    
+}
+
+sub readNetConf
+{
+    my @res;
+
+    if( open( F, "$prefix/etc/sane.d/net.dll" ))
+    {
+	foreach my $l ( <F> )
+	{
+	    next if( $l =~ /\s*\#/ );
+	    next if( $l =~ /^\s*$/ );
+
+	    push @res, trim($l);
+	}
+	close F;
+    }
+    else
+    {
+	y2debug( "No file /etc/sane.d/net.conf yet." );
+    }
+    return( @res );
+}
+
+
+sub writeDllconf( $ )
+{
+    my ($be_ref) = @_;
+    my $res = 0;
+
+    if( -e "$prefix/etc/sane.d/dll.conf" )
+    {
+	move ( "$prefix/etc/sane.d/dll.conf", 
+	       "$prefix/etc/sane.d/dll.conf.yast2save" );
+	y2debug( "Backup file of previous dll.conf in dll.conf.yast2save" );
+    }	
+    
+    my $fi = "$prefix/etc/sane.d/dll.conf";
+    y2debug( "Try to open <$fi>" );
+
+    if( open( F, "> $fi" ) )
+    {
+	my $t = localtime;
+	print F "#
+#
+# SANE Dynamic library loader config
+# written by YaST2, $t
+#
+";
+
+	    foreach my $driver (@all_drivers )
+	    {
+		if( grep( /$driver/i, @$be_ref  ) )
+		{
+                    # driver is in the array to configure
+		    print F sprintf( "%s\n", $driver );
+		}
+		else
+		{
+		    print F sprintf( "# %s\n", $driver );
+		}
+	    }
+	print F "\n# EOF\n";
+	$res = close F;
+
+    }
+    else
+    {
+	y2debug( "Open of /etc/sane.d/dll.conf failed: $!" );
+	$res = 0;
+    }
+    
+    return $res;
+}
+
+
+sub patchConfigFile( $$$ )
+{
+    my ( $cfg_file_name, $bus, $device ) = @_;
+    my $res = 0;
+
+    if( open( F, $cfg_file_name )) 
+    {
+	my @cfg_file = <F>;
+	close F;
+	my $backup = $cfg_file_name . ".yast2";
+	y2debug( "Config-File exists, copying to <$backup>" );
+	copy( $cfg_file_name, $backup  );
+	my $tempcfgfile = $cfg_file_name . ".new";
+
+	if( open( OUTPUT, "> $tempcfgfile" ) )
+	{
+	    
+	    foreach my $l ( @cfg_file )
+	    {
+		if( $l =~ /^\/dev/ )
+		{
+		    $l =~ s/^\/dev\/\w+/$device/;
+		}
+		
+                # Check if the bus is not usb and should be replaced.
+		if( $l =~ /usb/i && lc $bus ne "usb" )
+		{
+		    $l =~ s/usb/$bus/;
+		}
+
+                # Check if the bus is not scsi and should be replaced.
+		if( $l =~ /scsi/i && lc $bus ne "scsi" )
+		{
+		    $l =~ s/scsi/$bus/;
+		}
+		print OUTPUT $l;
+		
+	    }
+	    $res = close OUTPUT;
+
+	    # Move the file to position
+	    move ( $tempcfgfile, $cfg_file_name );
+	}
+	else
+	{
+	    y2debug( "ERROR: Could not open $tempcfgfile for writing: $!" );
+	}
+    }
+    else
+    {
+	y2debug( "ERROR: Could not open existing cfg-file: $!" );
+    }
+    return $res;
+}
+
+
+sub writeIndividualConf( $$$ )
+{
+    my ( $bus, $vendor, $device ) = @_;
+    my $res = 0;
+
+    $vendor = lc $vendor;
+
+    unless( exists( $config{ $vendor } ) )
+    {
+	y2debug( "ERROR: Can not find a config for <$vendor>" );
+	return 0;
+    }
+
+    my $cfg = $config{ $vendor };
+    
+    y2debug( "Writing $cfg" );
+    
+    my $cfg_file = "$prefix/etc/sane.d/$vendor.conf";
+
+    if( -e $cfg_file )
+    {
+	$res = patchConfigFile( $cfg_file, $bus, $device );
+    }
+    else
+    {
+	$cfg =~ s/YAST2_DEVICE/$device/im;
+	$cfg =~ s/YAST2_BUS/$bus/im;
+
+	if( open( F, ">$cfg_file" ) )
+	{
+	    print F $cfg;
+	    $res = close F;
+	}
+	else
+	{
+	    y2debug( "ERROR: Could not write config: $!" );
+	    $res = 0;
+	}
+    }
+    return $res;
+}
+
+
+
+sub readDllconf()
+{
+    my $f = "$prefix/etc/sane.d/dll.conf";
+    my @res = ();
+
+    if( open( F, $f )  )
+    {
+	while( <F> )
+	{
+	    chomp;
+	    next if( /^\s*\#/ );
+	    next if( /^\s*$/ );
+	    s/\#.*$//g;
+	    my $be = trim($_);
+	    y2debug("pushing <$be> to existing Backend list");
+	    push @res, $be;
+	}
+        close F;
+    }
+    else
+    {
+	y2debug( "$f not existing" );
+    }
+    return @res;
+    
+}
+
+
+sub acquireTestImage( $ )
+{
+    my ($usedev) = @_;
+
+    y2debug( "Scanning test image from <$usedev>" );
+
+    my $tmpfile = "$prefix/tmp/y2testimage.pnm";
+    
+    my $cmd = sprintf( "scanimage -d %s --mode=Color --resolution=100 > %s",
+		       $usedev, $tmpfile );
+    
+    system( $cmd );
+
+    return( $tmpfile );
+
+}
+
+
+$prefix = "";
+$prefix = $ENV{PREFIX_DIR} if( exists $ENV{PREFIX_DIR} );
 
 
 1;
