@@ -228,7 +228,8 @@ successfully you can proceed to the
 		  if ( vendor_id != 0 && product_id != 0 )
 		  {
 		      SetCurrentScannerValue("usb_module", module_name);
-		      SetCurrentScannerValue("usb_options", options);
+		      SetCurrentScannerValue("usb_options", $["vendor" : tohexstring(vendor_id),
+							      "product": tohexstring(product_id)]);
 		      SetCurrentScannerValue("usb_usermap", usb_usermap );
 		      
 		      success = SCR::Execute(.target.modprobe, module_name, options );
