@@ -38,7 +38,8 @@ use English;
 		      enableNetScan 
 		      disableNetScan );
 
-use vars qw ( %driver $prefix);
+use vars qw ( %driver $prefix @devicesToReset );
+
 
 
 # Abaton
@@ -1183,6 +1184,50 @@ sub createBackup( $ )
 }
 
 
+#
+# modifies /var/lib/sane/devices, which holds a list of devices read by
+# rcsane. If the device is not known, its added.
+#
+sub modify_rc_cmdfile( $ )
+{
+    my ($dev) = @_;
+    my @lines;
+
+    if( open( FILE, "$prefix/var/lib/sane/devices" ) )
+    {
+	@lines = <FILE>;
+	close FILE;
+    }
+
+    my $oriline = shift @lines;
+    
+    y2debug( "Found in /var/lib/sane/devices: <$oriline>" );
+    
+    my @devs = split( /\s+/, $oriline );
+
+    my $line = "";
+    my $already_known = 0;
+
+    foreach my $known_dev ( @devs ){
+	if( -e $known_dev ) {
+	    $line .= " $dev";
+	    $already_known = 1 if( $known_dev =~ /^$dev$/ );
+	}
+	else
+	{
+	    y2debug("WRN: Have a nonexisting devicefile in devicelist" );
+	}
+    }
+    $line .= " $dev" if( ! $already_known );
+
+    if( open( FILE, ">$prefix/var/lib/sane/devices" ))
+    {
+	print FILE "$line\n";
+	close FILE;
+    }
+}
+
+
 
 =head1 NAME
 
@@ -1614,6 +1659,29 @@ sub writeIndividualConf( $$$ )
 	y2debug( "ERROR: Could not write config: $!" );
 	$res = 0;
     }
+
+    if( $res )
+    {
+	# Change the device permission to 666, remember the device.
+	if( $bus =~ /scsi/i )
+	{
+	    if( defined( $device ) && -c $device )
+	    {
+		y2debug("Setting permissions of device <$device> to 666");
+		push @devicesToReset, $device;
+		my $mode = 0640;
+		chmod $mode, $device;
+
+		# In case, everything is fine, add the device to /var/lib/sane/devices.
+		modify_rc_cmdfile( $device );
+	    }
+	    else
+	    {
+		y2debug("ERR <$device> is not a character device !" );
+	    }
+	}
+    }
+
     return $res;
 }
 # ################################################################################
@@ -1705,8 +1773,8 @@ sub acquireTestImage( $$ )
     my $tmpfile = "$prefix" . "$tmpdir/y2testimage_$PID.pnm";
     my $tmpfile2 = "$prefix" . "$tmpdir/y2testimage_$PID.png";
     my $w = 210; my $h = 295;
- 
-       my $cmd = sprintf( "/usr/X11R6/bin/scanimage -d %s > %s && /usr/bin/convert -border 3x3 -bordercolor darkgreen -geometry %dx%d "
+
+    my $cmd = sprintf( "/usr/X11R6/bin/scanimage -d %s > %s && /usr/bin/convert -border 3x3 -bordercolor darkgreen -geometry %dx%d "
 		       ." %s %s", $usedev, $tmpfile, $w, $h, $tmpfile, $tmpfile2 );
 
     y2debug( "Scanning test image with command <$cmd>" );
@@ -1849,7 +1917,27 @@ sub revertAll
 
 	move ( $bfile, $origfile );
     }
-    y2debug( "Reverted $countfiles files" );
+    y2debug( "Reverted $countfiles configuration-files" );
+    
+    # look in /var/lib/sane for to restore things
+    $path = "$prefix/var/log/sane/devices.yast2-$PID";
+    if( -e $path )
+    {
+	y2debug("Restoring devices-file in <$path>");
+	move ( $path, "$prefix/var/log/sane/devices" );
+    }
+    
+
+    # Now check for changed permissions on scsi-files
+    while( my $file = shift @devicesToReset )
+    {
+	if( -c $file )
+	{
+	    y2debug("Resetting device <$file> to 640" );
+	    chmod 0640, $file;
+	    
+	}
+    }
 }
 
 
@@ -1973,7 +2061,7 @@ sub performScanimage( ;$ )
 # directory which acts as prefix to /etc/sane.d
 $prefix = "";
 $prefix = $ENV{PREFIX_DIR} if( exists $ENV{PREFIX_DIR} );
-
+@devicesToReset = ();
 
 1;
 
