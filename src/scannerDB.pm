@@ -816,7 +816,7 @@ scsi SCANNER
 # option lineart-fix             # lineart may be faster with this option off.
 # option disable-backtracking    # faster, but may produce stripes
 
-/dev/scanner
+YAST2_DEVICE
 # option linedistance-fix        # stripes may go away in color mode
 # option buffersize 1024         # set non standard buffer size (in kb)
 # option blocksize 2048          # set non standard block size (in kb)
@@ -838,7 +838,7 @@ EndOfConf
 $config{plustek} = <<"EndOfConf";
 # Plustek-SANE Backend configuration file
 # For use with Plustek parallel-port scanners and
-# LM9831/2 based USB scanners
+# LM9831/2/3 based USB scanners
 #
 # For parport devices use the parport section
 #
@@ -848,13 +848,13 @@ device /dev/pt_drv
 #
 # leave the default values as specified in /etc/modules.conf
 #
-warmup    -1
-lOffOnEnd -1
-lampOff   -1
+option warmup    -1
+option lOffOnEnd -1
+option lampOff   -1
 
 
 #
-# The USB section
+# The USB section:
 # each device needs at least two lines:
 # - [usb] vendor-ID and product-ID
 # - device devicename
@@ -865,12 +865,17 @@ lampOff   -1
 # additionally you can specify some options
 # warmup, lOffOnEnd, lampOff
 #
-# For autodetection
+# For autodetection use
 # [usb]
 # device /dev/usbscanner
 #
+# NOTE: autodetection is safe, as it uses the info it got
+#       from the USB subsystem. If you're not using the
+#       autodetection, you MUST have attached that device
+#       at your USB-port, that you have specified...
+#
 
-[usb] 0x07B3 0x0017
+[usb]
 
 #
 # options for the previous USB entry
@@ -879,11 +884,36 @@ lampOff   -1
 option lampOff 0
 
 # warmup period in seconds, 0 means no warmup
-option warmup 180
+option warmup 30
 
 # 0 means leave lamp-status untouched, not 0 means switch off
 # on sane_close
 option lOffOnEnd 0
+
+#
+# options to tweak the image start-position
+# (WARNING: there's no internal range check!!!)
+#
+# for the normal scan area
+#
+option posOffX 0
+option posOffY 0
+
+# for transparencies
+option tpaOffX 0
+option tpaOffY 0
+
+# for negatives
+option negOffX 0
+option negOffY 0
+
+#
+# for adjusting the default gamma values
+#
+option redGamma         1.0
+option greenGamma       1.0
+option blueGamma        1.0
+option grayGamma        1.0
 
 #
 # and of course the device-name
@@ -894,6 +924,7 @@ device YAST2_DEVICE
 # to define a new device, start with a new section:
 # [usb] or [parport]
 #
+
 EndOfConf
 
 $config{umax_pp} = <<"EndOfConf";
