@@ -18,9 +18,10 @@ OUTPUT_FORMAT="$1"
 TMP_DATA=$(mktemp -u /tmp/$MY_NAME.XXXXXX)
 cat /dev/null >$TMP_DATA
 
-# Function to extract entries from a description file with SANE syntax:
+# Function to extract entries from a description file with SANE syntax.
+# Quoted quotation marks '\"' (happens in comments) are replaced by ' ':
 Extract()
-{ egrep -o '^[[:space:]]*:backend[[:space:]]*"[^"]*"|^[[:space:]]*:mfg[[:space:]]*"[^"]*"|^[[:space:]]*:model[[:space:]]*"[^"]*"|^[[:space:]]*:firmware[[:space:]]*"[^"]*"|^[[:space:]]*:interface[[:space:]]*"[^"]*"|^[[:space:]]*:status[[:space:]]*:[a-z]*|^[[:space:]]*:comment[[:space:]]*"[^"]*"' $1
+{ cat $1 | sed -e 's/\\"/ /g' | egrep -o '^[[:space:]]*:backend[[:space:]]*"[^"]*"|^[[:space:]]*:mfg[[:space:]]*"[^"]*"|^[[:space:]]*:model[[:space:]]*"[^"]*"|^[[:space:]]*:firmware[[:space:]]*"[^"]*"|^[[:space:]]*:interface[[:space:]]*"[^"]*"|^[[:space:]]*:status[[:space:]]*:[a-z]*|^[[:space:]]*:comment[[:space:]]*"[^"]*"'
 }
 
 # Process the SANE description files:
@@ -69,12 +70,19 @@ fi
 
 # Process the collected data:
 
-# Remove leading and trailing spaces:
-sed -i -e 's/^[[:space:]]*//' $TMP_DATA
-sed -i -e 's/[[:space:]]*$//' $TMP_DATA
+# Replace HTML tags:
+sed -i -e 's/<[Bb][Rr]>/, /g' $TMP_DATA
+sed -i -e 's/<[Pp]>/, /g' $TMP_DATA
+sed -i -e 's/<[^>]*>/ /g' $TMP_DATA
 
 # Condense multiple spaces and convert tabs to blanks:
 sed -i -e 's/[[:space:]][[:space:]]*/ /g' $TMP_DATA
+
+# Remove leading and trailing spaces:
+sed -i -e 's/^[[:space:]]*//' $TMP_DATA
+sed -i -e 's/[[:space:]]*$//' $TMP_DATA
+sed -i -e 's/"[[:space:]]*/"/' $TMP_DATA
+sed -i -e 's/[[:space:]]*"$/"/' $TMP_DATA
 
 # Convert the status value to the usual string format:
 sed -i -e 's/^:status :\(.*\)/:status "\1"/' $TMP_DATA

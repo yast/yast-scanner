@@ -266,6 +266,13 @@ any SelectModelDialog()
                                             _("S&earch String (case insensitive):")
                                           ),
                                 `PushButton( `id(`apply_filter),
+                                             // This button must be the default
+                                             // (it is activated when the user pressed the Enter key)
+                                             // because when the user has clicked into TextEntry to enter something
+                                             // it is normal to finish entering by pressing the Enter key
+                                             // but if the Enter key was linked to 'Next' or 'Back',
+                                             // the user would get the wrong action.
+                                             `opt(`default),
                                              // Label of a PushButton to apply a search string to a list:
                                              _("&Apply")
                                            )
@@ -286,11 +293,7 @@ any SelectModelDialog()
                             );
   any ret = nil;
   while(true)
-  { // Always move the focus away from the 'next' button to the 'apply' button
-    // which doesn't select a model but only re-displays the model selection box
-    // to make sure that a model is selected intentionally and not by accident via the Enter key:
-    UI::SetFocus( `id(`apply_filter) );
-    ret = UI::UserInput();
+  { ret = UI::UserInput();
     if( ret == `abort
         || ret == `cancel
       )
@@ -457,7 +460,7 @@ any ConfigureNetworkScanningDialog()
                          `TextEntry( `id(`net_backend_hosts_input),
                                      // Header of a TextEntry user input field:
                                      _("&Used hosts for the 'net' meta-driver (comma seperated list of hosts):"),
-                                     "localhost,127.0.0.2"
+                                     "localhost"
                                    )
                        );
       continue;
