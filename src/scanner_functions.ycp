@@ -94,7 +94,7 @@
 	      else if ( bus == "PTAL" )
 	      {
 		  // enable PTAL service and hotplug
-		  success = Runlevel::ServiceAdjust ("hotplug_usb", "enable");
+		  success = Runlevel::ServiceAdjust ("hotplug", "enable");
 		  if ( success )
 		  {
 		      success = Runlevel::ServiceAdjust ("ptal", "enable");
