@@ -1,4 +1,12 @@
 -------------------------------------------------------------------
+Tue Feb 15 10:39:03 CET 2005 - jsmeix@suse.de
+
+- V 2.11.4
+- Improved support for scanning via network.
+- Several bug fixes.
+- Improved the help texts.
+
+-------------------------------------------------------------------
 Thu Feb 10 10:30:29 CET 2005 - jsmeix@suse.de
 
 - V 2.11.3
