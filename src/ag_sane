@@ -17,8 +17,68 @@ use strict;
 
 use scannerDB;
 
-
-
+# ##############################################################################
+# 
+# ag_sane offers the following actions, selected by the calling 'path' in ycp,
+# which is mapped to the perl var $action in this script.
+# 
+# driver
+# ======
+# 
+# Required parameter: bus, vendor, model.
+# 
+# Action driver delivers the correct driver for a scanner identified by the bus
+# the scanner is connected to, the model and the vendor.
+# 
+# The return-value is a string containing the driver name or an empty string on 
+# error.
+# Bus 'net' is not supported.
+# 
+# 
+# modellist
+# =========
+# 
+# Required parameter: bus, vendor
+# 
+# modellist returns a sorted list of models of a vendor for a bus. If the vendor
+# is an empty string, the 'generic' vendor is assumed and a list of all available
+# drivers is returned. 
+# Bus 'net' is not supported.
+# 
+# vendorlist
+# ==========
+# 
+# Required parameters: bus
+# 
+# returns a list of all vendors for which models/drivers on the bus exist. 
+# Bus 'net' is not supported.
+# 
+# writeconfig
+# ===========
+# 
+# Required parameter: driver, vendor, device, bus
+# 
+# adds one backend to the system wide driver list for sane in /etc/sane.d/dll.conf
+# and writes the individual config file in /etc/sane.d/{backend}.conf
+# 
+# returns nothing (yet)
+# 
+# scanimage
+# =========
+# 
+# Required Parameter: driver, devicefile, host in case of network scanner
+# 
+# Scans a test image and returns the filename where the image is saved.
+# The file format of the image is pnm.
+# 
+# netscannerinfo
+# ==============
+#
+# Required Parameter: bus(=net), host
+#
+# returns a map with scanner data of the remote scanner (does not really work 
+# yet, returns dummy data) 
+# 
 # ##############################################################################
 
 
@@ -90,13 +150,7 @@ while ( <STDIN> )
 	my %models = getModel( $bus, $vendor);
 
 	my @drivers;
-	# while( my ($model, $driver) = each %models )
-	# {
-	#     my %p;
-	#     $p{ model => $model, driver => $driver };
-	#     push @drivers, \%p;
-	#     y2debug( "Use <$driver> for <$model>" );
-	# }
+
 	@drivers = sort keys %models;
 	
 	ycpReturn( \@drivers );
@@ -110,8 +164,107 @@ while ( <STDIN> )
     }
     elsif( $action =~ /writeconfig/ )
     {
+	y2debug( "Handling action writeconfig" );
+	
+	if( $bus =~ /net/i )
+	{
+	    my $host = findInHash( "host", \%scanner );
+	    y2debug( "Installing a net scanner on host <$host> !" );
+
+	    my @already_conf = readNetConf();
+
+	    unless( grep( /$host/i, @already_conf ))
+	    {
+		push @already_conf, $host;
+	    }
+	    writeNetConf( \@already_conf );
+	    
+	}
+
+
+	my $driver = findInHash( "driver", \%scanner );
+	my $devicefile = findInHash( "devicefile", \%scanner );
+	y2debug( "Installing driver <$driver> for scanner <$vendor/$model>" );
+	
+	my $ok = 0;
+
+	my @cfg_backends = readDllconf( );
+
+	if( grep( /$driver/, @cfg_backends ) )
+	{
+	    y2debug( "Backend <$driver> is already configured!" );
+	    $ok = 1;
+	}
+	else
+	{
+	    y2debug( "Backend <$driver> is not configured, adding it" );
+	    push @cfg_backends, $driver;
+
+	    $ok = writeDllconf( \@cfg_backends );
+	}
+	
+	# now the scanner conf:
+	$ok = $ok && writeIndividualConf( $bus, $driver, $devicefile );
+
 	# valid are:
-	# 
+	# vendor-bus-model
+	ycpReturnSkalarAsBoolean( $ok );
+    }
+    elsif( $action =~ /scanimage/ )
+    {
+	y2debug( "Handling action scanimage" );
+	my $devicefile = findInHash( "devicefile", \%scanner );
+	my $driver = findInHash( "driver", \%scanner );
+
+	my $devstring = sprintf( "%s:%s", lc $driver, $devicefile );
+
+	if( $bus =~ /net/i )
+	{
+	    my $host = findInHash( "host", \%scanner );
+	    if(defined $host)  {
+		$devstring = "net:" . $host .":". $devstring;
+	    } else {
+		y2debug( "ERROR: Tried to scan net, but no host given !" );
+		$devstring = undef;
+	    }
+	}
+
+	my $resFile = "";
+	if( defined $devstring ) {
+	    $resFile = acquireTestImage( $devstring );
+	    
+	    y2debug( "Acquired image to result-file <$resFile>" );
+	}
+
+	ycpReturnSkalarAsString( $resFile );
+	
+    }
+    elsif( $action =~ /netscannerinfo/i )
+    {
+	y2debug( "Handling action netscannerinfo" );
+	unless ( $bus =~ /net/i )
+	{
+	    y2debug( "bus is not net !" );
+	}
+	my $host = findInHash( "host", \%scanner );
+
+	my %result = ( bus => "Net", 
+		       class_id => "",
+		       device => "Umax  Test test",
+		       device_id => "",
+		       resource =>"",
+		       rev => "",
+		       sub_class_id => "",
+		       sub_device => "",
+		       sub_vendor => "Umax",
+		       unique_key => "",
+		       vendor => "Umax",
+		       vendor_id => "",
+		       devicefile => "/dev/scanner",
+		       class => "scanner",
+		       driver => "net",
+		       host => $host );
+	ycpReturn( \%result );
     }
     else
     {
