@@ -40,7 +40,8 @@
  */
   define any ScannerStartDialog( )``{
 
-      any ret = nil;
+      symbol ret = `next;
+
       boolean test_mode = lookup( user_settings, "test_mode", false );
 
       // Help text for start dialog (checking and probing)
@@ -352,15 +353,11 @@ the scanner configuration\n."));
 	  no = no+1;
       });
 
-
-      // default: go next to Overview Dialog
-      ret = `next;
-
       // write scanner data to user_settings
       user_settings = add( user_settings, "scannerInfo", scanner_info );
       y2debug( "Writing SCANNER INFO: %1", scanner_info );
 
-      ret = DecideDialog( );
+      ret = DecideDialog( `start );
 
       return ret;
   }

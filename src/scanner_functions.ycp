@@ -310,7 +310,7 @@ with the YaST2 module 'Install and Remove Software'.
  * @param symbol mode can be `start or `add.
  * @return symbol return value for the start dialog, e.g. `notfound
  */
-  define symbol DecideDialog( ) ``{
+  define symbol DecideDialog( symbol mode ) ``{
 
       map<integer, map> new_scanner 	 = $[]; //  new scanner which are supported by SANE
       map<integer, map> detected_scanner = $[]; //  detected scanner which are NOT supported by SANE
@@ -337,7 +337,7 @@ with the YaST2 module 'Install and Remove Software'.
       }
       y2debug( "SUPPORTED: %1, DETECTED: %2", new_scanner, detected_scanner );
 
-      if ( installed )
+      if ( installed && (mode != `add) )
       {
 	  // if one (or more) already configured scanners is/are found go to "Scanner overview"
 	  ret = `overview;
@@ -378,7 +378,7 @@ with the YaST2 module 'Install and Remove Software'.
       }
       else
       {
-	  // no scanner found at all -> go to dialog Scanner not found
+	  // no scanner found at all (or mode `add) -> go to dialog Scanner not found
 	  ret = `notfound;
       }
 
