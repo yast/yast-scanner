@@ -124,12 +124,12 @@ and restart the Scanner configuration.")));
 		  }
 		  else
 		  {
-		      boolean usb_loaded = false;
+		      boolean usb_loaded = true;
 		      
 		      // TODO: make sure module scanner is not yet loaded -> lsmod
 		      //       ONLY go to dialog load USB module if NOT yet loaded
 
-		      if ( usb_notloaded )
+		      if ( usb_loaded )
 		      {
 			  ret = `usb;
 		      }

@@ -53,7 +53,7 @@
       
       if ( vstring == "" )
       {
-	  vstring = lookup( current_scanner, "bus", "" ) + " - " + _("scanner");
+	  vstring = lookup( current_scanner, "bus", "" ) + " " + _("scanner");
       }
       string mstring = lookup( current_scanner, "device", "" );
       if ( mstring == "" )
