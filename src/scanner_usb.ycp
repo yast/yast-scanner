@@ -208,13 +208,15 @@ successfully you can proceed to the
 		  {
 		      product_id = product_id - 196608;	// subtract 0x30000
 		  }
-		  string options = sformat("vendor=%1 product=%1",
+		  string options = sformat("vendor=%1 product=%2",
 					   tohexstring(vendor_id),
 					   tohexstring(product_id) );
 		  boolean success = false;
 
 		  if ( vendor_id != 0 && product_id != 0 )
 		  {
+		      SetCurrentScannerValue("usb_module", module_name);
+		      SetCurrentScannerValue("usb_options", options);
 		      success = SCR::Execute(.target.modprobe, module_name, options );
 		  }
 
@@ -239,14 +241,27 @@ exit the scanner configuration?"));
 		  }
 		  else
 		  {
-		      // USB module is loaded successfully
-		      // set a flag to add the options to /etc/modules.conf if user Finish the installation
-
-		      // Add vendor and device to scanner info
-
-		      SetCurrentScannerValue( "device", lookup(device, "device") );
-		      SetCurrentScannerValue( "vendor", lookup(device, "vendor") );
-
+		      // the USB module is loaded successfully
+		      // try now to scan - because it is not sure that the scanner is supported 
+		      string filename = SCR(`Read(.sane.scanimage, GetCurrentScanner()));
+		      if (filename != "" )
+		      {
+			  // add the options to /etc/modules.conf if the user Finish the installation
+			  // -> ScannerWrite
+			  // Add vendor and device to scanner info
+			  SetCurrentScannerValue( "device", lookup(device, "device") );
+			  SetCurrentScannerValue( "vendor", lookup(device, "vendor") );
+		      }
+		      else
+		      {
+			  // unload the usb module
+			  string rmmod_cmd = sformat( "/sbin/rmmod | /bin/egrep %1",
+						GetCurrentScannerValue("usb_module") );
+			  SCR (`Execute (.target.bash, rmmod_cmd));
+			  // reset the usb entries
+			  SetCurrentScannerValue("usb_module", "");
+			  SetCurrentScannerValue("usb_options", "");
+		      }
 		      if ( ret == `load )
 		      {
 			  // text of a notify popup: the loading was successful
