@@ -68,6 +68,10 @@ hardware probing of 'USB' and/or the 'SCSI' port(s).
 	  // check whether 'sane' is installed
 	  if ( SCR (`Execute (.target.bash, "/bin/rpm -q sane")) != 0 )
 	  {
+	      // Translators: 'SANE' is a package name - don't translate!
+	      string mesg = _("For scanner access under Linux, the SANE library is required.
+Do you want to install the 'SANE' package now?");
+	      UI ( `YesNoPopup(mesg) );
 	      string tmpdir = SCR (`Read (.target.tmpdir));
 	      string filename = tmpdir + "/sw_single_input";
 	      SCR (`Write (.target.ycp, filename, $["install":["sane"], "userInput" : false ]));
@@ -76,8 +80,8 @@ hardware probing of 'USB' and/or the 'SCSI' port(s).
 
 	  // SANE should be installed by now - if not inform the user and exit
 	  if ( SCR (`Execute (.target.bash, "/bin/rpm -q sane")) != 0 )
-	  {
-	      UI( `ErrorPopup(_("The package 'sane' is not installed correctly.
+	  {   // Translators: Please do not translate 'SANE'!
+	      UI( `ErrorPopup(_("The package 'SANE' is not installed correctly.
 This package is mandatory for the scanner installation.
 Please make sure that you have the SuSE CD set available
 and restart the scanner installation - or install the package
