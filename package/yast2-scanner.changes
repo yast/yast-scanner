@@ -1,4 +1,10 @@
 -------------------------------------------------------------------
+Mon Sep  1 15:49:34 CEST 2003 - gs@suse.de
+
+- V 2.8.10
+- popups added for scanners which require a firmware upload
+
+-------------------------------------------------------------------
 Fri Aug 29 14:12:56 CEST 2003 - gs@suse.de
 
 - V 2.8.9
