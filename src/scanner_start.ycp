@@ -168,6 +168,10 @@ configuration.")));
       
       foreach ( `scanner, connected_scanner, ``{
 	  string driver = "";
+	  boolean found = false;
+	  integer m = 0;
+	  map scan = $[];
+	  
 	  if ( !test_mode )
 	  {
 	      // try to get SANE scanner driver
@@ -178,7 +182,23 @@ configuration.")));
 	      // get test data
 	      driver = lookup( scanner, "scanner_driver", "" ); 
 	  }
-	  if ( installed_scanner == [] )
+
+	  while ( !found || m < size(installed_scanner) )
+	  {
+	      scan = select( installed_scanner, m );
+	      y2debug ("SCAN: %1", scan );
+	      y2debug ("SCANNER: %1", scanner );
+	      if ( (lookup( scan, "vendor", "") == lookup( scanner, "vendor", "")) &&
+		   (lookup( scan, "device", "") == lookup( scanner, "device", "")) &&
+		   (lookup( scan, "bus", "") )  == lookup( scanner, "bus", "") &&
+		   (lookup( scan, "dev_name", "") == lookup( scanner, "dev_name", "")) )
+	      {
+		  scanner = add( scanner, "scanner_status", "installed" );
+		  found = true;
+	      }
+	      m = m+1;
+	  }
+	  if (!found )
 	  {
 	      if ( driver != "" )
 	      {
@@ -187,31 +207,9 @@ configuration.")));
 	      }
 	      else
 	      {
-		  scanner = add( scanner, "scanner_status", "detected" ); 
+		  scanner = add( scanner, "scanner_status", "detected" );  
 	      }
-	  }
-	  else
-	  {
-	      foreach ( `scan, installed_scanner, ``{
-		  y2debug ("SCAN: %1", scan );
-		  y2debug ("SCANNER: %1", scanner );
-		  if ( (lookup( scan, "vendor", "") == lookup( scanner, "vendor", "")) &&
-		       (lookup( scan, "device", "") == lookup( scanner, "device", "")) &&
-		       (lookup( scan, "bus", "") )  == lookup( scanner, "bus", "") &&
-		       (lookup( scan, "dev_name", "") == lookup( scanner, "dev_name", "")) )
-		  {
-		      scanner = add( scanner, "scanner_status", "installed" );
-		  }
-		  else if ( driver != "" )
-		  {
-		      scanner = add( scanner, "scanner_status", "supported" );
-		      scanner = add( scanner, "scanner_driver", driver );
-		  }
-		  else
-		  {
-		      scanner = add( scanner, "scanner_status", "detected" );  
-		  }
-	      });
+
 	  }
 	  scanner_info = add(scanner_info, no, scanner);
 	  no = no+1;
