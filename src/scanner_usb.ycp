@@ -229,7 +229,12 @@ exit the scanner configuration?"));
 		  {
 		      // USB module is loaded successfully
 		      // set a flag to add the options to /etc/modules.conf if user Finish the installation
-		      
+
+		      // Add vendor and device to scanner info
+
+		      SetCurrentScannerValue( "device", lookup(device, "device") );
+		      SetCurrentScannerValue( "vendor", lookup(device, "vendor") );
+
 		      if ( ret == `load )
 		      {
 			  // text of a notify popup: the loading was successful
