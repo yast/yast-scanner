@@ -113,8 +113,15 @@ The <b>Gimp</b> also provides scan support.</p>");
 						      "/usr/share/doc/packages/sane/sane-backends/umax/sane-logo2.jpg"));
 
       //"/usr/lib/YaST2/images/lvm-config.png"
-
+      // Check if tool convert exists, otherwise do disable test button.
       UI(`SetWizardContentsButtons(caption,contents,help,BackButtonLabel(),NextButtonLabel()));
+      integer magic_installed = SCR::Execute( .target.bash, "test -x /usr/bin/convert" );
+      y2debug( "Test for convert from imageMagick results in %1", magic_installed );
+      if( magic_installed == 1 )
+      {
+	  UI(`ChangeWidget(`id(`test), `Enabled,false));
+      }
+	  
 
       any ret = nil;
 
