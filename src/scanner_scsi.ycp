@@ -68,10 +68,10 @@ name of your SCSI scanner (e.g. /dev/sg0 ).
       // helptext of dialog SCSI scanner configuration (continued)
       string help2 = UI(_("<p>Information on 
 your SCSI devices can be obtained by issuing the command <b>hwinfo --scsi</b>
-(you must be 'root' to do this).<br>"));
+(you must be 'root' to do this).</p>"));
 
       // helptext of dialog SCSI scanner configuration (continued)
-      string help3 = UI(_("You will find the <i>Device File</i> of your scanner in the
+      string help3 = UI(_("<p>You will find the <i>Device File</i> of your scanner in the
 respective section of the hwinfo output.</p>"));
 
       // remark by cstein@suse.de: incidentally, you do not even have to be root
