@@ -1,0 +1,48 @@
+#! /bin/bash
+#
+# Johannes Meixner <jsmeix@suse.de>, 2004
+
+#set -x
+export PATH="/usr/bin:/bin"
+export LC_ALL="POSIX"
+export LANG="POSIX"
+
+MY_NAME=${0##*/}
+OUTPUT_FORMAT="$1"
+[ -z "$OUTPUT_FORMAT" ] && OUTPUT_FORMAT="ASCII"
+[ "$OUTPUT_FORMAT" != "ASCII" -a "$OUTPUT_FORMAT" != "YCP" ] && { echo -en "\nUsage:\n$MY_NAME {ASCII|YCP}\n" 1>&2 ; exit 1 ; }
+
+# Input:
+
+# Create a temporary file:
+TMP_DATA=$(mktemp -u /tmp/$MY_NAME.XXXXXX)
+
+# Get the raw data
+sane-find-scanner | sed -n -e 's/^found \(.*\) at.*/\1/p' | tr -d -c '[:alnum:][:blank:]\n' >$TMP_DATA
+
+# Output:
+
+# Output header:
+if [ "$OUTPUT_FORMAT" = "YCP" ]
+then echo "[" 
+else echo "SCANNER"
+fi
+
+# Output scanner entries:
+exec <$TMP_DATA
+while read SCANNER
+do if [ "$OUTPUT_FORMAT" = "YCP" ]
+   then echo -e "  \"$SCANNER\","
+   else echo "$SCANNER"
+   fi
+done
+
+# Output a footer for YCP
+if [ "$OUTPUT_FORMAT" = "YCP" ]
+then echo -e "  \"\"\n]"
+fi
+
+# Remove the temporary file
+rm $TMP_DATA
+exit 0
+

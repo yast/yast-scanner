@@ -1,0 +1,156 @@
+#! /bin/bash
+#
+# Johannes Meixner <jsmeix@suse.de>, 2004
+
+#set -x
+export PATH="/usr/bin:/bin"
+export LC_ALL="POSIX"
+export LANG="POSIX"
+
+MY_NAME=${0##*/}
+OUTPUT_FORMAT="$1"
+[ -z "$OUTPUT_FORMAT" ] && OUTPUT_FORMAT="ASCII"
+[ "$OUTPUT_FORMAT" != "ASCII" -a "$OUTPUT_FORMAT" != "YCP" ] && { echo -en "\nUsage:\n$MY_NAME {ASCII|YCP}\n" 1>&2 ; exit 1 ; }
+
+# Input:
+
+# Create a temporary file:
+TMP_DATA=$(mktemp -u /tmp/$MY_NAME.XXXXXX)
+cat /dev/null >$TMP_DATA
+
+# Function to extract entries from a description file with SANE syntax:
+Extract()
+{ egrep -o '^[[:space:]]*:backend[[:space:]]*"[^"]*"|^[[:space:]]*:mfg[[:space:]]*"[^"]*"|^[[:space:]]*:model[[:space:]]*"[^"]*"|^[[:space:]]*:firmware[[:space:]]*"[^"]*"|^[[:space:]]*:interface[[:space:]]*"[^"]*"|^[[:space:]]*:status[[:space:]]*:[a-z]*|^[[:space:]]*:comment[[:space:]]*"[^"]*"' $1
+}
+
+# Process the SANE description files:
+# At least the SANE description files must exist:
+PACKAGE="sane"
+DESCRIPTION_FILES="/usr/share/sane/descriptions/*.desc"
+rpm -q $PACKAGE &>/dev/null || { echo "Error: Required package $PACKAGE is not installed." 1>&2 ; exit 2 ; }
+ls $DESCRIPTION_FILES &>/dev/null || { echo "Error: Required SANE description files $DESCRIPTION_FILES not found." 1>&2 ; exit 3 ; }
+# Write the package which is processed:
+echo ":package \"$PACKAGE\"" >>$TMP_DATA
+# Extract entries from SANE description files:
+for DESCRIPTION_FILE in $DESCRIPTION_FILES
+do Extract $DESCRIPTION_FILE
+done >>$TMP_DATA
+
+# Process the optional HPOJ external description file:
+PACKAGE="hp-officeJet"
+DESCRIPTION_FILE="/usr/share/sane/descriptions-external/hpoj.desc"
+if [ -r "$DESCRIPTION_FILE" ]
+then echo ":package \"$PACKAGE\"" >>$TMP_DATA
+     Extract $DESCRIPTION_FILE >>$TMP_DATA
+else echo "Info: Cannot read $DESCRIPTION_FILE" 1>&2
+fi
+
+# Process the optional EPKOWA external description file:
+# Note the "sed" to remove the leading comment character ';'.
+PACKAGE="iscan"
+DESCRIPTION_FILE="/usr/share/sane/descriptions-external/epkowa.desc"
+if [ -r "$DESCRIPTION_FILE" ]
+then echo ":package \"$PACKAGE\"" >>$TMP_DATA
+     sed -e 's/^;//' $DESCRIPTION_FILE | Extract >>$TMP_DATA
+else echo "Info: Cannot read $DESCRIPTION_FILE" 1>&2
+fi
+
+# Process the collected data:
+
+# Remove leading and trailing spaces:
+sed -i -e 's/^[[:space:]]*//' $TMP_DATA
+sed -i -e 's/[[:space:]]*$//' $TMP_DATA
+
+# Condense multiple spaces and convert tabs to blanks:
+sed -i -e 's/[[:space:]][[:space:]]*/ /g' $TMP_DATA
+
+# Convert the status value to the usual string format:
+sed -i -e 's/^:status :\(.*\)/:status "\1"/' $TMP_DATA
+
+# Equalize different spelling of same manufacturers:
+sed -i -e 's/"AGFA"/"Agfa"/g' $TMP_DATA
+sed -i -e 's/"UMAX"/"Umax"/g' $TMP_DATA
+
+# Change meaningless references to a meaningful reference:
+sed -i -e 's/see link/see http:\/\/www.sane-project.org/g' $TMP_DATA
+sed -i -e 's/See link/See http:\/\/www.sane-project.org/g' $TMP_DATA
+
+# Output:
+
+# Output header:
+if [ "$OUTPUT_FORMAT" = "YCP" ]
+then echo "[" 
+else echo "PACKAGE|BACKEND|MANUFACTURER|MODEL|FIRMWARE|INTERFACE|STATUS|COMMENT"
+fi
+
+# Function to output one scanner entry:
+Output()
+{ if [ -n "$PACKAGE" -a -n "$BACKEND" -a -n "$MANUFACTURER" -a -n "$MODEL" -a -n "$STATUS" ]
+  then [ -z "$FIRMWARE" ] && FIRMWARE='""'
+       [ -z "$INTERFACE" ] && INTERFACE='""'
+       [ -z "$COMMENT" ] && COMMENT='""'
+       if [ "$OUTPUT_FORMAT" = "YCP" ]
+       then echo -e "  \$[ \"package\":$PACKAGE,\n     \"backend\":$BACKEND,\n     \"manufacturer\":$MANUFACTURER,\n     \"model\":$MODEL,\n     \"firmware\":$FIRMWARE,\n     \"interface\":$INTERFACE,\n     \"status\":$STATUS,\n     \"comment\":$COMMENT\n  ],"
+       else echo "$PACKAGE|$BACKEND|$MANUFACTURER|$MODEL|$FIRMWARE|$INTERFACE|$STATUS|$COMMENT" | tr -d '"'
+       fi
+  fi
+}
+
+# Make complete and seperated scanner entries:
+# Package, backend, manufacturer and model should appear in this order.
+# Interface, status and comment are optional and can appear in any order.
+# There is no mandatory key which is always last.
+# Therefore the values are collected until package or backend or manufacturer or model changes.
+# When package or backend or manufacturer or model changes the values are output.
+exec <$TMP_DATA
+while read KEY VALUE
+do expr "$VALUE" : '"[^"]*"$' &>/dev/null || { echo "Ignoring $VALUE because it has not the right syntax \"...\"." 1>&2 ; continue ; }
+   case "$KEY" in
+        :package) Output
+                  PACKAGE="$VALUE"
+                  BACKEND=""
+                  MANUFACTURER=""
+                  MODEL=""
+                  FIRMWARE=""
+                  INTERFACE=""
+                  STATUS=""
+                  COMMENT="" ;;
+        :backend) Output
+                  BACKEND=$( echo "$VALUE" | tr '[:upper:]' '[:lower:]' )
+                  MANUFACTURER=""
+                  MODEL=""
+                  FIRMWARE=""
+                  INTERFACE=""
+                  STATUS=""
+                  COMMENT="" ;;
+        :mfg) Output
+              MANUFACTURER="$VALUE"
+              MODEL=""
+              FIRMWARE=""
+              INTERFACE=""
+              STATUS=""
+              COMMENT="" ;;
+        :model) Output
+                MODEL="$VALUE"
+                FIRMWARE=""
+                INTERFACE=""
+                STATUS=""
+                COMMENT="" ;;
+        :firmware) FIRMWARE="$VALUE" ;;
+        :interface) INTERFACE="$VALUE" ;;
+        :status) STATUS="$VALUE" ;;
+        :comment) COMMENT="$VALUE" ;;
+        *) echo "Ignoring key $KEY" 1>&2 ;;
+   esac
+done
+
+# Output the last scanner entry and a footer for YCP
+Output
+if [ "$OUTPUT_FORMAT" = "YCP" ]
+then echo -e "  \$[]\n]"
+fi
+
+# Remove the temporary file
+rm $TMP_DATA
+exit 0
+
