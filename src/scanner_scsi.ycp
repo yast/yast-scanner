@@ -74,9 +74,9 @@ name of your SCSI scanner (e.g. /dev/sg0 ).
 </p>"));
 
       // helptext of dialog SCSI scanner configuration (continued)
-      string help2 = UI(_("<p>Information on 
-your SCSI devices can be obtained by issuing the command
-<b>/usr/sbin/hwinfo --scsi</b>.</p>"));
+      string help2 = UI(_("<p>Information on your SCSI devices can be obtained
+by issuing the command <b>hwinfo --scsi</b>
+(you must be 'root' to do this).</p>"));
 
       // helptext of dialog SCSI scanner configuration (continued)
       // Translators: do not translate 'Device File'
