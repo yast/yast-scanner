@@ -69,7 +69,6 @@ $driver{SCSI}{"Artec|Ultima"}{"AM12S"} = "artec";
 $driver{SCSI}{BlackWidow}{"BW4800SP"} = "artec";
 $driver{SCSI}{Plustek}{"OpticPro 19200S"} = "artec";
 
-$driver{USB}{TestEntry}{"BlubberEntry"} = "testi";
 # avision
 $driver{SCSI}{Avision}{"AV 6240"} = "avision";
 $driver{SCSI}{Avision}{"AV 630 CS"} = "avision";
@@ -83,75 +82,93 @@ $driver{SCSI}{"B&H SCSI"}{"COPISCAN II 2138A"} = "bh";
 $driver{SCSI}{"B&H SCSI"}{"COPISCAN II 3238"} = "bh";
 $driver{SCSI}{"B&H SCSI"}{"COPISCAN II 3338"} = "bh";
 
+# Canon
+$driver{SCSI}{CANON}{"CANOSCAN 300"} = "canon";
+$driver{SCSI}{CANON}{"CANOSCAN 600"} = "canon";
+$driver{SCSI}{CANON}{"CANOSCAN 2700F"} = "canon";
 
-# continue here to verify.
+# Coolscan
+$driver{SCSI}{NIKON}{"LS-20"} = "coolscan";
+$driver{SCSI}{NIKON}{"LS-30"} = "coolscan";
+$driver{SCSI}{NIKON}{"LS-2000"} = "coolscan";
+$driver{SCSI}{NIKON}{"LS-1000"} = "coolscan";
 
-# $driver{SCSI}{Canon}{"CanoScan 300"} = "canon";
-# $driver{SCSI}{Canon}{"CanoScan 600"} = "canon";
-# $driver{SCSI}{Nikon}{"CanoScan 2700F"} = "coolscan";
-# $driver{SCSI}{Nikon}{"LS-20"} = "coolscan";
-# $driver{SCSI}{Nikon}{"LS-30"} = "coolscan";
-# $driver{SCSI}{Nikon}{"LS-2000"} = "coolscan";
-# $driver{}{Kodak}{"LS-1000"} = "dc210";
-# $driver{Serial port}{Kodak}{"DC210"} = "dc240";
-# $driver{Serial port}{Kodak}{DC240} = "dc25";
-# $driver{Serial port}{Kodak}{DC25} = "dc25";
-# $driver{}{Polaroid}{DC20} = "dmc";
-# $driver{}{Epson}{DMC} = "epson";
+# Epson: Parport not supported yet.
+# 
 # $driver{Parport}{Epson}{GT-5000} = "epson";
 # $driver{Parport}{Epson}{Actionscanner II} = "epson";
 # $driver{Parport}{Epson}{GT-6000} = "epson";
 # $driver{Parport}{Epson}{ES-300C} = "epson";
-# $driver{SCSI}{Epson}{GT-5500} = "epson";
+
+$driver{SCSI}{EPSON}{"GT-5500"} = "epson";
 # $driver{Parport}{Epson}{GT-6500} = "epson";
 # $driver{Parport}{Epson}{ES-600C} = "epson";
 # $driver{Parport}{Epson}{ES-1200C} = "epson";
-# $driver{SCSI}{Epson}{GT-7000} = "epson";
-# $driver{SCSI}{Epson}{GT-8000} = "epson";
-# $driver{SCSI}{Epson}{ES-8500} = "epson";
-# $driver{SCSI}{Epson}{Perfection 636S} = "epson";
-# $driver{USB}{Epson}{Perfection 636U} = "epson";
-# $driver{USB}{Epson}{Perfection 610} = "epson";
+$driver{SCSI}{EPSON}{"GT-7000"} = "epson";
+$driver{SCSI}{EPSON}{"GT-8000"} = "epson";
+$driver{SCSI}{EPSON}{"ES-8500"} = "epson";
+$driver{SCSI}{EPSON}{"PERFECTION 636S"} = "epson";
+$driver{USB}{EPSON}{"PERFECTION 636U"} = "epson";
+$driver{USB}{EPSON}{"PERFECTION 610"} = "epson";
 $driver{USB}{EPSON}{"PERFECTION 640"} = "epson";
-# $driver{SCSI}{Epson}{Perfection 1200S} = "epson";
-# $driver{USB}{Epson}{Perfection 1200U} = "epson";
-# $driver{USB}{Epson}{Perfection 1200Photo} = "epson";
-# $driver{SCSI USB}{Epson}{Perfection 1240} = "epson";
-# $driver{SCSI USB}{Epson}{Perfection 1640} = "epson";
-# $driver{SCSI}{Epson}{Expression 636} = "epson";
-# $driver{SCSI}{Epson}{Expression 800} = "epson";
-# $driver{SCSI USB IEEE-1394}{Epson}{Expression 1600} = "epson";
-# $driver{SCSI USB IEEE-1394}{Epson}{Expression 1680} = "epson";
-# $driver{}{HP}{FilmScan 200} = "hp";
+$driver{SCSI}{EPSON}{"PERFECTION 1200S"} = "epson";
+$driver{USB}{EPSON}{"PERFECTION 1200U"} = "epson";
+$driver{USB}{EPSON}{"PERFECTION 1200PHOTO"} = "epson";
+$driver{SCSI}{EPSON}{"PERFECTION 1240"} = "epson";
+$driver{SCSI}{EPSON}{"PERFECTION 1640"} = "epson";
+$driver{USB}{EPSON}{"PERFECTION 1240"} = "epson";
+$driver{USB}{EPSON}{"PERFECTION 1640"} = "epson";
+$driver{SCSI}{EPSON}{"EXPRESSION 636"} = "epson";
+$driver{SCSI}{EPSON}{"EXPRESSION 800"} = "epson";
+
+$driver{SCSI}{EPSON}{"EXPRESSION 1600"} = "epson";
+$driver{USB}{EPSON}{"EXPRESSION 1600"} = "epson";
+
+$driver{SCSI}{EPSON}{"EXPRESSION 1680"} = "epson";
+$driver{USB}{EPSON}{"EXPRESSION 1680"} = "epson";
+
+$driver{SCSI}{EPSON}{"FILMSCAN 200"} = "epson";
+
+# Hewlett Packard
 # $driver{Propietary}{HP}{HP ScanJet Plus} = "hp";
-# $driver{SCSI}{HP}{HP ScanJet IIc} = "hp";
-# $driver{SCSI}{HP}{HP ScanJet IIp} = "hp";
-# $driver{SCSI}{HP}{HP ScanJet IIcx} = "hp";
-# $driver{SCSI}{HP}{HP ScanJet 3c} = "hp";
-# $driver{SCSI}{HP}{HP ScanJet 3p} = "hp";
-# $driver{SCSI}{HP}{HP ScanJet 4c} = "hp";
-# $driver{SCSI}{HP}{HP ScanJet 4p} = "hp";
-# $driver{USB}{HP}{HP ScanJet 4100C} = "hp";
-# $driver{SCSI}{HP}{HP ScanJet 5p} = "hp";
+$driver{SCSI}{HP}{"HP SCANJET IIC"} = "hp";
+$driver{SCSI}{HP}{"HP SCANJET IIP"} = "hp";
+$driver{SCSI}{HP}{"HP SCANJET IICX"} = "hp";
+$driver{SCSI}{HP}{"HP SCANJET 3C"} = "hp";
+$driver{SCSI}{HP}{"HP SCANJET 3P"} = "hp";
+$driver{SCSI}{HP}{"HP SCANJET 4C"} = "hp";
+$driver{SCSI}{HP}{"HP SCANJET 4P"} = "hp";
+$driver{USB}{HP}{"HP SCANJET 4100C"} = "hp";
+$driver{SCSI}{HP}{"HP ScanJet 5p"} = "hp";
 # $driver{Parport}{HP}{HP ScanJet 5100C} = "hp";
-# $driver{Parport USB}{HP}{HP ScanJet 5200C} = "hp";
-# $driver{SCSI}{HP}{HP ScanJet 6100C} = "hp";
-# $driver{SCSI USB}{HP}{HP ScanJet 6200C} = "hp";
-# $driver{SCSI USB}{HP}{HP ScanJet 6250C} = "hp";
-# $driver{SCSI USB}{HP}{HP ScanJet 6300C} = "hp";
-# $driver{SCSI USB}{HP}{HP ScanJet 6350C} = "hp";
-# $driver{SCSI USB}{HP}{HP ScanJet 6390C} = "hp";
-# $driver{SCSI}{HP}{HP PhotoSmart PhotoScanner} = "hp";
+# $driver{Parport 
+$driver{USB}{HP}{"HP ScanJet 5200C"} = "hp";
+$driver{SCSI}{HP}{"HP ScanJet 6100C"} = "hp";
+$driver{SCSI}{HP}{"HP ScanJet 6200C"} = "hp";
+$driver{USB}{HP}{"HP ScanJet 6200C"} = "hp";
+$driver{SCSI}{HP}{"HP ScanJet 6250C"} = "hp";
+$driver{USB}{HP}{"HP ScanJet 6250C"} = "hp";
+$driver{SCSI}{HP}{"HP ScanJet 6300C"} = "hp";
+$driver{USB}{HP}{"HP ScanJet 6300C"} = "hp";
+$driver{SCSI}{HP}{"HP ScanJet 6350C"} = "hp";
+$driver{USB}{HP}{"HP ScanJet 6350C"} = "hp";
+$driver{SCSI}{HP}{"HP ScanJet 6390C"} = "hp";
+$driver{USB}{HP}{"HP ScanJet 6390C"} = "hp";
+$driver{SCSI}{HP}{"HP PhotoSmart PhotoScanner"} = "hp";
 # $driver{Parport(ECP) JetDirect}{HP}{HP OfficeJet Pro 1150C} = "hp";
 # $driver{Parport(ECP) JetDirect}{HP}{HP OfficeJet Pro 1170C/1175C} = "hp";
 # $driver{Parport(ECP) JetDirect}{HP}{HP OfficeJet R series/PSC500} = "hp";
 # $driver{Parport(ECP) USB JetDirect}{HP}{HP OfficeJet G series} = "hp";
-# $driver{USB JetDirect}{HP}{HP PSC 700 series} = "hp";
+$driver{USB}{HP}{"HP PSC 700 series"} = "hp";
+
 # $driver{Parport(ECP) USB JetDirect}{HP}{HP OfficeJet K series} = "hp";
-# $driver{}{HP}{HP OfficeJet V series} = "hp4200";
-# $driver{}{Fujitsu}{HP4200} = "m3091";
-# $driver{}{Fujitsu}{M3091DCd} = "m3096g";
-# $driver{}{Microtek}{M3096G} = "microtek";
+# $driver{}{HP}{HP OfficeJet V series} = "hp";
+
+
+$driver{HP}{HP}{"HP4200"} = "hp4200";
+
+$driver{SCSI}{"Fujitsu"}{"M3096G"} = "m3096g";
+$driver{SCSI}{"Fujitsu"}{"SP15C"} = "sp15c";
 
 $driver{SCSI}{Microtek}{"Scanmaker E6"} = "microtek";
 $driver{SCSI}{Microtek}{"Scanmaker E3"} = "microtek";
@@ -164,8 +181,16 @@ $driver{SCSI}{Microtek}{"Scanmaker IISP"} = "microtek";
 $driver{SCSI}{Microtek}{"Scanmaker IIHR"} = "microtek";
 $driver{SCSI}{Microtek}{"Scanmaker IIG"} = "microtek";
 $driver{SCSI}{Microtek}{"Scanmaker II"} = "microtek";
+
 $driver{SCSI}{Microtek}{"Scanmaker 600Z(S)"} = "microtek";
+$driver{SCSI}{Microtek}{"Scanmaker 600ZS"} = "microtek";
+$driver{SCSI}{Microtek}{"Scanmaker 600Z"} = "microtek";
+$driver{SCSI}{Microtek}{"Scanmaker 600S"} = "microtek";
+
 $driver{SCSI}{Microtek}{"Scanmaker 600G(S)"} = "microtek";
+$driver{SCSI}{Microtek}{"Scanmaker 600S"} = "microtek";
+$driver{SCSI}{Microtek}{"Scanmaker 600G"} = "microtek";
+$driver{SCSI}{Microtek}{"Scanmaker 600GS"} = "microtek";
 
 # $driver{SCSI (Parport)}{Agfa}{Color PageWiz} = "microtek";
 
@@ -173,55 +198,61 @@ $driver{SCSI}{Agfa}{"Arcus II"} = "microtek";
 $driver{SCSI}{Agfa}{"StudioScan"} = "microtek";
 $driver{SCSI}{Agfa}{"StudioScan II"} = "microtek";
 $driver{SCSI}{Agfa}{"StudioScan IIsi"} = "microtek";
+$driver{SCSI}{Agfa}{"DuoScan"} = "microtek";
 
-# $driver{}{Microtek}{"DuoScan"} = "microtek2";
-# $driver{Parport}{Microtek}{ScanMaker E3plus} = "microtek2";
-# $driver{SCSI}{Microtek}{ScanMaker E3plus} = "microtek2";
-# $driver{SCSI}{Microtek}{ScanMaker X6} = "microtek2";
-# $driver{SCSI}{Microtek}{ScanMaker X6EL} = "microtek2";
-# $driver{USB}{Microtek}{ScanMaker X6USB} = "microtek2";
-# $driver{SCSI}{Microtek}{ScanMaker V300} = "microtek2";
+#  Mikrotek 2
+$driver{SCSI}{Microtek}{"ScanMaker E3plus"} = "microtek2";
+$driver{SCSI}{Microtek}{"ScanMaker X6"}     = "microtek2";
+$driver{SCSI}{Microtek}{"ScanMaker X6EL"}   = "microtek2";
+$driver{USB} {Microtek}{"ScanMaker X6USB"}   = "microtek2";
+$driver{SCSI}{Microtek}{"ScanMaker V300"}   = "microtek2";
+$driver{SCSI}{Microtek}{"ScanMaker V310"} = "microtek2";
+$driver{SCSI}{Microtek}{"ScanMaker 330"} = "microtek2";
+$driver{SCSI}{Microtek}{"ScanMaker 630"} = "microtek2";
+$driver{SCSI}{Microtek}{"ScanMaker 636"} = "microtek2";
+$driver{SCSI}{Microtek}{"Phantom 636"} = "microtek2";
+$driver{SCSI}{Microtek}{"ScanMaker 9600XL"} = "microtek2";
+$driver{SCSI}{Microtek}{"ScanMaker V6USL"} = "microtek2";
+$driver{SCSI}{Microtek}{"ScanMaker V600"} = "microtek2";
+$driver{SCSI}{Vobis}{"E3plus based"} = "microtek2";
+
 # $driver{Parport}{Microtek}{ScanMaker V300} = "microtek2";
-# $driver{SCSI}{Microtek}{ScanMaker V310} = "microtek2";
 # $driver{Parport}{Microtek}{ScanMaker V310} = "microtek2";
-# $driver{SCSI}{Microtek}{ScanMaker V600} = "microtek2";
 # $driver{Parport}{Microtek}{ScanMaker V600} = "microtek2";
-# $driver{SCSI}{Microtek}{ScanMaker 330} = "microtek2";
-# $driver{SCSI}{Microtek}{ScanMaker 630} = "microtek2";
-# $driver{SCSI}{Microtek}{ScanMaker 636} = "microtek2";
-# $driver{SCSI}{Microtek}{ScanMaker 9600XL} = "microtek2";
 # $driver{Parport}{Microtek}{Phantom 330CX} = "microtek2";
 # $driver{Parport}{Microtek}{SlimScan C3} = "microtek2";
-# $driver{SCSI}{Microtek}{Phantom 636} = "microtek2";
 # $driver{Parport}{Microtek}{Phantom 636CX} = "microtek2";
-# $driver{SCSI}{Vobis}{ScanMaker V6USL} = "microtek2";
-# $driver{}{Mustek}{HighScan} = "mustek";
-# $driver{SCSI}{Mustek}{Paragon MFS-6000CX} = "mustek";
-# $driver{SCSI}{Mustek}{Paragon MFS-12000CX} = "mustek";
-# $driver{SCSI}{Mustek}{Paragon MFC-600S} = "mustek";
-# $driver{SCSI}{Mustek}{Paragon 600 II CD} = "mustek";
-# $driver{SCSI}{Mustek}{ScanMagic 600 II SP} = "mustek";
-# $driver{SCSI}{Mustek}{Paragon MFC-800S} = "mustek";
-# $driver{SCSI}{Mustek}{Paragon 800 II SP} = "mustek";
-# $driver{SCSI}{Mustek}{Paragon MFS-6000SP} = "mustek";
-# $driver{SCSI}{Mustek}{Paragon MFS-8000SP} = "mustek";
-# $driver{SCSI}{Mustek}{Paragon MFS-1200SP} = "mustek";
-# $driver{SCSI}{Mustek}{Paragon MFS-12000SP} = "mustek";
-# $driver{SCSI}{Mustek}{ScanExpress 6000SP} = "mustek";
-# $driver{SCSI}{Mustek}{ScanExpress 12000SP} = "mustek";
-# $driver{SCSI}{Mustek}{ScanExpress 12000SP Plus} = "mustek";
-# $driver{SCSI}{Mustek}{Paragon 1200 III SP} = "mustek";
-# $driver{SCSI}{Mustek}{Paragon 1200 LS} = "mustek";
-# $driver{SCSI}{Mustek}{ScanMagic 9636S} = "mustek";
-# $driver{SCSI}{Mustek}{ScanMagic 9636S Plus} = "mustek";
-# $driver{SCSI}{Mustek}{ScanExpress A3 SP} = "mustek";
-# $driver{SCSI}{Mustek}{Paragon 1200 SP Pro} = "mustek";
-# $driver{SCSI}{Mustek}{Paragon 1200 A3 Pro} = "mustek";
-# $driver{Proprietary}{Trust}{Paragon 600 II N} = "mustek";
-# $driver{SCSI}{Trust}{Imagery 1200 SP} = "mustek";
-# $driver{SCSI}{Trust}{Imagery 4800 SP} = "mustek";
-# $driver{SCSI}{Trust}{SCSI Connect 19200} = "mustek";
-# $driver{}{Mustek}{SCSI excellence series 19200} = "mustek_pp";
+
+
+# Mustek SCSI
+$driver{SCSI}{Mustek}{"Paragon MFS-6000CX"} = "mustek";
+$driver{SCSI}{Mustek}{"Paragon MFS-12000CX"} = "mustek";
+$driver{SCSI}{Mustek}{"Paragon MFC-600S"} = "mustek";
+$driver{SCSI}{Mustek}{"Paragon 600 II CD"} = "mustek";
+$driver{SCSI}{Mustek}{"ScanMagic 600 II SP"} = "mustek";
+$driver{SCSI}{Mustek}{"Paragon MFC-800S"} = "mustek";
+$driver{SCSI}{Mustek}{"Paragon 800 II SP"} = "mustek";
+$driver{SCSI}{Mustek}{"Paragon MFS-6000SP"} = "mustek";
+$driver{SCSI}{Mustek}{"Paragon MFS-8000SP"} = "mustek";
+$driver{SCSI}{Mustek}{"Paragon MFS-1200SP"} = "mustek";
+$driver{SCSI}{Mustek}{"Paragon MFS-12000SP"} = "mustek";
+$driver{SCSI}{Mustek}{"ScanExpress 6000SP"} = "mustek";
+$driver{SCSI}{Mustek}{"ScanExpress 12000SP"} = "mustek";
+$driver{SCSI}{Mustek}{"ScanExpress 12000SP Plus"} = "mustek";
+$driver{SCSI}{Mustek}{"Paragon 1200 III SP"} = "mustek";
+$driver{SCSI}{Mustek}{"Paragon 1200 LS"} = "mustek";
+$driver{SCSI}{Mustek}{"ScanMagic 9636S"} = "mustek";
+$driver{SCSI}{Mustek}{"ScanMagic 9636S Plus"} = "mustek";
+$driver{SCSI}{Mustek}{"ScanExpress A3 SP"} = "mustek";
+$driver{SCSI}{Mustek}{"Paragon 1200 SP Pro"} = "mustek";
+$driver{SCSI}{Mustek}{"Paragon 1200 A3 Pro"} = "mustek";
+
+$driver{SCSI}{Trust}{"Imagery 1200 SP"} = "mustek";
+$driver{SCSI}{Trust}{"Imagery 4800 SP"} = "mustek";
+$driver{SCSI}{Trust}{"SCSI Connect 19200"} = "mustek";
+$driver{SCSI}{Trust}{"SCSI excellence series 19200"} = "mustek";
+
+# Mustek Parallel Port 
 # $driver{Parport (EPP)}{Mustek}{ScanExpress 6000 P} = "mustek_pp";
 # $driver{Parport (EPP)}{Mustek}{ScanMagic 4800 P} = "mustek_pp";
 # $driver{Parport (EPP)}{Mustek}{ScanExpress 1200 ED Plus} = "mustek_pp";
@@ -233,28 +264,29 @@ $driver{SCSI}{Agfa}{"StudioScan IIsi"} = "microtek";
 # $driver{Parport (EPP)}{Tevion}{MD985x} = "mustek_pp";
 # $driver{Parport (EPP)}{LifeTec}{MD985x} = "mustek_pp";
 # $driver{Parport (EPP)}{LifeTec}{LT9891} = "mustek_pp";
-# $driver{}{NEC}{Gallery 4800} = "nec";
-# $driver{SCSI}{NEC}{PC-IN500/4C} = "nec";
-# $driver{}{Devcom}{PC-IN600,700,800 series} = "pie";
-# $driver{Parport}{Devcom}{parallel scanners} = "pie";
-# $driver{USB}{Devcom}{USB scanners} = "pie";
-# $driver{SCSI}{Devcom}{9636PRO} = "pie";
-# $driver{SCSI}{Devcom}{9636S} = "pie";
-# $driver{SCSI}{PIE}{9630S} = "pie";
-# $driver{Parport}{PIE}{parallel scanners} = "pie";
-# $driver{USB}{PIE}{USB scanners} = "pie";
-# $driver{SCSI}{PIE}{ScanAce 1236S} = "pie";
-# $driver{SCSI}{PIE}{ScanAce 1230S} = "pie";
-# $driver{SCSI}{PIE}{ScanAce II} = "pie";
-# $driver{SCSI}{PIE}{ScanAce III} = "pie";
-# $driver{SCSI}{PIE}{ScanAce Plus} = "pie";
-# $driver{SCSI}{PIE}{ScanAce II Plus} = "pie";
-# $driver{SCSI}{PIE}{ScanAce III Plus} = "pie";
-# $driver{SCSI}{PIE}{ScanAce V} = "pie";
-# $driver{SCSI}{PIE}{ScanAce ScanMedia} = "pie";
-# $driver{SCSI}{PIE}{ScanAce ScanMedia II} = "pie";
-# $driver{SCSI}{PIE}{ScanAce 630S} = "pie";
-# $driver{}{Plustek}{ScanAce 636S} = "plustek";
+
+# NEC
+$driver{SCSI}{NEC}{"PC-IN500/4C"} = "nec";
+
+# Pie
+$driver{SCSI}{Devcom}{"9636PRO"} = "pie";
+$driver{SCSI}{Devcom}{"9636S"} = "pie";
+$driver{SCSI}{PIE}{"9630S"} = "pie";
+
+$driver{SCSI}{PIE}{"ScanAce 1236S"} = "pie";
+$driver{SCSI}{PIE}{"ScanAce 1230S"} = "pie";
+$driver{SCSI}{PIE}{"ScanAce II"} = "pie";
+$driver{SCSI}{PIE}{"ScanAce III"} = "pie";
+$driver{SCSI}{PIE}{"ScanAce Plus"} = "pie";
+$driver{SCSI}{PIE}{"ScanAce II Plus"} = "pie";
+$driver{SCSI}{PIE}{"ScanAce III Plus"} = "pie";
+$driver{SCSI}{PIE}{"ScanAce V"} = "pie";
+$driver{SCSI}{PIE}{"ScanAce ScanMedia"} = "pie";
+$driver{SCSI}{PIE}{"ScanAce ScanMedia II"} = "pie";
+$driver{SCSI}{PIE}{"ScanAce 630S"} = "pie";
+$driver{SCSI}{PIE}{"ScanAce 636S"} = "plustek";
+
+# Plustek
 # $driver{Parport (SPP, EPP)}{Plustek}{OpticPro 4800P} = "plustek";
 # $driver{Parport (SPP, EPP)}{Plustek}{OpticPro 4830P} = "plustek";
 # $driver{Parport (SPP, EPP)}{Plustek}{OpticPro 600P/6000P} = "plustek";
@@ -272,47 +304,57 @@ $driver{SCSI}{Agfa}{"StudioScan IIsi"} = "microtek";
 # $driver{Parport}{Plustek}{OpticPro P8} = "plustek";
 # $driver{Parport (SPP, EPP)}{Plustek}{OpticPro P12} = "plustek";
 # $driver{Parport (SPP, EPP)}{Plustek}{OpticPro PT12} = "plustek";
-# $driver{SCSI}{Plustek}{OpticPro 19200S} = "plustek";
-# $driver{USB}{Primax}{OpticPro 1212U/U12/UT12} = "plustek";
 # $driver{Parport (SPP, EPP)}{Primax}{Colorado 4800} = "plustek";
 # $driver{Parport (SPP, EPP)}{Primax}{Compact 4800 Direct} = "plustek";
 # $driver{Parport (SPP, EPP)}{Primax}{Compact 4800 Direct-30} = "plustek";
 # $driver{Parport (SPP, EPP)}{Aries}{Compact 9600 Direct-30} = "plustek";
-# $driver{}{Connectix}{Scan-It Pro 4800} = "qcam";
-# $driver{Parport}{Connectix}{Color QuickCam} = "qcam";
-# $driver{}{Ricoh}{Greyscale QuickCam} = "ricoh";
-# $driver{SCSI}{Ricoh}{Ricoh IS50} = "ricoh";
-# $driver{}{Siemens}{Ricoh IS60} = "s9036";
-# $driver{}{SHARP}{9036 Flatbed scanner} = "sharp";
-# $driver{}{SHARP}{JX-610} = "sharp";
-# $driver{}{SHARP}{JX-250} = "sharp";
-# $driver{}{SHARP}{JX-320} = "sharp";
-# $driver{}{SHARP}{JX-330} = "sharp";
-# $driver{}{Microtek}{JX-350} = "sm3600";
-# $driver{}{AGFA}{ScanMaker 3600} = "SnapScan";
-# $driver{SCSI}{AGFA}{SnapScan 300} = "SnapScan";
-# $driver{SCSI}{AGFA}{SnapScan 310} = "SnapScan";
-# $driver{SCSI}{AGFA}{SnapScan 600} = "SnapScan";
-# $driver{SCSI}{AGFA}{SnapScan 1236s} = "SnapScan";
-# $driver{USB}{AGFA}{SnapScan 1212u} = "SnapScan";
-# $driver{USB}{AGFA}{SnapScan e40} = "SnapScan";
-# $driver{USB}{Vuego}{SnapScan e50} = "SnapScan";
-# $driver{SCSI}{Acer}{310s} = "SnapScan";
-# $driver{SCSI}{Acer}{300f} = "SnapScan";
-# $driver{SCSI}{Acer}{310s} = "SnapScan";
-# $driver{SCSI}{Acer}{610s} = "SnapScan";
-# $driver{SCSI}{Acer}{610plus} = "SnapScan";
-# $driver{SCSI}{Acer}{Prisa 620s} = "SnapScan";
-# $driver{USB}{Acer}{Prisa 620u} = "SnapScan";
-# $driver{USB}{Acer}{Prisa 640u} = "SnapScan";
-# $driver{USB}{Acer}{Prisa 640bu} = "SnapScan";
-# $driver{}{}{Maxi Scan A4 Deluxe (SCSI)} = "sp15c";
-# $driver{}{Siemens}{SP15C} = "st400";
-# $driver{SCSI}{Siemens}{ST400} = "st400";
-# $driver{}{Tamarack}{ST800} = "tamarack";
-# $driver{SCSI}{Tamarack}{Artiscan 6000C} = "tamarack";
-# $driver{SCSI}{Tamarack}{Artiscan 8000C} = "tamarack";
-# $driver{}{UMAX}{Artiscan 12000C} = "umax";
+
+# Ricoh
+$driver{SCSI}{Ricoh}{"Ricoh IS50"} = "ricoh";
+$driver{SCSI}{Ricoh}{"Ricoh IS60"} = "ricoh";
+
+# Siemens
+$driver{SCSI}{Siemens}{"9036 Flatbed scanner"} = "s9036";
+$driver{SCSI}{Siemens}{"ST800"} = "st400";
+$driver{SCSI}{Siemens}{"ST400"} = "st400";
+
+# Sharp
+$driver{SCSI}{SHARP}{"9036 Flatbed scanner"} = "sharp";
+$driver{SCSI}{SHARP}{"JX-610"} = "sharp";
+$driver{SCSI}{SHARP}{"JX-250"} = "sharp";
+$driver{SCSI}{SHARP}{"JX-320"} = "sharp";
+$driver{SCSI}{SHARP}{"JX-330"} = "sharp";
+$driver{SCSI}{SHARP}{"JX-350"} = "sharp";
+
+# Snapscan
+$driver{SCSI}{AGFA}{"SnapScan 300"} = "SnapScan";
+$driver{SCSI}{AGFA}{"SnapScan 310"} = "SnapScan";
+$driver{SCSI}{AGFA}{"SnapScan 600"} = "SnapScan";
+$driver{SCSI}{AGFA}{"SnapScan 1236s"} = "SnapScan";
+$driver{USB}{AGFA}{"SnapScan 1212u"} = "SnapScan";
+
+$driver{USB}{AGFA}{"SnapScan e20"} = "SnapScan";
+$driver{USB}{AGFA}{"SnapScan e40"} = "SnapScan";
+$driver{USB}{Vuego}{"SnapScan e50"} = "SnapScan";
+$driver{SCSI}{"Close SnapScan 310 compatible."} = "SnapScan";
+
+$driver{SCSI}{Acer}{"310s"} = "SnapScan";
+$driver{SCSI}{Acer}{"300f"} = "SnapScan";
+$driver{SCSI}{Acer}{"310s"} = "SnapScan";
+$driver{SCSI}{Acer}{"610s"} = "SnapScan";
+$driver{SCSI}{Acer}{"610plus"} = "SnapScan";
+$driver{SCSI}{Acer}{"Prisa 620s"} = "SnapScan";
+$driver{USB}{Acer}{"Prisa 620u"} = "SnapScan";
+$driver{USB}{Acer}{"Prisa 640u"} = "SnapScan";
+$driver{USB}{Acer}{"Prisa 640bu"} = "SnapScan";
+$driver{USB}{Guillemot}{"Maxi Scan A4 Deluxe (SCSI)"} ="SnapScan";
+
+# Tamarack
+$driver{SCSI}{Tamarack}{"Artiscan 6000C"} = "tamarack";
+$driver{SCSI}{Tamarack}{"Artiscan 8000C"} = "tamarack";
+$driver{SCSI}{Tamarack}{"Artiscan 12000C"} = "tamarack";
+
+# Umax
 # $driver{Parport}{UMAX}{parallel scanners} = "umax";
 # $driver{Firewire}{UMAX}{USB scanners} = "umax";
 $driver{SCSI}{UMAX}{"Vista S6"} = "umax";
@@ -360,11 +402,16 @@ $driver{SCSI}{UMAX}{"Saphir HiRes"} = "umax";
 $driver{SCSI}{UMAX}{"Opal"} = "umax";
 $driver{SCSI}{UMAX}{"Opal Ultra"} = "umax";
 $driver{SCSI}{UMAX}{"Linoscan 1400"} = "umax";
-# $driver{SCSI}{Epson}{Scanboostar Premium} = "umax";
-# $driver{SCSI}{Escom}{Perfection 600} = "umax";
-# $driver{SCSI}{Escort}{Image Scanner 256} = "umax";
-# $driver{SCSI}{Genius}{Galleria 600} = "umax";
-# $driver{SCSI}{Nikon}{ColorPage-HR5 (Pro)} = "umax";
+
+$driver{SCSI}{"Vobis"}{"Scanboostar Premium"} = "umax";
+$driver{SCSI}{"Highscreen"}{"Scanboostar Premium"} = "umax";
+
+$driver{SCSI}{Escom}{"Image Scanner 256"} = "umax";
+$driver{SCSI}{Escort}{"Galleria 600"} = "umax";
+$driver{SCSI}{Genius}{"ColorPage-HR5 (Pro)"} = "umax";
+$driver{SCSI}{Nikon}{"AX-210"} = "umax";
+
+# More parallel-port:
 # $driver{}{UMAX}{AX-210} = "umax_pp";
 # $driver{Parport (EPP)}{UMAX}{Astra 1220P} = "umax_pp";
 # $driver{Parport (EPP)}{UMAX}{Astra 2000P} = "umax_pp";
@@ -1129,10 +1176,10 @@ sub getModel( $$ )
 
     my %foundscanner = ();
     
-    my $bus_scanners = $driver{ uc $bus };
+    my $bus_scanners = findInHash( $bus, \%driver ); # { uc $bus };
     if( defined $bus_scanners )
     {
-	my $mfg_scanner_ref = $bus_scanners->{ uc $vendor};
+	my $mfg_scanner_ref = findInHash( $vendor, $bus_scanners ); # ->{ uc $vendor};
 
 	if( defined $mfg_scanner_ref )
 	{
@@ -1192,7 +1239,7 @@ sub getVendorList( $ )
     
     y2debug( "Searching vendors providing for <$bus>" );
     
-    my $bus_scanners = $driver{ uc $bus };
+    my $bus_scanners = findInHash( $bus, \%driver ); #$driver{ uc $bus };
 
     my @vendorlist = keys %$bus_scanners;
     unshift @vendorlist, 'Generic';
