@@ -7,6 +7,8 @@ Requires:	yast2
 
 Provides:	yast2-config-scanner
 Obsoletes:	yast2-config-scanner
+Provides:	yast2-trans-scanner
+Obsoletes:	yast2-trans-scanner
 
 BuildArchitectures:	noarch
 
