@@ -3,15 +3,17 @@
 #
 
 AUTOMAKE_OPTIONS = dejagnu
-#EXTRA_DIST = tests/ tests/*.out tests/*.err tests/*.ycp $(wildcard tests/*.yh)
-EXTRA_DIST =
+EXTRA_DIST = $(wildcard tests/*.out) $(wildcard tests/*.err) $(wildcard tests/*.ycp) $(wildcard tests/*.yh)
 
-#testsuite_prepare=/usr/lib/YaST2/testsuite/Makefile.testsuite
+testsuite_prepare = @ydatadir@/testsuite/Makefile.testsuite
 
-#all-local: $(testsuite_prepare)
+all-local: $(testsuite_prepare)
 	make -f $(testsuite_prepare) RPMNAME=$(RPMNAME) srcdir=$(srcdir)
 
-#clean-local: $(testsuite_prepare)
+clean-local: $(testsuite_prepare)
 	make -f $(testsuite_prepare) RPMNAME=$(RPMNAME) srcdir=$(srcdir) clean
+
+check-local: $(testsuite_prepare)
+	make -f $(testsuite_prepare) RPMNAME=$(RPMNAME) srcdir=$(srcdir) check
 
 # EOF
