@@ -140,7 +140,7 @@ and restart the scanner configuration.");
 		  if ( size (usb_scanner) > 1 )
 		  {
 		      // text part 1 of the warning popup - disconnect unused scanners
-		      Popup::Warning(_("YaST2 has detected several USB scanners, 
+		      Popup::Warning(_("Several USB scanners are connected, 
 but you can only use ONE of them.") + "\n" + msg);
 		      ret = `back;
 		  }
@@ -154,7 +154,7 @@ USB scanner, because only ONE is supported.") + "\n" + msg);
 		  }
 		  else if ( size (usb_scanner) == 1 )
 		  {
-		      // start again with scanner start dialog
+		      // try once again the scanner start dialog
 		      // -> scanner already configured -> overview dialog
 		      // -> new unsupported scanner  -> manual
 		      // -> new supported scanner  -> new
@@ -167,27 +167,23 @@ USB scanner, because only ONE is supported.") + "\n" + msg);
 		  }
 		  else
 		  {
-		      integer exit_status = 1;
-
-		      // check first, whether an USB scanner module is already loaded
-		      exit_status = (integer) SCR::Execute (.target.bash, "/sbin/lsmod | /bin/egrep 'scanner|microtek'");
-		      
-		      if ( exit_status != 0 )
+		      if ( Popup::AnyQuestion( Label::WarningMsg(),
+					      _("Your USB scanner cannot be configured manually.
+Do you want to go on with manual configuration dialog
+(see help text there for more information)
+or abort the scanner configuration now?"),
+			   Label::ContinueButton(),
+			   Label::AbortButton(),
+			   `focus_no ) )
 		      {
-			  // go to dialog load USB module if the module is not yet loaded
-			  ret = `usb;
+			  ret = `manual;
+			  // create the entry for the USB scanner
+			  CreateScannerEntry( $["bus":"USB", "dev_name":"/dev/usbscanner"]);
 		      }
 		      else
 		      {
-			  // If the USB module is already loaded we assume that it is the right one,
-			  // because the scanner module will be unloaded, if the USB scanner is
-			  // disconnected and newly loaded when a new scanner is connected (hotplug).
-			  // -> go to manual scanner selection
-			  ret = `manual;
+			  ret = `abort;
 		      }
-		      // create the entry for the USB scanner
-		      CreateScannerEntry( $["bus":"USB", "dev_name":"/dev/usbscanner"]);
-		      
 		  }
 	      }
 	      else if ( type == `ptal )
@@ -213,12 +209,13 @@ USB scanner, because only ONE is supported.") + "\n" + msg);
                            // to JetDirect the user has to do the configuration manually.
 			   _("The initialisation of the HP all-in-one device failed.
 Make sure the device is switched on and try again.
-If the error continues, abort the scanner configuration
-and call 'ptal-init setup' manually (you must be root
-to do this).
-In the case of a JetDirect connection, also call
-'ptal-init setup' and configure the scanner by enabling
-the 'hpoj' driver in '/etc/sane.d/dll.conf'.
+If the device cannot installed correctly, try to
+call 'ptal-init setup' manually (you must be root
+to do this). Configure the scanner by enabling the
+'hpoj' driver in '/etc/sane.d/dll.conf.
+In the case of a JetDirect connection, abort the
+scanner configuration now and also do the setup
+and configuration manually.
 "),
 							Label::RetryButton(),
 							Label::AbortButton(),
