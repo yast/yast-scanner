@@ -50,9 +50,6 @@
 /* The main() */
   y2milestone("Scanner configuration started");
 
-// NOT USED
-  map settings = ScannerRead();
-
 
   // this is the global data map
   map user_settings = $[];
@@ -302,7 +299,7 @@
       string message = UI(_("Please wait while the configuration files are updated..."));
       UI(`OpenDialog(`opt(`decorated), `Label(message)));
 
-      any ret = ScannerWrite(settings);
+      any ret = ScannerWrite(lookup(user_settings, "scannerInfo", $[]));
 
       y2debug("Scanner write=%1", ret );
 
