@@ -250,8 +250,22 @@ exit the scanner configuration?"));
 		      // -> ScannerWrite
 		      
 		      // Add vendor and device to scanner info
-		      SetCurrentScannerValue( "device", lookup(device, "device") );
-		      SetCurrentScannerValue( "vendor", lookup(device, "vendor") );
+		      if ( lookup(device, "device", "") != "" )
+		      {
+			  SetCurrentScannerValue( "device", lookup(device, "device") );
+		      }
+		      else
+		      {
+			  SetCurrentScannerValue( "device", CutBlanks(lookup(device, "sub_device")) );
+		      }
+		      if ( lookup(device, "vendor", "") != "" )
+		      {
+			  SetCurrentScannerValue( "vendor", lookup(device, "vendor") );
+		      }
+		      else
+		      {
+			  SetCurrentScannerValue( "vendor", CutBlanks(lookup(device, "sub_vendor")) ); 
+		      }
 		      if ( ret == `load )
 		      {
 			  // text of a notify popup: the loading was successful
