@@ -138,8 +138,7 @@ will be discarded and your system will be reverted to the previous state.
 				   Label::BackButton(),
 				   Label::NextButton());
 
-      term finish_button = `PushButton(`id(`finish), Label::FinishButton() );
-      Wizard::ReplaceNextButton( finish_button );
+      Wizard::SetNextButton(`finish, Label::FinishButton() );
       
       any ret = nil;
       boolean go_on = true;
@@ -206,9 +205,7 @@ configuration of the scanner %1, %2 ?\n"), GetCurrentScannerValue("vendor"),
 	  
       }
 
-      // restore Next button
-      term next_button = `PushButton(`id(`next), Label::NextButton() );
-      Wizard::ReplaceNextButton( next_button );
+      Wizard::RestoreNextButton();
 
       return ret;
   }
