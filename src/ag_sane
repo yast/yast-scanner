@@ -364,7 +364,7 @@ while ( <STDIN> )
 	  if ( defined $devstring ) {
 	    $resFile = acquireTestImage( $devstring, $tmpdir );
 
-	    y2debug( "Acquired image to result-file <$resFile>" );
+	    y2milestone( "Test image - device <$devstring>, result-file <$resFile>" );
 	  }
 	}
 	ycp::Return( $resFile );
