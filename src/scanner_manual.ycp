@@ -29,6 +29,10 @@
       list vlist = SCR(`Read(.sane.vendorlist, GetCurrentScanner()));
       //used to preselect first entry
       boolean isfirst = true;
+
+      //sort list alphabetically
+      vlist=sort(`a,`b,vlist,``(a<b));
+
       y2debug( "Vendorlist: %1", vlist );
       
       foreach( `vendor, vlist, ``{
@@ -48,6 +52,10 @@
       list list_input = [];
       SetCurrentScannerValue( "vendor", vendor );
       list mlist = SCR(`Read(.sane.modellist, GetCurrentScanner()));
+      
+      //sort list alphabetically
+      mlist=sort(`a,`b,mlist,``(a<b));
+
       y2debug( "Modellist: %1", mlist );
 
       foreach( `model, mlist, ``{
