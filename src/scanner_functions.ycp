@@ -40,7 +40,7 @@
  */
   global define ScannerWrite(map scanner_info) ``{
 
-      foreach( `scanner, scanner_info, ``{
+      foreach( `key, `scanner, scanner_info, ``{
 	  // if required write the options for the scanner kernel module to /etc/modules.conf
 	  if ( lookup(scanner, "write_mod_conf", false ) )
 	  {
