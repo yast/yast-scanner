@@ -71,11 +71,18 @@ hardware probing of 'USB' and/or the 'SCSI' port(s).
 	      // Translators: 'SANE' is a package name - don't translate!
 	      string mesg = _("For scanner access under Linux, the SANE library is required.
 Do you want to install the 'SANE' package now?");
-	      UI ( `YesNoPopup(mesg) );
-	      string tmpdir = SCR (`Read (.target.tmpdir));
-	      string filename = tmpdir + "/sw_single_input";
-	      SCR (`Write (.target.ycp, filename, $["install":["sane"], "userInput" : false ]));
-	      CallFunction (`sw_single (filename));
+	      boolean cont = UI ( `ContinueCancelPopup(mesg) );
+	      if ( cont )
+	      {
+		  string tmpdir = SCR (`Read (.target.tmpdir));
+		  string filename = tmpdir + "/sw_single_input";
+		  SCR (`Write (.target.ycp, filename, $["install":["sane"], "userInput" : false ]));
+		  CallFunction (`sw_single (filename));
+	      }
+	      else
+	      {
+		  return `cancel;
+	      }
 	  }
 
 	  // SANE should be installed by now - if not inform the user and exit
@@ -123,7 +130,7 @@ and restart the scanner configuration.")));
       }
 
       // Progressbar (2)
-      pbar_text = _("Checking already installed scanners")
+      string pbar_text = _("Checking already installed scanners");
       
       UI(`ProgressMilestoneUI( 300, pbar_text, 2 ));
       sleep(100);
