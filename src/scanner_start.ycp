@@ -51,8 +51,9 @@ hardware probing of 'USB' and/or the 'SCSI' port(s).
 		    // Headline for start dialog of scanner configuration
 		    _("Initializing scanner module ..."),
 		    "",	// progress_title
-		    1000,	// length
+		    3,	// length
 		    [
+		     // 3 steps of probing soft- and hardware
 		     // Translators: Please do not translate 'SANE'!
 		     _("Checking whether SANE library is installed..."),
 		     _("Probing hardware - looking for connected scanners..."),
@@ -61,7 +62,7 @@ hardware probing of 'USB' and/or the 'SCSI' port(s).
 		    [],		// descriptions
 		    help_text );
 
-      Progress::NextStep( );
+      Progress::NextStage( );
       // text for a progress bar label (please do not translate 'SANE')
       Progress::Title( _("Checking SANE library...") );
     
@@ -73,26 +74,20 @@ hardware probing of 'USB' and/or the 'SCSI' port(s).
 	  list packs_to_install = [];
 	  string mesg = "";
 
-	  // we do not need ImageMagick any longer
+	  // ( we do not need ImageMagick any longer )
 	  
-	  if( sane_installed == 1)
+	  if( sane_installed != 0 )
 	  {
 	      // Translators: 'SANE' is a package name - don't translate!
 	      mesg = _("For scanner access under Linux, the SANE library is required
-(Package sane).");
-	      packs_to_install = ["sane"];
-	  }
+(Package sane).
 
-	  // if sane is missing, start installation.
-	  if ( sane_installed == 1 )
-	  {
-	      // ask the user whether to install package 'SANE' now
-	      mesg = mesg + _("
-
-Do you want to install the package(s) now ?
+Do you want to install the package now ?
 ");
+	      packs_to_install = ["sane"];
 
 	      boolean cont = Popup::YesNo(mesg);
+
 	      if ( cont )
 	      {
 		  WFM::CallFunction (`sw_single (packs_to_install));
@@ -116,7 +111,7 @@ with the YaST2 module 'Install/Remove Software'.\n"));
 	  }
       }
     
-      Progress::NextStep();
+      Progress::NextStage();
       // text for a progress bar label
       Progress::Title( _("Probing hardware") );
 
@@ -170,7 +165,7 @@ the scanner configuration\n."));
 	  connected_scanner = lookup( user_settings, "test_connected", [] );
       }
 
-      Progress::NextStep( );
+      Progress::NextStage( );
       // text for a progress bar label
       Progress::Title(_("Checking already installed scanners")); 
 
