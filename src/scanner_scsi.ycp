@@ -89,8 +89,9 @@ dialog by clicking on <b>Next</b>.</p>");
 you added a new SCSI controller to your computer, you will probably
 need to load the SCSI kernel module (driver) first.
 Press <b>Abort</b> to exit the scanner installation and run the
-module <b>Hardware/Disk Controller</b> to configure the new 
-controller.</p>");
+module <b>Hardware or Disk Controller</b> to configure the new 
+controller.</p>
+");
       
       // helptext of dialog SCSI scanner configuration (continued)
       string help4 = _("<p>Information on your SCSI storage controller

@@ -45,7 +45,7 @@
       layout = `VBox(
 		     `VSpacing( 0.8 ),
 		     // headline of a list showing installed scanners
-		     `Left(`Label(_("List of installed scanners"))),
+		     `Left(`Label(_("List of Installed Scanners"))),
 		     `VSpacing( 0.4 ),
 		     `ReplacePoint(`id(`scanner_table_rp),table),		     
 		     `HBox(
@@ -103,22 +103,24 @@
       string help = "";
       // help part1 of scanner overview dialog
       string help1    = _("<p>This overview dialog shows the
- already installed scanners.</p>"
-			     );
+ already installed scanners.</p>");
        // help part2 of scanner overview dialog
-      string help2 = _("<p>If you want to remove a scanner configuration,
+      string help2 = _("<p>To remove a scanner configuration,
 select the corresponding entry from the list and press <b>Delete</b>.
-</p>");
+</p>
+");
 
        // help part3 of scanner overview dialog
       string help3 = _("<p> 
-If you want to install a new scanner, press the <b>Add</b> button.
-At the end of the configuration the new scanner will appear in this list.
-</p>");
+To install a new scanner, press <b>Add</b>.
+At the end of the configuration, the new scanner will appear in this list.
+</p>
+");
       
        // help part4 of scanner overview dialog
-      string help4 = _("<p>Press the <b>Finish</b> button to save the
-settings.</p>");
+      string help4 = _("<p>Press <b>Finish</b> to save the
+settings.</p>
+");
       
       // help part5 of scanner overview dialog
       string help5 = _("<p>
