@@ -47,11 +47,8 @@
 
   boolean test_mode = false;
 
-
 /* The main() */
-  y2debug("Scanner module started");
-
-
+  y2milestone("Scanner configuration started");
 
 // NOT USED
   map settings = ScannerRead();
@@ -64,7 +61,6 @@
   // check test_mode
   integer arg_n = size(Args()) - 1;
 
-  boolean test_mode = false;
   symbol test_status = `installed;
   
   list arg_list = [];
