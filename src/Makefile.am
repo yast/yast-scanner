@@ -20,6 +20,7 @@ include_DATA =		\
 	scanner_scsi.ycp	\
 	scanner_usb.ycp		\
 	scanner_net.ycp		\
+	scanner_notfound.ycp	\
 	scanner_driver.ycp	\
 	scanner_functions.ycp
 
