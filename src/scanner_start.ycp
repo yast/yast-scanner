@@ -122,16 +122,41 @@ with the YaST2 module 'Install/Remove Software'.\n"));
       {
 	  // pobe USB and SCSI ports; command is hwinfo --scanner
 	  connected_scanner = SCR::Read(.probe.scanner);
-	  // PTAL devices are not yet detected by hwlib
-	  connected_scanner = connected_scanner + SCR::Read(.scanner.ptal);
+	  list scanner_list = [];
 	  
 	  foreach (`scanner, connected_scanner, ``{
 	      if ( lookup( scanner, "bus", "" ) == "USB" )
 	      {
-		  usb_count = usb_count + 1;
+		  // sub_class_id 1 means a HP all-in-one device
+		  if ( lookup( scanner, "sub_class_id", "") == 1 )
+		  {
+		      boolean installed = CheckOfficeJet();
+		      if ( installed )
+		      {
+			  // replace scanner entry 
+			  list ptal_devices = SCR::Read(.scanner.ptal);
+			  foreach (`device, ptal_devices, ``{
+			      if ( lookup( device, "device", "") == lookup( scanner, "sub_device", "" ) )
+			      {
+				  y2milestone ("PTAL device found: %1", device );
+				  scanner_list = add(scanner_list, device);
+			      }
+			  });
+		      }
+		  }
+		  else
+		  {
+		      usb_count = usb_count + 1;
+		      scanner_list = add(scanner_list, scanner); 
+		  }
+	      }
+	      else
+	      {
+		  scanner_list = add(scanner_list, scanner); 
 	      }
 	  });
-		   
+	  connected_scanner = scanner_list;
+	  
 	  if ( usb_count > 1 ) 
 	  {
 	      // only one USB scanner is supported by scanner library SANE
