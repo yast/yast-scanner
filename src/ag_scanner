@@ -1,0 +1,152 @@
+#!/usr/bin/perl
+#
+# ag_scanner
+# This script is part of the YaST2 Scanner installation module
+# Copyright SuSE Gmbh - 2001
+# 
+# Author: Klaas Freitag <freitag@suse.de>
+#
+# $Id$
+#
+
+BEGIN { unshift @INC, "/usr/lib/YaST2/agents_non_y2/"; }
+
+use ycp;
+
+
+#
+# Simple sub to cut off whitespaces in front and at the end of
+# of a string.
+#
+sub trim( $ )
+{
+    my ($str) = @_;
+    $str =~ s/^\s+//;
+    $str =~ s/\s+$//;
+    y2debug("Trim: Trimmed string to <$str>");
+    return( $str );
+}
+
+# ##############################################################################
+
+my @scanners;
+
+while ( <STDIN> )
+{
+    ycpDoVerboseLog();
+    ycpInit( $_ );
+
+    my $action = ycpGetPath();
+    y2debug( " vvv starting in ag_scanner vvv" );
+
+    y2debug( "Got Action = ycpPath = <$action>");
+
+    if( $action =~ /scsi/i )
+    {
+	y2debug( "Performing scsi bus scan for scanners!" );
+	my $cmd = "/usr/X11R6/bin/sane-find-scanner -s";
+	@scanners = ();
+
+	if( open( CMD, "$cmd |" ) )
+	{
+	    my $cnt = 0;
+	    while( <CMD> )
+	    {
+		chomp;
+		my ($devfile, $class, $vendor, $model ) = split( /\s+\"/ );
+		$class    =~ s/\"//g;
+		$vendor  =~ s/\"//g;
+		$model   =~ s/\"//g;
+
+		y2debug( "Found $class $vendor $model on $devfile" );
+
+		push ( @scanners , 
+		{ bus => "SCSI", 
+		      class_id => "",
+		      device => $model,
+		      device_id => "",
+		      resource =>"",
+		      rev => "",
+		      sub_class_id => "",
+		      sub_device => $model,
+		      sub_vendor => $vendor,
+		      unique_key => "",
+		      vendor => $vendor,
+		      vendor_id => "",
+		      device_file => $devfile } );
+		$cnt ++;
+	    }
+	    close CMD;
+	    y2debug( "Found $cnt scsi-scanners !");
+	}
+	else
+	{
+	    y2debug( "ERROR: Could not open sane-find-scanner!" );
+	}
+
+    }
+    elsif( $action =~ /configured/i )
+    {
+        y2debug( "Searching for configured scanners!" );
+        my $cmd = "/usr/X11R6/bin/scanimage -s";
+	@scanners = ();
+
+        if( open( CMD, "$cmd |" ) )
+        {
+	    my $cnt = 0;
+	    while( <CMD> )
+	    {
+		chomp;
+		my ($name, $vendor, $model, $class ) = split( /"\s+"/ );
+		$name =~ s/\"//g;
+		$name =~ s/^\s+|\s+$//g;
+	    
+		# split up a name-string like umax:/dev/scanner to driver and device
+		my ($driver, $devfile) = split( /:/, $name );
+
+		my $bus = "SCSI";
+		if( $devfile =~ /dev.+usb/i )
+		{
+		    $bus = "USB";
+		}
+		y2debug( "Found scanner $vendor $model on $devfile" );
+	    
+                # Push anonym hashes to the array. The array contains references to
+                # the hashes then.
+		push ( @scanners , 
+		       { bus => $bus, 
+			 class_id => "",
+			 device => trim($model),
+			 device_id => "",
+			 resource =>"",
+			 rev => "",
+			 sub_class_id => "",
+			 sub_device => trim($model),
+			 sub_vendor => trim($vendor),
+			 unique_key => "",
+			 vendor => trim($vendor),
+			 vendor_id => "",
+			 device_file => trim($devfile),
+			 class => trim($class),
+			 driver => trim($driver) } );
+		$cnt++;
+	    }
+	    close CMD;
+	    y2debug( "found $cnt configured scanners !" );
+	}
+        else
+        {
+	    y2debug( "ERROR: Could not open scanimage!" );
+	    @scanners = ();
+	}
+
+    }
+    else
+    {
+        y2debug( "ERROR: Unspecified action !" );
+    }
+    y2debug (" ^^^ Leaving ag_scanner - goodbye ^^^" );
+
+    ycpReturn( \@scanners );
+
+}
