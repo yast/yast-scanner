@@ -352,7 +352,7 @@ $driver{USB}{Agfa}{"SnapScan 1212u"} = "SnapScan";
 
 $driver{USB}{Agfa}{"SnapScan e20"} = "SnapScan";
 $driver{USB}{Agfa}{"SnapScan e40"} = "SnapScan";
-$driver{USB}{Vuego}{"SnapScan e50"} = "SnapScan";
+$driver{USB}{Agfa}{"SnapScan e50"} = "SnapScan";
 $driver{SCSI}{"Close SnapScan 310 compatible."} = "SnapScan";
 
 $driver{SCSI}{Acer}{"310s"} = "SnapScan";
