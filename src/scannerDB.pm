@@ -1577,15 +1577,15 @@ sub readDllconf()
 }
 
 
-sub acquireTestImage( $ )
+sub acquireTestImage( $$ )
 {
-    my ($usedev) = @_;
+    my ($usedev, $tmpdir) = @_;
 
     y2debug( "Scanning test image from <$usedev>" );
 
-    my $tmpfile = "$prefix/tmp/y2testimage.pnm";
-    my $tmpfile2 = "$prefix/tmp/y2testimage.png";
-    my $w = 200; my $h = 250;
+    my $tmpfile = "$prefix" . "$tmpdir/y2testimage_$PID.pnm";
+    my $tmpfile2 = "$prefix" . "$tmpdir/y2testimage_$PID.png";
+    my $w = 210; my $h = 295;
  
        my $cmd = sprintf( "/usr/X11R6/bin/scanimage -d %s > %s && /usr/bin/convert -border 3x3 -bordercolor darkgreen -geometry %dx%d "
 		       ." %s %s", $usedev, $tmpfile, $w, $h, $tmpfile, $tmpfile2 );
@@ -1593,6 +1593,7 @@ sub acquireTestImage( $ )
     y2debug( "Scanning test image with command <$cmd>" );
  
     system( $cmd );
+    unlink( $tmpfile );
 
     return( $tmpfile2 );
 
