@@ -21,7 +21,9 @@ use ycp;
 sub trim( $ )
 {
     my ($str) = @_;
+    $str =~ s/\"//g;
     $str =~ s/^\s+//;
+    
     $str =~ s/\s+$//;
     y2debug("Trim: Trimmed string to <$str>");
     return( $str );
