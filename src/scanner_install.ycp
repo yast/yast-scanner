@@ -20,7 +20,8 @@
 
 {
   textdomain "scanner";
- 
+  include "ui/summary.ycp";
+  
 /**
  * ScannerInstallDialog
  */
@@ -29,55 +30,36 @@
 
       string summary = "";
 
-      string vendor = GetActua;
+      string scanner = GetCurrentScannerValue( "vendor" ) + " - " + GetCurrentScannerValue( "device" );
+      summary = summaryAddSimpleSection( summary,  _( "The scanner" ), scanner );
 
-    if ( neededspace == 0 && test_mode )
-	neededspace = 730;
+      string devicefile = GetCurrentScannerValue( "devicefile" );
+      summary = summaryAddSimpleSection( summary, _( "was installed on device" ), devicefile );
 
-    summary = summaryAddSimpleSection( summary,
-				       
-				       // Headline in installation summary
-				       UI( _( "Software" ) ),
-
-				       // Info about amount of software that will be installed
-				       sformat( UI(_("%1 MB software will be installed.")), neededspace ) );
-
-
-
-    //
-    // User account
-    //
-
-    string username = lookup (user_settings, "loginname", "");
-    // show the user the final username used for login
-    if (size (username) > 0)
-    {
-	summary = summaryAddSimpleSection( summary,
-					   
-					   // Headline in installation summary
-					   UI( _( "User Account" ) ),
-					   
-					   // Info about user account that will be created
-					   sformat( UI( _( "User '%1' will be created." )), username ) );
-    }
-
-   term contents = `VBox(
-			  `VSpacing( 0.5 ),
-			  `RichText(`id(`summary), summary ),
-			  `VSpacing()
-			  // floppy button (if any) will be added later - see blow
-			  );
-   return contents;
+      term contents = `VBox(`VSpacing( 0.5 ),
+			    `HBox(
+				  `HSpacing( 0.5 ),
+				  `RichText(`id(`summary), summary ),
+				  `HSpacing( 0.5 )
+				  ),
+			    `VSpacing( 0.5 )
+			    );
+      return contents;
   }
 
 /**
  * ScannerInstallDialog
  */
   global define ScannerInstallDialog()``{
-      string help    = UI(_("<p>Scanner installation in progress</p>"));
+      string help    = "";
+      
+      // part 1 of helptext of dialog New scanner found
+      string help1    = _("<p>Your new scanner was installed
+successfully.</p>");
 
-     
-      string caption = UI(_("Installing local scanner"));
+      help = help1;
+      
+      string caption = _("Scanner Test");
       term contents  = ScannerInstallDialog_UI();
 
       UI(`SetWizardContentsButtons(caption,contents,help,BackButtonLabel(),NextButtonLabel()));
