@@ -174,8 +174,7 @@ $driver{USB}{HP}{"HP PSC 700 series"} = "hp";
 # $driver{Parport(ECP) USB JetDirect}{HP}{HP OfficeJet K series} = "hp";
 # $driver{}{HP}{HP OfficeJet V series} = "hp";
 
-
-$driver{HP}{HP}{"HP4200"} = "hp4200";
+# $driver{USB}{HP}{"HP4200"} = "hp4200";
 
 $driver{SCSI}{"Fujitsu"}{"M3096G"} = "m3096g";
 $driver{SCSI}{"Fujitsu"}{"SP15C"} = "sp15c";
