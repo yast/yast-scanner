@@ -1846,9 +1846,7 @@ sub getNetInfo( $ )
     if( enableNetScan( $host ) )
     {
 	# now the net station should be enalbed.
-	
     }
-
     
     unless( grep ( /$host/i, @origNetStations ))
     {
@@ -1876,6 +1874,22 @@ sub getNetInfo( $ )
 	    push @hostscanners, $scanref;
 	}
     }
+    
+    # copy the original files back to dll.conf and net.conf
+    if( -e "$prefix/etc/sane.d/dll.conf.yast2-$PID" )
+    {
+	y2debug( "Reverting to original dll.conf" );
+	move( "$prefix/etc/sane.d/dll.conf.yast2-$PID",
+	      "$prefix/etc/sane.d/dll.conf" );
+    }
+
+    if( -e "$prefix/etc/sane.d/net.conf.yast2-$PID" )
+    {
+	y2debug( "Reverting to original net.conf" );
+	move( "$prefix/etc/sane.d/net.conf.yast2-$PID",
+	      "$prefix/etc/sane.d/net.conf" ) ;
+    }
+
     return( @hostscanners );
 }
 
