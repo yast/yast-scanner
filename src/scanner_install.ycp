@@ -146,16 +146,18 @@ offers more scan and image processing functionality.
 	    string msg_str = "";
 	    if ( firmware_req == "some" )
 	    {
-		// text of an info popup
-		msg_str = _("Some SnapScan scanners require a firmware upload.
-You should not test the scanner now.
+		msg_str = sformat( 
+				  // text of an info popup
+				  _("Some %1 %2 scanners require a firmware upload.
 
-Finish the scanner installation first.
-After that, check 'http://snapscan.sourceforge.net'
-to see whether an upload is required.
+You should not test the scanner now but finish the
+scanner installation first.
+Check 'http://snapscan.sourceforge.net' to see whether
+an upload is required.
+
 'man sane-snapscan' also provides detailed information.
 
-");
+"), installed["vendor"]:"", installed["scanner_driver"]:"" );
 	    }
 	    else if ( firmware_req == "all" )
 	    {
@@ -165,10 +167,10 @@ You cannot test the scanner now.\n
 Finish the scanner installation first. After that
 do the firmware upload. See 'man sane-gt68xx' or
 'man sane-artec_eplus48u' for details.\n\n");
+		// disable the test button
+		UI::ChangeWidget(`id(`test), `Enabled, false); 
 	    }
 	    Popup::Message ( msg_str );
-	    // disable the test button
-	    UI::ChangeWidget(`id(`test), `Enabled, false); 
 	}
 
 	any ret = nil;
