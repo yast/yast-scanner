@@ -139,19 +139,6 @@
       else
       {
 	  connected_scanner = [
-			       $["bus":"USB",
-				"class_id":268,
-				"device":"Perfection 640",
-				"device_id":196876,
-				"scanner_status":test_status,
-				"resource":$["baud":[$["speed":1500000]]],
-				"rev":"0.01", "sub_class_id":0,
-				"sub_device":"Perfection640  ",
-				"dev_name":"/dev/usbscanner",
-				"sub_vendor":"EPSON",
-				"unique_key":"PTVH.9Hr5DGWrbRF",
-				"vendor":"Epson",
-				"vendor_id":197816],
 			       $["bus":"Net",		// this is a network scan station
 				"class_id":268,
 				"device":"Perfection 640",
@@ -273,7 +260,7 @@
 				       `next      :   "scanner_install"],
 		   "scanner_notfound" : $[
 					`scsi	:	"scanner_scsi",
-					//`usb 	:	"scanner_usb",
+					`usb 	:	"scanner_usb",
 					`manual :	"scanner_manual",
 					`net	:	"scanner_net",
 					`start  : 	"scanner_start",
