@@ -169,17 +169,21 @@ successfully you can proceed to the
       UI(`SetWizardContentsButtons(caption,contents,help,BackButtonLabel(),NextButtonLabel()));
 
       any ret = nil;
-      boolean load_ok = false;
+      boolean go_on = true;
 
       // main
 
-      repeat {
+      while ( go_on )
+      {
+	  go_on = true;
+	  
 	  ret = UI(`UserInput());
+
+	  integer exit_status = 1;
 
 	  if ( ret == `load || ret == `next )
 	  {
 	      // try to load the USB module
-
 	      string modprobe = "";
 
 	      any usb_device = UI( `QueryWidget(`id(`sel_usb), `CurrentItem) );
@@ -187,7 +191,6 @@ successfully you can proceed to the
 	      if ( usb_device == nil )
 	      {
 		  UI(`NotifyPopup(_("Please select a scanner from the list.")));
-		  ret = `again;
 	      }
 	      else
 	      {
@@ -196,23 +199,33 @@ successfully you can proceed to the
 				     UI(`QueryWidget(`id(`module), `Value)),
 				     lookup( device, "vendor_id", ""),
 				     lookup( device, "device_id", ""));
-	      
-		  y2milestone( "Loading USB: %1", modprobe );  
-	      }
-	      // if ( load_ok )
-	      // {
-	      //   popup OK -> you can go on
-	      //   
-	      // }
-	      // else
-	      //   popup ContinueCancel -> try again or abort
-	  }
-	  if ( ret == `next && !load_ok )
-	  {
-	      // popup ERROR -> you can't go on
-	  }
 
-      } until ( ret == `next || ret == `back || ret == `abort );
+		  exit_status = SCR(`Execute(.target.bash, modprobe ));
+		  y2milestone( "Loading USB: %1, exit status: %2", modprobe, exit_status );  
+
+		  if ( exit_status != 0 )
+		  {
+		      // text of an error popup: loading the module failed
+		      any cont = UI(`ContinueCancelHeadlinePopup( ErrorMsg(),
+"The USB module is NOT loaded successfully.
+Do you want to have another try or
+exit the scanner configuration?"));
+
+		      if ( !cont )
+		      {
+			  go_on = false;
+			  ret = `cancel;
+		      }
+		  }
+		  else if ( ret == `load )
+		  {
+		      // text of a notify popup: the loading was successful
+		      UI(`NotifyPopup(_("The USB module is loaded successfully.
+You may proceed by clicking on Next."))); 
+		  }  
+	      }
+	  }
+      }
 
       return ret;
       

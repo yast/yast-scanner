@@ -116,8 +116,7 @@
 				   "sub_vendor":"EPSON",
 				   "unique_key":"PTVH.9Hr5DGWrbRF",
 				   "vendor":"UMAX",
-				   "vendor_id":197816
-				   ] ];
+				   "vendor_id":197816 ] ];
       }
       else if ( test_status == `supported )
       {
@@ -134,20 +133,7 @@
 				"sub_vendor":"EPSON",
 				"unique_key":"PTVH.9Hr5DGWrbRF",
 				"vendor":"Epson",
-				"vendor_id":197816],
-			       $["bus":"SCSI",
-				"class_id":268,
-				"device":"UMAX 12G",
-				"device_id":196876,
-				"resource":$["baud":[$["speed":1500000]]],
-				"rev":"0.01", "sub_class_id":0,
-				"sub_device":"UMAX 12G  ",
-				"scanner_driver":"test456",
-				"sub_vendor":"EPSON",
-				"unique_key":"PTVH.9Hr5DGWrbRF",
-				"vendor":"UMAX",
-				"vendor_id":197816]
-	  ];  
+				"vendor_id":197816] ];  
       }
       else
       {
@@ -178,8 +164,7 @@
 				"sub_vendor":"EPSON",
 				"unique_key":"PTVH.9Hr5DGWrbRF",
 				"vendor":"Epson",
-				"vendor_id":197816]
-	  ];
+				"vendor_id":197816] ];
       }
 
       list installed_scanner = [];
@@ -264,6 +249,7 @@
 					`next     :   "scanner_overview"],
 		   "scanner_overview":   $[
 					   `abort     	:   "abort",
+					   `cancel	  :   `cancel,
 					   //`edit      :   "scanner_options",
 					   `new	  	:   "scanner_new",
 					   `notfound 	:   "scanner_notfound",
@@ -271,6 +257,7 @@
 					   `finish	:   `ok ],	// finish
 		   "scanner_new" :   $[
 				       `abort     :   "abort",
+				       `cancel	  :   `cancel,
 				       `notfound  :   "scanner_notfound",
 				       `next      :   "scanner_install"],
 		   "scanner_notfound" : $[
@@ -279,21 +266,27 @@
 					`manual :	"scanner_manual",
 					`net	:	"scanner_net",
 					`start  : 	"scanner_start",
-					`abort     :   "abort" ],
+					`abort     :   "abort",
+					`cancel	  :   `cancel],
 		   "scanner_usb"   : $[
 				       `abort     :   "abort",
+				       `cancel	  :   `cancel,
 				       `next      :   "scanner_manual"],
 		   "scanner_scsi"   : $[
 				       `abort     :   "abort",
+				       `cancel	  :   `cancel,
 				       `next      :   "scanner_manual"],
 		   "scanner_net"   : $[
 				       `abort     :   "abort",
+				       `cancel	  :   `cancel,
 				       `next      :   "scanner_install"],
 		   "scanner_manual"   : $[
 				       `abort     :   "abort",
+				       `cancel	  :   `cancel,
 				       `next      :   "scanner_new"],
 		   "scanner_install":   $[
 					  `abort     :   "abort",
+					  `cancel	  :   `cancel,
 					  `next      :   "scanner_overview"],
 		   "abort"      :   $[
 				      `yes 	  :   `abort ]

@@ -36,7 +36,7 @@
       
       term layout = `VBox (`VSpacing (2),
 			   // This is a label, i.e. the line length should not exceed 50 characters.
-			   `Left(`Label (`opt (`hstretch), _("YaST2 could not detect the SCSI scanner.\n
+			   `Left(`Label (`opt (`hstretch), _("YaST2 did not detect any SCSI scanners automatically.\n
 Please select your scanner from the list below."))),
 			   `VSpacing (1),
 			   `HBox (
@@ -71,8 +71,9 @@ devices which are connected to /dev/s<b>g</b>? device files).
 </p>"));
 
       // helptext part2 of dialog SCSI scanner configuration
+      // German: Um die Scanner-Daten zu vervollständigen..
       string help2 = UI(_("<p>To complete the scanner data 
-continue with the \"Manual scanner selection\"
+proceed with the \"Manual scanner selection\"
 dialog by clicking on <b>Next</b>.</p>"));
       
       // helptext of dialog SCSI scanner configuration (continued)
