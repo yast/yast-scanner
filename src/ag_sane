@@ -28,6 +28,12 @@ while ( <STDIN> )
     ycpDoVerboseLog();
     ycpInit( $_ );
 
+    if( /result/i )
+    {
+	y2debug("got result -> say goodby!" );
+	exit(0);
+    }
+
     my $action = ycpGetPath();
     y2debug( " vvv starting in ag_sane vvv" );
 
