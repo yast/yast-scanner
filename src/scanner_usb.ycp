@@ -164,7 +164,8 @@ manual scanner selection by clicking <b>Next</b>.</p>");
 
       // get all unknown USB devices
       foreach ( `device, usb_devices, ``{
-	  if ( lookup( device, "drivers", [] ) == [] )
+	  if ( lookup( device, "drivers", [] ) == []		// driver unknown
+	       && lookup( device, "class_id", 0 ) != 266 )	// don't show hubs
 	  {
 	      usb_unknown = add( usb_unknown, no, device );
 	      string device_str = lookup( device, "device", "");
