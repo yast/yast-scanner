@@ -819,7 +819,7 @@ YAST2_DEVICE #/dev/scanner
 EndOfConf
 
 $config{canon} = <<"EndOfConf";
-#canon} = <<"EndOfConf";
+#
 YAST2_DEVICE #/dev/scanner
 #/dev/sg0
 EndOfConf
@@ -991,7 +991,6 @@ YAST2_DEVICE #/dev/scanner
 EndOfConf
 
 $config{epson} = <<"EndOfConf";
-# epson} = <<"EndOfConf";
 #
 # here are some examples for how to configure the EPSON backend
 #
@@ -1007,7 +1006,8 @@ scsi EPSON
 #               otherwise block your non-EPSON scanner from being 
 #               recognized.
 #usb /dev/usbscanner0
-YAST2_BUS YAST2_DEVICE 
+IF BUS=USB usb YAST2_DEVICE 
+
 EndOfConf
 
 
@@ -1338,11 +1338,17 @@ sub writeDllconf( $ )
     return $res;
 }
 
-
+#
+# patchConfigFile is disabled because it seems to destroy existing configurations
+# more than patching them correctly.
+# if a configuration already exits, it is copied to backend.conf.yast2save
+#
 sub patchConfigFile( $$$ )
 {
     my ( $cfg_file_name, $bus, $device ) = @_;
     my $res = 0;
+
+    y2debug( "Patching config file <$cfg_file_name>" );
 
     if( open( F, $cfg_file_name )) 
     {
@@ -1409,23 +1415,50 @@ sub writeIndividualConf( $$$ )
     }
 
     my $cfg = $config{ $vendor };
-    
+    my @cfg = split( /\n/, $cfg );
+
     y2debug( "Writing $cfg" );
     
     my $cfg_file = "$prefix/etc/sane.d/$vendor.conf";
 
     if( -e $cfg_file )
     {
-	$res = patchConfigFile( $cfg_file, $bus, $device );
-    }
-    else
-    {
-	$cfg =~ s/YAST2_DEVICE/$device/im;
-	$cfg =~ s/YAST2_BUS/$bus/im;
+	copy ( $cfg_file , $cfg_file . ".yast2save" );
+	y2debug( "<$cfg_file> already exists, copying to <$cfg_file.yast2save>" );
 
+	# $res = patchConfigFile( $cfg_file, $bus, $device );
+    }
+    
+    {
 	if( open( F, ">$cfg_file" ) )
 	{
-	    print F $cfg;
+	    foreach my $cfg_line ( @cfg )
+	    {
+		y2debug( "Handling line <$cfg_line> from cfg-template" );
+		if( $cfg_line =~ /^IF\s+(.+)\s*=\s*(\w+?)\s+(.+)\s*/ )
+		{
+		    my $tag = $1;
+		    my $val = $2;
+		    my $line = $3;
+		    y2debug( "If-condition found: <$tag> = <$val> ? <$line>" );
+		    if( $tag =~ /bus/i )
+		    {
+                        # The tag is BUS. Print the line if val equal to our bus variable
+			unless( lc $val eq lc $bus )
+			{
+			    next;
+			}
+			else
+			{
+			    $cfg_line = $line;
+			}
+		    }
+		}
+		$cfg_line =~ s/YAST2_DEVICE/$device/im;
+		$cfg_line =~ s/YAST2_BUS/$bus/im;
+		
+		print F "$cfg_line\n";
+	    }
 	    $res = close F;
 	}
 	else
