@@ -1,0 +1,94 @@
+/**
+ * File:
+ *   scanner_manual.ycp
+ *
+ * Module:
+ *   Configuration of scanner
+ *
+ * Summary:
+ *   
+ *
+ * Authors:
+ *   Gabriele Strattner <gs@suse.de>
+ *
+ * $Id$
+ *
+ * 
+ * Manual scanner detection. 
+ * 
+ *
+ */
+
+{
+
+  global define ScannerNetDialog_UI() ``{
+
+      term layout = `Empty();
+
+      layout = `VBox( `Label(`opt (`hstretch), _("Your scanner was not detected automatically -
+a manual configuration is necessary.")),
+		      `VSpacing(1.5),
+		      `HBox(`HSpacing(0.5),
+			    `Frame (_("Select the scanner type"),
+				    `RadioButtonGroup(`id(`scanner),
+						      `VBox(`VSpacing (0.6),
+							    `Left(`RadioButton(`id(`usb),`opt (`hstretch),
+									       _("&USB scanner"), true) ),
+							    `VSpacing (0.6),
+							    `Left(`RadioButton(`id(`scsi),`opt(`hstretch),
+									       _("SCSI scanner"),  false) ),
+							    `VSpacing (1.2),
+							    `Left(`RadioButton(`id(`net),`opt(`hstretch),
+									       _("&Network scan station") ,  false) ),
+							    `VSpacing (0.6)
+							    )
+						      )
+				    ),
+			    `HSpacing(3.0)
+			    ),
+		      `VSpacing(1.0)
+		      );
+      return layout;
+  }
+
+/**
+ * ScannerStartDialog
+ */
+  global define ScannerNetDialog()``{
+      string help = "";
+      string help1    = UI(_("<p>Please check first whether your scanner is
+connected correctly and is switched on.</p> "));
+      string help2    = UI(_("<p>In case of USB you can connect and switch
+on the scanner and go <b>Back</b> to scanner detectection.
+<b><i>Attention!</i></b> Do NOT connect or disconnect a SCSI scanner
+on running system - but shutdown and reboot. 
+</p>")
+			   );
+      string help3    = UI(_("<p>YaST2 provides assistence for manual
+USB and SCSI scanner configuration. You can also
+configure a network scan station. Select the correct button
+and click on <b>Next</b>.</p>"));
+
+      help = help1 + help2 + help3;
+      
+      string caption = UI(_("Configuration of network scanner"));
+      term contents  = ScannerNetDialog_UI();
+
+      UI(`SetWizardContentsButtons(caption,contents,help,BackButtonLabel(),NextButtonLabel()));
+
+      any ret = nil;
+
+      ret = UI(`UserInput());
+
+      if ( ret == `next )
+      {
+	  return ( UI(`QueryWidget(`id(`scanner), `CurrentButton)) );
+      }
+      else
+      {
+	  return ret;
+      }
+	      
+  }
+
+}
