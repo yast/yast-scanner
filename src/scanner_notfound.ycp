@@ -40,19 +40,20 @@ manual configuration is required.")),
 				    `RadioButtonGroup(`id(`scanner),
 						      `VBox(`VSpacing (0.6),
 							    `Left(`RadioButton(`id(`usb),`opt (`hstretch),
-									       // radiobutton1
+									       // radiobutton1 - scanner connected to USB bus
 									       _("&USB scanner"), true) ),
 							    `VSpacing (0.6),
 							    `Left(`RadioButton(`id(`scsi),`opt(`hstretch),
-									       // radiobutton2
+									       // radiobutton2 - scanner connected to SCSI
 									       _("&SCSI scanner"),  false) ),
     							    `VSpacing (0.6),
 							    `Left(`RadioButton(`id(`ptal),`opt(`hstretch),
-									       // radiobutton3
+									       // radiobutton3 - Hewlett-Packard multi functional
+									       // devices; german: Multifunktionsgeräte
 									       _("&HP All-in-One"),  false) ),
 							    `VSpacing (1.2),
 							    `Left(`RadioButton(`id(`net),`opt(`hstretch),
-									       // radiobutton3
+									       // radiobutton4 - network scanner
 									       _("N&etwork scan station") ,  false) ),
 							    `VSpacing (0.6)
 							    )
@@ -234,7 +235,8 @@ After that enter the scanner configuration again. ") );
 		  }
 		  else
 		  {
-		     Popup::Error(_("No HP all-in-one device detected. 
+		      // Text of an error popup
+		      Popup::Error(_("No HP all-in-one device detected. 
 Make sure the device is switched on
 and start the scanner configuration again.
 "));
