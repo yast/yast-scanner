@@ -1,4 +1,12 @@
 -------------------------------------------------------------------
+Fri Nov 21 13:56:04 CET 2003 - gs@suse.de
+
+- V 2.9.1
+- install kdegraphics3-scan (Kooka)
+- some text/layout improvements 
+- don't show hubs in USB dialog
+
+-------------------------------------------------------------------
 Tue Sep  9 15:57:57 CEST 2003 - gs@suse.de
 
 - V 2.8.13
