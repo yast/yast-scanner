@@ -99,7 +99,7 @@ can be obtained by issuing the command <b>/usr/sbin/hwinfo --storage_ctrl</b>
       help = help1 + help2 + help3 + help4;
 
       // get a list of all SCSI devices
-      list scsi_devices = SCR::Read(.probe.bybus.scsi);
+      list scsi_devices = SCR::Read(.probe.scsi);
 
       if ( lookup (user_settings, "test_mode", false ) )
       {
@@ -181,7 +181,7 @@ can be obtained by issuing the command <b>/usr/sbin/hwinfo --storage_ctrl</b>
 	      CreateScannerEntry( device ); 
 	  }
 	  
-      } until ( ret == `next || ret == `back || ret == `abort );
+      } until ( ret == `next || ret == `back || ret == `abort || ret == `cancel );
       
       return ret;
   };

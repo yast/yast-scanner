@@ -208,7 +208,7 @@ while ( <STDIN> )
 
 
 	# Not net !
-	my $driver = findInHash( "driver", \%scanner );
+	my $driver = findInHash( "scanner_driver", \%scanner );
 	my $devicefile = findInHash( "dev_name", \%scanner );
 	y2debug( "Installing driver <$driver> for scanner <$vendor/$model> on <$devicefile>" );
 
@@ -242,7 +242,7 @@ while ( <STDIN> )
     elsif( $action =~ /removeDriver/ )
     {
 	my $ok = 0;
-	my $driver = findInHash( "driver", \%scanner );
+	my $driver = findInHash( "scanner_driver", \%scanner );
 
 	y2debug( "Handling action removeDriver" );
 
@@ -303,7 +303,7 @@ while ( <STDIN> )
 	y2debug( "Handling action scanimage" );
 	my $resFile = "";
 	my $devicefile = findInHash( "dev_name", \%scanner );
-	my $driver = findInHash( "driver", \%scanner );
+	my $driver = findInHash( "scanner_driver", \%scanner );
 	my $tmpdir = findInHash( "tmpdir", \%scanner );
 	y2debug( "Scanning to temp-dir: $tmpdir" );
 	if( !defined $driver || $driver eq "" || !defined $devicefile || $devicefile eq "" )

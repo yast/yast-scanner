@@ -230,7 +230,7 @@
   Wizard::CreateDialog();
 
   map aliases = $[
-		  "scanner_start"	:   ``( ScannerStartDialog() ),
+		  "scanner_start"       :   [``( ScannerStartDialog() ), true ],
 		  "scanner_overview"	:   ``( ScannerOverviewDialog() ),
 		  "scanner_new"		:   ``( ScannerNewDialog() ),
 		  "scanner_install"	:   ``( ScannerInstallDialog() ),

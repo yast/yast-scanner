@@ -52,9 +52,14 @@
 	  string usb_module  = lookup(scanner, "usb_module", "" );
 	  string bus = lookup(scanner, "bus", "" );
 	  string is_installed = lookup( scanner, "scanner_status", "" );
-
+	  string unique_key =  lookup( scanner, "unique_key", "" );
+	  
 	  if( is_installed == "installed" )
 	  {
+	      
+	      any ret = SCR::Write(.probe.status.configured, unique_key, `yes);
+	      y2milestone ( "Mark scanner %1 as configured",  unique_key );
+	      
 	      if ( usb_module != "" && usb_options != $[] )
 	      {
 		  ret = SCR::Write(.modules.options, usb_options , usb_module );
