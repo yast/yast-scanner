@@ -50,7 +50,7 @@ manual configuration is required.")),
 							    `Left(`RadioButton(`id(`ptal),`opt(`hstretch),
 									       // radiobutton3 - Hewlett-Packard multi functional
 									       // devices; german: Multifunktionsgeräte
-									       _("&HP All-in-One"),  false) ),
+									       _("&HP OfficeJet All-in-One"),  false) ),
 							    `VSpacing (1.2),
 							    `Left(`RadioButton(`id(`net),`opt(`hstretch),
 									       // radiobutton4 - network scanner
@@ -194,6 +194,7 @@ USB scanner, because only ONE is supported.") + "\n" + msg);
 		  if ( !installed )
 		  {
 		      ret = `cancel;
+		      continue;
 		  }
 		      
 		  // call ptal-init setup
@@ -202,14 +203,17 @@ USB scanner, because only ONE is supported.") + "\n" + msg);
 		  if ( exitcode != 0 )
 		  {
 		      y2error( "command 'ptal-init setup-usb' failed" );
-		      // Text of an error popup.
-		      Popup::Error(_("No HP all-in-one device detected.\n
-Make sure that the device is switched on and try again.
-In case of a Jet Direct connection, abort now and call
-'ptal-init setup' manually (you must be \"root\" to do this).
-After that enter the scanner configuration again. ") );
+		      // Text of an error popup. YaST2 automatically detects USB
+		      // connected devices, if connected to JetDirect or parallel
+		      // the user has to do the configuration manually.
+		      Popup::Error(_("No HP all-in-one device detected.
+Make sure that the device is switched on and try again.\n
+In case of a JetDirect connection or parallel-connected
+device abort the scanner configuration and call
+'ptal-init setup' manually. Configure the scanner by enabling
+the 'hpoj' driver in '/etc/sane.d/dll.conf'
+(you must be \"root\" to do this).\n\n") );
 		      go_on = true;
-		      continue;
 		  }
 
 		  list ptal_scanner = SCR::Read(.scanner.ptal);
@@ -232,15 +236,6 @@ After that enter the scanner configuration again. ") );
 		  {
 		      CreateScannerEntry( ptal_scanner[0]:$[]);
 		      ret = `manual;
-		  }
-		  else
-		  {
-		      // Text of an error popup
-		      Popup::Error(_("No HP all-in-one device detected. 
-Make sure the device is switched on
-and start the scanner configuration again.
-"));
-		      ret = `cancel;  
 		  }
 	      }
 	      else
