@@ -41,7 +41,7 @@ make install
 %files
 %dir @YAST2DIR@/clients
 %dir @YAST2DIR@/menuentries
-@YAST2DIR@/menuentries/menuentry_scanner.ycp
+@YAST2DIR@/menuentries/menuentry_scanner.y2cc
 @YAST2DIR@/clients/scanner.ycp
 @YAST2DIR@/include/scanner/scanner_functions.ycp
 @YAST2DIR@/include/scanner/scanner_start.ycp
