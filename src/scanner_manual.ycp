@@ -82,7 +82,7 @@
       string scanner = vstring + " - " + mstring;
 
       list vendor_list = CreateVendorList();
-      list model_list  = CreateModelList( select( select(vendor_list, 0), 1) );
+      list model_list  = CreateModelList( select( select(vendor_list, 0, `item()), 1, "") );
 
       term layout = `VBox(
 			  `VSpacing (1),
