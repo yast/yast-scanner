@@ -65,9 +65,10 @@ the vendor ID and the USB module name (usually 'scanner')
 and press the <b>Load</b> button.</p>"));
 
       // help part 2 of dialog manual USB Scanner configuration
+      // Translators: Please DO NOT translate 'Vendor:' and 'Model:'!
       string help2    = UI(_("<p>The information on the IDs can be obtained
 by issuing the command <b>hwinfo --usb</b> (look for the '<i>Vendor:</i>'
-and '<i>Model:</i>' entries and take the digits in from, e.g. 010c).
+and '<i>Model:</i>' entries and take the digits in front, e.g. 010c).
 </p> "));
 
       // help part 3 of dialog manual USB Scanner configuration
