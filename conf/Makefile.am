@@ -5,7 +5,6 @@
 scrconfdir = $(YAST2DIR)/scrconf
 
 scrconf_DATA = scanner.scr	\
-		sane.scr	\
-		cfg_scanner.scr
+		sane.scr
 
 EXTRA_DIST = $(scrconf_DATA)
