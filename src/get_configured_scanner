@@ -1,0 +1,90 @@
+#!/usr/bin/perl
+#
+# This script is part of the YaST2 Scanner installation module
+# Copyright SuSE Gmbh - 2001
+# 
+# Author: Klaas Freitag <freitag@suse.de>
+# 
+# Attention: This script requires package sane V. 1.0.5
+#
+# $Id$
+#
+
+BEGIN { unshift @INC, "/usr/lib/YaST2/agents_non_y2/"; }
+
+use ycp;
+
+#
+# Simple sub to cut off whitespaces in front and at the end of
+# of a string.
+#
+sub trim( $ )
+{
+    my ($str) = @_;
+    $str =~ s/^\s+//;
+    $str =~ s/\s+$//;
+    return( $str );
+}
+
+
+#
+# main starts here.
+#
+my @cfg_scanners;
+
+while ( <STDIN> )
+{
+    ycpDoVerboseLog();
+    ycpInit( $_ );
+
+    my $cmd = "/usr/X11R6/bin/scanimage -s";
+
+    if( open( CMD, "$cmd |" ) )
+    {
+	while( <CMD> )
+	{
+	    chomp;
+	    my ($name, $vendor, $model, $class ) = split( /"\s+"/ );
+	    $name =~ s/\"//g;
+	    $name =~ s/^\s+|\s+$//g;
+	    
+	    # split up a name-string like umax:/dev/scanner to driver and device
+	    my ($driver, $devfile) = split( /:/, $name );
+
+	    my $bus = "SCSI";
+	    if( $devfile =~ /dev.+usb/i )
+	    {
+		$bus = "USB";
+	    }
+	    y2debug( "Found scanner $vendor $model on $devfile" );
+	    
+	    # Push anonym hashes to the array. The array contains references to
+	    # the hashes then.
+	    push ( @cfg_scanners , 
+		   { bus => $bus, 
+		     class_id => "",
+		     device => trim($model),
+		     device_id => "",
+		     resource =>"",
+		     rev => "",
+		     sub_class_id => "",
+		     sub_device => trim($model),
+		     sub_vendor => trim($vendor),
+		     unique_key => "",
+		     vendor => trim($vendor),
+		     vendor_id => "",
+		     device_file => trim($devfile),
+		     class => trim($class),
+		     driver => trim($driver) } );
+	}
+	close CMD;
+    }
+    else
+    {
+	y2debug( "ERROR: Could not open scanimage!" );
+	@cfg_scanners = ();
+    }
+
+    
+    ycpReturn( \@cfg_scanners );
+}
