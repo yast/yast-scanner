@@ -459,6 +459,8 @@ the scanner configuration\n."));
 global boolean Write() {
       boolean ret = true;
 
+      map<any,map> scanner_info = Scanner::user_settings["scannerInfo"]:$[];
+
       foreach( any key, map scanner, scanner_info, ``{
 
 	  string usb_usermap = lookup( scanner, "usb_usermap", "" );

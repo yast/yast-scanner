@@ -58,7 +58,7 @@ define symbol WriteDialog () {
 
     y2milestone("FINISH the scanner installation - confirm all changes." );
 
-    boolean ret = Scanner::Write(lookup(Scanner::user_settings, "scannerInfo", $[]));
+    boolean ret = Scanner::Write();
     return ret ? `next : `abort;
 }
 
