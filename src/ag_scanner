@@ -48,20 +48,19 @@ while ( <STDIN> )
     y2debug( " vvv starting in ag_scanner vvv" );
 
     y2debug( "Got Action = ycpPath = <$action>");
+    
+    if ( ycpCommandIsRead() ) {
 
-    if( $action =~ /scsi/i )
-    {
+      if ( $action =~ /scsi/i ) {
 	y2debug( "Performing scsi bus scan for scanners!" );
 	my $cmd = "/usr/X11R6/bin/sane-find-scanner -s";
 	@scanners = ();
 
-	if( open( CMD, "$cmd |" ) )
-	{
-	    my $cnt = 0;
-	    while( my $cmd = <CMD> )
-	    {
-		chomp( $cmd );
-		if( $cmd =~ m{
+	if ( open( CMD, "$cmd |" ) ) {
+	  my $cnt = 0;
+	  while ( my $cmd = <CMD> ) {
+	    chomp( $cmd );
+	    if ( $cmd =~ m{
 		    ^
 			(\S+)               # The device file, starts with /dev/
 			    \s+             # followed by one whitespace
@@ -75,69 +74,77 @@ while ( <STDIN> )
                         \s+                 #
                             \"([^"]+)\"     # and a model string.
 		}x)                         # the trailing 'x' is important ! 
-		{
-		    my $devfile = $1;
-		    my $bus = $2;
-		    my $class = $3;
-		    my $vendor  = $4;
-		    my $model   =  $5;
-		    # print ("Found $class $vendor $model on $devfile\n" );
-		    y2debug( "Found $class $vendor $model on $devfile" );
+		  {
+		   my $devfile = $1;
+		   my $bus = $2;
+		   my $class = $3;
+		   my $vendor  = $4;
+		   my $model   =  $5;
+		   # print ("Found $class $vendor $model on $devfile\n" );
+		   y2debug( "Found $class $vendor $model on $devfile" );
 		    
-		    next if( $bus ne "SCSI" ); # only scsi here, USB is handled by hwinfo
+		   next if( $bus ne "SCSI" ); # only scsi here, USB is handled by hwinfo
 		    
-                    # Check if there are links and skip them
-		    if( -l $devfile )
-		    {
-		       y2debug( "$devfile is a link -> skipping !" );
-		       next;
-		    }
+		   # Check if there are links and skip them
+		   if ( -l $devfile ) {
+		     y2debug( "$devfile is a link -> skipping !" );
+		     next;
+		   }
 
-		    push ( @scanners ,
-		    {
-		       bus => "SCSI",
-			  class_id => "",
-			  device => $model,
-			  device_id => "",
-			  resource =>"",
-			  rev => "",
-			  sub_class_id => "",
-			  sub_device => $model,
-			  sub_vendor => $vendor,
-			  unique_key => "",
-			  vendor => $vendor,
-			  vendor_id => "",
-			  dev_name => $devfile } );
-		    $cnt ++;
-		}
-		y2debug( "Found $cnt scsi-scanners !");
-	    }
-	    # '
-	    close CMD;
+		   push ( @scanners ,
+			  {
+			   bus => "SCSI",
+			   class_id => "",
+			   device => $model,
+			   device_id => "",
+			   resource =>"",
+			   rev => "",
+			   sub_class_id => "",
+			   sub_device => $model,
+			   sub_vendor => $vendor,
+			   unique_key => "",
+			   vendor => $vendor,
+			   vendor_id => "",
+			   dev_name => $devfile } );
+		   $cnt ++;
+		  }
+		    y2debug( "Found $cnt scsi-scanners !");
+	  }
+	  # '
+	  close CMD;
+	} else {
+	  y2debug( "ERROR: Could not open sane-find-scanner!" );
 	}
-	else
-	{
-	    y2debug( "ERROR: Could not open sane-find-scanner!" );
-	}
-    }
-    elsif( $action =~ /configured/i )
-    {
+      } elsif ( $action =~ /configured/i ) {
         y2debug( "Handling action <configured>" );
         @scanners = performScanimage();
-    }
-    elsif( $action =~ /net/i )
-    {
+      } elsif ( $action =~ /net/i ) {
         y2debug( "Handling action <net>" );
         @scanners = performScanimage( 1 );
-    }
-    else
-    {
+      } else {
         y2debug( "ERROR: Unspecified action !" );
+      }
+      y2debug (" ^^^ Leaving ag_scanner - goodbye ^^^" );
+
+      ycpReturn( \@scanners );
     }
-    y2debug (" ^^^ Leaving ag_scanner - goodbye ^^^" );
+    
+    # Dir command
+    elsif ( ycpCommandIsDir() ) {
+	my @paths = ("scsi","net","configured");
+	ycpReturn( \@paths );
+      }
+    
+    # Result
+    elsif ( ycpCommandIsResult() ) {
+	exit;
+    }
 
-    ycpReturn( \@scanners );
-
+    # Unknown
+    else {
+        y2debug ("Unknown instruction ", ycpGetCommand, " or argument: ", ycpGetArgType);
+        ycpReturnSkalarAsBoolean (0);
+    }
 }
 
 # EOF
