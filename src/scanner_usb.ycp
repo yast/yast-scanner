@@ -44,8 +44,10 @@
 
       layout = `VBox(`VSpacing(1.0),
 // This is a label, i.e. the line length should not exceed 50 characters.
-		     `Label(`opt (`hstretch), _("The scanner cannot be configured automatically.\n
-Please select your scanner from the list below.")),
+		     `Label(`opt (`hstretch), _("The scanner cannot be configured automatically.
+
+Select your scanner from the list below.
+")),
 		      `VSpacing(0.3),
 		      `HBox( `HWeight(6, `SelectionBox(`id(`sel_usb),
 						     // label for a list of USB devices
@@ -87,7 +89,7 @@ manual scanner selection by clicking <b>Next</b>.</p>");
 
       // help part 3
       string help3    = _("<p>Attention: Manual configuration of an unknown USB scanner is for experts only.
-Make sure that the data entered in next dialog are correct.</p>");
+Make sure that the data entered in next dialog is correct.</p>");
       help = help1 + help2 + help3;
 
       // get a list of USB devices
