@@ -18,7 +18,7 @@ scanner_DATA =			\
 	scanner_notfound.ycp	\
 	scanner_functions.ycp
 
-config_DATA = menuentry_scanner.y2cc
+config_DATA = scanner.y2cc
 
 agentdir = $(yast2dir)/servers_non_y2
 agent_SCRIPTS = ag_scanner ag_sane scannerDB.pm
