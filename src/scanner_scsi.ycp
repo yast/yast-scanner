@@ -85,11 +85,10 @@ dialog by clicking on <b>Next</b>.</p>");
       // helptext part3 of dialog SCSI scanner configuration
       string help3 = _("<p>If your scanner is not in the list and
 you added a new SCSI controller to your computer, you will probably
-have to load the SCSI kernel module (driver) first.
-Press <b>Abort</b> to exit the scanner installation and call
-module <b>Hardware/Disk controller</b> to configure the new 
-controller.</p>
-");
+need to load the SCSI kernel module (driver) first.
+Press <b>Abort</b> to exit the scanner installation and start
+module <b>Hardware/Disk Controller</b> to configure the new 
+controller.</p>\n");
       
       // helptext of dialog SCSI scanner configuration (continued)
       string help4 = _("<p>Information on your SCSI storage controller
