@@ -202,38 +202,39 @@ USB scanner, because only ONE is supported.") + "\n" + msg);
 		  {
 		      y2error( "command 'ptal-init setup-usb' failed" );
 		      // Text of an error popup.
-		      Popup::Error(_("Initialisation of the PTAL device failed.\n
+		      Popup::Error(_("No HP all-in-one device detected.\n
 Make sure that the device is switched on and try again.
-If failure continous, abort the scanner installation
-and try to call 'ptal-init setup'
-manually (you must be \"root\" to do this). ") );
+In case of a Jet Direct connection, abort now and call
+'ptal-init setup' manually (you must be \"root\" to do this).
+After that enter the scanner configuration again. ") );
 		      go_on = true;
+		      continue;
 		  }
-
 
 		  list ptal_scanner = SCR::Read(.scanner.ptal);
 		  y2milestone( "HP all-in-one devices: %1", ptal_scanner );
 
-		  // we support only ONE PTAL scanner
 		  if ( size (ptal_scanner) > 1 )
 		  {
-		      // text part 1 of the warning popup - disconnect unused scanners
-		      Popup::Warning(_("YaST2 has detected several HP all-in-one devices, 
-but you can only use ONE of them.
-
-Disconnect all unwanted scanners
-and restart the scanner configuration.
-"));
-		      ret = `cancel;
+		      map scanners = $[];
+		      integer no = 0;
+		      foreach ( `scanner, ptal_scanner, ``{
+			  scanners = add( scanners, no, scanner );
+			  no = no+1;
+		      }	);
+		      // headline for a popup
+		      integer id = DisplayScannerList( scanners, _("List of HP all-in-one devices") );
+		      CreateScannerEntry( scanners[id]:$[] );
+		      ret = `manual;
 		  }
 		  else if ( size (ptal_scanner) == 1 )
 		  {
-		      CreateScannerEntry( ptal_scanner[0]:[]);
+		      CreateScannerEntry( ptal_scanner[0]:$[]);
 		      ret = `manual;
 		  }
 		  else
 		  {
-		     Popup::Error(_("No HP all-in-one devices detected. 
+		     Popup::Error(_("No HP all-in-one device detected. 
 Make sure the device is switched on
 and start the scanner configuration again.
 "));
