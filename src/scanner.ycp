@@ -170,7 +170,8 @@
 				"device":"Perfection 640",
 				"device_id":196876,
 				"scanner_status":test_status,
-				"devicefile":"d142",		// hostname of the scan station	
+				"devicefile":"/dev/sg0",		// devicefile on the scan station
+				"host"	: "d142",			// hostname
 				"resource":$["baud":[$["speed":1500000]]],
 				"rev":"0.01", "sub_class_id":0,
 				"sub_device":"Perfection640  ",
