@@ -104,20 +104,24 @@ while ( <STDIN> )
     #}
 
     my %scanner;
+    my $vendor;
+    my $bus;
+    my $model;
+
     if ( ref ($argument) eq "HASH" )
     {
 	%scanner = %{$argument};
-    }
-    my $vendor = findInHash( "vendor", \%scanner );
-    my $bus    = findInHash( "bus", \%scanner  );
-    my $model  = findInHash( "device", \%scanner );
-    if( ! defined( $vendor ) )
-    {
-	$vendor = findInHash( "sub_vendor", \%scanner );
-    }
-    if( ! defined( $model ) )
-    {
-	$model = findInHash( "sub_device", \%scanner );
+	$vendor = findInHash( "vendor", \%scanner );
+	$bus    = findInHash( "bus", \%scanner  );
+	$model  = findInHash( "device", \%scanner );
+	if( ! defined( $vendor ) )
+	{
+	    $vendor = findInHash( "sub_vendor", \%scanner );
+	}
+	if( ! defined( $model ) )
+	{
+	    $model = findInHash( "sub_device", \%scanner );
+	}
     }
 
     #Read command
