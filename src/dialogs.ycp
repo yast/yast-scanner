@@ -137,10 +137,16 @@ any OverviewDialog()
                                                  overview_table,
                                                  nil,
                                                  nil,
-                                                 nil,
-                                                 `PushButton( `id( `test_button ),
-                                                              // Label of a PushButton to test a scanner:
-                                                              _("&Test"))
+                                                 `HBox( `PushButton( `id( `test_button ),
+                                                                     // Label of a PushButton to test a scanner:
+                                                                     _("&Test")
+                                                                   ),
+                                                        `PushButton( `id( `network_scanning_button ),
+                                                                     // Label of a PushButton to go to the network scanning dialog:
+                                                                     _("&Network scanning")
+                                                                   )
+                                                      ),
+                                                 nil
                                                );
   contents = Wizard_hw::SpacingAround( contents, 1.5, 1.5, 1.0, 1.0 );
   Wizard::SetContentsButtons( caption,
@@ -219,6 +225,11 @@ any OverviewDialog()
         continue;
       }
       ret = `overview;
+      break;
+    }
+    /* network scanning */
+    if( ret == `network_scanning_button )
+    { ret = `network_scanning;
       break;
     }
     /* next or back */
@@ -353,11 +364,93 @@ any ConfigureBackendDialog()
     { if( ! Scanner::DeactivateBackend( "", Scanner::selected_model_database_index, false ) )
       { Popup::Error( sformat( // Message of a Popup::Error where %1 will be replaced by the backend name:
                                _("Failed to deactivate backend %1."), backend_name ) );
-        break;
       }
       break;
     }
     if( ret == `next )
+    { break;
+    }
+    y2milestone( "Ignoring unexpected returncode in ConfigureBackendDialog: %1", ret );
+    continue;
+  }
+  return ret;
+}
+
+/**
+ * Network scanning dialog
+ * @return dialog result
+ */
+any ConfigureNetworkScanningDialog()
+{ // Determine the network scanning config
+  // but don't care if this fails because then empty strings are used as secure fallback
+  // and empty strings will disable network scanning (i.e. the net backend and the saned):
+  Scanner::DetermineNetworkScanningConfig();
+  string net_backend_hosts = Scanner::network_scanning_config["net_backend_hosts"]:"";
+  string saned_hosts = Scanner::network_scanning_config["saned_hosts"]:"";
+  // Caption of the ConfigureNetworkScanningDialog:
+  string caption = _("Network Scanning Configuration");
+  term contents = `VBox( `ReplacePoint( `id(`saned_hosts_input_replace_point),
+                                        `TextEntry( `id(`saned_hosts_input),
+                                                    // Header of a TextEntry user input field:
+                                                    _("&Permitted hosts for the 'saned' (comma seperated list of hosts or subnets):"),
+                                                    saned_hosts
+                                                  )
+                                      ),
+                         `ReplacePoint( `id(`net_backend_hosts_input_replace_point),
+                                        `TextEntry( `id(`net_backend_hosts_input),
+                                                    // Header of a TextEntry user input field:
+                                                    _("&Used hosts for the 'net' backend (comma seperated list of hosts):"),
+                                                    net_backend_hosts
+                                                  )
+                                      ),
+                         `PushButton( `id(`propose_config),
+                                      // Label of a PushButton to propose a configuration:
+                                      _("&Propose")
+                                    )
+                       );
+  Wizard::SetContentsButtons( caption,
+                              contents,
+                              HELPS["configure_network_scanning"]:"",
+                              Label::BackButton(),
+                              Label::NextButton()
+                            );
+  any ret = nil;
+  while(true)
+  { ret = UI::UserInput();
+    /* abort or cancel */
+    if( ret == `abort
+        || ret == `cancel )
+    { if( ! ReallyAbort() ) continue;
+      break;
+    }
+    /* propose a configuration */
+    if( ret == `propose_config )
+    { UI::ReplaceWidget( `id(`saned_hosts_input_replace_point),
+                         `TextEntry( `id(`saned_hosts_input),
+                                     // Header of a TextEntry user input field:
+                                     _("&Permitted hosts for the 'saned' (comma seperated list of hosts or subnets):"),
+                                     "localhost,127.0.0.0/8"
+                                   )
+                       );
+      UI::ReplaceWidget( `id(`net_backend_hosts_input_replace_point),
+                         `TextEntry( `id(`net_backend_hosts_input),
+                                     // Header of a TextEntry user input field:
+                                     _("&Used hosts for the 'net' backend (comma seperated list of hosts):"),
+                                     "localhost,127.0.0.2"
+                                   )
+                       );
+      continue;
+    }
+    /* set up the configuration */
+    if( ret == `next )
+    { Scanner::network_scanning_config["net_backend_hosts"] = (string)UI::QueryWidget( `id(`net_backend_hosts_input), `Value );
+      Scanner::network_scanning_config["saned_hosts"] = (string)UI::QueryWidget( `id(`saned_hosts_input), `Value );
+      if( ! Scanner::SetupNetworkScanningConfig() )
+      { continue;
+      }
+      break;
+    }
+    if( ret == `back )
     { break;
     }
     y2milestone( "Ignoring unexpected returncode in ConfigureBackendDialog: %1", ret );

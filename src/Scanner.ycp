@@ -64,7 +64,7 @@ global boolean Abort()
  * "/usr/lib/YaST2/bin/create_scanner_database YCP"
  * which outputs on stdout a YCP list of scanner maps in the following format:
  * [
- *   $[ "package":"The package which provides the backend: sane/hp-officeJet/iscan/external (required)",
+ *   $[ "package":"The package which provides the backend: sane/hplip/hp-officeJet/iscan (required)",
  *      "backend":"The name of the backend (required)",
  *      "manufacturer":"The manufacturer name of the scanner (required)",
  *      "model":"The model name of the scanner (required)",
@@ -144,9 +144,21 @@ global list< string > active_backends = [];
 global list< map< string, string > > autodetected_scanners = [];
 
 /**
+ * Network scanning configuration:
+ * Determined at runtime via Scanner::DetermineNetworkScanningConfig() which calls the bash script
+ * "/usr/lib/YaST2/bin/determine_network_scanner_config YCP"
+ * which outputs on stdout a YCP map in the following format:
+ * $[ "net_backend_hosts":"Comma seperated list of hosts in /etc/sane.d/net.conf",
+ *    "saned_hosts":"Comma seperated list of hosts or subnets in /etc/sane.d/saned.conf"
+ * ]
+ */
+global map< string, string > network_scanning_config = $[];
+
+/**
  * Environment values:
  * It is a map in the following format:
  * $[ "sane_version":"What 'rpm -q sane' returns (required)",
+ *    "hplip_version":"What 'rpm -q hplip' returns (required)",
  *    "hp-officeJet_version":"What 'rpm -q hp-officeJet' returns (required)",
  *    "iscan_version":"What 'rpm -q iscan' returns (required)"
  * ]
@@ -185,6 +197,9 @@ string activate_backend_commandline = "/usr/lib/YaST2/bin/activate_scanner_backe
 string deactivate_backend_commandline = "/usr/lib/YaST2/bin/deactivate_scanner_backend";
 string setup_ptal_scanner_service_commandline = "/usr/lib/YaST2/bin/setup_ptal_scanner_service";
 string setup_hplip_scanner_service_commandline = "/usr/lib/YaST2/bin/setup_hplip_scanner_service";
+string network_scanning_config_filename = "/var/lib/YaST2/network_scanning_config.ycp";
+string determine_network_scanning_config_commandline = "/usr/lib/YaST2/bin/determine_network_scanner_config YCP >" + network_scanning_config_filename;
+string setup_network_scanning_config_commandline = "/usr/lib/YaST2/bin/setup_network_scanner_config";
 
 /**
  * Local functions:
@@ -455,6 +470,42 @@ boolean AutodetectScanners()
     return false;
   }
   y2milestone( "Autodetected scanners: %1", autodetected_scanners );
+  return true;
+}
+
+/**
+ * Search the active_scanners list for possible SCSI scanners ("/dev/" in SANE device)
+ * and if at least one possible SCSI scanner was found,
+ * then run /etc/init.d/sane-dev (using "restart" to be safe that outdated permissions are reset)
+ *      and activate it for reboot ("insserv")
+ * otherwise stop it and deactivate it for reboot ("insserv -r")
+ * @return true on success
+ */
+boolean SetScsiScannerAccessPermissions()
+{ boolean run_and_activate_sane_dev = false;
+  foreach( map< string, string > active_scanner,
+           active_scanners,
+           { if( issubstring( active_scanner["device"]:"", "/dev/" ) )
+             { run_and_activate_sane_dev = true;
+             }
+           }
+         );
+  if( run_and_activate_sane_dev )
+  { if( ! ExecuteBashCommand( "/etc/init.d/sane-dev restart &>/dev/null" ) )
+    { return false;
+    }
+    if( ! ExecuteBashCommand( "/sbin/insserv sane-dev &>/dev/null" ) )
+    { return false;
+    }
+  }
+  else
+  { if( ! ExecuteBashCommand( "/etc/init.d/sane-dev stop &>/dev/null" ) )
+    { return false;
+    }
+    if( ! ExecuteBashCommand( "/sbin/insserv -r sane-dev &>/dev/null" ) )
+    { return false;
+    }
+  }
   return true;
 }
 
@@ -732,6 +783,7 @@ global list ModelItems( string filter_string )
              string manufacturer = database_entry["manufacturer"]:"unknown manufacturer";
              string model = database_entry["model"]:"unknown model";
              string backend = database_entry["backend"]:"unknown";
+             string package = database_entry["package"]:"unknown";
              string status = database_entry["status"]:"unknown";
              string comment = database_entry["comment"]:"";
              string firmware = database_entry["firmware"]:"unknown";
@@ -739,6 +791,7 @@ global list ModelItems( string filter_string )
              if( manufacturer != "unknown manufacturer"
                  && model != "unknown model"
                  && backend != "unknown"
+                 && package != "unknown"
                  && status != "unknown"
                )
              { // Enclose a comment in brackets to seperate it from the rest of the model_string
@@ -770,16 +823,18 @@ global list ModelItems( string filter_string )
                                            // %1 will be replaced by the manufacturer name
                                            // %2 will be replaced by the model name
                                            // %3 will be replaced by the backend (scanner driver) name
-                                           // %4 will be replaced by the support status
+                                           // %4 will be replaced by the package name which provides the backend
+                                           // %5 will be replaced by the support status
                                            //    which is only available in English
                                            //    and varies from 'complete' to 'minimal'
-                                           // %5 will be replaced by an optional model dependent comment
+                                           // %6 will be replaced by an optional model dependent comment
                                            //    which is only available in English
                                            //    and therefore the comment is included in brackets
-                                           _("%1 %2 : Firmware upload required. Backend '%3' provides '%4' functionality. %5"),
+                                           _("%1 %2 : Firmware upload required. Backend '%3' (package '%4') provides '%5' functionality. %6"),
                                            manufacturer,
                                            model,
                                            backend,
+                                           package,
                                            status,
                                            comment
                                          );
@@ -790,16 +845,18 @@ global list ModelItems( string filter_string )
                                            // %1 will be replaced by the manufacturer name
                                            // %2 will be replaced by the model name
                                            // %3 will be replaced by the backend (scanner driver) name
-                                           // %4 will be replaced by the support status
+                                           // %4 will be replaced by the package name which provides the backend
+                                           // %5 will be replaced by the support status
                                            //    which is only available in English
                                            //    and varies from 'complete' to 'minimal'
-                                           // %5 will be replaced by an optional model dependent comment
+                                           // %6 will be replaced by an optional model dependent comment
                                            //    which is only available in English
                                            //    and therefore the comment is included in brackets
-                                           _("%1 %2 : Backend '%3' provides '%4' functionality. %5"),
+                                           _("%1 %2 : Backend '%3' (package '%4') provides '%5' functionality. %6"),
                                            manufacturer,
                                            model,
                                            backend,
+                                           package,
                                            status,
                                            comment
                                          );
@@ -1091,28 +1148,26 @@ Should the PTAL system for USB be initialized, activated, and started now?"
   if( ! ExecuteBashCommand( activate_backend_commandline + " " + backend_name ) )
   { return false;
   }
-  // Determine active scanners and active backends anew.
+  // Determine active scanners and active backends anew
+  // and set SCSI scanner access permissions anew.
   // Return successfully regardless of the result of this steps
   // because the backend was successfully activated.
-  if( DetermineActiveScanners() )
-  { // Search the active_scanners list for possible SCSI scanners ("/dev/" in SANE device)
-    // and if at least one possible SCSI scanner was found,
-    // then run /etc/init.d/sane-dev and activate it for reboot ("insserv")
-    boolean run_and_activate_sane_dev = false;
-    foreach( map< string, string > active_scanner,
-             active_scanners,
-             { if( issubstring( active_scanner["device"]:"", "/dev/" ) )
-               { run_and_activate_sane_dev = true;
-               }
-             }
-           );
-    if( run_and_activate_sane_dev )
-    { ExecuteBashCommand( "/etc/init.d/sane-dev start &>/dev/null" );
-      ExecuteBashCommand( "/sbin/insserv sane-dev &>/dev/null" );
-    }
+  if( ! DetermineActiveScanners() )
+  { active_scanners = [];
   }
   else
-  { active_scanners = [];
+  { if( ! SetScsiScannerAccessPermissions()
+        && user_confirmation
+      )
+    { Report::Warning( sformat( // Message of a Report::Warning when setting SCSI scanner access permissions failed
+                                // where %1 will be replaced by the actual error message
+                                // which is usually only available in English:
+                                _("Failed to set SCSI scanner access permissions.\nThe error message is:\n\n%1"),
+                                // Fallback error message if the real error message is missing:
+                                bash_result["stderr"]:_("(no message available)")
+                              )
+                     );
+    }
   }
   if( ! DetermineActiveBackends() )
   { active_backends = [];
@@ -1193,31 +1248,26 @@ global boolean DeactivateBackend( string backend_name, integer database_index, b
                             _("Failed to deactivate backend %1."), backend_name ) );
     return false;
   }
-  // Determine active scanners and active backends anew.
+  // Determine active scanners and active backends anew
+  // and set SCSI scanner access permissions anew.
   // Return successfully regardless of the result of this steps
   // because the backend was successfully deactivated.
-  if( DetermineActiveScanners() )
-  { // Search the active_scanners list for possible SCSI scanners ("/dev/" in SANE device)
-    // and if at least one possible SCSI scanner was found then re-run /etc/init.d/sane-dev
-    // otherwise stop it and deactivate it for reboot ("insserv -r")
-    boolean run_and_activate_sane_dev = false;
-    foreach( map< string, string > active_scanner,
-             active_scanners,
-             { if( issubstring( active_scanner["device"]:"", "/dev/" ) )
-               { run_and_activate_sane_dev = true;
-               }
-             }
-           );
-    if( run_and_activate_sane_dev )
-    { ExecuteBashCommand( "/etc/init.d/sane-dev restart &>/dev/null" );
-    }
-    else
-    { ExecuteBashCommand( "/etc/init.d/sane-dev stop &>/dev/null" );
-      ExecuteBashCommand( "/sbin/insserv -r sane-dev &>/dev/null" );
-    }
+  if( ! DetermineActiveScanners() )
+  { active_scanners = [];
   }
   else
-  { active_scanners = [];
+  { if( ! SetScsiScannerAccessPermissions()
+        && user_confirmation
+      )
+    { Report::Warning( sformat( // Message of a Report::Warning when re-setting SCSI scanner access permissions failed
+                                // where %1 will be replaced by the actual error message
+                                // which is usually only available in English:
+                                _("Failed to reset SCSI scanner access permissions.\nThe error message is:\n\n%1"),
+                                // Fallback error message if the real error message is missing:
+                                bash_result["stderr"]:_("(no message available)")
+                              )
+                     );
+    }
   }
   if( ! DetermineActiveBackends() )
   { active_backends = [];
@@ -1303,21 +1353,29 @@ global boolean TestBackend( string backend_name )
   { Popup::ClearFeedback();
     Report::Error( sformat( // Message of a Report::Error where
                             // %1 will be replaced by the SANE device identifier
-                            // %2 will be replaced by the actual error message
-                            //    which is usually only available in English:
-                            _("Result of the test with 'scanimage -d %1 -T' :\n\n%2"),
+                            // %2 will be replaced by the actual test results
+                            //    which are usually only available in English:
+                            _("Test with 'scanimage -d %1 -T' failed.\nThe results are:\n\n%2"),
                             sane_device,
-                            // Fallback error message if the real error message is missing:
-                            bash_result["stderr"]:_("(no message available)")
+                            // Fallback message if the real results are missing:
+                            bash_result["stderr"]:_("(no results available)")
                           )
                  );
     return false;
   }
   Popup::ClearFeedback();
-  Report::ShowText( sformat( // Header of a Report::ShowText where %1 will be replaced by the SANE device identifier:
-                             _("Result of the Test with 'scanimage -d %1 -T'"), sane_device ),
-                    // Fallback body of a Report::ShowText if the real message for the body is missing:
-                    bash_result["stderr"]:_("(no message available)")
+  Report::ShowText( sformat( // Header of a Report::ShowText where %1 will be replaced by the backend name:
+                             _("Successfully tested backend %1"), backend_name
+                           ),
+                    sformat( // Body of a Report::ShowText where
+                             // %1 will be replaced by the SANE device identifier
+                             // %2 will be replaced by the actual test results
+                             //    which are usually only available in English:
+                             _("Test with 'scanimage -d %1 -T' succeeded.\nThe results are:\n\n%2"),
+                             sane_device,
+                             // Fallback message if the real results are missing:
+                             bash_result["stderr"]:_("(no results available)")
+                           )
                   );
   return true;
 }
@@ -1359,6 +1417,79 @@ global list Overview()
          );
   y2milestone( "Overview table_items: %1", overview_items );
   return overview_items;
+}
+
+/**
+ * Determine the network scanning config by calling a bash script
+ * which calls "grep ... /etc/sane.d/net.conf" and "grep ... /etc/sane.d/saned.conf"
+ * and processes its output and stores the results as YCP map in a temporary file
+ * and then read the temporary file (SCR::Read) to get the YCP map
+ * @return true on success
+ */
+global boolean DetermineNetworkScanningConfig()
+{ if( ! ExecuteBashCommand( determine_network_scanning_config_commandline ) )
+  { Report::Error( // Message of a Report::Error:
+                   _("Failed to determine the network scanning config.")
+                 );
+    return false;
+  }
+  if( -1 == SCR::Read( .target.size, network_scanning_config_filename ) )
+  { y2milestone( "Error: Network scanning config file %1 does not exist.", network_scanning_config_filename );
+    Report::Error( sformat( // Message of a Report::Error where %1 will be replaced by the file name:
+                            _("Network scanning config file %1 does not exist."),
+                            network_scanning_config_filename
+                          )
+                 );
+    return false;
+  }
+  network_scanning_config = (map< string, string >)SCR::Read( .target.ycp, network_scanning_config_filename );
+  if( nil == network_scanning_config )
+  { y2milestone( "Error: Failed to read the network scanning config file %1", network_scanning_config_filename );
+    Report::Error( sformat( // Message of a Report::Error where %1 will be replaced by the file name:
+                            _("Failed to read the network scanning config file %1"),
+                            network_scanning_config_filename
+                          )
+                 );
+    network_scanning_config = $[];
+    return false;
+  }
+  y2milestone( "Network scanning config: %1", network_scanning_config );
+  return true;
+}
+
+/**
+ * Setup the network scanning config by calling a bash script which writes into
+ * /etc/sane.d/net.conf, /etc/sane.d/saned.conf, and /etc/xinetd.d/sane-port
+ * and reloads or starts the xinetd dependig on whether it is running or not
+ * @return true on success
+ */
+global boolean SetupNetworkScanningConfig()
+{ // To be safe assume that something will really be modified.
+  // If there is in fact nothing modified, it doesn't harm if 'modified' is 'true':
+  modified = true;
+  // Build the commandline and then call it:
+  string commandline = setup_network_scanning_config_commandline
+                       + " '"
+                       + network_scanning_config["net_backend_hosts"]:""
+                       + "' '"
+                       + network_scanning_config["saned_hosts"]:""
+                       + "'";
+  if( ! ExecuteBashCommand( commandline ) )
+  { Report::Error( // Message of a Report::Error:
+                   _("Failed to setup the network scanning config.")
+                 );
+    return false;
+  }
+  // Determine active scanners and active backends anew.
+  // Return successfully regardless of the result of this steps
+  // because the backend was successfully deactivated.
+  if( ! DetermineActiveScanners() )
+  { active_scanners = [];
+  }
+  if( ! DetermineActiveBackends() )
+  { active_backends = [];
+  }
+  return true;
 }
 
 /**

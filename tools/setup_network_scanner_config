@@ -1,0 +1,62 @@
+#! /bin/bash
+#
+# Johannes Meixner <jsmeix@suse.de>, 2004
+
+#set -x
+export PATH="/sbin:/usr/bin:/bin"
+export LC_ALL="POSIX"
+export LANG="POSIX"
+
+NET_BACKEND_CONFIG_FILE="/etc/sane.d/net.conf"
+SANED_CONFIG_FILE="/etc/sane.d/saned.conf"
+
+MY_NAME=${0##*/}
+[ $# -ne 2 ] && { echo -en "\nUsage:\n$MY_NAME 'Comma seperated list of hosts for $NET_BACKEND_CONFIG_FILE' 'Comma seperated list of hosts or subnets for $SANED_CONFIG_FILE'\n" 1>&2 ; exit 1 ; }
+
+NET_BACKEND_CONFIG="$1"
+SANED_CONFIG="$2"
+ACTIVATE_BACKEND=${0%/*}/activate_scanner_backend
+DEACTIVATE_BACKEND=${0%/*}/deactivate_scanner_backend
+XINETD_CONFIG_FILE="/etc/xinetd.d/sane-port"
+XINETD_INIT_SCRIPT="/etc/init.d/xinetd"
+
+# Write the NET_BACKEND_CONFIG into the NET_BACKEND_CONFIG_FILE:
+# Remove all non-comment lines:
+sed -i -e '/^[^#]/d' $NET_BACKEND_CONFIG_FILE
+# Append the new config lines if "$NET_BACKEND_CONFIG" is not the empty string:
+if [ -n "$NET_BACKEND_CONFIG" ]
+then echo "$NET_BACKEND_CONFIG" | tr -d '[:space:]' | tr -s ',' '\n' >>$NET_BACKEND_CONFIG_FILE || { echo "Failed to write the new config into $NET_BACKEND_CONFIG_FILE" 1>&2 ; exit 2 ; }
+fi
+
+# Write the SANED_CONFIG into the SANED_CONFIG_FILE:
+# Remove all non-comment lines:
+sed -i -e '/^[^#]/d' $SANED_CONFIG_FILE
+# Append the new config lines if "$SANED_CONFIG" is not the empty string:
+if [ -n "$SANED_CONFIG" ] 
+then echo "$SANED_CONFIG" | tr -d '[:space:]' | tr -s ',' '\n' >>$SANED_CONFIG_FILE || { echo "Failed to write the new config into $SANED_CONFIG_FILE" 1>&2 ; exit 3 ; }
+fi
+
+# Activate the net backend if "$NET_BACKEND_CONFIG" is not the empty string
+# otherwise deactivate the net backend:
+if [ -n "$NET_BACKEND_CONFIG" ]
+then $ACTIVATE_BACKEND net || { echo "Failed to activate the net backend" 1>&2 ; exit 4 ; }
+else $DEACTIVATE_BACKEND net || { echo "Failed to deactivate the net backend" 1>&2 ; exit 5 ; }
+fi
+
+# Enable the saned if "$SANED_CONFIG" is not the empty string otherwise disable the saned
+# and do the appropriate stuff regarding the xinetd:
+if [ -n "$SANED_CONFIG" ]
+then sed -i -e 's/^.*disable.*$/\tdisable     = no/' $XINETD_CONFIG_FILE || { echo "Failed to enable the saned in $XINETD_CONFIG_FILE" 1>&2 ; exit 6 ; }
+     if $XINETD_INIT_SCRIPT status &>/dev/null
+     then $XINETD_INIT_SCRIPT reload || { echo "Failed to reload xinetd" 1>&2 ; exit 7 ; }
+     else $XINETD_INIT_SCRIPT start || { echo "Failed to start xinetd" 1>&2 ; exit 8 ; }
+          insserv xinetd || { echo "Failed to insserv xinetd" 1>&2 ; exit 9 ; }
+     fi
+else sed -i -e 's/^.*disable.*$/\tdisable     = yes/' $XINETD_CONFIG_FILE || { echo "Failed to disable the saned in $XINETD_CONFIG_FILE" 1>&2 ; exit 10 ; }
+     if $XINETD_INIT_SCRIPT status &>/dev/null
+     then $XINETD_INIT_SCRIPT reload || { echo "Failed to reload xinetd" 1>&2 ; exit 7 ; }
+     fi
+fi
+
+exit 0
+
