@@ -15,10 +15,11 @@
 {
 
   include "wizard/sequencer.ycp";
-  include "ui/wizard_dialog.ycp";
   include "ui/common_popups.ycp";
   include "ui/common_messages.ycp";
 
+  import "Wizard";
+  
   include "scanner/scanner_functions.ycp";
 
   include "scanner/scanner_start.ycp";
@@ -47,8 +48,8 @@
   user_settings = add( user_settings, "scannerInfo", scanner_info);
 
   term function = `Empty();
-  
-  UI(`CreateWizardDialog());  
+
+  Wizard::CreateDialog();
 
   if ( size(WFM::Args()) != 0 )
   {
