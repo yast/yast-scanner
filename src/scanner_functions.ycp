@@ -43,7 +43,7 @@
       
       foreach( `key, `scanner, scanner_info, ``{
 	  // if required write the options for the scanner kernel module to /etc/modules.conf
-	  map usb_options = lookup(scanner, "usb_options", "" );
+	  map usb_options = lookup(scanner, "usb_options", $[] );
 	  string usb_module  = lookup(scanner, "usb_module", "" );
 	  
 	  if ( usb_module != "" && usb_options != "" )
@@ -52,8 +52,12 @@
 	      y2debug( "Write /etc/modules.conf: %1 %2", usb_options , usb_module );
 	      if ( ret )
 	      {
-		  // WRITE /etc/modules.conf and call "depmod"
-		  Write(.modules.nil); 
+		  // WRITE /etc/modules.conf now and call "depmod"
+		  Write(.modules.nil);
+
+		  // TODO: Write /etc/hotplug/usb.usermap
+		  // -> scanner module will be loaded automatically
+		  //    with options set in /etc/modules.conf
 	      }
 	  }
 
