@@ -49,10 +49,9 @@ make install
 @YAST2DIR@/include/scanner/scanner_overview.ycp
 @YAST2DIR@/include/scanner/scanner_scsi.ycp
 @YAST2DIR@/include/scanner/scanner_manual.ycp
-@YAST2DIR@/include/scanner/scanner_options.ycp
+@YAST2DIR@/include/scanner/scanner_install.ycp
 @YAST2DIR@/include/scanner/scanner_usb.ycp
 @YAST2DIR@/include/scanner/scanner_net.ycp
-@YAST2DIR@/include/scanner/scanner_driver.ycp
 @YAST2DIR@/include/scanner/scanner_notfound.ycp
 @YAST2DIR@/servers_non_y2/ag_scanner
 @YAST2DIR@/servers_non_y2/ag_sane
