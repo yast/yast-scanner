@@ -235,7 +235,7 @@ any SelectModelDialog()
                                );
   Wizard::SetContentsButtons( caption,
                               contents,
-                              HELPS["c1"]:"",
+                              HELPS["select_model"]:"",
                               Label::BackButton(),
                               Label::NextButton()
                             );
@@ -283,7 +283,7 @@ any ConfigureBackendDialog()
   term contents = `Label( sformat( _("Setting up the backend %1"), backend_name ) );
   Wizard::SetContentsButtons( caption,
                               contents,
-                              HELPS["c2"]:"",
+                              HELPS["configure_backend"]:"",
                               Label::BackButton(),
                               Label::NextButton()
                             );
