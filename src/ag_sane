@@ -3,7 +3,7 @@
 # ag_sane
 # This script is part of the YaST2 Scanner installation module
 # Copyright SuSE Gmbh - 2001
-# 
+#
 # Author(s): Klaas Freitag <freitag@suse.de>
 #            Gabi Strattner <gs@suse.de>
 #
@@ -19,67 +19,67 @@ use strict;
 use scannerDB;
 
 # ##############################################################################
-# 
+#
 # ag_sane offers the following actions, selected by the calling 'path' in ycp,
 # which is mapped to the perl var $action in this script.
-# 
+#
 # driver
 # ======
-# 
+#
 # Required parameter: bus, vendor, model.
-# 
+#
 # Action driver delivers the correct driver for a scanner identified by the bus
 # the scanner is connected to, the model and the vendor.
-# 
-# The return-value is a string containing the driver name or an empty string on 
+#
+# The return-value is a string containing the driver name or an empty string on
 # error.
 # Bus 'net' is not supported.
-# 
-# 
+#
+#
 # modellist
 # =========
-# 
+#
 # Required parameter: bus, vendor
-# 
+#
 # modellist returns a sorted list of models of a vendor for a bus. If the vendor
 # is an empty string, the 'generic' vendor is assumed and a list of all available
-# drivers is returned. 
+# drivers is returned.
 # Bus 'net' is not supported.
-# 
+#
 # vendorlist
 # ==========
-# 
+#
 # Required parameters: bus
-# 
-# returns a list of all vendors for which models/drivers on the bus exist. 
+#
+# returns a list of all vendors for which models/drivers on the bus exist.
 # Bus 'net' is not supported.
-# 
+#
 # writeconfig
 # ===========
-# 
+#
 # Required parameter: driver, vendor, device, bus
-# 
+#
 # adds one backend to the system wide driver list for sane in /etc/sane.d/dll.conf
 # and writes the individual config file in /etc/sane.d/{backend}.conf
-# 
+#
 # returns a ycp boolean
-# 
+#
 # scanimage
 # =========
-# 
+#
 # Required Parameter: driver, devicefile, host in case of network scanner
-# 
+#
 # Scans a test image and returns the filename where the image is saved.
 # The file format of the image is pnm.
-# 
+#
 # netscannerinfo
 # ==============
 #
 # Required Parameter: bus(=net), host
 #
-# returns a list of maps with scanner descriptions of the remote scanners connected to 
+# returns a list of maps with scanner descriptions of the remote scanners connected to
 # the work station 'host'.
-# 
+#
 # ##############################################################################
 
 
@@ -91,7 +91,7 @@ while ( <STDIN> )
 
     if( /result/i )
     {
-	y2debug("got result -> say goodby!" );
+	y2debug("got result -> say goodbye!");
 	exit(0);
     }
 
@@ -161,14 +161,14 @@ while ( <STDIN> )
 	my @drivers;
 
 	@drivers = sort keys %models;
-	
+
 	ycpReturn( \@drivers );
     }
     elsif( $action =~ /vendorlist/ )
     {
 	y2debug( "Handling action vendorlist" );
 	# Only the bus is required. Return a list of vendors for the list.
-	my @vlist = getVendorList( findInHash( "bus", \%scanner )); 
+	my @vlist = getVendorList( findInHash( "bus", \%scanner ));
 	ycpReturn( \@vlist );
     }
     elsif( $action =~ /writeconfig/ )
@@ -176,12 +176,12 @@ while ( <STDIN> )
 	y2debug( "Handling action writeconfig" );
 	my @cfg_backends = readDllconf( );
 	my $ok = 0;
-	
+
 	if( $bus =~ /net/i )
 	{
 	    my $host = findInHash( "host", \%scanner );
 	    y2debug( "Installing a net scanner on host <$host> !" );
-	    
+
 	    if( defined $host )
 	    {
 		$ok = enableNetScan( $host );
@@ -213,7 +213,7 @@ while ( <STDIN> )
 
 	    $ok = writeDllconf( \@cfg_backends );
 	}
-	
+
 	# now the scanner conf:
 	$ok = $ok && writeIndividualConf( $bus, $driver, $devicefile );
 
@@ -223,7 +223,7 @@ while ( <STDIN> )
     }
     elsif( $action =~ /revertall/ )
     {
-	
+
 	y2debug( "Handling action revert all" );
 	revertAll();
 	ycpReturnSkalarAsBoolean( 1 );
@@ -302,7 +302,7 @@ while ( <STDIN> )
 	else
 	{
 	    my $devstring = sprintf( "%s:%s", lc $driver, $devicefile );
-	    
+
 	    if( $bus =~ /net/i )
 	    {
 		my $host = findInHash( "host", \%scanner );
@@ -313,15 +313,15 @@ while ( <STDIN> )
 		    $devstring = undef;
 		}
 	    }
-	    
+
 	    if( defined $devstring ) {
 		$resFile = acquireTestImage( $devstring, $tmpdir );
-		
+
 		y2debug( "Acquired image to result-file <$resFile>" );
 	    }
 	}
 	ycpReturnSkalarAsString( $resFile );
-	
+
     }
     elsif( $action =~ /netscannerinfo/i )
     {
