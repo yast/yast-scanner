@@ -5,6 +5,7 @@
 # Copyright SuSE Gmbh - 2001
 # 
 # Author: Klaas Freitag <freitag@suse.de>
+#         Gabi Strattner <gs@suse.de>
 #
 # $Id$
 #
@@ -120,3 +121,4 @@ while ( <STDIN> )
 
 }
 
+# EOF

@@ -8,6 +8,7 @@
 # Copyright SuSE Gmbh - 2001
 # 
 # Author: Klaas Freitag <freitag@suse.de>
+#         Gabi Strattner <gs@suse.de>
 #
 # $Id$
 #
@@ -41,31 +42,38 @@ use vars qw ( %driver $prefix);
 
 
 # Abaton
-$driver{SCSI}{ABATON}{"SCAN 300/GS"} = "abaton";
-$driver{SCSI}{ABATON}{"SCAN 300/S"} = "abaton";
+$driver{SCSI}{Abaton}{"SCAN 300/GS"} = "abaton";
+$driver{SCSI}{Abaton}{"SCAN 300/S"} = "abaton";
 
 # Agfa
 
 
-$driver{SCSI}{AGFA}{"FOCUS GS SCANNER"} = "agfafocus";
-$driver{SCSI}{AGFA}{"FOCUS LINEART SCANNER"} = "agfafocus";
-$driver{SCSI}{AGFA}{"FOCUS II"} = "agfafocus";
-$driver{SCSI}{AGFA}{"FOCUS COLOR"} = "agfafocus";
+$driver{SCSI}{Agfa}{"FOCUS GS SCANNER"} = "agfafocus";
+$driver{SCSI}{Agfa}{"FOCUS LINEART SCANNER"} = "agfafocus";
+$driver{SCSI}{Agfa}{"FOCUS II"} = "agfafocus";
+$driver{SCSI}{Agfa}{"FOCUS COLOR"} = "agfafocus";
 
-$driver{SCSI}{SIEMENS}{"FOCUS COLOR PLUS"} = "agfafocus";
+$driver{SCSI}{Siemens}{"FOCUS COLOR PLUS"} = "agfafocus";
 
 # Apple
-$driver{SCSI}{APPLE}{"APPLE SCANNER"} = "apple";
-$driver{SCSI}{APPLE}{"ONESCANNER"} = "apple";
+$driver{SCSI}{Apple}{"APPLE SCANNER"} = "apple";
+$driver{SCSI}{Apple}{"ONESCANNER"} = "apple";
 
 # Artec and Ultima
-$driver{SCSI}{"Artec|Ultima"}{"ColorOneScanner"} = "artec";
-$driver{SCSI}{"Artec|Ultima"}{"AT3"} = "artec";
-$driver{SCSI}{"Artec|Ultima"}{"A6000C"} = "artec";
-$driver{SCSI}{"Artec|Ultima"}{"A6000C PLUS"} = "artec";
-$driver{SCSI}{"Artec|Ultima"}{"AT6"} = "artec";
-$driver{SCSI}{"Artec|Ultima"}{"AT12"} = "artec";
-$driver{SCSI}{"Artec|Ultima"}{"AM12S"} = "artec";
+$driver{SCSI}{"Artec"}{"ColorOneScanner"} = "artec";
+$driver{SCSI}{"Artec"}{"AT3"} = "artec";
+$driver{SCSI}{"Artec"}{"A6000C"} = "artec";
+$driver{SCSI}{"Artec"}{"A6000C PLUS"} = "artec";
+$driver{SCSI}{"Artec"}{"AT6"} = "artec";
+$driver{SCSI}{"Artec"}{"AT12"} = "artec";
+$driver{SCSI}{"Artec"}{"AM12S"} = "artec";
+$driver{SCSI}{"Ultima"}{"ColorOneScanner"} = "artec";
+$driver{SCSI}{"Ultima"}{"AT3"} = "artec";
+$driver{SCSI}{"Ultima"}{"A6000C"} = "artec";
+$driver{SCSI}{"Ultima"}{"A6000C PLUS"} = "artec";
+$driver{SCSI}{"Ultima"}{"AT6"} = "artec";
+$driver{SCSI}{"Ultima"}{"AT12"} = "artec";
+$driver{SCSI}{"Ultima"}{"AM12S"} = "artec";
 
 $driver{SCSI}{BlackWidow}{"BW4800SP"} = "artec";
 $driver{SCSI}{Plustek}{"OpticPro 19200S"} = "artec";
@@ -84,15 +92,15 @@ $driver{SCSI}{"B&H SCSI"}{"COPISCAN II 3238"} = "bh";
 $driver{SCSI}{"B&H SCSI"}{"COPISCAN II 3338"} = "bh";
 
 # Canon
-$driver{SCSI}{CANON}{"CANOSCAN 300"} = "canon";
-$driver{SCSI}{CANON}{"CANOSCAN 600"} = "canon";
-$driver{SCSI}{CANON}{"CANOSCAN 2700F"} = "canon";
+$driver{SCSI}{Canon}{"CANOSCAN 300"} = "canon";
+$driver{SCSI}{Canon}{"CANOSCAN 600"} = "canon";
+$driver{SCSI}{Canon}{"CANOSCAN 2700F"} = "canon";
 
 # Coolscan
-$driver{SCSI}{NIKON}{"LS-20"} = "coolscan";
-$driver{SCSI}{NIKON}{"LS-30"} = "coolscan";
-$driver{SCSI}{NIKON}{"LS-2000"} = "coolscan";
-$driver{SCSI}{NIKON}{"LS-1000"} = "coolscan";
+$driver{SCSI}{Nikon}{"LS-20"} = "coolscan";
+$driver{SCSI}{Nikon}{"LS-30"} = "coolscan";
+$driver{SCSI}{Nikon}{"LS-2000"} = "coolscan";
+$driver{SCSI}{Nikon}{"LS-1000"} = "coolscan";
 
 # Epson: Parport not supported yet.
 # 
@@ -101,34 +109,34 @@ $driver{SCSI}{NIKON}{"LS-1000"} = "coolscan";
 # $driver{Parport}{Epson}{GT-6000} = "epson";
 # $driver{Parport}{Epson}{ES-300C} = "epson";
 
-$driver{SCSI}{EPSON}{"GT-5500"} = "epson";
+$driver{SCSI}{Epson}{"GT-5500"} = "epson";
 # $driver{Parport}{Epson}{GT-6500} = "epson";
 # $driver{Parport}{Epson}{ES-600C} = "epson";
 # $driver{Parport}{Epson}{ES-1200C} = "epson";
-$driver{SCSI}{EPSON}{"GT-7000"} = "epson";
-$driver{SCSI}{EPSON}{"GT-8000"} = "epson";
-$driver{SCSI}{EPSON}{"ES-8500"} = "epson";
-$driver{SCSI}{EPSON}{"PERFECTION 636S"} = "epson";
-$driver{USB}{EPSON}{"PERFECTION 636U"} = "epson";
-$driver{USB}{EPSON}{"PERFECTION 610"} = "epson";
-$driver{USB}{EPSON}{"PERFECTION 640"} = "epson";
-$driver{SCSI}{EPSON}{"PERFECTION 1200S"} = "epson";
-$driver{USB}{EPSON}{"PERFECTION 1200U"} = "epson";
-$driver{USB}{EPSON}{"PERFECTION 1200PHOTO"} = "epson";
-$driver{SCSI}{EPSON}{"PERFECTION 1240"} = "epson";
-$driver{SCSI}{EPSON}{"PERFECTION 1640"} = "epson";
-$driver{USB}{EPSON}{"PERFECTION 1240"} = "epson";
-$driver{USB}{EPSON}{"PERFECTION 1640"} = "epson";
-$driver{SCSI}{EPSON}{"EXPRESSION 636"} = "epson";
-$driver{SCSI}{EPSON}{"EXPRESSION 800"} = "epson";
+$driver{SCSI}{Epson}{"GT-7000"} = "epson";
+$driver{SCSI}{Epson}{"GT-8000"} = "epson";
+$driver{SCSI}{Epson}{"ES-8500"} = "epson";
+$driver{SCSI}{Epson}{"PERFECTION 636S"} = "epson";
+$driver{USB}{Epson}{"PERFECTION 636U"} = "epson";
+$driver{USB}{Epson}{"PERFECTION 610"} = "epson";
+$driver{USB}{Epson}{"PERFECTION 640"} = "epson";
+$driver{SCSI}{Epson}{"PERFECTION 1200S"} = "epson";
+$driver{USB}{Epson}{"PERFECTION 1200U"} = "epson";
+$driver{USB}{Epson}{"PERFECTION 1200PHOTO"} = "epson";
+$driver{SCSI}{Epson}{"PERFECTION 1240"} = "epson";
+$driver{SCSI}{Epson}{"PERFECTION 1640"} = "epson";
+$driver{USB}{Epson}{"PERFECTION 1240"} = "epson";
+$driver{USB}{Epson}{"PERFECTION 1640"} = "epson";
+$driver{SCSI}{Epson}{"EXPRESSION 636"} = "epson";
+$driver{SCSI}{Epson}{"EXPRESSION 800"} = "epson";
 
-$driver{SCSI}{EPSON}{"EXPRESSION 1600"} = "epson";
-$driver{USB}{EPSON}{"EXPRESSION 1600"} = "epson";
+$driver{SCSI}{Epson}{"EXPRESSION 1600"} = "epson";
+$driver{USB}{Epson}{"EXPRESSION 1600"} = "epson";
 
-$driver{SCSI}{EPSON}{"EXPRESSION 1680"} = "epson";
-$driver{USB}{EPSON}{"EXPRESSION 1680"} = "epson";
+$driver{SCSI}{Epson}{"EXPRESSION 1680"} = "epson";
+$driver{USB}{Epson}{"EXPRESSION 1680"} = "epson";
 
-$driver{SCSI}{EPSON}{"FILMSCAN 200"} = "epson";
+$driver{SCSI}{Epson}{"FILMSCAN 200"} = "epson";
 
 # Hewlett Packard
 # $driver{Propietary}{HP}{HP ScanJet Plus} = "hp";
@@ -272,20 +280,20 @@ $driver{SCSI}{NEC}{"PC-IN500/4C"} = "nec";
 # Pie
 $driver{SCSI}{Devcom}{"9636PRO"} = "pie";
 $driver{SCSI}{Devcom}{"9636S"} = "pie";
-$driver{SCSI}{PIE}{"9630S"} = "pie";
+$driver{SCSI}{Pie}{"9630S"} = "pie";
 
-$driver{SCSI}{PIE}{"ScanAce 1236S"} = "pie";
-$driver{SCSI}{PIE}{"ScanAce 1230S"} = "pie";
-$driver{SCSI}{PIE}{"ScanAce II"} = "pie";
-$driver{SCSI}{PIE}{"ScanAce III"} = "pie";
-$driver{SCSI}{PIE}{"ScanAce Plus"} = "pie";
-$driver{SCSI}{PIE}{"ScanAce II Plus"} = "pie";
-$driver{SCSI}{PIE}{"ScanAce III Plus"} = "pie";
-$driver{SCSI}{PIE}{"ScanAce V"} = "pie";
-$driver{SCSI}{PIE}{"ScanAce ScanMedia"} = "pie";
-$driver{SCSI}{PIE}{"ScanAce ScanMedia II"} = "pie";
-$driver{SCSI}{PIE}{"ScanAce 630S"} = "pie";
-$driver{SCSI}{PIE}{"ScanAce 636S"} = "plustek";
+$driver{SCSI}{Pie}{"ScanAce 1236S"} = "pie";
+$driver{SCSI}{Pie}{"ScanAce 1230S"} = "pie";
+$driver{SCSI}{Pie}{"ScanAce II"} = "pie";
+$driver{SCSI}{Pie}{"ScanAce III"} = "pie";
+$driver{SCSI}{Pie}{"ScanAce Plus"} = "pie";
+$driver{SCSI}{Pie}{"ScanAce II Plus"} = "pie";
+$driver{SCSI}{Pie}{"ScanAce III Plus"} = "pie";
+$driver{SCSI}{Pie}{"ScanAce V"} = "pie";
+$driver{SCSI}{Pie}{"ScanAce ScanMedia"} = "pie";
+$driver{SCSI}{Pie}{"ScanAce ScanMedia II"} = "pie";
+$driver{SCSI}{Pie}{"ScanAce 630S"} = "pie";
+$driver{SCSI}{Pie}{"ScanAce 636S"} = "plustek";
 
 # Plustek
 # $driver{Parport (SPP, EPP)}{Plustek}{OpticPro 4800P} = "plustek";
@@ -320,22 +328,22 @@ $driver{SCSI}{Siemens}{"ST800"} = "st400";
 $driver{SCSI}{Siemens}{"ST400"} = "st400";
 
 # Sharp
-$driver{SCSI}{SHARP}{"9036 Flatbed scanner"} = "sharp";
-$driver{SCSI}{SHARP}{"JX-610"} = "sharp";
-$driver{SCSI}{SHARP}{"JX-250"} = "sharp";
-$driver{SCSI}{SHARP}{"JX-320"} = "sharp";
-$driver{SCSI}{SHARP}{"JX-330"} = "sharp";
-$driver{SCSI}{SHARP}{"JX-350"} = "sharp";
+$driver{SCSI}{Sharp}{"9036 Flatbed scanner"} = "sharp";
+$driver{SCSI}{Sharp}{"JX-610"} = "sharp";
+$driver{SCSI}{Sharp}{"JX-250"} = "sharp";
+$driver{SCSI}{Sharp}{"JX-320"} = "sharp";
+$driver{SCSI}{Sharp}{"JX-330"} = "sharp";
+$driver{SCSI}{Sharp}{"JX-350"} = "sharp";
 
 # Snapscan
-$driver{SCSI}{AGFA}{"SnapScan 300"} = "SnapScan";
-$driver{SCSI}{AGFA}{"SnapScan 310"} = "SnapScan";
-$driver{SCSI}{AGFA}{"SnapScan 600"} = "SnapScan";
-$driver{SCSI}{AGFA}{"SnapScan 1236s"} = "SnapScan";
-$driver{USB}{AGFA}{"SnapScan 1212u"} = "SnapScan";
+$driver{SCSI}{Agfa}{"SnapScan 300"} = "SnapScan";
+$driver{SCSI}{Agfa}{"SnapScan 310"} = "SnapScan";
+$driver{SCSI}{Agfa}{"SnapScan 600"} = "SnapScan";
+$driver{SCSI}{Agfa}{"SnapScan 1236s"} = "SnapScan";
+$driver{USB}{Agfa}{"SnapScan 1212u"} = "SnapScan";
 
-$driver{USB}{AGFA}{"SnapScan e20"} = "SnapScan";
-$driver{USB}{AGFA}{"SnapScan e40"} = "SnapScan";
+$driver{USB}{Agfa}{"SnapScan e20"} = "SnapScan";
+$driver{USB}{Agfa}{"SnapScan e40"} = "SnapScan";
 $driver{USB}{Vuego}{"SnapScan e50"} = "SnapScan";
 $driver{SCSI}{"Close SnapScan 310 compatible."} = "SnapScan";
 
@@ -1112,16 +1120,15 @@ sub findInHash( $$ )
 
     my @hkeys = keys %$hashref;
     
-    y2debug( "findInHash: Keys: " . join( "-", @hkeys ));
+    # y2debug( "findInHash: Keys: " . join( "-", @hkeys ));
 
     my $entry = "";
     my ($hkey) = grep( /$searchkey/i, @hkeys );
-    y2debug("HKey: $hkey" ) if( defined $hkey );
 
     if( defined $hkey )
     {
 	$entry = %$hashref->{ $hkey };
-	y2debug( "Found key <$searchkey> entry <$entry>" );
+	# y2debug( "Found key <$searchkey> entry <$entry>" );
     }
     else
     {
@@ -1301,7 +1308,35 @@ sub trim( $ )
 
 
 #
-# Add one single host/ip to net.conf
+=head1 NAME
+
+writeNetConf - writes SANEs net.conf file
+
+=head1 SYNOPSIS
+
+    if( writeNetConf( \@hosts ) ) ...
+
+=head1 DESCRIPTION
+
+takes a reference of a list of host names which are written
+to /etc/sane.d/net.cof. Mind that /etc/sane.d/net.conf is 
+completely rewritten, thus L<readNetConf> needs to be called
+first to get the existing net stations.
+
+=head1 PRARMETER
+
+a reference to a list of stations.
+
+=head1 RETURN VALUE
+
+a bool inicating success.
+
+=head1 SEE ALSO
+
+readNetConf
+
+=cut
+
 sub writeNetConf( $ )
 {
     my ($net_stations) = @_;
@@ -1340,6 +1375,29 @@ sub writeNetConf( $ )
     
 }
 
+=head1 NAME
+
+readNetConf - read SANEs net.conf file
+
+=head1 SYNOPSIS
+
+    my @netConf = readNetConf();
+
+=head1 DESCRIPTION
+
+reads SANEs net configuration file /etc/sane.d/net.conf and
+returns a list of all net stations configured there.
+
+=head1 RETURN VALUE
+
+a list of all stations.
+
+=head1 SEE ALSO
+
+writeNetConf
+
+=cut
+
 sub readNetConf
 {
     my @res;
@@ -1362,6 +1420,31 @@ sub readNetConf
     return( @res );
 }
 
+
+=head1 NAME
+
+writeDllconf - 
+
+=head1 SYNOPSIS
+
+    my @conf = ( "umax", "agfa" );
+    writeDllconf( \@conf );
+
+=head1 DESCRIPTION
+
+writes a complete configuration file for SANEs dynamic backend
+loading. The resulting file contains all backends as in the original
+one, but the ones given in the parameter list are uncommented.
+
+=head1 RETURN VALUE
+
+a bool indicating success.
+
+=head1 SEE ALSO
+
+writeNetConf
+
+=cut
 
 sub writeDllconf( $ )
 {
@@ -1414,68 +1497,31 @@ sub writeDllconf( $ )
     return $res;
 }
 
-#
-# patchConfigFile is disabled because it seems to destroy existing configurations
-# more than patching them correctly.
-# if a configuration already exits, it is copied to backend.conf.yast2save
-#
-sub patchConfigFile( $$$ )
-{
-    my ( $cfg_file_name, $bus, $device ) = @_;
-    my $res = 0;
 
-    y2debug( "Patching config file <$cfg_file_name>" );
 
-    if( open( F, $cfg_file_name )) 
-    {
-	my @cfg_file = <F>;
-	close F;
-	my $backup = $cfg_file_name . ".yast2-$PID";
-	y2debug( "Config-File exists, copying to <$backup>" );
-	copy( $cfg_file_name, $backup  );
-	my $tempcfgfile = $cfg_file_name . ".new";
 
-	if( open( OUTPUT, "> $tempcfgfile" ) )
-	{
-	    
-	    foreach my $l ( @cfg_file )
-	    {
-		if( $l =~ /^\/dev/ )
-		{
-		    $l =~ s/^\/dev\/\w+/$device/;
-		}
-		
-                # Check if the bus is not usb and should be replaced.
-		if( $l =~ /usb/i && lc $bus ne "usb" )
-		{
-		    $l =~ s/usb/$bus/;
-		}
+=head1 NAME
 
-                # Check if the bus is not scsi and should be replaced.
-		if( $l =~ /scsi/i && lc $bus ne "scsi" )
-		{
-		    $l =~ s/scsi/$bus/;
-		}
-		print OUTPUT $l;
-		
-	    }
-	    $res = close OUTPUT;
+writeIndividualConf - write config for on scanner
 
-	    # Move the file to position
-	    move ( $tempcfgfile, $cfg_file_name );
-	}
-	else
-	{
-	    y2debug( "ERROR: Could not open $tempcfgfile for writing: $!" );
-	}
-    }
-    else
-    {
-	y2debug( "ERROR: Could not open existing cfg-file: $!" );
-    }
-    return $res;
-}
+=head1 SYNOPSIS
 
+    writeIndividualConf( "SCSI", "umax", "/dev/sg0");
+
+=head1 DESCRIPTION
+
+writes a configuration file for one scanner. 
+
+=head1 RETURN VALUE
+
+Param. 1 is the bus (SCSI or USB), param. 2 the vendor.
+Param. 3 is the device file to use.
+
+=head1 SEE ALSO
+
+writeNetConf, readNetConf
+
+=cut
 
 sub writeIndividualConf( $$$ )
 {
@@ -1546,9 +1592,31 @@ sub writeIndividualConf( $$$ )
     }
     return $res;
 }
+# ################################################################################
 
+=head1 NAME
 
+readDllconf - read the list of backends
 
+=head1 SYNOPSIS
+
+    my @dlls = readDllconf();
+
+=head1 DESCRIPTION
+
+read the list of enabled backends to read dynamically.
+
+=head1 RETURN VALUE
+
+a list of loadable backends 
+
+=head1 SEE ALSO
+
+writeNetConf, readNetConf
+
+=cut
+
+# ################################################################################
 sub readDllconf()
 {
     my $f = "$prefix/etc/sane.d/dll.conf";
@@ -1576,6 +1644,33 @@ sub readDllconf()
     
 }
 
+# ################################################################################
+
+=head1 NAME
+
+acquireTestImage - scan a test image.
+
+=head1 SYNOPSIS
+
+    my $file = aquireTestImage( "umax:/dev/sg0", "/tmp" );
+
+=head1 DESCRIPTION
+
+tries to scan a test image from a scanner pointed to by the first parameter string.
+Mind that the string must be compatible to pass it to scanimage directly.
+
+=head1 PARAMETERS
+
+The first parameter is a device specification string, the second parameter gives
+a temp directory where the image can be stored.
+
+=head1 RETURN VALUE
+
+The full filename of the image.
+
+=cut
+
+# ################################################################################
 
 sub acquireTestImage( $$ )
 {
@@ -1672,7 +1767,7 @@ sub getNetInfo( $ )
     }
     
     # Now the net configuration should be fine.
-    my @scanners = performScanimage();
+    my @scanners = performScanimage( 1 );  # Net only.
     
     my @hostscanners;
     
@@ -1691,6 +1786,25 @@ sub getNetInfo( $ )
     }
     return( @hostscanners );
 }
+
+# ################################################################################
+
+=head1 NAME
+
+revertAll - revert all configuration files.
+
+=head1 SYNOPSIS
+
+    revertAll();
+
+=head1 DESCRIPTION
+
+this function reverts all configuration changes. It copies the backup files
+back.
+
+=cut
+
+# ################################################################################
 
 sub revertAll
 {
@@ -1714,6 +1828,35 @@ sub revertAll
     y2debug( "Reverted $countfiles files" );
 }
 
+
+# ################################################################################
+
+=head1 NAME
+
+performScanimage - invoke scanimage from SANE for information
+
+=head1 SYNOPSIS
+
+    my @scanners = performScanimage();
+
+=head1 DESCRIPTION
+
+This is one of the most important functions. It invokes SANEs command scanimage
+to get a list of the scanners known by sane. It fills a hash for every scanner
+and pushes the reference to the hash to an array. 
+
+=head1 PARAMETERS
+
+The first optional parameter indicates if only net scanners should be returned.
+If no parameter is there, all known scanners are returned.
+
+=head1 RETURN VALUE
+
+an array with references to hashes.
+
+=cut
+
+# ################################################################################
 
 sub performScanimage( ;$ )
 {
@@ -1754,7 +1897,7 @@ sub performScanimage( ;$ )
 		($driver, $devfile) = split( /:/, $name );
 	    }
 	    
-	    if( $devfile =~ /dev.+usb/i )
+	    if( $bus ne "Net" && $devfile =~ /dev.+usb/i )
 	    {
 		$bus = "USB";
 	    }
@@ -1800,9 +1943,14 @@ sub performScanimage( ;$ )
 }
 
 
+#
+#
+# This enables debug. Just set the environment PREFIX_DIR to any
+# directory which acts as prefix to /etc/sane.d
 $prefix = "";
 $prefix = $ENV{PREFIX_DIR} if( exists $ENV{PREFIX_DIR} );
 
 
 1;
 
+# EOF
