@@ -220,7 +220,7 @@ boolean ExecuteBashCommand( string bash_commandline )
   string feeback_title = "Executing " + bash_commandline;
   // }
   // Show feedback in any case:
-  Popup::ShowFeedback( feeback_title, _("Please wait ... this takes some time.") );
+  Popup::ShowFeedback( feeback_title, _("Please wait...") );
   bash_result = (map)SCR::Execute( .target.bash_output, bash_commandline );
   // Wait at least one more second before clearing the feedback
   // so that the user can read the feedback text in any case:
@@ -256,7 +256,7 @@ boolean ExecuteBashCommand( string bash_commandline )
   { counter = counter + 1;
     sleep( 100 );
     if( counter == 10 )
-    { Popup::ShowFeedback( feeback_title, _("Please wait ... this takes some time.") );
+    { Popup::ShowFeedback( feeback_title, _("Please wait...") );
     }
   }
   // If feedback was shown, wait at least one more second before clearing the feedback
@@ -545,7 +545,7 @@ global boolean Read()
   { Popup::ShowFeedback( // Header of a Popup::ShowFeedback:
                          _("Creating scanner database"),
                          // Body of a Popup::ShowFeedback:
-                         _("Please wait ... this takes some time.")
+                         _("Please wait...")
                        );
     if( ! ExecuteBashCommand( create_database_commandline ) )
     { Popup::ClearFeedback();
@@ -666,13 +666,13 @@ global list Summary()
   }
   // Make a configuration summary text:
   // Header of the configuration summary text:
-  string summary_text = _("Configuration summary:");
+  string summary_text = _("Configuration Summary:");
   // Make a summary text of the active scanners:
   string active_scanner_text = "";
   summary_text = summary_text
                  + "<p>"
                  // 1. sub-header of the configuration summary text:
-                 + _("Active scanners:");
+                 + _("Active Scanners:");
   foreach( map< string, string > active_scanner,
            active_scanners,
            { if( "" != active_scanner["backend"]:"" )
@@ -696,7 +696,7 @@ global list Summary()
   summary_text = summary_text
                  + "<p>"
                  // Last sub-header of the configuration summary text:
-                 + _("Active backends:");
+                 + _("Active Backends:");
   foreach( string active_backend,
            active_backends,
            { if( "" != active_backend )
@@ -932,16 +932,16 @@ global boolean ActivateBackend( string backend_name, integer database_index, boo
   // The body of a Popup::AnyMessage for scanners which require a firmware upload
   // Below this message on a seperated line a special command will be shown:
 _("A firmware file contains software that must be uploaded to the scanner's memory.
-Without firmware the scanner cannot work.\n
+Without firmware, the scanner cannot work.\n
 As firmware is licensed by the scanner manufacturer, we cannot distribute it.
 Usually the firmware file is somehow stored on the manufacturer's CD.
-Alternatively it may be possible to download it from the manufacturer's web site.
+Alternatively, it may be possible to download it from the manufacturer's Web site.
 Ask the manufacturer how to get the firmware file for your particular scanner.
-Additionally you can find useful information on the SANE web site:
+Find additional useful information on the SANE Web site:
 http://www.sane-project.org/\n
-After you have got the firmware file, you must configure the backend manually.
-Read the man page of the backend how to configure it for firmware upload.
-The following command shows the man page for the particular backend:"
+After you get the firmware file, you must configure the backend manually.
+The man page of the backend describes how to configure it for firmware upload.
+The following command shows the man page for your backend:"
 );
   string hpaio_message =
   // The message of a Popup::YesNo for scanners which should be set up with the hpaio backend:
@@ -957,19 +957,19 @@ Should the hplip service be activated and started now?"
 );
   string hpoj_message =
   // The message of a Popup::YesNo for scanners which should be set up with the hpoj backend:
-_("The hpoj backend requires the PTAL system to be set up and running.
-In particular the ptal service must be up and running.\n
-Before the ptal service can be started the PTAL system must be initialized.
-Additionally the ptal service should be activated to be started when booting.
+_("The hpoj back-end requires the PTAL system be set up and running.
+In particular, the ptal service must be up and running.\n
+Before the ptal service can be started, the PTAL system must be initialized.
+Additionally, the ptal service should be activated for start when booting.
 The PTAL system and the hplip service exclude each other.
 Therefore a running hplip service would be stopped and deactivated
 before the the PTAL system is initialized, activated, and started.
 An automated initialization of the PTAL system is only safe for USB.
 If you have a non-USB device or if the automated initialization for USB fails,
-then you must set up the PTAL system manually.
-If you have an all-in-one device (scanner+printer) then please note that
-a running ptal service monopolizes the USB device file (e.g. /dev/usb/lp0)
-and thus, the printer can no longer be addressed via the USB device file.
+set up the PTAL system manually.
+If you have an all-in-one device (scanner+printer), note that
+a running ptal service monopolizes the USB device file (e.g., /dev/usb/lp0),
+so the printer can no longer be addressed via the USB device file.
 See the following article in our support portal:
 http://portal.suse.com/sdb/en/2002/05/ke_hp-officejet.html\n
 Should the PTAL system for USB be initialized, activated, and started now?"
@@ -1001,7 +1001,7 @@ Should the PTAL system for USB be initialized, activated, and started now?"
     )
   { if( ! TestAndInstallPackage( package_name ) )
     { Popup::AnyMessage( // Header of a Popup::AnyMessage:
-                         _("Required package not installed"),
+                         _("Required Package Not Installed"),
                          // Body of a Popup::AnyMessage where
                          // %1 will be replaced by the backend name
                          // %2 will be replaced by the package name
@@ -1023,7 +1023,7 @@ Should the PTAL system for USB be initialized, activated, and started now?"
       && user_confirmation
     )
   { Popup::AnyMessage( // Header of a Popup::AnyMessage for scanners which require a firmware upload:
-                       _("Firmware upload required"),
+                       _("Firmware Upload Required"),
                        firmware_message + "\n    man sane-" + backend_name
                      );
   }
@@ -1094,7 +1094,24 @@ Should the PTAL system for USB be initialized, activated, and started now?"
   // Determine active scanners and active backends anew.
   // Return successfully regardless of the result of this steps
   // because the backend was successfully activated.
-  if( ! DetermineActiveScanners() )
+  if( DetermineActiveScanners() )
+  { // Search the active_scanners list for possible SCSI scanners ("/dev/" in SANE device)
+    // and if at least one possible SCSI scanner was found,
+    // then run /etc/init.d/sane-dev and activate it for reboot ("insserv")
+    boolean run_and_activate_sane_dev = false;
+    foreach( map< string, string > active_scanner,
+             active_scanners,
+             { if( issubstring( active_scanner["device"]:"", "/dev/" ) )
+               { run_and_activate_sane_dev = true;
+               }
+             }
+           );
+    if( run_and_activate_sane_dev )
+    { ExecuteBashCommand( "/etc/init.d/sane-dev start &>/dev/null" );
+      ExecuteBashCommand( "/sbin/insserv sane-dev &>/dev/null" );
+    }
+  }
+  else
   { active_scanners = [];
   }
   if( ! DetermineActiveBackends() )
@@ -1179,7 +1196,27 @@ global boolean DeactivateBackend( string backend_name, integer database_index, b
   // Determine active scanners and active backends anew.
   // Return successfully regardless of the result of this steps
   // because the backend was successfully deactivated.
-  if( ! DetermineActiveScanners() )
+  if( DetermineActiveScanners() )
+  { // Search the active_scanners list for possible SCSI scanners ("/dev/" in SANE device)
+    // and if at least one possible SCSI scanner was found then re-run /etc/init.d/sane-dev
+    // otherwise stop it and deactivate it for reboot ("insserv -r")
+    boolean run_and_activate_sane_dev = false;
+    foreach( map< string, string > active_scanner,
+             active_scanners,
+             { if( issubstring( active_scanner["device"]:"", "/dev/" ) )
+               { run_and_activate_sane_dev = true;
+               }
+             }
+           );
+    if( run_and_activate_sane_dev )
+    { ExecuteBashCommand( "/etc/init.d/sane-dev restart &>/dev/null" );
+    }
+    else
+    { ExecuteBashCommand( "/etc/init.d/sane-dev stop &>/dev/null" );
+      ExecuteBashCommand( "/sbin/insserv -r sane-dev &>/dev/null" );
+    }
+  }
+  else
   { active_scanners = [];
   }
   if( ! DetermineActiveBackends() )
@@ -1223,7 +1260,7 @@ global boolean TestBackend( string backend_name )
   // it is no error when there is no active scanner for the backend:
   if( size( scanners_to_be_tested ) < 1 )
   { Report::ShowText( sformat( // Header of a Report::ShowText where %1 will be replaced by the backend name:
-                               _("No scanner for the backend %1"), backend_name ),
+                               _("No Scanner for the Backend %1"), backend_name ),
                                // Body of a Report::ShowText:
                                _("It is not possible to test a backend without a matching active scanner.") );
     return true;
@@ -1236,7 +1273,7 @@ global boolean TestBackend( string backend_name )
   { UI::OpenDialog( `VBox( `HSpacing(50),
                            `SelectionBox( `id(`device_selection),
                                           // Header of a SelectionBox with a list of scanners:
-                                          _("&Select which scanner should be used for testing:"),
+                                          _("&Scanner to Test:"),
                                           scanners_to_be_tested
                                         ),
                            `HBox( `PushButton( `id(`cancel_button), Label::CancelButton() ),
@@ -1258,7 +1295,7 @@ global boolean TestBackend( string backend_name )
   Popup::ShowFeedback( sformat( // Header of a Popup::ShowFeedback where %1 will be replaced by the backend name:
                                 _("Testing backend %1"), backend_name ),
                                 // Body of a Popup::ShowFeedback where %1 will be replaced by the SANE device identifier:
-                       sformat( _("Testing via 'scanimage -d %1 -T'\n\nPlease wait ... this takes some time."),
+                       sformat( _("Testing with 'scanimage -d %1 -T'\n\nPlease wait..."),
                                 sane_device
                               )
                      );
@@ -1268,7 +1305,7 @@ global boolean TestBackend( string backend_name )
                             // %1 will be replaced by the SANE device identifier
                             // %2 will be replaced by the actual error message
                             //    which is usually only available in English:
-                            _("Result of the test via 'scanimage -d %1 -T' :\n\n%2"),
+                            _("Result of the test with 'scanimage -d %1 -T' :\n\n%2"),
                             sane_device,
                             // Fallback error message if the real error message is missing:
                             bash_result["stderr"]:_("(no message available)")
@@ -1278,7 +1315,7 @@ global boolean TestBackend( string backend_name )
   }
   Popup::ClearFeedback();
   Report::ShowText( sformat( // Header of a Report::ShowText where %1 will be replaced by the SANE device identifier:
-                             _("Result of the test via 'scanimage -d %1 -T'"), sane_device ),
+                             _("Result of the Test with 'scanimage -d %1 -T'"), sane_device ),
                     // Fallback body of a Report::ShowText if the real message for the body is missing:
                     bash_result["stderr"]:_("(no message available)")
                   );

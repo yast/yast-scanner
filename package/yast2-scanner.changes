@@ -1,4 +1,11 @@
 -------------------------------------------------------------------
+Mon Feb  7 17:51:26 CET 2005 - jsmeix@suse.de
+
+- V 2.11.2
+- Added proofread texts.
+- Added support for /etc/init.d/sane-dev
+
+-------------------------------------------------------------------
 Fri Feb  4 16:19:21 CET 2005 - jsmeix@suse.de
 
 - V 2.11.1
