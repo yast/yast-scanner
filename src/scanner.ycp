@@ -189,7 +189,7 @@
 /**
  * Abort dialog
  */
-  global define symbol AbortDialog() ``{
+  define symbol AbortDialog() ``{
 
       any ret = Popup::ReallyAbort(true);
       if ( ret==true )

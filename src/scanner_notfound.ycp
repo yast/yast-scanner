@@ -25,7 +25,7 @@
 
   import "Label";
     
-  global define term ScannerNotFoundDialog_UI() ``{
+  define term ScannerNotFoundDialog_UI() ``{
 
       term layout = `Empty();
 
@@ -69,7 +69,7 @@ manual configuration is required.")),
 /**
  * ScannerNotFoundDialog
  */
-  global define symbol ScannerNotFoundDialog()``{
+  define symbol ScannerNotFoundDialog()``{
       string help = "";
       // help of Manual Scanner Configuration (start)
       string help1    = _("<p>Please make sure your scanner is

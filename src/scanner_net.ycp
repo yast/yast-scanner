@@ -27,7 +27,7 @@
   import "Label";
   import "String";
 
-  global define term ScannerNetDialog_UI() ``{
+  define term ScannerNetDialog_UI() ``{
       term layout = `VBox (
 			   // This is a label, i.e. the line length should not exceed 50 characters.
 			   `Left(`Label (`opt (`hstretch), _("If you want to use a scanner from a network scan
@@ -51,7 +51,7 @@ Please enter the requested information.\n"))),
 /**
  * ScannerStartDialog
  */
-  global define symbol ScannerNetDialog()``{
+  define symbol ScannerNetDialog()``{
       string help = "";
       // help text part1 of the Network scan station dialog
       string help1    = _("<p>It is possible to use a scanner which
