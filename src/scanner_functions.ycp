@@ -196,7 +196,7 @@
  * @param string title of the popup
  * @return any selected item
  */
-  define any DisplayScannerList( map scanners, string title ) ``{
+  define any DisplayScannerList( map<integer, map> scanners, string title ) ``{
 
       list table_contents =  maplist(integer key, map value, scanners,
 				 ``(`item(`id(key), lookup(value, "vendor", ""),lookup(value, "device", ""), lookup(value, "bus", ""))) );
@@ -312,11 +312,11 @@ with the YaST2 module 'Install and Remove Software'.
  */
   define symbol DecideDialog( ) ``{
 
-      map new_scanner = $[]; 	  //  new scanner which are supported by SANE
-      map detected_scanner = $[]; //  detected scanner which are NOT supported by SANE
+      map<integer, map> new_scanner 	 = $[]; //  new scanner which are supported by SANE
+      map<integer, map> detected_scanner = $[]; //  detected scanner which are NOT supported by SANE
       symbol ret = `next;
       boolean installed = false;
-      map scanner_info = lookup( user_settings, "scannerInfo", $[] );
+      map<integer, map> scanner_info = lookup( user_settings, "scannerInfo", $[] );
 
       if ( scanner_info != $[] )
       {
@@ -416,7 +416,7 @@ with the YaST2 module 'Install and Remove Software'.
     if (delete_id == 0) return;
 
 //      integer current_id = lookup( user_settings, "scannerInWork", 0 );
-    map oldscanner_info = lookup( user_settings, "scannerInfo", $[] );
+    map<integer, map> oldscanner_info = lookup( user_settings, "scannerInfo", $[] );
     map newscanner_info = $[];
     map deleted_entry = $[];
 

@@ -287,7 +287,7 @@ the scanner configuration\n."));
 
       // Get all scanners on the stations
       list<map> net_scanner = (list<map>) SCR::Read(.scanner.net);
-      list net_stations = [];
+      list<map> net_stations = [];
       foreach(map one_scanner, net_scanner, ``{
 
 	  // search for the host.
@@ -345,7 +345,7 @@ the scanner configuration\n."));
       y2milestone( "Net Scanner: %1", net_scanner );
       y2debug("Net Stations found: %1", net_stations );
 
-      foreach( `net_station, net_stations, ``{
+      foreach( map net_station, net_stations, ``{
 	  y2debug("Adding net_station to scanner_info-list as no %1", no );
 	  scanner_info = add(scanner_info, no, net_station);
 
