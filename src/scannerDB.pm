@@ -1176,35 +1176,42 @@ sub getModel( $$ )
 
     my %foundscanner = ();
     
-    my $bus_scanners = findInHash( $bus, \%driver ); # { uc $bus };
-    if( defined $bus_scanners )
+    if( $bus !~ /net/i )
     {
-	my $mfg_scanner_ref = findInHash( $vendor, $bus_scanners ); # ->{ uc $vendor};
+	my $bus_scanners = findInHash( $bus, \%driver ); # { uc $bus };
+	if( ref( $bus_scanners ) eq "HASH" )
+	{
+	    my $mfg_scanner_ref = findInHash( $vendor, $bus_scanners ); # ->{ uc $vendor};
 
-	if( ref($mfg_scanner_ref)  eq "HASH" ) # defined $mfg_scanner_ref )
-	{
-	    %foundscanner = %$mfg_scanner_ref;
-	}
-	else
-	{
-	    if( $vendor =~ /generic/i )
+	    if( ref($mfg_scanner_ref)  eq "HASH" ) # defined $mfg_scanner_ref )
 	    {
-		# In case of generic all entries are required with
-		# all the same items as driver entry ;)
-		foreach my $d ( sort @all_drivers )
-		{
-		    $foundscanner{ $d } = $d;
-		}
+		%foundscanner = %$mfg_scanner_ref;
 	    }
 	    else
 	    {
-		y2debug( "Can not find scanner for Vendor " . uc $vendor );
+		if( $vendor =~ /generic/i )
+		{
+                    # In case of generic all entries are required with
+                    # all the same items as driver entry ;)
+		    foreach my $d ( sort @all_drivers )
+		    {
+			$foundscanner{ $d } = $d;
+		    }
+		}
+		else
+		{
+		    y2debug( "Can not find scanner for Vendor " . uc $vendor );
+		}
 	    }
+	}
+	else
+	{
+	    y2debug( "Can not find scanner for bus " . uc $bus );
 	}
     }
     else
     {
-	y2debug( "Can not find scanner for bus " . uc $bus );
+	y2debug(" No models available for Network scanner !" );
     }
     return %foundscanner;
 }
@@ -1241,8 +1248,17 @@ sub getVendorList( $ )
     
     my $bus_scanners = findInHash( $bus, \%driver ); #$driver{ uc $bus };
 
-    my @vendorlist = keys %$bus_scanners;
-    unshift @vendorlist, 'Generic';
+    my @vendorlist = ();
+
+    if( ref( $bus_scanners ) eq "HASH" )
+    {
+	@vendorlist = keys %$bus_scanners;
+	unshift @vendorlist, 'Generic';
+    }
+    else
+    {
+	y2debug( "Could not find scanners for bus <$bus>" );
+    }
 
     return @vendorlist;
 
@@ -1676,8 +1692,10 @@ sub revertAll
 }
 
 
-sub performScanimage
+sub performScanimage( ;$ )
 {
+    my ($netOnly) = @_;
+
     y2debug( "Searching for configured scanners!" );
     my $cmd = "/usr/X11R6/bin/scanimage -s";
     my @scanners = ();
@@ -1705,7 +1723,7 @@ sub performScanimage
 		$host =  $2;
 		$driver =  $3;
 		$devfile =  $4;
-		y2debug( "Found network scanner: $bus:$host:$driver:$devfile" );
+		y2debug( "Found new network scanner: $bus:$host:$driver:$devfile" );
 	    }
 	    else
 	    {
@@ -1721,6 +1739,12 @@ sub performScanimage
 	    
             # Push anonym hashes to the array. The array contains references to
             # the hashes then.
+	    if( $bus ne "Net" && defined( $netOnly ) && $netOnly )
+	    {
+		y2debug("Found non-net-scanner, but netOnly required -> skip" );
+		next ;
+	    }
+
 	    push ( @scanners , 
 	    { bus => $bus, 
 		  class_id => "",
