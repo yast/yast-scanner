@@ -1399,6 +1399,13 @@ sub storeDevice($$)
 			    $device->{model},
 			    $backend->{name} );
 	    }
+	    # HP all-in-one devices: 
+	    if ( $interface =~ /Parport\(ECP\) USB JetDirect/ )
+	    {
+		storeEntry( "USB", $device->{mfg},
+			    $device->{model},
+			    $backend->{name} );	
+	    }
 
 	    # Count the models for the driver.
 	    my $cnt = $scanner_driver{lc $backend->{name}} || 0;
@@ -1610,11 +1617,12 @@ sub findInHash( $$ )
     my ( $searchkey, $hashref ) = @_;
 
     my @hkeys = keys %$hashref;
-    
+    my $regExpKey = quotemeta( $searchkey );
+
     # y2debug( "findInHash: Keys: " . join( "-", @hkeys ));
 
     my $entry = "";
-    my ($hkey) = grep( /^$searchkey$/i, @hkeys ); # key must fit exactly (exception: ignore case)
+    my ($hkey) = grep( /^$regExpKey$/i, @hkeys ); # key must fit exactly (exception: ignore case)
 
     if( defined $hkey )
     {
@@ -2106,8 +2114,8 @@ sub writeIndividualConf( $$$ )
 
     unless( exists( $config{ $vendor } ) )
     {
-	y2debug( "ERROR: Can not find a config for <$vendor>" );
-	return 0;
+	y2debug( "WARN: Can not find a config for <$vendor>" );
+	return 1;  # No problem if no config file
     }
 
     my $cfg = $config{ $vendor };
@@ -2590,6 +2598,8 @@ $prefix = $ENV{PREFIX_DIR} if( exists $ENV{PREFIX_DIR} );
 # Parse the sane config files, give path that ends with a /
 # where the desc files reside. They must be part of the sane
 # package.
+# example: /usr/share/sane/descriptions/fujitsu.desc
+
 undef @all_drivers;
 undef %driver;
 populateDriverInfo( "/usr/share/sane/descriptions/" );
