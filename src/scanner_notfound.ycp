@@ -49,7 +49,7 @@ manual configuration is required.")),
     							    `VSpacing (0.6),
 							    `Left(`RadioButton(`id(`ptal),`opt(`hstretch),
 									       // radiobutton3
-									       _("&HP all-in-one"),  false) ),
+									       _("&HP All-in-One"),  false) ),
 							    `VSpacing (1.2),
 							    `Left(`RadioButton(`id(`net),`opt(`hstretch),
 									       // radiobutton3
@@ -87,8 +87,9 @@ while the system is running. If you have not yet connected your USB scanner, do 
       // help of Manual Scanner Configuration (continued)
       string help4    = _("<p>YaST2 provides assistance for manual
 USB and SCSI scanner configuration as well as for Hewlett-Packard
-all-in-one devices (e.g. hp psc 2200 series). You can also use
-a scanner from a network scan station.</p>");
+all-in-one devices (e.g., hp psc 2200 series). You can also use
+a scanner from a network scan station.</p>
+");
 
        // Note for translators: the functionality to configure more than one USB scanner
        // is not yet provided. In theory, however, it *is* possible.
@@ -218,9 +219,11 @@ manually (you must be \"root\" to do this). ") );
 		  {
 		      // text part 1 of the warning popup - disconnect unused scanners
 		      Popup::Warning(_("YaST2 has detected several HP all-in-one devices, 
-but you can only use ONE of them.\n
-Please disconnect all unwanted scanners
-and restart the scanner configuration."));
+but you can only use ONE of them.
+
+Disconnect all unwanted scanners
+and restart the scanner configuration.
+"));
 		      ret = `cancel;
 		  }
 		  else if ( size (ptal_scanner) == 1 )
@@ -230,9 +233,10 @@ and restart the scanner configuration."));
 		  }
 		  else
 		  {
-		     Popup::Error(_("Could not detect a HP all-in-one device. 
-Please make sure that the device is switched on
-and start the scanner configuration again."));
+		     Popup::Error(_("No HP all-in-one devices detected. 
+Make sure the device is switched on
+and start the scanner configuration again.
+"));
 		      ret = `cancel;  
 		  }
 	      }
