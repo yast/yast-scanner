@@ -148,7 +148,7 @@ a manual configuration.
 		  if ( choice == `install )
 		  {
 		      //  *do* the scanner configuration
-		      boolean configure_ok = SCR::Read(.sane.writeconfig, GetCurrentScanner());
+		      boolean configure_ok = SCR::Write(.sane.writeconfig, GetCurrentScanner());
 		      
 		      if ( configure_ok )
 		      {

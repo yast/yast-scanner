@@ -216,7 +216,7 @@
       if ( ret==true )
       {
 	  y2milestone("ABORT the scanner installation - undo all changes.");
-	  boolean ok = SCR::Read(.sane.revertall);
+	  boolean ok = SCR::Execute(.sane.revertall);
 	  if(!ok)
 	  {
 	    UI::MessagePopup(_("It was not possible to revert the already made changes"));

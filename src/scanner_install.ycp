@@ -23,7 +23,6 @@
 
 {
   textdomain "scanner";
-  include "ui/summary.ycp";
   
 /**
  * ScannerInstallDialog
@@ -102,15 +101,17 @@ successfully.</p>");
       string help2    = _("<p>You can test the scanner now.
 Insert a test page and click on the <b>Test</b> button.
 Press <b>Next</b> to finish the installation.</p>");
+      // TODO: describe the problem with certain Agfa scanners (firmware has to be loaded manually -.
+      // do not try to test in that case). 
       // help part 3 of dialog scanner test
       string help3    = _("<p>The program <b>xscanimage</b>
 from package <i>sane</i> (already installed) provides
 basic functionality for scanning.</p>");
       // help part 4 of dialog scanner test
-      string help4 = _("<p><b>xsane</b>
-(requires installation of the package <i>xsane</i>)
+      string help4 = _("<p>The scan program <b>Kooka</b>
+(requires installation of the package <i>kdegraphics3-scan</i>)
 offers more scan- and image processing functionality.
-The <b>Gimp</b> also provides scan support.</p>");
+The <b>Gimp</b> and <b>xsane</b> also provides scan support.</p>");
       
       help = help1 + help2 + help3 + help4;
 
@@ -135,7 +136,7 @@ The <b>Gimp</b> also provides scan support.</p>");
 
 	  term image = `Empty();
 
-	  // TODO also do the test when clicking NEXT
+	  // TODO ? also do the test when clicking NEXT
 	  if ( ret == `test )
 	  {
 	      // Disable test button while scanning.
@@ -145,7 +146,7 @@ The <b>Gimp</b> also provides scan support.</p>");
 	      y2debug("TmpDir is tmpdir %1", tmpdir );
 
 	      scanner = add( scanner, "tmpdir", tmpdir );
-	      string filename = SCR::Read(.sane.scanimage, scanner );
+	      string filename = SCR::Execute(.sane.scanimage, scanner );
 	      if ( filename != "" )
 	      {
 		  byteblock image_data = Read(.local.byte, filename);
