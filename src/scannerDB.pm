@@ -1369,12 +1369,7 @@ sub storeDevice($$)
     my $stat = $device->{status};
     $stat = $backend->{status} unless( defined $stat );
 
-    if( $stat eq "stable"    ||
-	$stat eq "beta"      ||
-	$stat eq "alpha"     ||
-	$stat eq "supported" ||
-	$stat eq "untested"  ||
-        $stat eq "OK" )
+    if( $stat ne "unsupported" )
     {
 	my $interface = $device->{interface};
 
