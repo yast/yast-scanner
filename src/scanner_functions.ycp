@@ -428,12 +428,12 @@ with the YaST2 module 'Install and Remove Software'.
 	// this one is after the deleted entry, so lower its id
 	else if(id>delete_id)
 	{
-	  change(newscanner_info,id-1,entrymap);
+	  newscanner_info[id-1] = entrymap;
 	}
 	// copy all entries before the deleted one
 	else
 	{
-	  change(newscanner_info,id,entrymap);
+	  newscanner_info[id] = entrymap;
 	}
       });
 
