@@ -76,8 +76,8 @@ use scannerDB;
 #
 # Required Parameter: bus(=net), host
 #
-# returns a map with scanner data of the remote scanner (does not really work 
-# yet, returns dummy data) 
+# returns a list of maps with scanner descriptions of the remote scanners connected to 
+# the work station 'host'.
 # 
 # ##############################################################################
 
@@ -172,21 +172,15 @@ while ( <STDIN> )
 	{
 	    my $host = findInHash( "host", \%scanner );
 	    y2debug( "Installing a net scanner on host <$host> !" );
-
-	    my @already_conf = readNetConf();
-
-	    unless( grep( /$host/i, @already_conf ))
-	    {
-		push @already_conf, $host;
-	    }
-	    writeNetConf( \@already_conf );
 	    
-	    # Add net to dll.conf
-	    $ok = 1;
-	    unless( grep ( /net/i, @cfg_backends ))
+	    if( defined $host )
 	    {
-		push @cfg_backends, "net";
-		$ok = writeDllconf( \@cfg_backends );
+		$ok = enalbeNetScan( $host );
+	    }
+	    else
+	    {
+		y2debug( "ERROR: Host is not defined or empty!" );
+		$ok = 0;
 	    }
 	    # ATTENTION: Return here :(
 	    ycpReturnSkalarAsBoolean( $ok );
@@ -256,23 +250,17 @@ while ( <STDIN> )
 	}
 	my $host = findInHash( "host", \%scanner );
 
-	my %result = ( bus => "Net", 
-		       class_id => "",
-		       device => "Umax  Test test",
-		       device_id => "",
-		       resource =>"",
-		       rev => "",
-		       sub_class_id => "",
-		       sub_device => "",
-		       sub_vendor => "Umax",
-		       unique_key => "",
-		       vendor => "Umax",
-		       vendor_id => "",
-		       dev_name => "/dev/scanner",
-		       class => "scanner",
-		       driver => "net",
-		       host => $host );
-	ycpReturn( \%result );
+	if( defined ( $host ) )
+	{
+	    my @netscanners_on_host = getNetInfo( $host );
+	    
+	    ycpReturn( \@netscanners_on_host );
+	}
+	else
+	{
+	    y2debug( "No host defined for netscannerinfo!" );
+	    ycpReturn( [] );
+	}
     }
     else
     {

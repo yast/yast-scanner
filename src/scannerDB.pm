@@ -29,7 +29,10 @@ use ycp;
 		      readDllconf
 		      writeDllconf
 		      writeIndividualConf
-		      acquireTestImage );
+		      acquireTestImage 
+		      performScanimage 
+		      getNetInfo );
+
 use vars qw ( %driver $prefix);
 
 
@@ -146,25 +149,29 @@ $driver{USB}{EPSON}{"PERFECTION 640"} = "epson";
 # $driver{}{Fujitsu}{HP4200} = "m3091";
 # $driver{}{Fujitsu}{M3091DCd} = "m3096g";
 # $driver{}{Microtek}{M3096G} = "microtek";
-# $driver{SCSI}{Microtek}{Scanmaker E6} = "microtek";
-# $driver{SCSI}{Microtek}{Scanmaker E3} = "microtek";
-# $driver{SCSI}{Microtek}{Scanmaker E2} = "microtek";
-# $driver{SCSI}{Microtek}{Scanmaker 35t+} = "microtek";
-# $driver{SCSI}{Microtek}{Scanmaker 45t} = "microtek";
-# $driver{SCSI}{Microtek}{Scanmaker 35} = "microtek";
-# $driver{SCSI}{Microtek}{Scanmaker III} = "microtek";
-# $driver{SCSI}{Microtek}{Scanmaker IISP} = "microtek";
-# $driver{SCSI}{Microtek}{Scanmaker IIHR} = "microtek";
-# $driver{SCSI}{Microtek}{Scanmaker IIG} = "microtek";
-# $driver{SCSI}{Microtek}{Scanmaker II} = "microtek";
-# $driver{SCSI}{Microtek}{Scanmaker 600Z(S)} = "microtek";
-# $driver{SCSI}{Microtek}{Scanmaker 600G(S)} = "microtek";
+
+$driver{SCSI}{Microtek}{"Scanmaker E6"} = "microtek";
+$driver{SCSI}{Microtek}{"Scanmaker E3"} = "microtek";
+$driver{SCSI}{Microtek}{"Scanmaker E2"} = "microtek";
+$driver{SCSI}{Microtek}{"Scanmaker 35t+"} = "microtek";
+$driver{SCSI}{Microtek}{"Scanmaker 45t"} = "microtek";
+$driver{SCSI}{Microtek}{"Scanmaker 35"} = "microtek";
+$driver{SCSI}{Microtek}{"Scanmaker III"} = "microtek";
+$driver{SCSI}{Microtek}{"Scanmaker IISP"} = "microtek";
+$driver{SCSI}{Microtek}{"Scanmaker IIHR"} = "microtek";
+$driver{SCSI}{Microtek}{"Scanmaker IIG"} = "microtek";
+$driver{SCSI}{Microtek}{"Scanmaker II"} = "microtek";
+$driver{SCSI}{Microtek}{"Scanmaker 600Z(S)"} = "microtek";
+$driver{SCSI}{Microtek}{"Scanmaker 600G(S)"} = "microtek";
+
 # $driver{SCSI (Parport)}{Agfa}{Color PageWiz} = "microtek";
-# $driver{SCSI}{Agfa}{Arcus II} = "microtek";
-# $driver{SCSI}{Agfa}{StudioScan} = "microtek";
-# $driver{SCSI}{Agfa}{StudioScan II} = "microtek";
-# $driver{SCSI}{Agfa}{StudioScan IIsi} = "microtek";
-# $driver{}{Microtek}{DuoScan} = "microtek2";
+
+$driver{SCSI}{Agfa}{"Arcus II"} = "microtek";
+$driver{SCSI}{Agfa}{"StudioScan"} = "microtek";
+$driver{SCSI}{Agfa}{"StudioScan II"} = "microtek";
+$driver{SCSI}{Agfa}{"StudioScan IIsi"} = "microtek";
+
+# $driver{}{Microtek}{"DuoScan"} = "microtek2";
 # $driver{Parport}{Microtek}{ScanMaker E3plus} = "microtek2";
 # $driver{SCSI}{Microtek}{ScanMaker E3plus} = "microtek2";
 # $driver{SCSI}{Microtek}{ScanMaker X6} = "microtek2";
@@ -1218,6 +1225,7 @@ the trimmed string
 sub trim( $ )
 {
     my ($str) = @_;
+    $str =~ s/\"//g;
     $str =~ s/^\s+//;
     $str =~ s/\s+$//;
     y2debug("Trim: Trimmed string to <$str>");
@@ -1515,6 +1523,152 @@ sub acquireTestImage( $ )
 
     return( $tmpfile );
 
+}
+
+
+sub enableNetScan( $ )
+{
+    my ($host) = @_;
+
+    my $ok = 1;
+
+    my @already_conf = readNetConf();
+
+    unless( grep( /$host/i, @already_conf ))
+    {
+	push @already_conf, $host;
+	$ok = writeNetConf( \@already_conf );
+    }
+	    
+    # Add net to dll.conf
+    my @cfg_backends = readDllconf( );
+
+    unless( grep ( /net/i, @cfg_backends ))
+    {
+	push @cfg_backends, "net";
+	$ok = writeDllconf( \@cfg_backends );
+    }
+    return( $ok );
+}
+
+
+sub getNetInfo( $ )
+{
+    my ($host) = @_;
+
+    y2debug( "Querying host <$host>" );
+
+    # first, add the host to net.conf and enable net-scanning.
+
+    my @origNetStations = readNetConf();
+
+    if( enableNetScan( $host ) )
+    {
+	# now the net station should be enalbed.
+	
+    }
+
+    
+    unless( grep ( /$host/i, @origNetStations ))
+    {
+	# if not yet in the host list, add and write config.
+	my @stations = @origNetStations;
+	push @stations, $host;
+	writeNetConf( \@stations );
+    }
+    
+    # Now the net configuration should be fine.
+    my @scanners = performScanimage();
+    
+    my @hostscanners;
+    
+    # Sort out which scanners are connected to the required station
+    foreach my $scanref ( @scanners )
+    {
+	y2debug( "This is scanref->host: " . %$scanref->{host} );
+	if ( %$scanref->{ host } eq $host )
+	{
+	    push @hostscanners, $scanref;
+	}
+    }
+    return( @hostscanners );
+}
+
+
+sub performScanimage
+{
+    y2debug( "Searching for configured scanners!" );
+    my $cmd = "/usr/X11R6/bin/scanimage -s";
+    my @scanners = ();
+
+    if( open( CMD, "$cmd |" ) )
+    {
+	my $cnt = 0;
+	while( <CMD> )
+	{
+	    chomp;
+	    my ($name, $vendor, $model, $class ) = split( /"\s+"/ );
+	    $name =~ s/\"//g;
+	    $name =~ s/^\s+|\s+$//g;
+	    
+	    my ($driver, $devfile);
+            # bus defaults to SCSI, switched later
+	    my $bus = "SCSI";
+	    my $host = uc "localhost";
+	    
+	    if( $name =~ /(\S+):(\S+):(\S+):(\S+)/ )
+	    {
+                # A Network scanner was found with a name like 
+                # net:d213.suse.de:umax:/dev/sg0
+		$bus = "Net";
+		$host =  $2;
+		$driver =  $3;
+		$devfile =  $4;
+		y2debug( "Found network scanner: $bus:$host:$driver:$devfile" );
+	    }
+	    else
+	    {
+                # split up a name-string like umax:/dev/scanner to driver and device
+		($driver, $devfile) = split( /:/, $name );
+	    }
+	    
+	    if( $devfile =~ /dev.+usb/i )
+	    {
+		$bus = "USB";
+	    }
+	    y2debug( "Found scanner $vendor $model on $devfile" );
+	    
+            # Push anonym hashes to the array. The array contains references to
+            # the hashes then.
+	    push ( @scanners , 
+	    { bus => $bus, 
+		  class_id => "",
+		  device => trim($model),
+		  device_id => "",
+		  resource =>"",
+		  rev => "",
+		  sub_class_id => "",
+		  sub_device => trim($model),
+		  sub_vendor => trim($vendor),
+		  unique_key => "",
+		  vendor => trim($vendor),
+		  vendor_id => "",
+		  dev_name => trim($devfile),
+		  class => trim($class),
+		  driver => trim($driver),
+		  host => $host 
+		  } );
+	    $cnt++;
+	}
+	close CMD;
+	y2debug( "found $cnt configured scanners !" );
+    }
+    else
+    {
+	y2debug( "ERROR: Could not open scanimage!" );
+	@scanners = ();
+    }
+    return( @scanners );
 }
 
 
