@@ -195,7 +195,7 @@ configuration of the scanner %1, %2 ?\n"), GetCurrentScannerValue("vendor"),
 	  }
 	  else if ( ret == `add )
 	  {
-	      ret = DecideDialog( );
+	      ret = DecideDialog( `add );
 	      go_on = false;
 	  }
 	  else
