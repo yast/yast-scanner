@@ -11,6 +11,9 @@
  * Authors:
  *   Gabriele Strattner <gs@suse.de>
  *
+ * String corrections by Christian Steinruecken <cstein@suse.de>, 2001/07/28
+ *
+ *
  * $Id$
  *
  * 0. is package "sane" installed?
@@ -50,14 +53,14 @@ hardware probing of 'USB' and/or the 'SCSI' port(s).
 			  "",	// progress_title
 			  1000,	// length
 			  [
-			   _("Checking whether SANE library is installed"),
-			   _("Hardware probing - looking for connected scanner(s)"),
-			   _("Checking for already installed scanner")
+			   _("Checking whether SANE library is installed..."),
+			   _("Probing hardware - looking for connected scanners..."),
+			   _("Checking already installed scanners...")
 			  ],
 			  help_text )
 	 );
 
-      UI(`ProgressMilestoneUI( 100, _("Checking for SANE library"), 0 ));
+      UI(`ProgressMilestoneUI( 100, _("Checking SANE library..."), 0 ));
       //sleep(100);
     
       if ( !test_mode )
@@ -77,14 +80,14 @@ hardware probing of 'USB' and/or the 'SCSI' port(s).
 	      UI( `ErrorPopup(_("The package 'sane' is not installed correctly.
 This package is mandatory for the scanner installation.
 Please make sure that you have the SuSE CD set available
-and start the scanner installation again - or install the package
+and restart the scanner installation - or install the package
 with the YaST2 module 'Install/Remove Software'.\n")));
-
 	      return `cancel;
 	  }
       }
     
-      UI(`ProgressMilestoneUI( 200, _("Hardware probing"), 1 ));
+      // Progress bar (1)
+      UI(`ProgressMilestoneUI( 200, _("Probing hardware"), 1 ));
       //sleep(100);
       
       list connected_scanner = [];
@@ -100,9 +103,9 @@ with the YaST2 module 'Install/Remove Software'.\n")));
 
 	      // text of an error popup "only one USB scanner allowed" 
 	      UI(`ErrorPopup(_("YaST2 has detected several USB scanners
-connected to your computer. At the moment it's only
-possible to support ONE single USB scanner.\n
-Please disconnect the unwanted USB scanner(s)
+connected to your computer. At the moment only one USB scanner\n
+can be configured, so please decide which one you want :-)\n
+Disconnect all unwanted USB scanners
 and restart the scanner configuration.")));
 	      return `cancel;
 	    
@@ -115,7 +118,10 @@ and restart the scanner configuration.")));
 	  connected_scanner = lookup( user_settings, "test_connected", [] );
       }
 
-      UI(`ProgressMilestoneUI( 300, _("Checking for already installed scanner"), 2 ));
+      // Progressbar (2)
+      pbar_text = _("Checking already installed scanners")
+      
+      UI(`ProgressMilestoneUI( 300, pbar_text, 2 ));
       sleep(100);
 
       list installed_scanner = [];
@@ -128,11 +134,11 @@ and restart the scanner configuration.")));
       {
 	  installed_scanner = lookup( user_settings, "test_installed", [] );	
       }
-
-      UI(`ProgressMilestoneUI( 1000, _("Checking for already installed scanner"), 2 ));
+      
+      UI(`ProgressMilestoneUI( 1000, pbar_text, 2 ));
       sleep(500);
 
-      // find out which scanner is already installed/which is new/which is supported
+      // find out which scanner is already installed / which is new / which is supported
       map scanner_info = $[];
     
       integer no = 1;
