@@ -193,10 +193,12 @@ configuration.")));
 	  else
 	  {
 	      foreach ( `scan, installed_scanner, ``{
+		  y2debug ("SCAN: %1", scan );
+		  y2debug ("SCANNER: %1", scanner );
 		  if ( (lookup( scan, "vendor", "") == lookup( scanner, "vendor", "")) &&
 		       (lookup( scan, "device", "") == lookup( scanner, "device", "")) &&
 		       (lookup( scan, "bus", "") )  == lookup( scanner, "bus", "") &&
-		       (lookup( scan, "dev_name", "") == lookup( scan, "dev_name", "")) )
+		       (lookup( scan, "dev_name", "") == lookup( scanner, "dev_name", "")) )
 		  {
 		      scanner = add( scanner, "scanner_status", "installed" );
 		  }
