@@ -37,7 +37,10 @@
 
   import "Label";
   import "String";
-import "Scanner";
+  import "Scanner";
+
+  import "Wizard";
+  import "Popup";
 
   define term ScannerUSBDialog_UI( list device_list ) ``{
 

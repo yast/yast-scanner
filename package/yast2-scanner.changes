@@ -1,4 +1,18 @@
 -------------------------------------------------------------------
+Mon Aug  2 16:51:49 CEST 2004 - jsmeix@suse.de
+
+- V 2.10.1
+- In Scanner.ycp and scanner_new:
+  Write USB vendor and model entries to /etc/sane.d/<driver>.conf
+  and to /etc/hotplug/usb/sane.usermap and test before whether
+  such an entry already exists.
+- Added several "import ..." so that "y2tool check_ycp src/*.ycp"
+  does no longer warn regarding used but not imported stuff.
+- Fixed two errors regarding ScannerAutoSequence:
+  Wrong type ("any" instead of "symbol" in wizards.ycp).
+  Missing "include" of wizards.ycp in scanner_proposal.ycp.
+
+-------------------------------------------------------------------
 Thu Jul  1 12:23:43 CEST 2004 - jsrain@suse.cz
 
 - modified the code layout to use YCP module for storing data, added

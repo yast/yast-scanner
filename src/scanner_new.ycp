@@ -27,6 +27,9 @@
    import "Label";
    import "Scanner";
 
+   import "Wizard";
+   import "Popup";
+
    /**
    * ScannerNewDialog Layout	
    */
@@ -173,10 +176,17 @@ a manual configuration.
 			      {
 				  product_id = product_id - 196608;	// subtract 0x30000
 			      }
-			      string usb_ids = sformat( "%1  %2", tohexstring( vendor_id ), tohexstring( product_id ) );
-			      SCR::Execute( .target.bash, sformat("echo \"usb %1\" >> /etc/sane.d/%2.conf",
-								  usb_ids, lookup(scanner, "scanner_driver", "")) );
-			      y2milestone( "WROTE /etc/sane.d/%1.conf", lookup(scanner, "scanner_driver", "") );
+			      string usb_ids = sformat( "%1 %2", tohexstring( vendor_id ), tohexstring( product_id ) );
+               // test whether the USB IDs already exist in /etc/sane.d/<driver>.conf
+			      SCR::Execute( .target.bash, sformat("grep -q \"^usb %1\" /etc/sane.d/%2.conf || echo \"usb %1\" >>/etc/sane.d/%2.conf", usb_ids, lookup(scanner, "scanner_driver", "")) );
+			      y2milestone( "WROTE \"usb %1\" to /etc/sane.d/%2.conf", usb_ids, lookup(scanner, "scanner_driver", "") );
+               // see /etc/hotplug/usb/sane-hardcoded.usermap for the syntax of entries:
+               // desktopdev 0x0003 vendor model 0x0000 0x0000 0x00 0x00 0x00 0x00 0x00 0x00 0x0
+               string user_entry = sformat( "desktopdev 0x0003 %1 0x0000 0x0000 0x00 0x00 0x00 0x00 0x00 0x00 0x0", usb_ids );
+               // Write to /etc/hotplug/usb/sane.usermap (using pseudo module name "desktopdev")
+               // test whether the entry already exist in /etc/hotplug/usb/sane.usermap
+               SCR::Execute(.target.bash, sformat("grep -qs \"^%1\" /etc/hotplug/usb/sane.usermap || echo \"%1\" >>/etc/hotplug/usb/sane.usermap", user_entry ) );
+               y2milestone( "WROTE \"%1\" to /etc/hotplug/usb/sane.usermap", user_entry );
 
 			      // TODO get libusb device name
 			      // Scanner::SetCurrentScannerValue( "dev_name", device );

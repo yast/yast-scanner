@@ -27,6 +27,10 @@
   import "Label";
   import "String";
 
+  import "Wizard";
+  import "Scanner";
+  import "Popup";
+
   define term ScannerNetDialog_UI() ``{
       term layout = `VBox (
 			   // This is a label, i.e. the line length should not exceed 50 characters.

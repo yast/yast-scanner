@@ -21,6 +21,7 @@ import "String";
 import "Summary";
 import "Popup";
 
+import "Service";
 
 global map user_settings = $[];
 
@@ -456,81 +457,59 @@ the scanner configuration\n."));
  * Write all scanner settings
  * @return true on success
  */
-global boolean Write() {
-      boolean ret = true;
-
-      map<any,map> scanner_info = Scanner::user_settings["scannerInfo"]:$[];
-
-      foreach( any key, map scanner, scanner_info, ``{
-
-	  string usb_usermap = lookup( scanner, "usb_usermap", "" );
-	  string bus = lookup( scanner, "bus", "" );
-	  string scanner_driver = lookup( scanner, "scanner_driver", "" );
-	  string is_installed = lookup( scanner, "scanner_status", "" );
-	  string unique_key =  lookup( scanner, "unique_key", "" );
-
-	  if( is_installed == "installed" )
-	  {
-	      boolean success = false;
-
-	      SCR::Write(.probe.status.configured, unique_key, `yes);
-	      y2milestone ( "Mark scanner %1 as configured",  unique_key );
-
-	      if ( bus == "USB"
-		   && usb_usermap != ""
-		   && scanner_driver != "" )
-	      {
-		  // kernel 2.6: writing modules.conf is obsolete (scanner module is gone)
-
-		  integer exitcode = 0;
-
-		  // append USB IDs to /etc/sane.d/<driver>.conf
-		  exitcode = (integer)SCR::Execute(.target.bash, sformat("echo \"usb %1\" >> /etc/sane.d/%2.conf",
-							       usb_usermap, scanner_driver) );
-
-		  if ( exitcode == 0 )
-		  {
-	      		  string user_entry = sformat ("desktopdev  0x0003  %1  0x0000       0x0000       0x00         0x00            0x00            0x00            0x00            0x00            0x00000000", usb_usermap );
-		      // Write /etc/hotplug/usb/sane.usermap (using pseudo module name "desktopdev")
-		      exitcode = (integer)SCR::Execute(.target.bash, sformat("echo \"%1\" >> /etc/hotplug/usb/sane.usermap", user_entry ) );
+global boolean Write()
+{ boolean ret = true;
+  map<any,map> scanner_info = Scanner::user_settings["scannerInfo"]:$[];
+  foreach( any key, map scanner, scanner_info,
+  ``{ string usb_usermap = lookup( scanner, "usb_usermap", "" );
+	   string bus = lookup( scanner, "bus", "" );
+	   string scanner_driver = lookup( scanner, "scanner_driver", "" );
+	   string is_installed = lookup( scanner, "scanner_status", "" );
+	   string unique_key =  lookup( scanner, "unique_key", "" );
+      if( is_installed == "installed" )
+	   { boolean success = false;
+        SCR::Write(.probe.status.configured, unique_key, `yes);
+        y2milestone ( "Mark scanner %1 as configured",  unique_key );
+        if ( bus == "USB" && usb_usermap != "" && scanner_driver != "" )
+	     { // kernel 2.6: writing modules.conf is obsolete (scanner module is gone)
+		    integer exitcode = 0;
+          // append USB IDs to /etc/sane.d/<driver>.conf
+          // test whether the USB IDs already exist in /etc/sane.d/<driver>.conf
+		    exitcode = (integer)SCR::Execute(.target.bash, sformat("grep -q \"^usb %1\" /etc/sane.d/%2.conf || echo \"usb %1\" >>/etc/sane.d/%2.conf", usb_usermap, scanner_driver) );
+		    if( exitcode == 0 )
+		    { y2milestone( "WROTE \"usb %1\" to /etc/sane.d/%2.conf", usb_usermap, scanner_driver );
+            // see /etc/hotplug/usb/sane-hardcoded.usermap for the syntax of entries:
+            // desktopdev 0x0003 vendor model 0x0000 0x0000 0x00 0x00 0x00 0x00 0x00 0x00 0x0
+            string user_entry = sformat( "desktopdev 0x0003 %1 0x0000 0x0000 0x00 0x00 0x00 0x00 0x00 0x00 0x0", usb_usermap );
+            // Write to /etc/hotplug/usb/sane.usermap (using pseudo module name "desktopdev")
+            // test whether the entry already exist in /etc/hotplug/usb/sane.usermap
+		      exitcode = (integer)SCR::Execute(.target.bash, sformat("grep -qs \"^%1\" /etc/hotplug/usb/sane.usermap || echo \"%1\" >>/etc/hotplug/usb/sane.usermap", user_entry ) );
+            if( exitcode == 0 )
+            { y2milestone( "WROTE \"%1\" to /etc/hotplug/usb/sane.usermap", user_entry );
+            }
+            else
+            { y2error( "ERROR: Manual USB configuration failed" );
+              ret = false;
+            }
+          }
+	     } 
+	     else if ( bus == "SCSI" )
+        { // set the link in /etc/init.d/rc3.d to start the script /usr/sbin/rcsane
+          // (which sets and resets the permissions 666 on /dev/sg0 )
+          success = Service::Enable("sane");
+          y2milestone( "ServiceAdjust( sane, enable ) returns: %1", success );
+		    if ( !success ) ret = false;
+        }
+        else if ( bus == "PTAL" )
+        { // enable PTAL service and hotplug
+		    success = Service::Enable("hotplug");
+		    if ( success ) success = Service::Enable("ptal");
+          y2milestone ( "PTAL service %1", success?"enabled":"NOT enabled" );
+          if ( !success ) ret = false;
 		  }
-		  if ( exitcode != 0 )
-		  {
-		      y2error( "ERROR: Manual USB configuration failed" );
-		      ret = false;
-		  }
-		  else
-		  {
-		      y2milestone( "Writing /etc/sane.d/%1.conf and /etc/hotplug/usb/sane.usermap" );
-		  }
-	      }
-	      else if ( bus == "SCSI" )
-	      {
-		  // set the link in /etc/init.d/rc3.d to start the script /usr/sbin/rcsane
-		  // (which sets and resets the permissions 666 on /dev/sg0 )
-		  success = Service::Enable("sane");
-		  y2milestone( "ServiceAdjust( sane, enable ) returns: %1", success );
-		  if ( !success )
-		      ret = false;
-	      }
-	      else if ( bus == "PTAL" )
-	      {
-		  // enable PTAL service and hotplug
-		  success = Service::Enable("hotplug");
-		  if ( success )
-		  {
-		      success = Service::Enable("ptal");
-		  }
-		  if ( !success )
-		      ret = false;
-
-		  y2milestone ( "PTAL service %1", success?"enabled":"NOT enabled" );
-	      }
-	  }
-      });
-
-      return ret;
-
+	   }
+    });
+  return ret;
 }
 
 /**

@@ -20,6 +20,9 @@ y2milestone ("----------------------------------------");
 y2milestone ("Scanner module started");
 
 import "CommandLine";
+
+import "Scanner";
+
 include "scanner/wizards.ycp";
 
 // check test_mode

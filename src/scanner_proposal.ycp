@@ -17,6 +17,8 @@ textdomain "scanner";
 import "Scanner";
 import "Progress";
 
+include "scanner/wizards.ycp";
+
 /* The main () */
 y2milestone("----------------------------------------");
 y2milestone("Scanner proposal started");
@@ -50,7 +52,7 @@ if(func == "MakeProposal") {
 /* run the module */
 else if(func == "AskUser") {
     map stored = Scanner::Export();
-    symbol seq = ScannerAutoSequence ();
+    symbol seq = ScannerAutoSequence();
     if(seq != `next)
 	Scanner::Import(stored);
     y2debug("stored=%1",stored);

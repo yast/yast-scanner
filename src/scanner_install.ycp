@@ -26,6 +26,10 @@
 
     import "Label";
     import "Scanner";
+
+    import "Wizard";
+    import "Popup";
+
 /**
  * ScannerInstallDialog
  */
@@ -125,7 +129,7 @@ offers more scan and image processing functionality.
 
 	byteblock logo =  #[00000001];
 	logo = (byteblock) WFM::Read( .local.byte,
-				      "/usr/share/doc/packages/sane/sane-backends/umax/sane-logo2.jpg");
+				      "/usr/share/doc/packages/sane/sane-backends/umax/sane-logo.jpg");
 	if ( logo == nil )
 	     logo = #[00000001];
 	
