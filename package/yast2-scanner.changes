@@ -1,4 +1,9 @@
 -------------------------------------------------------------------
+Mon Mar  3 14:52:03 CET 2003 - gs@suse.de
+
+- help text proof readed 
+
+-------------------------------------------------------------------
 Mon Feb 17 16:34:01 CET 2003 - gs@suse.de
 
 - write USB scanner data to /etc/hotplug/usb/sane.usermap 
