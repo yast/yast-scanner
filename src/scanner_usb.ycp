@@ -199,8 +199,10 @@ successfully you can proceed to the
 		  string module_name = UI(`QueryWidget(`id(`module), `Value));
 		  map device 	= lookup( usb_unknown, usb_device );
 		  integer vendor_id = lookup( device, "vendor_id", "");
+		  vendor_id = vendor_id - 196608;	// subtract 0x30000
 		  integer product_id = lookup( device, "device_id", "");
-		  string options = sformat("vendor=0x%1 product=0x%1",
+		  product_id product_id - 196608;	// subtract 0x30000
+		  string options = sformat("vendor=%1 product=%1",
 					   tohexstring(vendor_id),
 					   tohexstring(product_id) );
 
