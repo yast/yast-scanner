@@ -154,6 +154,10 @@ and restart the scanner configuration.")));
 	  {
 	      driver = SCR(`Read(.sane.driver, scanner));
 	  }
+	  else
+	  {
+	      driver = GetCurrentScannerValue( "scanner_driver" );
+	  }
 	  if ( installed_scanner == [] )
 	  {
 	      if ( driver != "" )

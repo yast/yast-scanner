@@ -115,6 +115,7 @@
 				   "resource":$["baud":[$["speed":1500000]]],
 				   "rev":"0.01", "sub_class_id":0,
 				   "sub_device":"Perfection640  ",
+				   "scanner_driver":"test123"
 				   "sub_vendor":"EPSON",
 				   "unique_key":"PTVH.9Hr5DGWrbRF",
 				   "vendor":"Epson",
@@ -130,6 +131,7 @@
 				   "resource":$["baud":[$["speed":1500000]]],
 				   "rev":"0.01", "sub_class_id":0,
 				   "sub_device":"Perfection640  ",
+				   "scanner_driver":"test123"
 				   "sub_vendor":"EPSON",
 				   "unique_key":"PTVH.9Hr5DGWrbRF",
 				   "vendor":"Epson",
