@@ -62,6 +62,13 @@ while ( <STDIN> )
 
 		y2debug( "Found $class $vendor $model on $devfile" );
 
+		# Check if there are links and skip them
+		if( -l $devfile ) 
+		{
+		    y2debug( "$devfile is a link -> skipping !" );
+		    next;
+		}
+	
 		push ( @scanners , 
 		{ bus => "SCSI", 
 		      class_id => "",
