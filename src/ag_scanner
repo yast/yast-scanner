@@ -11,6 +11,7 @@
 
 BEGIN { unshift @INC, "/usr/lib/YaST2/agents_non_y2/"; }
 
+use strict;
 use ycp;
 
 
@@ -38,6 +39,12 @@ while ( <STDIN> )
     ycpDoVerboseLog();
     ycpInit( $_ );
 
+    if( /result/i )
+    {
+	y2debug("got result -> say goodby!" );
+	exit(0);
+    }
+
     my $action = ycpGetPath();
     y2debug( " vvv starting in ag_scanner vvv" );
 
@@ -52,11 +59,11 @@ while ( <STDIN> )
 	if( open( CMD, "$cmd |" ) )
 	{
 	    my $cnt = 0;
-	    while( <CMD> )
+	    while( my $cmd = <CMD> )
 	    {
-		chomp;
-		my ($devfile, $class, $vendor, $model ) = split( /\s+\"/ );
-		$class    =~ s/\"//g;
+		chomp( $cmd );
+		my ($devfile, $class, $vendor, $model) = split( /\s+\"/, $cmd );
+		$class   =~ s/\"//g;
 		$vendor  =~ s/\"//g;
 		$model   =~ s/\"//g;
 
