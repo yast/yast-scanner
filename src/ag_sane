@@ -196,7 +196,7 @@ while ( <STDIN> )
 	# Not net !
 	my $driver = findInHash( "driver", \%scanner );
 	my $devicefile = findInHash( "dev_name", \%scanner );
-	y2debug( "Installing driver <$driver> for scanner <$vendor/$model>" );
+	y2debug( "Installing driver <$driver> for scanner <$vendor/$model> on <$devicefile>" );
 
 	if( grep( /$driver/, @cfg_backends ) )
 	{
