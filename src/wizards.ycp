@@ -155,12 +155,12 @@ symbol ScannerSequence() {
 any ScannerAutoSequence() {
 
     /* Initialization dialog caption */
-    string caption = _("Power Management Configuration");
+    string caption = _("Scanner Configuration");
     /* Initialization dialog contents */
     term contents = `Label(_("Initializing..."));
 
     Wizard::CreateDialog();
-    Wizard::SetDesktopIcon("power-management");
+    Wizard::SetDesktopIcon("scanner");
     Wizard::SetContentsButtons(caption, contents, "",
 	Label::BackButton(), Label::NextButton());
 
