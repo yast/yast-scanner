@@ -14,7 +14,7 @@ Name:		@RPMNAME@
 Release:	1
 Copyright:	(c) 2000 SuSE GmbH
 Group:		System Environment/YaST
-Requires:	yast2 yast2-trans-scanner yast2-lib-wizard yast2-lib-sequencer
+Requires:	yast2 yast2-trans-scanner yast2-lib-wizard yast2-lib-sequencer yast2-config-runlevel
 BuildArchitectures:	noarch
 
 Packager:	@MAINTAINER@
@@ -58,7 +58,6 @@ make install
 @YAST2DIR@/servers_non_y2/scannerDB.pm
 @YAST2DIR@/scrconf/scanner.scr
 @YAST2DIR@/scrconf/sane.scr
-@YAST2DIR@/scrconf/cfg_scanner.scr
 
 %dir @DOCDIR@
 @DOCDIR@/*
