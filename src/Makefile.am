@@ -20,7 +20,6 @@ include_DATA =		\
 	scanner_functions.ycp
 
 menu_DATA = menuentry_scanner.ycp
-agent_SCRIPTS = get_configured_scanner	\
-		get_scsi_scanner
+agent_SCRIPTS = ag_scanner
 
 EXTRA_DIST = $(clients_DATA) $(include_DATA) $(menu_DATA) $(agent_SCRIPTS)

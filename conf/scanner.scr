@@ -1,0 +1,23 @@
+/**
+ * File:
+ *   scanner.scr
+ * Summary:
+ *   SCR Agent using SANE scanner library calls to get informations
+ *   about scanner 
+ * Access:
+ *   read/write
+ * Authors:
+ *   freitag@suse.de>
+ * See:
+ *   libscr
+ * Example:
+ *   Read(.scanner.scsci)
+ *   Read(.scanner.installed)
+ *
+ * $Id$
+ *
+ */
+.scanner
+
+`ag_scanner ()
+
