@@ -1,22 +1,10 @@
 /**
- * File:
- *   scanner.ycp
- *
- * Module:
- *   Configuration of scanner
- *
- * Summary:
- *   Main file
- *
- * Authors:
- *   Gabriele Strattner <gs@suse.de>
- *
- *
+ * File:	clients/scanner.ycp
+ * Package:	Configuration of scanner
+ * Summary:	Main file
+ * Authors:	Gabriele Strattner <gs@suse.de>
  *
  * $Id$
- *
- * Main file for scanner configuration. Uses all other files.
- *
  */
 
 {
@@ -27,10 +15,10 @@
 
   textdomain "scanner";
 
-  include "wizard/sequencer.ycp";
   import "Wizard";
   import "Popup";
   import "Label";
+  import "Sequencer";
 
   // this is the global data map
   map user_settings = $[];
@@ -219,6 +207,7 @@
 
 
   Wizard::CreateDialog();
+  Wizard::SetDesktopIcon("scanner");
 
   map aliases = $[
 		  "scanner_start"       :   [``( ScannerStartDialog() ), true ],
@@ -287,12 +276,12 @@
 					  `cancel    :   `cancel,
 					  `next      :   "scanner_overview"],
 		   "abort"      :   $[
-				      `yes 	  :   `abort ]
+				      `yes	  :   `abort ]
   ];
 
 
 
-  any ret = WizardSequencer(aliases, sequence);
+  any ret = Sequencer::Run(aliases, sequence);
 
   if ( ret == `ok )
   {
@@ -306,11 +295,13 @@
 
       if ( !success )
 	  ret = `cancel;
-      
+
       UI::CloseDialog();
   }
 
   UI::CloseDialog();
 
   return ret;
+
+/* EOF */
 }
