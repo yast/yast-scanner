@@ -104,14 +104,15 @@ by the SANE library (Scanner Access Now Easy).</p> "));
       // help text2 for dialog Manual scanner selection
       string help2    	= UI(_("<p>If one of the vendor/model pairs matches
 your scanner, select the corresponding entries and proceed with the installation.</p>"));
-      // help text3 for dialog Manual scanner selection
+      // helptext3 for dialog Manual scanner selection
+      string help3    	= UI(_("<p><b>Attention</b>: only do the manual
+selection if you are absolutely sure. Wrong data may cause a hardware
+failure.</p>"));
+      // help text4 for dialog Manual scanner selection
       // - don't translate SANE -
-      string help3    	= UI(_("<p>If your scanner model is not
+      string help4    	= UI(_("<p>If your scanner model is not
 contained in the list but you know a SANE driver which works for your scanner,
 take \"Generic\" in the vendor list and select the driver manually.</p>"));
-      // helptext4 for dialog Manual scanner selection
-      string help4    	= UI(_("<p><b>Attention</b>: only select the driver manually
-if you are absolutely sure. Wrong data may cause hardware failures.</p>"));
       // helptext5 for dialog Manual scanner selection
       string help5    	= UI(_("<p>More information can be found on
 http://mostang.com/sane and http://sdb.suse.de.</p>"));
