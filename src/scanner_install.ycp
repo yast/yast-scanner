@@ -137,6 +137,8 @@ The <b>Gimp</b> also provides scan support.</p>");
 	  {
 	      // TODO: create the tmp-file name in YaST2 !!!!!!!
 	      // get the test picture from SANE
+	      map scanner = GetCurrentScanner();
+	      scanner = add( scanner, "tmpdir", SCR( `Read(.target.tmpdir)));
 	      string filename = SCR(`Read(.sane.scanimage, GetCurrentScanner()));
 	      if ( filename != "" )
 	      {
