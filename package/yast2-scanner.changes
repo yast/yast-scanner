@@ -1,4 +1,9 @@
 -------------------------------------------------------------------
+Tue Sep  3 15:14:25 CEST 2002 - gs@suse.de
+
+- fixed config template for plustek, i.e. wellknown Epson perfection 1650
+
+-------------------------------------------------------------------
 Tue Aug 27 20:00:00 CEST 2002 - jsuchome@suse.cz
 
 - provide/obsolete old translation packages
