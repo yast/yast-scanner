@@ -157,7 +157,7 @@ Install the package now?
 		  // sub_class_id 1 means a HP all-in-one device
 		  if ( lookup( scanner, "sub_class_id", 0) == 1 )
 		  {
-		      boolean installed = CheckOfficeJet();
+		      boolean installed = Scanner::CheckOfficeJet();
 		      if ( installed )
 		      {
 			   // call ptal-init setup
@@ -382,7 +382,7 @@ the scanner configuration\n."));
       Scanner::user_settings = add( Scanner::user_settings, "scannerInfo", scanner_info );
       y2debug( "Writing SCANNER INFO: %1", scanner_info );
 
-      ret = DecideDialog( `start );
+      ret = Scanner::DecideDialog( `start );
 
       return ret;
   }

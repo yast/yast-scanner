@@ -2,7 +2,7 @@
 # Makefile.am for scanner/src
 #
 
-YCPCFLAGS = -I.
+#YCPCFLAGS = -I.
 
 yncludedir = @yncludedir@/scanner
 

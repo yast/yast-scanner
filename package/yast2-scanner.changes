@@ -1,4 +1,17 @@
 -------------------------------------------------------------------
+Tue Aug  3 14:30:55 CEST 2004 - jsmeix@suse.de
+
+- V 2.10.2
+- In Scanner.ycp and scanner_new:
+  Added popup which explains what to to regarding access USB
+  scanners for normal users.
+- Fixed several syntax errors which are shown by running
+  /usr/bin/ycpc -qE -M. -I. *.ycp
+  in the src directory.
+- Added @moduledir@/Scanner* and @clientdir@/scanner*
+  to yast2-scanner.spec.in so that it builds in autobuild.
+
+-------------------------------------------------------------------
 Mon Aug  2 16:51:49 CEST 2004 - jsmeix@suse.de
 
 - V 2.10.1
