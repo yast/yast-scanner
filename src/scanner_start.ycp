@@ -6,7 +6,7 @@
  *   Configuration of scanner
  *
  * Summary:
- *   
+ *
  *
  * Authors:
  *   Gabriele Strattner <gs@suse.de>
@@ -20,19 +20,21 @@
  * 0. is package "sane" installed?
  *    if NOT -> call sw_single
  * 1. Hardware probing
- *     SCR(.probe.scanner) 	-> hwinfo --scanner	
+ *     SCR(.probe.scanner) 	-> hwinfo --scanner
  * 2. Check already installed scanner (perl script)
  * 3. Decide whether the detected scanner(s) is (are) installed/supported by SANE
  * 4. Decide which dialog is called next
- * 
- * Shows the progress of hardware probing and scanner checking. 
+ *
+ * Shows the progress of hardware probing and scanner checking.
  *
  */
 
 {
   textdomain "scanner";
+
   import "Progress";
   import "Label";
+  import "String";
 
 /**
  * ScannerStartDialog
@@ -43,10 +45,10 @@
       boolean test_mode = lookup( user_settings, "test_mode", false );
 
       // Help text for start dialog (checking and probing)
-      string help_text = _("<p>YaST2 is doing some checks, e.g. the 
+      string help_text = _("<p>YaST2 is doing some checks, e.g. the
 hardware probing of 'USB' and/or the 'SCSI' port(s).
 </p>");
-	
+
       Progress::New(
 		    // Headline for start dialog of scanner configuration
 		    _("Initializing scanner module ..."),
@@ -65,7 +67,7 @@ hardware probing of 'USB' and/or the 'SCSI' port(s).
       Progress::NextStage( );
       // text for a progress bar label (please do not translate 'SANE')
       Progress::Title( _("Checking SANE library...") );
-    
+
       if ( !test_mode )
       {
 	  integer sane_installed = SCR::Execute (.target.bash, "/bin/rpm -q sane");
@@ -75,7 +77,7 @@ hardware probing of 'USB' and/or the 'SCSI' port(s).
 	  string mesg = "";
 
 	  // ( we do not need ImageMagick any longer )
-	  
+
 	  if( sane_installed != 0 )
 	  {
 	      // Translators: 'SANE' is a package name - don't translate!
@@ -109,20 +111,20 @@ with the YaST2 module 'Install/Remove Software'.\n"));
 	      return `cancel;
 	  }
       }
-    
+
       Progress::NextStage();
       // text for a progress bar label
       Progress::Title( _("Probing hardware") );
 
       integer usb_count = 0;
       list connected_scanner = [];
-      
+
       if ( !test_mode )
       {
 	  // pobe USB and SCSI ports; command is hwinfo --scanner
 	  connected_scanner = SCR::Read(.probe.scanner);
 	  list scanner_list = [];
-	  
+
 	  foreach (`scanner, connected_scanner, ``{
 	      if ( lookup( scanner, "bus", "" ) == "USB" )
 	      {
@@ -132,7 +134,7 @@ with the YaST2 module 'Install/Remove Software'.\n"));
 		      boolean installed = CheckOfficeJet();
 		      if ( installed )
 		      {
-			  // replace scanner entry 
+			  // replace scanner entry
 			  list ptal_devices = SCR::Read(.scanner.ptal);
 			  foreach (`device, ptal_devices, ``{
 			      if ( lookup( device, "device", "") == lookup( scanner, "sub_device", "" ) )
@@ -146,23 +148,23 @@ with the YaST2 module 'Install/Remove Software'.\n"));
 		  else
 		  {
 		      usb_count = usb_count + 1;
-		      scanner_list = add(scanner_list, scanner); 
+		      scanner_list = add(scanner_list, scanner);
 		  }
 	      }
 	      else
 	      {
-		  scanner_list = add(scanner_list, scanner); 
+		  scanner_list = add(scanner_list, scanner);
 	      }
 	  });
 	  connected_scanner = scanner_list;
-	  
-	  if ( usb_count > 1 ) 
+
+	  if ( usb_count > 1 )
 	  {
 	      // only one USB scanner is supported by scanner library SANE
 	      // and there are problems with hot plugin (changing device numbers)
 	      // -> only *one* USB scanner is allowed
 
-	      // text of an error popup "only one USB scanner allowed" 
+	      // text of an error popup "only one USB scanner allowed"
 	      Popup::Error(_("YaST2 has detected several USB scanners connected to
 your computer. At the moment only one USB scanner can
 be configured, so please decide which one you want.\n
@@ -180,7 +182,7 @@ the scanner configuration\n."));
 	      }
 	      return scanner;
 	  });
-		   
+
 	  y2milestone( "Connected Scanner: %1", connected_scanner);
 
           // add net scanner/call SCR::Read(.scanner.net) -> see below
@@ -193,7 +195,7 @@ the scanner configuration\n."));
 
       Progress::NextStage( );
       // text for a progress bar label
-      Progress::Title(_("Checking already installed scanners")); 
+      Progress::Title(_("Checking already installed scanners"));
 
       list installed_scanner = [];
       if ( !test_mode )
@@ -203,7 +205,7 @@ the scanner configuration\n."));
       }
       else
       {
-	  installed_scanner = lookup( user_settings, "test_installed", [] );	
+	  installed_scanner = lookup( user_settings, "test_installed", [] );
       }
 
       Progress::NextStep();
@@ -213,15 +215,15 @@ the scanner configuration\n."));
 
       // find out which scanner is already installed / which is new / which is supported
       map scanner_info = $[];
-    
+
       integer no = 1;
-      
+
       foreach( `scanner, connected_scanner, ``{
 	  string driver = "";
 	  boolean found = false;
 	  integer m = 0;
 	  map scan = $[];
-	  
+
 	  if ( !test_mode )
 	  {
 	      // try to get SANE scanner driver
@@ -230,7 +232,7 @@ the scanner configuration\n."));
 	  else
 	  {
 	      // get test data
- 	      driver = lookup( scanner, "scanner_driver", "" ); 
+ 	      driver = lookup( scanner, "scanner_driver", "" );
 	  }
 	  //determine whether scanner is already installed
 	  while ( !found && m < size(installed_scanner) )
@@ -238,7 +240,7 @@ the scanner configuration\n."));
 	      scan = select( installed_scanner, m, $[] );
 	      if ( ( tolower(lookup( scan, "vendor", "")) 	== tolower(lookup( scanner, "vendor", "")) ) 	&&
 		   ( ( tolower(lookup( scan, "device", "")) 	== tolower(lookup( scanner, "device", "")) ) ||
-		     ( tolower(CutBlanks(lookup( scan, "sub_device", ""))) == tolower(CutBlanks(lookup( scanner, "sub_device", ""))) ) )  &&
+		     ( tolower(String::CutBlanks(lookup( scan, "sub_device", ""))) == tolower(String::CutBlanks(lookup( scanner, "sub_device", ""))) ) )  &&
 		   ( tolower(lookup( scan, "bus", "")) 		== tolower(lookup( scanner, "bus", "")) ) 	&&
 		   ( tolower(lookup( scan, "dev_name", "")) 	== tolower(lookup( scanner, "dev_name", "")) ) )
 	      {
@@ -263,21 +265,21 @@ the scanner configuration\n."));
 	      }
 	      else
 	      {
-		  scanner = add( scanner, "scanner_status", "detected" );  
+		  scanner = add( scanner, "scanner_status", "detected" );
 	      }
 
 	  }
-	  // if the "device" or "vendor" entry is missing add the entry (set value of sub_....) 
+	  // if the "device" or "vendor" entry is missing add the entry (set value of sub_....)
 	  if ( lookup( scanner, "device", "") == "" )
 	  {
-	      scanner = add(scanner, "device", CutBlanks(lookup( scanner, "sub_device", "")) );
+	      scanner = add(scanner, "device", String::CutBlanks(lookup( scanner, "sub_device", "")) );
 	  }
 	  if ( lookup( scanner, "vendor", "") == "" )
 	  {
-	      scanner = add(scanner, "vendor", CutBlanks(lookup( scanner, "sub_vendor", "")) );
+	      scanner = add(scanner, "vendor", String::CutBlanks(lookup( scanner, "sub_vendor", "")) );
 	  }
 	  scanner_info = add(scanner_info, no, scanner);
-	  
+
 	  no = no+1;
       });
 
@@ -312,12 +314,12 @@ the scanner configuration\n."));
 	      string dev = lookup( one_scanner, "device", "" );
 	      string vend = lookup( one_scanner, "vendor", "" );
 	      if( found == true )
-	      {	
+	      {
 		  list dummy = [];
 		  foreach( `station, net_stations, ``{
 		      string station_name = lookup( station, "host", "notfound" );
 		      if( station_name == host )
-		      {	
+		      {
 			  // ok, the host is already known, just add the device.
 			  station = change( station, "count", lookup( station, "count", 0 ) +1 );
 			  station = change( station, "device", lookup( station, "device", "" ) + ", " + dev );
@@ -333,13 +335,13 @@ the scanner configuration\n."));
 						     "scanner_status":"installed", "bus":"Net",
 						     "vendor":vend ] );
 	      }
-	      
+
 	  }
 	  else
 	  {
 	      y2debug( "ERROR: Host is not defined!" );
-	  }	
-	   
+	  }
+
       });
 
       // finishing: put the net stations to the scanner_info - list
@@ -350,14 +352,14 @@ the scanner configuration\n."));
       foreach( `net_station, net_stations, ``{
 	  y2debug("Adding net_station to scanner_info-list as no %1", no );
 	  scanner_info = add(scanner_info, no, net_station);
-	  
+
 	  no = no+1;
       });
 
-      
+
       // default: go next to Overview Dialog
       ret = `next;
-      
+
       // write scanner data to user_settings
       user_settings = add( user_settings, "scannerInfo", scanner_info );
       y2debug( "Writing SCANNER INFO: %1", scanner_info );

@@ -1,8 +1,13 @@
 -------------------------------------------------------------------
+Mon Aug 18 18:11:09 CEST 2003 - arvin@suse.de
+
+- use String::CutBlanks
+
+-------------------------------------------------------------------
 Mon Aug 11 09:02:36 CEST 2003 - gs@suse.de
 
 - V 2.8.5
-- merge texts from proofread 
+- merge texts from proofread
 
 -------------------------------------------------------------------
 Wed Aug  6 11:29:56 CEST 2003 - gs@suse.de

@@ -6,7 +6,7 @@
  *   Configuration of scanner
  *
  * Summary:
- *   
+ *
  *
  * Authors:
  *   Gabriele Strattner <gs@suse.de>
@@ -16,18 +16,18 @@
  *
  * $Id$
  *
- * 
- * Manual scanner detection. 
- * 
+ *
+ * Manual scanner detection.
+ *
  *
  */
 
 {
-
   textdomain "scanner";
 
   import "Label";
-    
+  import "String";
+
   global define ScannerNetDialog_UI() ``{
       term layout = `VBox (
 			   // This is a label, i.e. the line length should not exceed 50 characters.
@@ -45,7 +45,7 @@ Please enter the requested information.\n"))),
 				  ),
 			   `VSpacing (1)
 			   );
-      
+
       return layout;
   }
 
@@ -75,23 +75,23 @@ can be found in the SuSE support database.</p>");
       any ret = nil;
 
       repeat {
-	  
+
 	  ret = UI::UserInput();
 
 	  if ( ret == `next )
 	  {
-	      string host = CutBlanks( UI::QueryWidget(`id(`host), `Value ) );
+	      string host = String::CutBlanks( UI::QueryWidget(`id(`host), `Value ) );
 
 	      list net_scanner = SCR::Read(.sane.netscannerinfo, $["bus":"Net", "host":host] );
 	      map new_net_scanner = $[];
-	      
+
 	      if ( net_scanner != [] )
 	      {
 		  string devices = "";
 		  string vendors = "";
 
 		  boolean do_comma = false;
-		  
+
 		  foreach( `one_scanner, net_scanner, ``{
 		      if( do_comma == true )
 		      {
@@ -109,7 +109,7 @@ can be found in the SuSE support database.</p>");
 		      }
 		  });
 		  y2milestone("Net Scanner: %1", net_scanner );
-		  
+
 		  // Create the entry for the Network scanner
 		  CreateScannerEntry( new_net_scanner );
 	      }
@@ -128,11 +128,11 @@ can be found in the SuSE support database.</p>");
 		  }
 	      }
 	  }
-	  
+
       } until ( ret == `next || ret == `back || ret == `abort || ret == `cancel );
-      
+
       return ret;
-	      
+
   }
 
 }
