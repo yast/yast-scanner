@@ -13,6 +13,7 @@
  *
  * $Id$
  *
+ * String corrections by Christian Steinruecken <cstein@suse.de>, 2001/07/28
  * 
  * Overview SCSI devices. 
  * 
@@ -30,11 +31,11 @@
   global define ScannerSCSIDialog_UI( )``{
 
       term layout = `VBox (
-			   // This is a label, i.e. the line lenght should not be more than 50 characters.
-			   // Please also respect the newlines (\n).
-			   `Left(`Label (`opt (`hstretch), _("It is necessary to know the device file before
-going on with installation.\n
-Please enter the device, e.g. /dev/sg0.\n"))),
+			   // This is a label, i.e. the line length should not exceed 50 characters.
+			   // Please also take care of the newline characters (\n).
+			   `Left(`Label (`opt (`hstretch), _("You must supply the device file name
+before the scanner installation can proceed.\n
+Please enter the name of the SCSI device, e.g. /dev/sg0.\n"))),
 			   `VSpacing (1),
 			   `HBox (
 				  `HWeight(4, `TextEntry(`id(`device),
@@ -59,18 +60,24 @@ Please enter the device, e.g. /dev/sg0.\n"))),
 
       string help = "";
       
-      // part 1 of helptext of dialog SCSI scanner configuration
+      // helptext of dialog SCSI scanner configuration
       string help1    = UI(_("<p>Please enter the device file
-used by your SCSI scanner (e.g. /dev/sg0 ).
+name of your SCSI scanner (e.g. /dev/sg0 ).
 </p>"));
-      // part 2 of helptext of dialog SCSI scanner configuration
-      string help2 = UI(_("<p>You can get informations about all
-your SCSI devices with command <b>hwinfo --scsi</b> (call it
-as user 'root').
-Search the output for your scanner to get the
-<i>Device File:</i>.</p>"));
 
-      help = help1 + help2;
+      // helptext of dialog SCSI scanner configuration (continued)
+      string help2 = UI(_("<p>Information on 
+your SCSI devices can be obtained by issuing the command <b>hwinfo --scsi</b>
+(you must be 'root' to do this).<br>"));
+
+      // helptext of dialog SCSI scanner configuration (continued)
+      string help3 = UI(_("You will find the <i>Device File</i> of your scanner in the
+respective section of the hwinfo output.</p>"));
+
+      // remark by cstein@suse.de: incidentally, you do not even have to be root
+      // to call hwinfo! "$ /usr/sbin/hwinfo" - works fine ;-)
+
+      help = help1 + help2 + help3;
       
       string caption = UI(_("Manual SCSI Scanner configuration"));
 
