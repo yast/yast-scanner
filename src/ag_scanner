@@ -13,7 +13,9 @@
 # ag_scanner provides two different functions, selected through the
 # ycp 'path', which is mapped to the perl var $action in this script.
 #
-# The first action, 'scsi', queries the system for know SCSI scanners.
+# The former first action, 'scsi', queries the system for know SCSI scanners.
+# The SCSI scanners are now detected by hwinfo, thus the scsi-path was deleted.
+#
 # This is a kind of hardware detection, the devices  need not to be configured
 #  in SANE but are also found if they are.
 #
@@ -46,85 +48,20 @@ while ( <STDIN> )
     my ($action, $path, $argument) = ycp::ParseCommand ($_);
 
     y2debug( " vvv starting ag_scanner with <$action> <$path> vvv" );
-
+    
     if ( $action eq "Read" ) {
-
-      if ( $path =~ /scsi/i ) {
-	y2debug( "Performing scsi bus scan for scanners!" );
-	my $cmd = "/usr/X11R6/bin/sane-find-scanner -s";
-	@scanners = ();
-
-	if ( open( CMD, "$cmd |" ) ) {
-	  my $cnt = 0;
-	  while ( my $cmd = <CMD> ) {
-	    chomp( $cmd );
-	    if ( $cmd =~ m{
-		    ^
-			(\S+)               # The device file, starts with /dev/
-			    \s+             # followed by one whitespace
-			(                   # 
-			 (?:SCSI)|(?:USB)   # and the bus: SCSI or USB by now
-			)                   # 
-			\s+                 # 
-			    \"([^"]+)\"     # class: motly scanner 
-			\s+                 # 
-			    \"([^"]+)\"     # The vendor like UMAX
-                        \s+                 #
-                            \"([^"]+)\"     # and a model string.
-		}x)                         # the trailing 'x' is important ! 
-		  {
-		   my $devfile = $1;
-		   my $bus = $2;
-		   my $class = $3;
-		   my $vendor  = $4;
-		   my $model   =  $5;
-		   # print ("Found $class $vendor $model on $devfile\n" );
-		   y2debug( "Found $class $vendor $model on $devfile" );
-		    
-		   next if( $bus ne "SCSI" ); # only scsi here, USB is handled by hwinfo
-		    
-		   # Check if there are links and skip them
-		   if ( -l $devfile ) {
-		     y2debug( "$devfile is a link -> skipping !" );
-		     next;
-		   }
-
-		   push ( @scanners ,
-			  {
-			   bus => "SCSI",
-			   class_id => "",
-			   device => $model,
-			   device_id => "",
-			   resource =>"",
-			   rev => "",
-			   sub_class_id => "",
-			   sub_device => $model,
-			   sub_vendor => $vendor,
-			   unique_key => "",
-			   vendor => $vendor,
-			   vendor_id => "",
-			   dev_name => $devfile } );
-		   $cnt ++;
-		  }
-		    y2debug( "Found $cnt scsi-scanners !");
-	  }
-	  # '
-	  close CMD;
+	if ( $path =~ /configured/i ) {
+	    y2debug( "Handling action <configured>" );
+	    @scanners = performScanimage();
+	} elsif ( $path =~ /net/i ) {
+	    y2debug( "Handling action <net>" );
+	    @scanners = performScanimage( 1 );
 	} else {
-	  y2error( "ERROR: Could not open sane-find-scanner!" );
+	    y2error( "ERROR: Unspecified action !" );
 	}
-      } elsif ( $path =~ /configured/i ) {
-        y2debug( "Handling action <configured>" );
-        @scanners = performScanimage();
-      } elsif ( $path =~ /net/i ) {
-        y2debug( "Handling action <net>" );
-        @scanners = performScanimage( 1 );
-      } else {
-        y2error( "ERROR: Unspecified action !" );
-      }
-      y2debug (" ^^^ Leaving ag_scanner - goodbye ^^^" );
+	y2debug (" ^^^ Leaving ag_scanner - goodbye ^^^" );
 
-      ycp::Return( \@scanners );
+	ycp::Return( \@scanners );
     }
     
     # Dir command
@@ -136,6 +73,35 @@ while ( <STDIN> )
     # Result
     elsif ( $action eq "result" ) {
 	exit;
+    }
+    elsif ( $action eq "ptal" ) {
+	my @scanners;
+
+	my $dev = `ptal-device`;
+	# example result: mlc:usb:PSC_2200_Series
+
+	if( $dev ) {
+	    my ($mlc, $device, $model) = split( /\:/, $dev );
+	    push ( @scanners , 
+		   { bus => "PTAL", 
+		     class_id => "",
+		     device => trim($model),
+		     device_id => "",
+		     resource =>"",
+		     rev => "",
+		     sub_class_id => "",
+		     sub_device => "",
+		     sub_vendor => "Hewlett-Packard",
+		     unique_key => "",
+		     vendor => "Hewlett-Packard",
+		     vendor_id => "",
+		     dev_name => $dev,
+		     class => "scanner",
+		     scanner_driver => "hpoj",
+		     host => ""
+		   } );
+	}
+	ycp::Return( \@scanners );
     }
 
     # Unknown
