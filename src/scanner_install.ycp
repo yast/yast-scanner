@@ -126,14 +126,15 @@ The <b>Gimp</b> also provides scan support.</p>");
       string caption = _("Scanner Test");
 
       term contents  = ScannerInstallDialog_UI( GetCurrentScanner(),
-						Read( .local.byte, "/usr/lib/YaST2/images/lvm-config.png") );
+						Read( .local.byte,
+						      "/usr/share/doc/packages/sane/sane-backends/umax/sane-logo2.jpg"));
+
+      //"/usr/lib/YaST2/images/lvm-config.png"
 
       UI(`SetWizardContentsButtons(caption,contents,help,BackButtonLabel(),NextButtonLabel()));
 
       any ret = nil;
 
-
-       
       repeat {
 
 	  ret = UI(`UserInput());
@@ -142,12 +143,15 @@ The <b>Gimp</b> also provides scan support.</p>");
 
 	  if ( ret == `test || ret == `next )
 	  {
-	      string filename = SCR(`Read(.sane.scanimage, GetCurrentScanner()));
 	      // get the test picture from SANE
-	      byteblock image_data = SCR(`Read(.sane.scanimage, GetCurrentScanner()));
-	      image = `Image(  image_data, _("Test picture"));
+	      string filename = SCR(`Read(.sane.scanimage, GetCurrentScanner()));
+	      if ( filename != "" )
+	      {
+		  byteblock image_data = Read(.local.byte, filename);
+		  image = `Image(  image_data, _("Test picture"));
 
-	      UI( `ReplaceWidget(`id(`replace), image ));
+		  UI( `ReplaceWidget(`id(`replace), image ));
+	      }
 	  }
 	  
       } until ( ret == `next || ret == `back || ret == `abort );
