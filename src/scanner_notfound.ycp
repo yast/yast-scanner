@@ -99,7 +99,7 @@ scanner at the same time.</p>"));
 	  
 	  ret = UI(`UserInput());
 
-	  if ( ret == `next || ret == `abort || ret == `back )
+	  if ( ret == `abort || ret == `back )
 	  {
 	      go_on = false;
 	  }
@@ -169,6 +169,7 @@ Please disconnect all unwanted USB scanners.")));
 	      }
 	      else
 	      {
+		  go_on = false;
 		  ret = type;
 	      }
 	  }
