@@ -1,50 +1,55 @@
 -------------------------------------------------------------------
+Sat Aug 02 20:41:22 CEST 2003 - arvin@suse.de
+
+- added desktop file
+
+-------------------------------------------------------------------
 Wed Jul 23 13:12:09 CEST 2003 - gs@suse.de
 
-- V 2.8.2 
+- V 2.8.2
 - support of HP all-in-one devices
-- internal: use new perl interface (ag_sane, ag_scanner) 
+- internal: use new perl interface (ag_sane, ag_scanner)
 - file scanner.desktop added
-            
+
 -------------------------------------------------------------------
 Fri Mar 14 13:56:41 CET 2003 - gs@suse.de
 
 - parse external scanner descriptions, too, to get the complete
-  scanner list (support of HP Office Jet scanners) 
+  scanner list (support of HP Office Jet scanners)
 
 -------------------------------------------------------------------
 Thu Mar  6 13:57:17 CET 2003 - gs@suse.de
 
-- bugfix in scannerDB.pm (correct initialization of $oriline) 
+- bugfix in scannerDB.pm (correct initialization of $oriline)
   bug #24833
 
 -------------------------------------------------------------------
 Mon Mar  3 14:52:03 CET 2003 - gs@suse.de
 
-- help text corrected 
+- help text corrected
 
 -------------------------------------------------------------------
 Mon Feb 17 16:34:01 CET 2003 - gs@suse.de
 
-- write USB scanner data to /etc/hotplug/usb/sane.usermap 
+- write USB scanner data to /etc/hotplug/usb/sane.usermap
 
 -------------------------------------------------------------------
 Mon Feb 10 16:27:43 CET 2003 - gs@suse.de
 
 - scanner database now is dynamically created from
-  SANE scanner description files  
+  SANE scanner description files
 
 -------------------------------------------------------------------
 Mon Nov 18 16:25:08 CET 2002 - gs@suse.de
 
 - provide SCR::Dir(.sane), SCR::Dir(.scanner),
-  improve, update the help text 
+  improve, update the help text
 
 -------------------------------------------------------------------
 Mon Sep  9 12:09:30 CEST 2002 - freitag@suse.de
 
 - removed some nasty warnings on console (bug #19090)
-  disabled Test-Button while scanning to avoid 'double' clicks 
+  disabled Test-Button while scanning to avoid 'double' clicks
 
 -------------------------------------------------------------------
 Wed Sep  4 14:32:37 CEST 2002 - mvidner@suse.cz
@@ -65,7 +70,7 @@ Tue Aug 27 20:00:00 CEST 2002 - jsuchome@suse.cz
 -------------------------------------------------------------------
 Mon Aug 19 17:37:09 CEST 2002 - gs@suse.de
 
-- more scanner supported (sane-1.0.8) 
+- more scanner supported (sane-1.0.8)
 
 -------------------------------------------------------------------
 Mon Jul 29 15:12:59 CEST 2002 - gs@suse.de
@@ -76,7 +81,7 @@ Mon Jul 29 15:12:59 CEST 2002 - gs@suse.de
 Mon Jul 29 11:28:01 CEST 2002 - gs@suse.de
 
 - remove yast2-runlevel from Requires list
-- internal changes (remove obsolete include file) 
+- internal changes (remove obsolete include file)
 
 -------------------------------------------------------------------
 Fri Jul 12 16:32:36 CEST 2002 - arvin@suse.de
