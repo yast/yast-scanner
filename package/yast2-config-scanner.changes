@@ -1,4 +1,10 @@
 -------------------------------------------------------------------
+Thu Sep 20 19:08:03 CEST 2001 - gs@suse.de
+
+- multiple scanner tests are possible  (bug #11026)
+- permissions of /dev/sg? are set correctly to 666 (bug #11035)
+
+-------------------------------------------------------------------
 Tue Sep 18 16:59:58 CEST 2001 - freitag@suse.de
 
 - write /etc/hotplug/usr.map for scanners not automatically detected.
