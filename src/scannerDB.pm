@@ -1704,7 +1704,7 @@ sub writeIndividualConf( $$$ )
 	    {
 		y2debug("Setting permissions of device <$device> to 666");
 		push @devicesToReset, $device;
-		my $mode = 0640;
+		my $mode = 0666;
 		chmod $mode, $device;
 
 		# In case, everything is fine, add the device to /var/lib/sane/devices.
