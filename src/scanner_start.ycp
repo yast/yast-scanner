@@ -67,23 +67,52 @@ hardware probing of 'USB' and/or the 'SCSI' port(s).
     
       if ( !test_mode )
       {
+	  integer sane_installed = SCR::Execute (.target.bash, "/bin/rpm -q sane");
+	  integer magic_installed = SCR::Execute (.target.bash, "/bin/rpm -q ImageMagick");
 	  // check whether 'sane' is installed
-	  if ( SCR (`Execute (.target.bash, "/bin/rpm -q sane")) != 0 )
+	  y2debug( "SANE is installed: %1, ImageMagick is installed: %2", sane_installed, magic_installed );
+	  list packs_to_install = [];
+	  string mesg = "";
+	  
+	  if( sane_installed == 1 && magic_installed == 1)
 	  {
+	      mesg = _("For scanner access under Linux, the SANE library is required
+and this YaST2 configuration module needs the package ImageMagick.");
+	      packs_to_install = ["sane", "ImageMagick"];
+	  }
+	  else if ( magic_installed == 1)
+	  {
+	      mesg = _("For the configuration of scanners with YaST2, the package
+ImageMagick is needed.");
+	      packs_to_install = ["ImageMagick"];
+	  }
+	  else if( sane_installed == 1)
+	  {
+	      mesg = _("For scanner access under Linux, the SANE library is required
+(Package sane).");
+	      packs_to_install = ["sane"];
+	  }
+
+	  // if one of them is missing, start installation.
+	  if ( sane_installed == 1 ||  magic_installed == 1 )
+	  {
+	      mesg = mesg + _("
+
+Do you want to install the package(s) now ?
+");
+
 	      // Translators: 'SANE' is a package name - don't translate!
-	      string mesg = _("For scanner access under Linux, the SANE library is required.
-Do you want to install the 'SANE' package now?");
 	      boolean cont = UI ( `ContinueCancelPopup(mesg) );
 	      if ( cont )
 	      {
 		  string tmpdir = SCR (`Read (.target.tmpdir));
 		  string filename = tmpdir + "/sw_single_input";
-		  SCR (`Write (.target.ycp, filename, $["install":["sane", "ImageMagick"], "userInput" : false ]));
+		  SCR (`Write (.target.ycp, filename, $["install":packs_to_install, "userInput" : false ]));
 		  CallFunction (`sw_single (filename));
 	      }
 	      else
 	      {
-		  return `cancel;
+		  // return `cancel;
 	      }
 	  }
 
