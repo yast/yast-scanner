@@ -99,7 +99,7 @@ scanner at the same time.</p>"));
 	  
 	  ret = UI(`UserInput());
 
-	  if ( ret == `abort || ret == `back )
+	  if ( ret == `next || ret == `abort || ret == `back )
 	  {
 	      go_on = false;
 	  }
@@ -121,16 +121,16 @@ scanner at the same time.</p>"));
 		      UI(`WarningPopup(_("YaST2 has detected several USB scanners, 
 but you can only use ONE of them.
 Please disconnect all unwanted USB scanners.")));
-		      //go_on = false;
-		      //ret = `cancel;
+		      go_on = true;
 		  }
 		  else if ( CheckUSBScanner() )
 		  {
 		      // text of a warning popup
-		      UI(`WarningPopup(_("It is not possible to configure an
-additional USB scanner. 
+		      UI(`WarningPopup(_("There is already an USB scanner in use.
+It is not possible to configure an additional
+USB scanner, because only ONE is supported.
 Please disconnect all unwanted USB scanners.")));
-
+		      go_on = true;
 		  }
 		  else if ( size (connected_scanner) == 1 )
 		  {
@@ -169,7 +169,6 @@ Please disconnect all unwanted USB scanners.")));
 	      }
 	      else
 	      {
-		  go_on = false;
 		  ret = type;
 	      }
 	  }
