@@ -345,18 +345,11 @@
       });
 
     string driver=lookup(deleted_entry,"scanner_driver","");
-    if( driver != "" )
+    boolean ok = SCR::Read(.sane.removeDriver, add(deleted_entry, "driver", driver));
+    if(!ok)
     {
-      boolean ok = SCR::Read(.sane.removeDriver, $[ "driver":driver ]);
-      if(!ok)
-      {
-	//TRANSLATOR: %1 stands for the driver name
-	UI(`MessagePopup(sformat(_("It was not possible to deactive the driver %1"), driver)));
-      }
-    }
-    else
-    {
-      y2debug("no driver to deactivate");
+      //TRANSLATOR: %1 stands for the driver name
+      UI(`MessagePopup(sformat(_("It was not possible to deactive the driver %1"), driver)));
     }
 
 //    SCR::Write(.dumpto.tmp.newscanner_info, newscanner_info );
