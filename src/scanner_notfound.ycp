@@ -53,22 +53,26 @@ a manual configuration is necessary.")),
   }
 
 /**
- * ScannerStartDialog
+ * ScannerNotFoundDialog
  */
   global define ScannerNotFoundDialog()``{
       string help = "";
+      // help part 1 of Manual Scanner configuration 
       string help1    = UI(_("<p>Please check first whether your scanner is
 connected correctly and is switched on.</p> "));
+       // help part 2 of Manual Scanner configuration 
       string help2    = UI(_("<p>In case of USB you can connect and switch
 on the scanner before going on.<br>
 <i><b>Attention!</b></i> Do NOT connect or disconnect a SCSI scanner
 on running system - but <b>Abort</b> scanner installation, shutdown
 and reboot. 
 </p>"));
+       // help part 3 of Manual Scanner configuration 
       string help3    = UI(_("<p>YaST2 provides assistence for manual
 USB and SCSI scanner configuration. You also can use
 a scanner at a network scan station. Select the correct button
 and click on <b>Next</b>.</p>"));
+       // help part 4 of Manual Scanner configuration 
        string help4    = UI(_("<p>Please note: only <i>one</i> USB scanner
 is supported.</p>"));
 
@@ -103,7 +107,7 @@ is supported.</p>"));
                   // try again to detect a USB scanner ( maybe it's switched on now)
 		  list connected_scanner = SCR(`Read(.probe.scanner));
 
-		  if ( size (connected_scanner) > 1 )
+		  if ( size (connected_scanner) > 1 || CheckUSBScanner() )
 		  {
 		      // text of a warning popup
 		      UI(`WarningPopup(_("YaST2 has detected several USB scanner -
