@@ -48,15 +48,20 @@ Please enter required scanner data.")),
       string help1    = UI(_("<p>Please enter the Product-ID,
 the Vendor-ID and the USB module name (usually named
 'scanner') and press button <b>Load</b>.</p>"));
-       // help part 2 of dialog manual USB Scanner configuration
-      string help2    = UI(_("<p>YaST2 will try to load the
+        // help part 2 of dialog manual USB Scanner configuration
+      string help2    = UI(_("<p>You can get the information about
+the IDs with command <b>hwinfo --usb<b> (look for  <i>Vendor:</i>
+and <i>Model:</i>).
+</p> "));
+       // help part 3 of dialog manual USB Scanner configuration
+      string help3    = UI(_("<p>YaST2 will try to load the
 kernel module for USB support.</p> "));
       // help part 3 of dialog manual USB Scanner configuration
-      string help3    = UI(_("<p>If the loading of the scanner
+      string help4    = UI(_("<p>If the loading of the scanner
 module was successful you can go <b>Next</b> to dialog
 \"Manual scanner selection\".</p>"));
 
-      help = help1 + help2 + help3;
+      help = help1 + help2 + help3 + ;
       
       string caption = UI(_("Manual USB scanner configuration"));
       term contents  = ScannerUSBDialog_UI();
