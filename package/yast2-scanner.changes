@@ -1,4 +1,10 @@
 -------------------------------------------------------------------
+Mon Feb 10 16:27:43 CET 2003 - gs@suse.de
+
+- scanner database now is dynamically created from
+  SANE scanner description files  
+
+-------------------------------------------------------------------
 Mon Nov 18 16:25:08 CET 2002 - gs@suse.de
 
 - provide SCR::Dir(.sane), SCR::Dir(.scanner),
