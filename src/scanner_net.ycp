@@ -24,32 +24,23 @@
   textdomain "scanner";
   
   global define ScannerNetDialog_UI() ``{
-
-      term layout = `Empty();
-
-      layout = `VBox( `Label(`opt (`hstretch), _("Your scanner was not detected automatically -
-a manual configuration is necessary.")),
-		      `VSpacing(1.5),
-		      `HBox(`HSpacing(0.5),
-			    `Frame (_("Select the scanner type"),
-				    `RadioButtonGroup(`id(`scanner),
-						      `VBox(`VSpacing (0.6),
-							    `Left(`RadioButton(`id(`usb),`opt (`hstretch),
-									       _("&USB scanner"), true) ),
-							    `VSpacing (0.6),
-							    `Left(`RadioButton(`id(`scsi),`opt(`hstretch),
-									       _("SCSI scanner"),  false) ),
-							    `VSpacing (1.2),
-							    `Left(`RadioButton(`id(`net),`opt(`hstretch),
-									       _("&Network scan station") ,  false) ),
-							    `VSpacing (0.6)
-							    )
-						      )
-				    ),
-			    `HSpacing(3.0)
-			    ),
-		      `VSpacing(1.0)
-		      );
+      term layout = `VBox (
+			   // This is a label, i.e. the line lenght should not be more than 50 characters.
+			   // Please also respect the newlines (\n).
+			   `Left(`Label (`opt (`hstretch), _("The configuration of a network scan station
+requires the IP address or the name of the host.\n
+Please enter the information into the field below.\n"))),
+			   `VSpacing (1),
+			   `HBox (
+				  `HWeight(4, `TextEntry(`id(`host),
+							 // Input field label for device file
+							 _("&IP address or hostname"),
+							 "" )),
+				  `HWeight(1, `Empty())
+				  ),
+			   `VSpacing (1)
+			   );
+      
       return layout;
   }
 
@@ -58,38 +49,36 @@ a manual configuration is necessary.")),
  */
   global define ScannerNetDialog()``{
       string help = "";
-      string help1    = UI(_("<p>Please check first whether your scanner is
-connected correctly and is switched on.</p> "));
-      string help2    = UI(_("<p>In case of USB you can connect and switch
-on the scanner and go <b>Back</b> to scanner detectection.
-<b><i>Attention!</i></b> Do NOT connect or disconnect a SCSI scanner
-on running system - but shutdown and reboot. 
-</p>")
-			   );
-      string help3    = UI(_("<p>YaST2 provides assistence for manual
-USB and SCSI scanner configuration. You can also
-configure a network scan station. Select the correct button
-and click on <b>Next</b>.</p>"));
+      string help1    = UI(_("<p>It is possible to use a scanner which
+is connected to another PC.</p> "));
+      string help2    = UI(_("<p>Enter the IP address or the hostname
+of that PC and click on <b>Next</b>.
+</p>") );
 
-      help = help1 + help2 + help3;
+      help = help1 + help2;
       
-      string caption = UI(_("Configuration of network scanner"));
+      string caption = UI(_("Network scan station"));
       term contents  = ScannerNetDialog_UI();
 
       UI(`SetWizardContentsButtons(caption,contents,help,BackButtonLabel(),NextButtonLabel()));
 
       any ret = nil;
 
-      ret = UI(`UserInput());
+      repeat {
+	  
+	  ret = UI(`UserInput());
 
-      if ( ret == `next )
-      {
-	  return ( UI(`QueryWidget(`id(`scanner), `CurrentButton)) );
-      }
-      else
-      {
-	  return ret;
-      }
+	  if ( ret == `next )
+	  {
+	      string host = CutBlanks( UI(`QueryWidget(`id(`host), `Value )) );
+
+	      // Create the entry for the Network scanner
+	      CreateScannerEntry( $["bus":"Net", "devicefile":host] ); 
+	  }
+	  
+      } until ( ret == `next || ret == `back || ret == `abort );
+      
+      return ret;
 	      
   }
 
