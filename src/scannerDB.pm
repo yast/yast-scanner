@@ -2525,7 +2525,13 @@ sub performScanimage( ;$ )
 		    $driver =  $3;
 		    $devfile =  $4;
 		    y2debug( "Found new network scanner: $bus:$host:$driver:$devfile" );
-	        } else {
+	        } elsif ( $2 eq "libusb" ) { 
+		    # A libusb devive found
+		    # epson:libusb:001:003
+		    $bus = "USB";
+		    $driver = $1;
+		    $devfile = $1.":".$2.":".$3.":".$4;
+		} elsif ( $2 eq "mlc" ) {
 		    # A PTAL device found, e.g.
 		    # hpoj:mlc:usb:PSC_2200_Series
 		    $bus = "PTAL";
@@ -2544,7 +2550,7 @@ sub performScanimage( ;$ )
 		$bus = "USB";
 	    }
 	    y2debug( "Found scanner $vendor $model on $devfile" );
-	    
+            
             # Push anonym hashes to the array. The array contains references to
             # the hashes then.
 	    if( $bus ne "Net" && defined( $netOnly ) && $netOnly )
