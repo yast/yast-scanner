@@ -24,6 +24,8 @@
 
   textdomain "scanner";
 
+  import "Runlevel";
+  
 /**
  *  ------- UNUSED ---------
  * Fill the map of all scanner settings from the SCR
@@ -71,8 +73,13 @@
 	      }
 	      if( bus == "SCSI" )
 	      {
-		  SCR::Write (.sysconfig.scanner.ADJUST_SCSI_SCANNER_PERM, "yes");
-		  SCR::Write (.sysconfig.scanner, nil); // flush
+		  if ( Runlevel::ServiceStatus( "sane" ) != 0 )
+		  {
+		      // set the link in /etc/init.d/rc3.d to start the script /usr/sbin/rcsane
+		      // (which sets the permissions 666 on /dev/sg0 )
+		      boolean success = Runlevel::ServiceAdjust( "sane", "enable" );
+		      y2milestone( "ServiceAdjust( sane, enable ) returns: %1", success );
+		  }
 	      }
 	  }
 
