@@ -220,29 +220,35 @@ while ( <STDIN> )
     elsif( $action =~ /scanimage/ )
     {
 	y2debug( "Handling action scanimage" );
+	my $resFile = "";
 	my $devicefile = findInHash( "dev_name", \%scanner );
 	my $driver = findInHash( "driver", \%scanner );
-
-	my $devstring = sprintf( "%s:%s", lc $driver, $devicefile );
-
-	if( $bus =~ /net/i )
+	
+	if( !defined $driver || $driver eq "" || !defined $devicefile || $devicefile eq "" )
 	{
-	    my $host = findInHash( "host", \%scanner );
-	    if(defined $host)  {
-		$devstring = "net:" . $host .":". $devstring;
-	    } else {
-		y2debug( "ERROR: Tried to scan net, but no host given !" );
-		$devstring = undef;
+	    y2debug( "Driver is not defined - can not scan !" );
+	}
+	else
+	{
+	    my $devstring = sprintf( "%s:%s", lc $driver, $devicefile );
+	    
+	    if( $bus =~ /net/i )
+	    {
+		my $host = findInHash( "host", \%scanner );
+		if(defined $host)  {
+		    $devstring = "net:" . $host .":". $devstring;
+		} else {
+		    y2debug( "ERROR: Tried to scan net, but no host given !" );
+		    $devstring = undef;
+		}
+	    }
+	    
+	    if( defined $devstring ) {
+		$resFile = acquireTestImage( $devstring );
+		
+		y2debug( "Acquired image to result-file <$resFile>" );
 	    }
 	}
-
-	my $resFile = "";
-	if( defined $devstring ) {
-	    $resFile = acquireTestImage( $devstring );
-	    
-	    y2debug( "Acquired image to result-file <$resFile>" );
-	}
-
 	ycpReturnSkalarAsString( $resFile );
 	
     }
