@@ -1149,7 +1149,8 @@ $config{epson} = <<"EndOfConf";
 # here are some examples for how to configure the EPSON backend
 #
 # SCSI scanner:
-scsi EPSON
+IF bus = scsi scsi EPSON
+IF bus = usb # scsi EPSON
 #
 # Parallel port scanner:
 #pio 0x278
@@ -1719,9 +1720,7 @@ sub writeIndividualConf( $$$ )
 	{
 	    y2debug( "Handling line <$cfg_line> from cfg-template" );
 
-	    # Wipe comments
-	    $cfg_line =~ s/\#.*$//;
-
+	    # Check for IF-conditions 
 	    if( $cfg_line =~ /^IF\s+(.+)\s*=\s*(\w+?)\s+(.+)\s*/ )
 	    {
 		my $tag = $1;
@@ -1743,6 +1742,11 @@ sub writeIndividualConf( $$$ )
 	    }
 
 	    # The device line may not contain a comment
+	    # Wipe out comments in case there are other chars 
+	    # in front of the #-sign. If not, the whole line is
+	    # a comment line, that is OK 
+	    $cfg_line =~ s/\s*#.*$//g unless( $cfg_line =~ /^\s*#.*/ );
+
 	    $cfg_line =~ s/YAST2_DEVICE/$device/im;
 	    $cfg_line =~ s/YAST2_BUS/$bus/im;
 	    
@@ -2084,7 +2088,7 @@ sub performScanimage( ;$ )
     my ($netOnly) = @_;
 
     y2debug( "Searching for configured scanners!" );
-    my $cmd = "/usr/X11R6/bin/scanimage -s";
+    my $cmd = '/usr/X11R6/bin/scanimage -f "\"%d\" \"%v\" \"%m\" \"%t\""';
     my @scanners = ();
 
     if( open( CMD, "$cmd |" ) )
