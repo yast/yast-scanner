@@ -1,4 +1,16 @@
 -------------------------------------------------------------------
+Fri Aug 13 09:46:49 CEST 2004 - jsmeix@suse.de
+
+- V 2.10.3
+- Fixed the bug that when an USB scanner was not autodetected
+  during startup then the manufacturer and model selection list
+  has been empty. Nevertheless the list is still empty if no
+  USB scanner can be detected during manual USB scanner setup.
+  This is o.k. because without USB vendor and model id the
+  scanner cannot be made accessible for normal users by resmgr.
+- Applied proofread texts.
+
+-------------------------------------------------------------------
 Tue Aug  3 14:30:55 CEST 2004 - jsmeix@suse.de
 
 - V 2.10.2

@@ -152,7 +152,7 @@ hardware probing of 'USB' or 'SCSI' ports.
 	      // Popup text: ask the user 'Install package sane?' 
 	      // Translators: 'SANE' is a library - don't translate!
 	      mesg = _("For scanner access under Linux, the SANE library is required.
-The package 'sane' has to be installed before proceeding with
+The package 'sane' must be installed before proceeding with
 the scanner configuration.
 
 Install the package now?
@@ -495,16 +495,17 @@ _("Scanner access for normal users is granted by the resource manager (resmgr).
 The resource manager is triggered by the hotplug system.
 The hotplug system is triggered when connecting the scanner to the USB.
 An entry was added to /etc/hotplug/usb/sane.usermap to grant scanner access
-for those users which belong to the \"desktop\" group (users which are
-logged in via graphical login via KDM or XDM).
-To activate this new setting you should disconnect and reconnect the USB scanner.
-If this doesn't work, reboot while the scanner is connected and switched on.
-If even reboot doesn't help, verify that at least \"root\" can access the scanner
+for those users that belong to the \"desktop\" group (users
+logged in using graphical login via KDM or XDM).
+To activate this new setting, disconnect and reconnect the USB scanner.
+If this does not work, reboot while the scanner is connected and switched on.
+If even reboot does not help, verify that at least \"root\" can access the scanner
 by running the command \"scanimage -L\" as root and compare the result
 when running the same command as normal user.
-If \"scanimage -L\" doesn't show the scanner even when running it as root,
-have a look at the \"SANE - Supported Devices\" page at http://www.sane-project.org/
-to verify that the scanner is supported. ");
+If \"scanimage -L\" does not show the scanner even when running it as root,
+refer to the \"SANE -- Supported Devices\" page at http://www.sane-project.org/
+to verify that the scanner is supported. 
+");
                 Popup::Notify( mesg );
               }
             }
