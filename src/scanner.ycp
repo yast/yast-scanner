@@ -32,6 +32,9 @@
   import "Popup";
   import "Label";
 
+  // this is the global data map
+  map user_settings = $[];
+
   include "scanner/scanner_functions.ycp";
 
   include "scanner/scanner_start.ycp";
@@ -49,9 +52,6 @@
 /* The main() */
   y2milestone("Scanner configuration started");
 
-
-  // this is the global data map
-  map user_settings = $[];
 
 
   // check test_mode
@@ -214,13 +214,13 @@
 /**
  * Abort dialog
  */
-  global define AbortDialog() ``{
+  global define symbol AbortDialog() ``{
 
       any ret = Popup::ReallyAbort(true);
       if ( ret==true )
       {
 	  y2milestone("ABORT the scanner installation - undo all changes.");
-	  boolean ok = SCR::Execute(.sane.revertall);
+	  boolean ok = (boolean) SCR::Execute(.sane.revertall);
 	  if(!ok)
 	  {
 	    Popup::Message(_("It was not possible to revert the already made changes"));
@@ -238,7 +238,7 @@
 		  "scanner_overview"	:   ``( ScannerOverviewDialog() ),
 		  "scanner_new"		:   ``( ScannerNewDialog() ),
 		  "scanner_install"	:   ``( ScannerInstallDialog() ),
-		  "scanner_options"	:   ``( ScannerOptionsDialog() ),
+//		  "scanner_options"	:   ``( ScannerOptionsDialog() ),
 		  "scanner_notfound"	:   ``( ScannerNotFoundDialog() ),
 		  "scanner_scsi"	:   ``( ScannerSCSIDialog() ),
 		  "scanner_usb"		:   ``( ScannerUSBDialog() ),

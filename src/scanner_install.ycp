@@ -30,7 +30,7 @@
  * ScannerInstallDialog
  */
 
-    global define ScannerInstallDialog_UI( map installed_scanner, byteblock image ) ``{
+    global define term ScannerInstallDialog_UI( map installed_scanner, byteblock image ) ``{
 
 	string scanner = "";
 	string info = "";
@@ -38,7 +38,7 @@
       
 	if ( lookup( installed_scanner, "bus", "" ) == "Net" )
 	{
-	    scanner = lookup(installed_scanner, "device", []);
+	    scanner = lookup(installed_scanner, "device", "");
 	    info = lookup(installed_scanner, "host", "");
 	  
 	    // label of an output field showing the IP address of the scanstation
@@ -93,7 +93,7 @@
 /**
  * ScannerInstallDialog
  */
-    global define ScannerInstallDialog()``{
+    global define symbol ScannerInstallDialog()``{
 	string help    = "";
       
 	// help part 1 of dialog scanner test
@@ -123,7 +123,7 @@ offers more scan and image processing functionality.
 	map installed = GetCurrentScanner();
 
 	term contents  = ScannerInstallDialog_UI( installed,
-						  Read( .local.byte,
+                                                        (byteblock) SCR::Read( .local.byte,
 							"/usr/share/doc/packages/sane/sane-backends/umax/sane-logo2.jpg"));
 
 	Wizard::SetContentsButtons(caption,contents,help,Label::BackButton(),Label::NextButton());
@@ -132,7 +132,7 @@ offers more scan and image processing functionality.
 	// -> we do not need this any longer - the `Image widget does all the work 
 	  
 	// Check whether a firmware is needed
-	string firmware_req = SCR::Read(.sane.firmware, installed );
+	string firmware_req = (string) SCR::Read(.sane.firmware, installed );
 
 	y2milestone( "Installed scanner: %1 driver: %2 needs firmware: %3",
 		     installed["vendor"]:"", installed["scanner_driver"]:"", firmware_req );
@@ -180,14 +180,14 @@ do the firmware upload. See 'man sane-gt68xx' or
 		// Disable test button while scanning.
 		UI::ChangeWidget(`id(`test), `Enabled, false);
 		map scanner = GetCurrentScanner();
-		string tmpdir = SCR::Read(.target.tmpdir);
+		string tmpdir = (string) SCR::Read(.target.tmpdir);
 		y2debug("TmpDir is tmpdir %1", tmpdir );
 
 		scanner = add( scanner, "tmpdir", tmpdir );
-		string filename = SCR::Execute(.sane.scanimage, scanner );
+		string filename = (string) SCR::Execute(.sane.scanimage, scanner );
 		if ( filename != "" )
 		{
-		    byteblock image_data = Read(.local.byte, filename);
+		    byteblock image_data = (byteblock) SCR::Read(.local.byte, filename);
 		    image = `Image( `opt(`scaleToFit), image_data, _("Test picture"));
 
 		    UI::ReplaceWidget(`id(`replace), image );
@@ -198,7 +198,7 @@ do the firmware upload. See 'man sane-gt68xx' or
 	} until ( ret == `next || ret == `back || ret == `abort || ret == `cancel );
 
 
-	return ret;
+	return (symbol) ret;
     }
 
 }

@@ -32,7 +32,7 @@
  * Fill the map of all scanner settings from the SCR
  * @return map all scanner settings
  */
-  global define ScannerRead() ``{
+  global define map ScannerRead() ``{
       /* TODO: your code here ... */
       return $[];
   }
@@ -42,10 +42,10 @@
  * @param m a map of all scanner settings
  * @return boolean success of operation
  */
-  global define ScannerWrite(map scanner_info) ``{
+  global define boolean ScannerWrite(map scanner_info) ``{
       boolean ret = true;
       
-      foreach( `key, `scanner, scanner_info, ``{
+      foreach( any key, map scanner, scanner_info, ``{
 	  // if required write the options for the scanner kernel module to /etc/modules.conf
 	  // more than one usb scanner is not allowed, can be one usb and more scsi
 	  map usb_options = lookup(scanner, "usb_options", $[] );
@@ -69,7 +69,7 @@
 		  if ( success )
 		  {
 		      // WRITE /etc/modules.conf now and call "depmod"
-		      Write(.modules.nil);
+                      SCR::Write(.modules, nil);
 
 		      // Write /etc/hotplug/usb.usermap
 		      // -> scanner module will be loaded automatically
@@ -114,7 +114,7 @@
  * Write the scanner data from SCR to the disk
  * @return list success of operation
  */
-  global define ScannerFinish() ``{
+  global define boolean ScannerFinish() ``{
 
       // TODO your code here ... */
       // e.g. Write(.modules.nil);
@@ -126,7 +126,7 @@
  * @param string key
  * @return string value
  */
-  global define GetCurrentScannerValue( string key ) ``{
+  global define string GetCurrentScannerValue( string key ) ``{
       string value = "";
       integer current_id = lookup( user_settings, "scannerInWork", 0 );
       map scanner_info = lookup( user_settings, "scannerInfo", $[] );
@@ -143,7 +143,7 @@
  * Get the scanner data of the scanner currently in work.
  * @return map scanner info
  */
-  global define GetCurrentScanner(  ) ``{
+  global define map GetCurrentScanner(  ) ``{
       any value = "";
       integer current_id = lookup( user_settings, "scannerInWork", 0 );
       map scanner_info = lookup( user_settings, "scannerInfo", $[] );
@@ -165,7 +165,7 @@
  * @param string value
  * @return boolean
  */
-  global define SetCurrentScannerValue( string key, any value ) ``{
+  global define boolean SetCurrentScannerValue( string key, any value ) ``{
       integer current_id = lookup( user_settings, "scannerInWork", 0 );
       map scanner_info = lookup( user_settings, "scannerInfo", $[] );
       map current_scanner = lookup(scanner_info, current_id, $[]);
@@ -190,9 +190,9 @@
  * @param string title of the popup
  * @return any selected item
  */
-  global define DisplayScannerList( map scanners, string title ) ``{
+  global define any DisplayScannerList( map scanners, string title ) ``{
 
-      list table_contents =  maplist( `key, `value, scanners,
+      list table_contents =  maplist(integer key, map value, scanners,
 				 ``(`item(`id(key), lookup(value, "vendor", ""),lookup(value, "device", ""), lookup(value, "bus", ""))) );
 
       UI::OpenDialog(`opt( `decorated),
@@ -213,13 +213,13 @@
 			   )
 		     );
       // select first list entry
-      UI::ChangeWidget(`id(`table), `CurrentItem, select(select(select(table_contents,0,`item()) ,0,`id()) ,0, 1));
+      UI::ChangeWidget(`id(`table), `CurrentItem, table_contents[0, 0, 0]:1);
 	  
       any r = UI::UserInput();
 
       if ( r == `ok )
       {
-	  any ret = UI::QueryWidget( `id(`table), `CurrentItem );
+	  integer ret = (integer) UI::QueryWidget( `id(`table), `CurrentItem );
 	  UI::CloseDialog();
 	  return( ret );
       }
@@ -235,9 +235,9 @@
    *
    * @return boolean package installed correctly or not 
    */
-  global define CheckOfficeJet() ``{
+  global define boolean CheckOfficeJet() ``{
       // check whether the package hp-officeJet is installed
-      integer exitcode = SCR::Execute (.target.bash, "/bin/rpm -q hp-officeJet");
+      integer exitcode = (integer) SCR::Execute (.target.bash, "/bin/rpm -q hp-officeJet");
 
       if ( exitcode != 0 )
       {
@@ -253,12 +253,12 @@ Install the package now?
 
 	  if ( cont )
 	  {
-	      WFM::CallFunction (`sw_single (packs_to_install));
+	      WFM::CallFunction ("sw_single", [packs_to_install]);
 	  }
       }
 
       // hp-officeJet is mandatory - must be installed
-      exitcode = SCR::Execute (.target.bash, "/bin/rpm -q hp-officeJet");
+      exitcode = (integer) SCR::Execute (.target.bash, "/bin/rpm -q hp-officeJet");
 
       if ( exitcode != 0 )
       {
@@ -280,13 +280,13 @@ with the YaST2 module 'Install and Remove Software'.
  * Check whether an USB scanner is already installed.
  * @return boolean already USB scanner installed or not
  */
-  global define CheckUSBScanner( ) ``{
+  global define boolean CheckUSBScanner( ) ``{
       map scanner_map = lookup( user_settings, "scannerInfo", $[] );
       boolean already_usb = false;
 
       if ( scanner_map != $[] )
       {
-	  foreach( `scan_id, `scanner, scanner_map, ``{
+	  foreach( any scan_id, map scanner, scanner_map, ``{
 	      // TODO: falls auch Konfigurationen NICHT angeschlossener Scanner
 	      // berücksichtigt werden, muss hier noch der neue Status abgefragt werden
 	      if ( lookup( scanner, "bus", "" ) == "USB" &&
@@ -304,7 +304,7 @@ with the YaST2 module 'Install and Remove Software'.
  * @param symbol mode can be `start or `add.
  * @return symbol return value for the start dialog, e.g. `notfound
  */
-  global define DecideDialog( symbol mode ) ``{
+  global define symbol DecideDialog( symbol mode ) ``{
 
       map new_scanner = $[]; 	  //  new scanner which are supported by SANE
       map detected_scanner = $[]; //  detected scanner which are NOT supported by SANE
@@ -314,7 +314,7 @@ with the YaST2 module 'Install and Remove Software'.
       
       if ( scanner_info != $[] )
       {
-	  foreach (`scan_id, `scanner, scanner_info, ``{
+	  foreach (integer scan_id, map scanner, scanner_info, ``{
 	      if ( lookup( scanner, "scanner_status", nil ) == "supported" )
 	      {
 		  new_scanner = add( new_scanner, scan_id, scanner);
@@ -342,13 +342,13 @@ with the YaST2 module 'Install and Remove Software'.
 	  integer scan_id = 0;
 	  if ( size(new_scanner) == 1 ) 
 	  {
-	      scan_id = select( maplist(`key, `value, new_scanner, ``{ return key;}), 0, 0 );
+	      scan_id = (integer) select( maplist(integer key, map value, new_scanner, ``{ return key;}), 0, 0 );
 	  }
 	  else if ( size(new_scanner) > 1 )
 	  {
 	      // text of a popup showing new supported scanners
 	      string title = _("List of new supported scanners");
-	      scan_id = DisplayScannerList( new_scanner, title );
+	      scan_id = (integer) DisplayScannerList( new_scanner, title );
 	  }             
 	  ret = `new;
 	  user_settings = add( user_settings, "scannerInWork", scan_id );
@@ -359,13 +359,13 @@ with the YaST2 module 'Install and Remove Software'.
 	  integer scan_id = 0;
 	  if ( size(detected_scanner) == 1 ) 
 	  {
-	      scan_id = select( maplist(`key, `value, detected_scanner, ``{ return key;}), 0, 0 );
+	      scan_id = (integer) select( maplist(integer key, map value, detected_scanner, ``{ return key;}), 0, 0 );
 	  }
 	  else if ( size(detected_scanner) > 1 )
 	  {
 	      // text of a popup showing the detected scanners
 	      string title = _("List of detected scanners");
-	      scan_id = DisplayScannerList( detected_scanner, title );
+	      scan_id = (integer) DisplayScannerList( detected_scanner, title );
 	  }
 	  ret = `manual;
 	  user_settings = add( user_settings, "scannerInWork", scan_id ); 
@@ -384,7 +384,7 @@ with the YaST2 module 'Install and Remove Software'.
  * map to the user_settings..
  * @param map new scanner
  */
-  global define CreateScannerEntry( map new_entry ) ``{
+  global define void CreateScannerEntry( map new_entry ) ``{
 
       map scanner_info = lookup( user_settings, "scannerInfo", $[] );
       integer key = size(scanner_info) + 1;
@@ -404,7 +404,7 @@ with the YaST2 module 'Install and Remove Software'.
  * @param scanner id to be deleted
  */
 
-  global define DeleteScannerEntry (integer delete_id) ``{
+  global define void DeleteScannerEntry (integer delete_id) ``{
 
     y2debug("Scanner to be deleted: %1", delete_id);
     if (delete_id == 0) return;
@@ -417,7 +417,7 @@ with the YaST2 module 'Install and Remove Software'.
 //    SCR::Write(.dumpto.tmp.oldscanner_info, oldscanner_info );
 
     //walk through all scanner entries
-    foreach (`id,`entrymap,oldscanner_info,
+    foreach (integer id, map entrymap, oldscanner_info,
       ``{
 	// delete it
 	if ( id == delete_id )
@@ -437,8 +437,8 @@ with the YaST2 module 'Install and Remove Software'.
 	}
       });
 
-    string driver=lookup(deleted_entry,"scanner_driver","");
-    boolean ok = SCR::Execute(.sane.removeDriver, add(deleted_entry, "driver", driver));
+    string driver = lookup(deleted_entry,"scanner_driver","");
+    boolean ok = (boolean) SCR::Execute(.sane.removeDriver, add(deleted_entry, "driver", driver));
     if(!ok)
     {
       //TRANSLATOR: %1 stands for the driver name

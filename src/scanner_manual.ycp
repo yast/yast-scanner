@@ -26,9 +26,9 @@
 
   import "Label";
     
-  global define CreateVendorList( ) ``{
-      list list_input = [];
-      list vlist = SCR::Read(.sane.vendorlist, GetCurrentScanner());
+  global define list<term> CreateVendorList( ) ``{
+      list<term> list_input = [];
+      list<any> vlist = (list<any>) SCR::Read(.sane.vendorlist, GetCurrentScanner());
       //used to preselect first entry
       boolean isfirst = true;
 
@@ -50,24 +50,24 @@
       return list_input; 
   }
 
-  global define CreateModelList( string vendor ) ``{
-      list list_input = [];
+  global define list<term> CreateModelList( string vendor ) ``{
+      list<term> list_input = [];
       SetCurrentScannerValue( "vendor", vendor );
-      list mlist = SCR::Read(.sane.modellist, GetCurrentScanner());
+      list<any> mlist = (list<any>) SCR::Read(.sane.modellist, GetCurrentScanner());
       
       //sort list alphabetically
       mlist=sort(`a,`b,mlist,``(a<b));
 
       y2debug( "Modellist: %1", mlist );
 
-      foreach( `model, mlist, ``{
+      foreach(any model, mlist, ``{
 		  list_input = add( list_input, `item(`id(model), model));
 	      });
 
       return list_input; 
   }
   
-  global define ScannerManualDialog_UI( map current_scanner ) ``{
+  global define term ScannerManualDialog_UI( map current_scanner ) ``{
 
       string vstring =  lookup( current_scanner, "vendor", "" );
       
@@ -84,8 +84,8 @@
       
       string scanner = vstring + " - " + mstring;
 
-      list vendor_list = CreateVendorList();
-      list model_list  = CreateModelList( select( select(vendor_list, 0, `item()), 1, "") );
+      list<term> vendor_list = CreateVendorList();
+      list<term> model_list  = CreateModelList( vendor_list[0, 1]:"" );
 
       term layout = `VBox(
 			  `VSpacing (1),
@@ -117,7 +117,7 @@
 /**
  * ScannerManualDialog
  */
-  global define ScannerManualDialog()``{
+  global define symbol ScannerManualDialog()``{
       string help	= "";
       // help text1 for dialog Manual scanner selection
       // - don't translate SANE (Scanner Access Now Easy) - 
@@ -155,7 +155,7 @@ http://mostang.com/sane and http://sdb.suse.de.</p>");
 
 	  if ( ret == `vendor )
 	  {
-	      vendor = UI::QueryWidget(`id(`vendor), `CurrentItem);
+	      vendor = (string) UI::QueryWidget(`id(`vendor), `CurrentItem);
 
 	      UI::ReplaceWidget(`id(`model_rep), `SelectionBox (`id (`model),
 								`opt (`notify),
@@ -164,8 +164,8 @@ http://mostang.com/sane and http://sdb.suse.de.</p>");
 	  }
 	  else if ( ret == `next )
 	  {
-	      vendor = UI::QueryWidget( `id(`vendor), `CurrentItem);
-	      model  = UI::QueryWidget( `id(`model ), `CurrentItem);
+	      vendor = (string) UI::QueryWidget( `id(`vendor), `CurrentItem);
+	      model  = (string) UI::QueryWidget( `id(`model ), `CurrentItem);
 
 	      if ( vendor != nil && model != nil )
 	      {
@@ -186,7 +186,7 @@ http://mostang.com/sane and http://sdb.suse.de.</p>");
       
       } until ( ret == `next || ret == `back || ret == `abort || ret == `cancel );
 
-      return ret;
+      return (symbol) ret;
       
   } 	// end ScannerManualDialog()
       

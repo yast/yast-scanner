@@ -25,7 +25,7 @@
 
   import "Label";
     
-  global define ScannerNotFoundDialog_UI() ``{
+  global define term ScannerNotFoundDialog_UI() ``{
 
       term layout = `Empty();
 
@@ -69,7 +69,7 @@ manual configuration is required.")),
 /**
  * ScannerNotFoundDialog
  */
-  global define ScannerNotFoundDialog()``{
+  global define symbol ScannerNotFoundDialog()``{
       string help = "";
       // help of Manual Scanner Configuration (start)
       string help1    = _("<p>Please make sure your scanner is
@@ -122,14 +122,14 @@ scanner at the same time.</p>");
 	  
 	  if ( ret == `next )
 	  {
-	      symbol type = UI::QueryWidget(`id(`scanner), `CurrentButton);
+	      symbol type = (symbol) UI::QueryWidget(`id(`scanner), `CurrentButton);
 	      y2milestone("Selected Scanner type: %1", type );
 
 	      if ( type == `usb )
 	      {
                   // try again to detect an USB scanner (maybe it is switched on now)
-		  list connected_scanner = SCR::Read(.probe.scanner);
-		  list usb_scanner = filter( `scanner, connected_scanner,
+		  list<map> connected_scanner = (list<map>) SCR::Read(.probe.scanner);
+		  list<map> usb_scanner = filter(map scanner, connected_scanner,
 					      ``( scanner["bus"]:"" == "USB" ) );
 		  
                   // text part 2 of the warning popup - disconnect unused scanners
@@ -170,7 +170,7 @@ USB scanner, because only ONE is supported.") + "\n" + msg);
 		      integer exit_status = 1;
 
 		      // check first, whether an USB scanner module is already loaded
-		      exit_status = SCR::Execute (.target.bash, "/sbin/lsmod | /bin/egrep 'scanner|microtek'");
+		      exit_status = (integer) SCR::Execute (.target.bash, "/sbin/lsmod | /bin/egrep 'scanner|microtek'");
 		      
 		      if ( exit_status != 0 )
 		      {
@@ -201,13 +201,13 @@ USB scanner, because only ONE is supported.") + "\n" + msg);
 		  }
 		      
 		  // call ptal-init setup
-		  integer exitcode = SCR::Execute (.target.bash, "ptal-init setup-usb 2>&1 > /dev/null" );
+		  integer exitcode = (integer) SCR::Execute (.target.bash, "ptal-init setup-usb 2>&1 > /dev/null" );
 
 		  if ( exitcode != 0 )
 		  {
 		      y2error( "command 'ptal-init setup-usb' failed" );
 
-		      boolean ret = Popup::AnyQuestion( Label:: ErrorMsg(),
+		      boolean ret_bool = Popup::AnyQuestion( Label:: ErrorMsg(),
 			   // Text of an error popup. YaST2 automatically detects USB
 			   // connected devices (if switched on). If connected to JetDirect
 			   // the user has to do the configuration manually.
@@ -222,8 +222,8 @@ Configure the scanner by enabling the 'hpoj' driver in
 "),
 							Label::RetryButton(),
 							Label::AbortButton(),
-							`focus_yes );
-		      if ( ret )
+							`focus_yes);
+		      if ( ret_bool )
 		      {
 			  go_on = true;
 		      }
@@ -234,19 +234,19 @@ Configure the scanner by enabling the 'hpoj' driver in
 		      }
 		  }
 
-		  list ptal_scanner = SCR::Read(.scanner.ptal);
+		  list<map> ptal_scanner = (list<map>) SCR::Read(.scanner.ptal);
 		  y2milestone( "HP all-in-one devices: %1", ptal_scanner );
 
 		  if ( size (ptal_scanner) > 1 )
 		  {
-		      map scanners = $[];
+		      map<integer, map> scanners = $[];
 		      integer no = 0;
-		      foreach ( `scanner, ptal_scanner, ``{
-			  scanners = add( scanners, no, scanner );
+		      foreach (map scanner, ptal_scanner, ``{
+			  scanners = (map<integer, map>) add( scanners, no, scanner );
 			  no = no+1;
 		      }	);
 		      // headline for a popup
-		      integer id = DisplayScannerList( scanners, _("List of HP All-in-One Devices") );
+		      integer id = (integer) DisplayScannerList( scanners, _("List of HP All-in-One Devices") );
 		      CreateScannerEntry( scanners[id]:$[] );
 		      ret = `manual;
 		  }
@@ -268,7 +268,7 @@ Configure the scanner by enabling the 'hpoj' driver in
 	  }
       };
 
-      return ret;
+      return (symbol) ret;
   }
 
 }

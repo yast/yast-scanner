@@ -39,7 +39,7 @@
    * ScannerSCSIDialog Layout	
    */
   
-  global define ScannerSCSIDialog_UI( list device_list )``{
+  global define term ScannerSCSIDialog_UI( list device_list )``{
 
       
       term layout = `VBox (`VSpacing (2),
@@ -67,7 +67,7 @@ Please select your scanner from the list below."))),
 /**
  * ScannerSCSIDialog	
  */
-  global define ScannerSCSIDialog( )``{
+  global define symbol ScannerSCSIDialog( )``{
 
 	  
       string help = "";
@@ -100,7 +100,7 @@ can be obtained by issuing the command <b>/usr/sbin/hwinfo --storage_ctrl</b>
       help = help1 + help2 + help3 + help4;
 
       // get a list of all SCSI devices
-      list scsi_devices = SCR::Read(.probe.scsi);
+      list<map> scsi_devices = (list<map>) SCR::Read(.probe.scsi);
 
       if ( lookup (user_settings, "test_mode", false ) )
       {
@@ -131,7 +131,7 @@ can be obtained by issuing the command <b>/usr/sbin/hwinfo --storage_ctrl</b>
       list scsi_selbox = [];
       
       // get all SCSI devices connected to /dev/sg..
-      foreach ( `device, scsi_devices, ``{
+      foreach (map device, scsi_devices, ``{
 	  if ( substring( lookup( device, "dev_name", "" ), 0, 7 ) == "/dev/sg" )
 	  {
 	      sg_devices = add( sg_devices, no, device );
@@ -190,7 +190,7 @@ can be obtained by issuing the command <b>/usr/sbin/hwinfo --storage_ctrl</b>
 	  
       } until ( ret == `next || ret == `back || ret == `abort || ret == `cancel );
       
-      return ret;
+      return (symbol) ret;
   };
 
 }

@@ -39,7 +39,7 @@
 /**
  * ScannerStartDialog
  */
-  global define ScannerStartDialog( )``{
+  global define any ScannerStartDialog( )``{
 
       any ret = nil;
       boolean test_mode = lookup( user_settings, "test_mode", false );
@@ -71,7 +71,7 @@ hardware probing of 'USB' or 'SCSI' ports.
 
       if ( !test_mode )
       {
-	  integer sane_installed = SCR::Execute (.target.bash, "/bin/rpm -q sane");
+	  integer sane_installed = (integer) SCR::Execute (.target.bash, "/bin/rpm -q sane");
 	  // check whether 'sane' is installed
 	  y2debug( "SANE is installed: %1", sane_installed );
 	  list packs_to_install = [];
@@ -93,7 +93,7 @@ Install the packages now?\n");
 
 	      if ( cont )
 	      {
-		  WFM::CallFunction (`sw_single (packs_to_install));
+		  WFM::CallFunction ("sw_single", [packs_to_install]);
 	      }
 	      else
 	      {
@@ -119,28 +119,28 @@ with the YaST2 module 'Install and Remove Software'.\n"));
       Progress::Title( _("Probing hardware") );
 
       integer usb_count = 0;
-      list connected_scanner = [];
+      list<map> connected_scanner = [];
 
       if ( !test_mode )
       {
 	  // pobe USB and SCSI ports; command is hwinfo --scanner
-	  connected_scanner = SCR::Read(.probe.scanner);
+	  connected_scanner = (list<map>) SCR::Read(.probe.scanner);
 	  list scanner_list = [];
 
-	  foreach (`scanner, connected_scanner, ``{
+	  foreach (map scanner, connected_scanner, ``{
 	      if ( lookup( scanner, "bus", "" ) == "USB" )
 	      {
 		  // sub_class_id 1 means a HP all-in-one device
-		  if ( lookup( scanner, "sub_class_id", "") == 1 )
+		  if ( lookup( scanner, "sub_class_id", 0) == 1 )
 		  {
 		      boolean installed = CheckOfficeJet();
 		      if ( installed )
 		      {
 			   // call ptal-init setup
-			  integer exitcode = SCR::Execute (.target.bash, "ptal-init setup-usb 2>&1 > /dev/null" );
+			  integer exitcode = (integer) SCR::Execute (.target.bash, "ptal-init setup-usb 2>&1 > /dev/null" );
 			  // replace scanner entry
-			  list ptal_devices = SCR::Read(.scanner.ptal);
-			  foreach (`device, ptal_devices, ``{
+			  list<map> ptal_devices = (list<map>) SCR::Read(.scanner.ptal);
+			  foreach (map device, ptal_devices, ``{
 			      if ( lookup( device, "device", "") == lookup( scanner, "sub_device", "" ) )
 			      {
 				  y2milestone ("PTAL device found: %1", device );
@@ -178,7 +178,7 @@ the scanner configuration\n."));
 	  }
 
 	  // add device name /dev/usbscanner in USB scanner map
-	  connected_scanner =  maplist (`scanner, connected_scanner,
+	  connected_scanner =  maplist (map scanner, connected_scanner,
 	  ``{
 	      if ( lookup( scanner, "bus", "" ) == "USB" )
 	      {
@@ -201,10 +201,10 @@ the scanner configuration\n."));
       // text for a progress bar label
       Progress::Title(_("Checking already installed scanners"));
 
-      list installed_scanner = [];
+      list<map> installed_scanner = [];
       if ( !test_mode )
       {
-	  installed_scanner = SCR::Read(.scanner.configured);
+	  installed_scanner = (list<map>) SCR::Read(.scanner.configured);
 	  y2debug("Configured scanner: %1", installed_scanner );
       }
       else
@@ -222,7 +222,7 @@ the scanner configuration\n."));
 
       integer no = 1;
 
-      foreach( `scanner, connected_scanner, ``{
+      foreach(map scanner, connected_scanner, ``{
 	  string driver = "";
 	  boolean found = false;
 	  integer m = 0;
@@ -231,7 +231,7 @@ the scanner configuration\n."));
 	  if ( !test_mode )
 	  {
 	      // try to get SANE scanner driver
-	      driver = SCR::Read(.sane.driver, scanner);
+	      driver = (string) SCR::Read(.sane.driver, scanner);
 	  }
 	  else
 	  {
@@ -294,9 +294,9 @@ the scanner configuration\n."));
       // Thus we have to sort out and count scanners per station.
 
       // Get all scanners on the stations
-      list net_scanner = SCR::Read(.scanner.net);
+      list<map> net_scanner = (list<map>) SCR::Read(.scanner.net);
       list net_stations = [];
-      foreach( `one_scanner, net_scanner, ``{
+      foreach(map one_scanner, net_scanner, ``{
 
 	  // search for the host.
 	  string host = lookup( one_scanner, "host", "" );
@@ -304,7 +304,7 @@ the scanner configuration\n."));
 	  {
 	      // start not believing that the one is already in the known stations list.
 	      boolean found = false;
-	      foreach( `station, net_stations, ``{
+	      foreach(map station, net_stations, ``{
 		  string station_name = lookup( station, "host", "notfound" );
 
 		  // Check if the host is already known
@@ -320,7 +320,7 @@ the scanner configuration\n."));
 	      if( found == true )
 	      {
 		  list dummy = [];
-		  foreach( `station, net_stations, ``{
+		  foreach(map station, net_stations, ``{
 		      string station_name = lookup( station, "host", "notfound" );
 		      if( station_name == host )
 		      {
