@@ -10,6 +10,7 @@
  *
  * Authors:
  *   Gabriele Strattner <gs@suse.de>
+ *   Klaas Freitag <freitag@suse.de>
  *
  * String corrections by Christian Steinruecken <cstein@suse.de>, 2001/07/27
  *
@@ -127,6 +128,7 @@ The <b>Gimp</b> also provides scan support.</p>");
 	  if ( ret == `test )
 	  {
 	      map scanner = GetCurrentScanner();
+	      
 	      scanner = add( scanner, "tmpdir", SCR( `Read(.target.tmpdir)));
 	      string filename = SCR(`Read(.sane.scanimage, GetCurrentScanner()));
 	      if ( filename != "" )
@@ -135,10 +137,7 @@ The <b>Gimp</b> also provides scan support.</p>");
 		  image = `Image(  image_data, _("Test picture"));
 
 		  UI( `ReplaceWidget(`id(`replace), image ));
-		  if( ! Execute (.target.remove, filename ) )
-		  {
-		      y2debug( "Could not delete tmp-file" );
-		  }
+		  Execute (.target.remove, filename );
 	      }
 	  }
 	  
