@@ -70,6 +70,7 @@
 
       term layout = `VBox(
 			  `VSpacing (1),
+			  // this is a label; the name of the scanner follows
 			  `Left(`Label (`opt (`hstretch), _("The scanner"))),
 			  `VSpacing(0.3),
 			  `HBox (`HSpacing(2.5),
@@ -77,6 +78,7 @@
 				 `HWeight(1, `Empty())
 				 ),
 			  `VSpacing(0.6),
+			  // this is a headline; the lists with vendors and corresponding models follows  
 			  `Left( `Label (`opt (`hstretch), _("will be installed as:")) ),
 			  `VSpacing (0.3),
 			  `HBox(`HSpacing(0.5),

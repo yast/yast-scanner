@@ -145,6 +145,8 @@
       if ( scanner_map != $[] )
       {
 	  foreach( `scan_id, `scanner, scanner_map, ``{
+	      // TODO: falls auch Konfigurationen NICHT angeschlossener Scanner
+	      // berücksichtigt werden, muss hier noch der neue Status abgefragt werden
 	      if ( lookup( scanner, "bus", "" ) == "USB" &&
 		   lookup( scanner, "scanner_status", "" ) == "installed" )
 	      {
