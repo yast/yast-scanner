@@ -94,7 +94,7 @@ can be found in the SuSE support database.</p>") );
 						    lookup( one_scanner, "device", "" ) );
 			  new_net_scanner = change( new_net_scanner, "vendor",
 						    lookup( new_net_scanner, "vendor", "" )+", "+
-						    lookup( one_scanner, "vendor" ) );
+						    lookup( one_scanner, "vendor", "" ) );
 		      }
 		      else
 		      {

@@ -207,7 +207,7 @@ successfully you can proceed to the
 	      else
 	      {
 		  string module_name = UI(`QueryWidget(`id(`module), `Value));
-		  map device 	= lookup( usb_unknown, usb_device );
+		  map device 	= lookup( usb_unknown, usb_device, $[] );
 		  integer vendor_id = lookup( device, "vendor_id", 0 );
 		  if (vendor_id != 0 )
 		  {
@@ -263,19 +263,19 @@ exit the scanner configuration?"));
 		      // Add vendor and device to scanner info
 		      if ( lookup(device, "device", "") != "" )
 		      {
-			  SetCurrentScannerValue( "device", lookup(device, "device") );
+			  SetCurrentScannerValue( "device", lookup(device, "device", "") );
 		      }
 		      else
 		      {
-			  SetCurrentScannerValue( "device", CutBlanks(lookup(device, "sub_device")) );
+			  SetCurrentScannerValue( "device", CutBlanks(lookup(device, "sub_device", "")) );
 		      }
 		      if ( lookup(device, "vendor", "") != "" )
 		      {
-			  SetCurrentScannerValue( "vendor", lookup(device, "vendor") );
+			  SetCurrentScannerValue( "vendor", lookup(device, "vendor", "") );
 		      }
 		      else
 		      {
-			  SetCurrentScannerValue( "vendor", CutBlanks(lookup(device, "sub_vendor")) ); 
+			  SetCurrentScannerValue( "vendor", CutBlanks(lookup(device, "sub_vendor", "")) ); 
 		      }
 		      if ( ret == `load )
 		      {
