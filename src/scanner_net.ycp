@@ -29,10 +29,10 @@
       term layout = `VBox (
 			   // This is a label, i.e. the line length should not exceed 50 characters.
 			   // Please also respect the newlines (\n).
-			   `Left(`Label (`opt (`hstretch), _("If you want to use a scanner from a network scan\n
-station, you must supply the IP address or hostname\n
-of the scan station. Please enter the requested\n
-information into the field below.\n"))),
+			   `Left(`Label (`opt (`hstretch), _("If you want to use a scanner from a network scan
+station, you must supply the IP address or hostname
+of the scan station.\n
+Please enter the requested information into the field below.\n"))),
 			   `VSpacing (1),
 			   `HBox (
 				  `HWeight(4, `TextEntry(`id(`host),
