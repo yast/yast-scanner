@@ -193,6 +193,7 @@ successfully you can proceed to the
 	      if ( usb_device == nil )
 	      {
 		  UI(`NotifyPopup(_("Please select a scanner from the list.")));
+		  go_on = true;
 	      }
 	      else
 	      {
