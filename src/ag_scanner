@@ -53,34 +53,17 @@ while ( <STDIN> )
 	if ( $path =~ /configured/i ) {
 	    y2debug( "Handling action <configured>" );
 	    @scanners = performScanimage();
+
 	} elsif ( $path =~ /net/i ) {
 	    y2debug( "Handling action <net>" );
 	    @scanners = performScanimage( 1 );
-	} else {
-	    y2error( "ERROR: Unspecified action !" );
-	}
-	y2debug (" ^^^ Leaving ag_scanner - goodbye ^^^" );
 
-	ycp::Return( \@scanners );
-    }
-    
-    # Dir command
-    elsif ( $action eq "Dir" ) {
-	my @paths = ("scsi","net","configured");
-	ycp::Return( \@paths );
-      }
-    
-    # Result
-    elsif ( $action eq "result" ) {
-	exit;
-    }
-    elsif ( $action eq "ptal" ) {
-	my @scanners;
+	} elsif ( $path =~ /ptal/i ) {
+	  y2debug( "Handling action <ptal>" );
+	  my $dev = `ptal-device`;
+	  # example result: mlc:usb:PSC_2200_Series
 
-	my $dev = `ptal-device`;
-	# example result: mlc:usb:PSC_2200_Series
-
-	if( $dev ) {
+	  if( $dev ) {
 	    my ($mlc, $device, $model) = split( /\:/, $dev );
 	    push ( @scanners , 
 		   { bus => "PTAL", 
@@ -100,8 +83,25 @@ while ( <STDIN> )
 		     scanner_driver => "hpoj",
 		     host => ""
 		   } );
+	  }
 	}
+	else {
+	    y2error( "ERROR: Unspecified action !" );
+	}
+	y2debug (" ^^^ Leaving ag_scanner - goodbye ^^^" );
+
 	ycp::Return( \@scanners );
+    }
+    
+    # Dir command
+    elsif ( $action eq "Dir" ) {
+	my @paths = ("scsi","net","configured");
+	ycp::Return( \@paths );
+      }
+    
+    # Result
+    elsif ( $action eq "result" ) {
+	exit;
     }
 
     # Unknown
