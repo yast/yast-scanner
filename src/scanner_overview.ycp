@@ -42,7 +42,7 @@
 		     `Left(`Label(_("List of installed/configured scanners"))),
 		     `VSpacing( 0.2 ),
 		     `Table(`id(`scanner_table),`opt(`notify, `hvstretch), 
-			    `header( _("Vendor"), _("Model"), _("Bus") ),
+			    `header( _("Vendor"), _("Model"), _("Connected to") ),
 			    table_contents
 			    ),
 		     `VSpacing(2.0),
@@ -125,7 +125,7 @@ made on your system will be undone.
 	      scanner_id = UI(`QueryWidget( `id(`scanner_table), `CurrentItem ));
 	      if ( scanner_id == nil )
 	      {
-		  UI(`NotifyPopup(_("Please select a scanner in list.")));
+		  UI(`NotifyPopup(_("Please select a scanner in the list.")));
 	      }
 	      else
 	      {

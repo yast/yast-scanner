@@ -37,7 +37,7 @@ a manual configuration is necessary.")),
 									       _("&USB scanner"), true) ),
 							    `VSpacing (0.6),
 							    `Left(`RadioButton(`id(`scsi),`opt(`hstretch),
-									       _("SCSI scanner"),  false) ),
+									       _("&SCSI scanner"),  false) ),
 							    `VSpacing (1.2),
 							    `Left(`RadioButton(`id(`net),`opt(`hstretch),
 									       _("&Network scan station") ,  false) ),
@@ -66,8 +66,8 @@ on running system - but <b>Abort</b> scanner installation, shutdown
 and reboot. 
 </p>"));
       string help3    = UI(_("<p>YaST2 provides assistence for manual
-USB and SCSI scanner configuration. You can also
-configure a network scan station. Select the correct button
+USB and SCSI scanner configuration. You also can use
+a scanner at a network scan station. Select the correct button
 and click on <b>Next</b>.</p>"));
        string help4    = UI(_("<p>Please note: only <i>one</i> USB scanner
 is supported.</p>"));

@@ -100,7 +100,7 @@ with the YaST2 module 'Install/Remove Software'.\n")));
 
 	      // text of an error popup "only one USB scanner allowed" 
 	      UI(`ErrorPopup(_("YaST2 has detected several USB scanners
-connected to your PC. At the moment it's only
+connected to your computer. At the moment it's only
 possible to support ONE single USB scanner.\n
 Please disconnect the unwanted USB scanner(s)
 and restart the scanner configuration.")));

@@ -27,8 +27,8 @@
       term layout = `VBox (
 			   // This is a label, i.e. the line lenght should not be more than 50 characters.
 			   // Please also respect the newlines (\n).
-			   `Left(`Label (`opt (`hstretch), _("The configuration of a network scan station
-requires the IP address or the name of the host.\n
+			   `Left(`Label (`opt (`hstretch), _("In order to use the scanner of a network scan station,
+the IP address or the name of the host is required.\n
 Please enter the information into the field below.\n"))),
 			   `VSpacing (1),
 			   `HBox (
@@ -50,14 +50,15 @@ Please enter the information into the field below.\n"))),
   global define ScannerNetDialog()``{
       string help = "";
       string help1    = UI(_("<p>It is possible to use a scanner which
-is connected to another PC.</p> "));
+is connected to another computer acting as a scan station.</p> "));
       string help2    = UI(_("<p>Enter the IP address or the hostname
-of that PC and click on <b>Next</b>.
+of that computer and click on <b>Next</b>.
 </p>") );
-
+      string help3    = UI(_("<p>For more information on how to configure the network
+scan station, please see the SuSE support database.<p>") );
       help = help1 + help2;
       
-      string caption = UI(_("Network scan station"));
+      string caption = UI(_("Network scan station client"));
       term contents  = ScannerNetDialog_UI();
 
       UI(`SetWizardContentsButtons(caption,contents,help,BackButtonLabel(),NextButtonLabel()));
