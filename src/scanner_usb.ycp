@@ -50,7 +50,7 @@ the Vendor-ID and the USB module name (usually named
 'scanner') and press button <b>Load</b>.</p>"));
         // help part 2 of dialog manual USB Scanner configuration
       string help2    = UI(_("<p>You can get the information about
-the IDs with command <b>hwinfo --usb<b> (look for  <i>Vendor:</i>
+the IDs with command <b>hwinfo --usb</b> (look for <i>Vendor:</i>
 and <i>Model:</i>).
 </p> "));
        // help part 3 of dialog manual USB Scanner configuration
@@ -61,7 +61,7 @@ kernel module for USB support.</p> "));
 module was successful you can go <b>Next</b> to dialog
 \"Manual scanner selection\".</p>"));
 
-      help = help1 + help2 + help3 + ;
+      help = help1 + help2 + help3 + help4;
       
       string caption = UI(_("Manual USB scanner configuration"));
       term contents  = ScannerUSBDialog_UI();

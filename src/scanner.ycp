@@ -38,7 +38,6 @@
   include "scanner/scanner_overview.ycp";
   include "scanner/scanner_install.ycp";
   include "scanner/scanner_notfound.ycp";
-  include "scanner/scanner_options.ycp";
   include "scanner/scanner_scsi.ycp";
   include "scanner/scanner_usb.ycp";
   include "scanner/scanner_net.ycp";
