@@ -617,7 +617,7 @@ global boolean Read()
   if( database == nil )
   { y2milestone( "Aborting: Failed to read %1", database_filename );
     Report::Error( sformat( // Message of a Report::Error where %1 will be replaced by the file name:
-                            _("Aborting: Failed to read %1"),
+                            _("Aborting: Failed to read %1."),
                             database_filename
                           )
                  );
@@ -1013,29 +1013,32 @@ global boolean ActivateBackend( string backend_name, integer database_index, boo
   // The body of a Popup::AnyMessage for scanners which require a firmware upload
   // Below this message on a seperated line a special command will be shown:
 _("A firmware file contains software that must be uploaded to the scanner's memory.
-Without firmware, the scanner cannot work.\n
-As firmware is licensed by the scanner manufacturer, we cannot distribute it.
+Without firmware, the scanner cannot work.
+
+Because firmware is licensed by the scanner manufacturer, we cannot distribute it.
 Usually the firmware file is somehow stored on the manufacturer's CD.
 Alternatively, it may be possible to download it from the manufacturer's Web site.
 Ask the manufacturer how to get the firmware file for your particular scanner.
 Find additional useful information on the SANE Web site:
-http://www.sane-project.org/\n
+http://www.sane-project.org/
+
 After you get the firmware file, you must configure the driver manually.
 The man page of the driver describes how to configure it for firmware upload.
-The following command shows the man page for your driver:"
-);
+The following command shows the man page for your driver:
+");
   string hpaio_message =
   // The message of a Popup::YesNo for scanners which should be set up with the hpaio backend:
 _("The hpaio driver requires the hplip service to be up and running.
-Additionally the hplip service should be activated to be started when booting.
+Additionally, the hplip service should be configured to start when booting.
 The hplip service and the PTAL system exclude each other.
 Therefore a running PTAL system would be stopped and deactivated
 before the the hplip service is activated and started.
-The hplip service doesn't support parallel-port scanners.
-For more information see the following article in our support portal:
-http://portal.suse.com/sdb/en/2002/05/ke_hp-officejet.html\n
-Should the hplip service be activated and started now?"
-);
+The hplip service does not support parallel-port scanners.
+For more information, see the following article in our support portal:
+http://portal.suse.com/sdb/en/2002/05/ke_hp-officejet.html
+
+Should the hplip service be activated and started now?
+");
   string hpoj_message =
   // The message of a Popup::YesNo for scanners which should be set up with the hpoj backend:
 _("The hpoj driver requires the PTAL system be set up and running.
@@ -1053,8 +1056,7 @@ a running ptal service monopolizes the USB device file (e.g., /dev/usb/lp0),
 so the printer can no longer be addressed via the USB device file.
 See the following article in our support portal:
 http://portal.suse.com/sdb/en/2002/05/ke_hp-officejet.html\n
-Should the PTAL system for USB be initialized, activated, and started now?"
-);
+Should the PTAL system for USB be initialized, activated, and started now?");
   // Here the real code starts with proper indentation:
   if( backend_name == "" )
   { if( database_index < 0 )
@@ -1389,7 +1391,7 @@ global boolean TestBackend( string backend_name )
   }
   Popup::ClearFeedback();
   Report::ShowText( sformat( // Header of a Report::ShowText where %1 will be replaced by the backend name:
-                             _("Successfully tested %1"), backend_name
+                             _("Successfully Tested %1"), backend_name
                            ),
                     sformat( // Body of a Report::ShowText where
                              // %1 will be replaced by the SANE device identifier
@@ -1453,7 +1455,7 @@ global list Overview()
 global boolean DetermineNetworkScanningConfig()
 { if( ! ExecuteBashCommand( determine_network_scanning_config_commandline ) )
   { Report::Error( // Message of a Report::Error:
-                   _("Failed to determine the config for scanning via network.")
+                   _("Failed to determine the configuration for scanning via network.")
                  );
     return false;
   }
