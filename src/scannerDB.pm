@@ -1681,10 +1681,11 @@ sub getNetInfo( $ )
     {
 	my $referto = %$scanref->{host};
 
-	y2debug( "This is scanref->host: <$referto>" );
+	y2debug( "Found scanner on host <$referto>" );
 
-	if ( $referto =~ /$host/i )
+	if ( $referto =~ /^$host$/i )
 	{
+	    y2debug( "adding network-scanner <$referto>" );
 	    push @hostscanners, $scanref;
 	}
     }
