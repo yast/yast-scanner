@@ -1,0 +1,341 @@
+/**
+ * File:        include/scanner/dialogs.ycp
+ * Package:     Configuration of scanner
+ * Summary:     Dialogs definitions
+ * Authors:     Johannes Meixner <jsmeix@suse.de>
+ *
+ * $Id$
+ * $Id$
+ */
+
+{
+
+textdomain "scanner";
+
+import "Label";
+import "Popup";
+import "Wizard";
+import "Wizard_hw";
+import "Scanner";
+
+include "scanner/helps.ycp";
+
+boolean ReallyAbort()
+{ // At present the transaction semantik is not implemented.
+  // At present all changings are committed to the system instantly, for example
+  // - enable/disable backends in /etc/sane/dll.conf
+  // - install additional packages (like iscan)
+  // - set up and start additional services (like PTAL)
+  // It is necessary to commit them instantly to be able to test a scanner
+  // and to show a true feedback to the user which scanners are actually active.
+  // As roll-back is not implemented 'Popup::ReallyAbort(true)' doesn't make sense.
+  // Scanner::Modified() returns true if something was committed to the system.
+  return !Scanner::Modified() || Popup::ReallyAbort(false);
+}
+
+/**
+ * Read settings dialog
+ * @return `abort if aborted and `next otherwise
+ */
+symbol ReadDialog()
+{ Wizard::RestoreHelp(HELPS["read"]:"");
+  boolean ret = Scanner::Read();
+  return ret ? `next : `abort;
+}
+
+/**
+ * Write settings dialog
+ * @return `abort if aborted and `next otherwise
+ */
+symbol WriteDialog()
+{ Wizard::RestoreHelp(HELPS["write"]:"");
+  boolean ret = Scanner::Write();
+  return ret ? `next : `abort;
+}
+
+/**
+ * Summary dialog
+ * @return dialog result
+ */
+any SummaryDialog()
+{ /* Scanner summary dialog caption */
+  string caption = _("Scanner Configuration");
+  /* create the content of the summary */
+  list summary = Scanner::Summary();
+  string configured = summary[0]:"";
+  list autodetected = summary[1]:[];
+  /* Frame label */
+  term contents = Wizard_hw::DetectedContent( _("Scanners to Configure"),
+                                              autodetected,
+                                              false,
+                                              configured
+                                            );
+  Wizard::SetContentsButtons( caption,
+                              contents,
+                              HELPS["summary"]:"",
+                              Label::BackButton(),
+                              Label::FinishButton()
+                            );
+  any ret = nil;
+  while(true)
+  { ret = UI::UserInput();
+    /* back or abort */
+    if( ret == `abort
+        || ret == `cancel
+        || ret == `back
+      )
+    { if( ! ReallyAbort() ) continue;
+      break;
+    }
+    /* change */
+    if( ret == `edit_button )
+    { ret = `overview;
+      break;
+    }
+    /* finish */
+    if(ret == `next)
+    { break;
+    }
+    /* select a device */
+    if( ret == `detected_selbox ) continue;
+    /* configure the selected device */
+    if( ret == `configure_button )
+    { Scanner::selected_autodetected_scanners_index = (integer)UI::QueryWidget( `id( `detected_selbox ), `CurrentItem );
+      y2milestone( "Selected autodetected scanners index in SummaryDialog is: %1", Scanner::selected_autodetected_scanners_index );
+      if( Scanner::selected_autodetected_scanners_index < 0 )
+      { ret = `other;
+      }
+      else
+      { // Unselect a previously selected model in the database
+        // to have it no longer preselected in the select model dialog
+        // when the user has really selected an autodetected scanner:
+        Scanner::selected_model_database_index = -1;
+        ret = `configure;
+      }
+      break;
+    }
+    y2milestone( "Ignoring unexpected returncode in SummaryDialog: %1", ret );
+    continue;
+  }
+  y2milestone( "SummaryDialog returns: %1", ret );
+  return ret;
+}
+
+/**
+ * Overview dialog
+ * @return dialog result
+ */
+any OverviewDialog()
+{ string caption = _("Scanner Overview");
+  list overview_table = Scanner::Overview();
+  term contents = Wizard_hw::ConfiguredContent( `header( _("Backend"),
+                                                         _("Scanners which use the backend")
+                                                       ),
+                                                 overview_table,
+                                                 nil,
+                                                 nil,
+                                                 nil,
+                                                 `PushButton( `id( `test_button ), _("&Test"))
+                                               );
+  contents = Wizard_hw::SpacingAround( contents, 1.5, 1.5, 1.0, 1.0 );
+  Wizard::SetContentsButtons( caption,
+                              contents,
+                              HELPS["overview"]:"",
+                              Label::BackButton(),
+                              Label::FinishButton()
+                            );
+  any ret = nil;
+  while(true)
+  { ret = UI::UserInput();
+    /* back or abort */
+    if( ret == `abort
+        || ret == `cancel
+      )
+    { if( ! ReallyAbort() ) continue;
+      break;
+    }
+    /* add */
+    if( ret == `add_button )
+    { // Unselect a previously selected autodetected scanner
+      // to have it no longer preselected in the select model dialog:
+      Scanner::selected_autodetected_scanners_index = -1;
+      ret = `add;
+      break;
+    }
+    /* edit */
+    if( ret == `edit_button )
+    { // Unselect a previously selected autodetected scanner
+      // to have it no longer preselected in the select model dialog:
+      Scanner::selected_autodetected_scanners_index = -1;
+      ret = `edit;
+      break;
+    }
+    /* delete */
+    if( ret == `delete_button )
+    { string backend_name = (string)UI::QueryWidget( `id(`table), `CurrentItem );
+      y2milestone( "Selected backend to be deleted (i.e. deactivated) is: %1", backend_name );
+      if( nil == backend_name
+          || "" == backend_name )
+      { Popup::AnyMessage( _("No backend selected"), _("You must select a backend.") );
+        continue;
+      }
+      if( ! Popup::YesNo( sformat( _("Should the backend %1 be deactivated?"), backend_name ) ) )
+      { continue;
+      }
+      if( ! Scanner::DeactivateBackend( backend_name, -1, true ) )
+      { Popup::Error( sformat( _("Failed to deactivate backend %1."), backend_name ) );
+        continue;
+      }
+      ret = `overview;
+      break;
+    }
+    /* test */
+    if( ret == `test_button )
+    { string backend_name = (string)UI::QueryWidget( `id(`table), `CurrentItem );
+      y2milestone( "Selected backend to be tested is: %1", backend_name );
+      if( nil == backend_name
+          || "" == backend_name )
+      { Popup::AnyMessage( _("No backend selected"), _("You must select a backend.") );
+        continue;
+      }
+      if( ! Scanner::TestBackend( backend_name ) )
+      { Popup::Error( sformat( _("Failed to test backend %1."), backend_name ) );
+        continue;
+      }
+      ret = `overview;
+      break;
+    }
+    /* next or back */
+    if( ret == `next
+        || ret == `back
+      )
+    { break;
+    }
+    y2milestone( "Ignoring unexpected returncode in OverviewDialog: %1", ret );
+    continue;
+  }
+  return ret;
+}
+
+/**
+ * Select model dialog
+ * @return dialog result
+ */
+any SelectModelDialog()
+{ string caption = _("Scanner Model Selection");
+  string filter_string = "";
+  term contents = `VBox( `HBox( `TextEntry( `id(`filter_input),
+                                            _("&Enter a search string (case doesn't matter):")
+                                          ),
+                                `PushButton( `id(`apply_filter),
+                                             _("&Apply")
+                                           )
+                              ),
+                         `ReplacePoint( `id(`model_selection_replace_point),
+                                        `SelectionBox( `id(`model_selection),
+                                                       _("&Select a scanner model (and the appropriate SANE backend):"),
+                                                       Scanner::ModelItems( filter_string )
+                                                     )
+                                      )
+                       );
+  Wizard::SetContentsButtons( caption,
+                              contents,
+                              HELPS["select_model"]:"",
+                              Label::BackButton(),
+                              Label::NextButton()
+                            );
+  any ret = nil;
+  while(true)
+  { // Always move the focus away from the 'next' button to the 'apply' button
+    // which doesn't select a model but only re-displays the model selection box
+    // to make sure that a model is selected intentionally and not by accident via the Enter key:
+    UI::SetFocus( `id(`apply_filter) );
+    ret = UI::UserInput();
+    if( ret == `abort
+        || ret == `cancel
+      )
+    { if( ! ReallyAbort() ) continue;
+      break;
+    }
+    if ( ret == `back )
+    { break;
+    }
+    /* apply a filter to the model list */
+    if( ret == `apply_filter )
+    { filter_string = (string)UI::QueryWidget( `id(`filter_input), `Value );
+      UI::ReplaceWidget( `id(`model_selection_replace_point),
+                         `SelectionBox( `id(`model_selection),
+                                        _("&Select a scanner model (and the appropriate SANE backend):"),
+                                        Scanner::ModelItems( filter_string )
+                                      )
+                       );
+      continue;
+    }
+    /* select a scanner */
+    if( ret == `next )
+    { Scanner::selected_model_database_index = (integer)UI::QueryWidget( `id(`model_selection), `CurrentItem );
+      if( nil == Scanner::selected_model_database_index )
+      { Popup::AnyMessage( _("No model selected"), _("You must select a model.") );
+        continue;
+      }
+      if( "unsupported" == Scanner::database[Scanner::selected_model_database_index,"status"]:"unknown" )
+      { Popup::AnyMessage( _("Unsupported model"),
+                           _("This model is not supported by SANE.\nAsk the manufacturer for a Linux driver.")
+                         );
+        continue;
+      }
+      break;
+    }
+    y2milestone( "Ignoring unexpected returncode in SelectModelDialog: %1", ret );
+    continue;
+  }
+  return ret;
+}
+
+/**
+ * Configure backend dialog
+ * @return dialog result
+ */
+any ConfigureBackendDialog()
+{ string caption = _("Scanner Backend Configuration");
+  y2milestone( "Selected model is: %1", Scanner::database[Scanner::selected_model_database_index]:$[] );
+  string backend_name = Scanner::database[Scanner::selected_model_database_index,"backend"]:"unknown";
+  term contents = `Label( sformat( _("Setting up the backend %1"), backend_name ) );
+  Wizard::SetContentsButtons( caption,
+                              contents,
+                              HELPS["configure_backend"]:"",
+                              Label::BackButton(),
+                              Label::NextButton()
+                            );
+  if( ! Scanner::ActivateBackend( "", Scanner::selected_model_database_index, true ) )
+  { Popup::Error( sformat( _("Failed to activate backend %1."), backend_name ) );
+  }
+  any ret = nil;
+  while(true)
+  { ret = UI::UserInput();
+    /* abort or cancel */
+    if( ret == `abort
+        || ret == `cancel )
+    { if( ! ReallyAbort() ) continue;
+      break;
+    }
+    if( ret == `back )
+    { if( ! Scanner::DeactivateBackend( "", Scanner::selected_model_database_index, false ) )
+      { Popup::Error( sformat( _("Failed to deactivate backend %1."), backend_name ) );
+        break;
+      }
+      break;
+    }
+    if( ret == `next )
+    { break;
+    }
+    y2milestone( "Ignoring unexpected returncode in ConfigureBackendDialog: %1", ret );
+    continue;
+  }
+  return ret;
+}
+
+/* EOF */
+
+}
+

@@ -1,0 +1,31 @@
+@HEADER-COMMENT@
+
+# neededforbuild yast2-devel-packages
+
+@HEADER@
+Requires:	yast2
+
+BuildArchitectures:	noarch
+
+Summary:	Configuration of scanner
+
+%description
+-
+
+@PREP@
+
+@BUILD@
+
+@INSTALL@
+
+@CLEAN@
+
+%files
+%defattr(-,root,root)
+%dir @yncludedir@/scanner
+@yncludedir@/scanner/*
+@clientdir@/scanner.ycp
+@moduledir@/Scanner.*
+@desktopdir@/scanner.desktop
+@ybindir@/*scanner*
+%doc @docdir@
