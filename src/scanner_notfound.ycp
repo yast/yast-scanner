@@ -49,7 +49,7 @@ manual configuration is required.")),
     							    `VSpacing (0.6),
 							    `Left(`RadioButton(`id(`ptal),`opt(`hstretch),
 									       // radiobutton3 - Hewlett-Packard multi functional
-									       // devices; german: Multifunktionsgeräte
+									       // devices; german: Multifunktionsgeraete
 									       _("&HP OfficeJet All-in-One"),  false) ),
 							    `VSpacing (1.2),
 							    `Left(`RadioButton(`id(`net),`opt(`hstretch),
