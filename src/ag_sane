@@ -87,7 +87,6 @@ use scannerDB;
 while ( <STDIN> )
 {
     ycpDoVerboseLog();
-    ycpInit( $_ );
 
     if( /result/i )
     {
@@ -95,17 +94,20 @@ while ( <STDIN> )
 	exit(0);
     }
 
-    my $action = ycpGetPath();
+    my ($action, $path, $argument) = ycp::ParseCommand ($_);
+    
+    y2debug( " vvv starting ag_sane with action <$action> <$path> vvv" );
 
-    y2debug( " vvv starting in ag_sane with action <$action> vvv" );
+    #unless( ycpArgIsMap() )
+    #{
+    #	y2debug( "Argument seems not to be a Map from ycp" );
+    #}
 
-    y2debug( "Got Action = ycpPath = <$action>");
-
-    unless( ycpArgIsMap() )
+    my %scanner;
+    if ( ref ($argument) eq "HASH" )
     {
-	y2debug( "Argument seems not to be a Map from ycp" );
+	%scanner = %{$argument};
     }
-    my %scanner = ycpGetArgMap();
     my $vendor = findInHash( "vendor", \%scanner );
     my $bus    = findInHash( "bus", \%scanner  );
     my $model  = findInHash( "device", \%scanner );
@@ -119,8 +121,8 @@ while ( <STDIN> )
     }
 
     #Read command
-    if ( ycpCommandIsRead() ) {
-      if ( $action =~ /^\s*\.*driver\s*$/i ) {
+    if ( $action eq "Read" ) {
+      if ( $path =~ /^\s*\.*driver\s*$/i ) {
 	#
 	# This action queries for the correct driver for one scanner
 	# identified by its vendor and the model, both values come as
@@ -150,10 +152,10 @@ while ( <STDIN> )
 	}
 	y2debug( "Returning <$use_driver>" );
 
-	ycpReturnSkalarAsString( $use_driver );
+	ycp::Return( $use_driver );
 
 	# my $retdriver = $driver;
-      } elsif ( $action =~ /modellist\s*$/ ) {
+      } elsif ( $path =~ /modellist\s*$/ ) {
 	# Only the vendor and the bus must be set in the incoming parameter hash -
 	# returning a list of available drivers.
 	y2debug( "Handling action modellist" );
@@ -168,13 +170,13 @@ while ( <STDIN> )
 
 	@drivers = sort keys %models;
 
-	ycpReturn( \@drivers );
-      } elsif ( $action =~ /vendorlist/ ) {
+	ycp::Return( \@drivers );
+      } elsif ( $path =~ /vendorlist/ ) {
 	y2debug( "Handling action vendorlist" );
 	# Only the bus is required. Return a list of vendors for the list.
 	my @vlist = getVendorList( findInHash( "bus", \%scanner ));
-	ycpReturn( \@vlist );
-      } elsif ( $action =~ /netscannerinfo/i ) {
+	ycp::Return( \@vlist );
+      } elsif ( $path =~ /netscannerinfo/i ) {
 	y2debug( "Handling action netscannerinfo" );
 	unless ( $bus =~ /net/i )
 	  {
@@ -190,20 +192,20 @@ while ( <STDIN> )
 	  if ( $found_scanners_anz > 0 ) {
 	    enableNetScan( $host );
 	  }
-	  ycpReturn( \@netscanners_on_host );
+	  ycp::Return( \@netscanners_on_host );
 	} else {
 	  y2debug( "No host defined for netscannerinfo!" );
-	  ycpReturn( [] );
+	  ycp::Return( [] );
 	}
       } else {
-	y2debug( "Unknown action <$action>" );
-	ycpReturnSkalarAsBoolean (0);
+	y2error( "Unknown action <$path>" );
+	ycp::Return ( "false" );
       }
     }  
 
     # Write command
-    elsif ( ycpCommandIsWrite() ) {
-      if ( $action =~ /writeconfig/ ) {
+    elsif ( $action eq "Write" ) {
+      if ( $path =~ /writeconfig/ ) {
 	y2debug( "Handling action writeconfig" );
 	my @cfg_backends = readDllconf( );
 	my $ok = 0;
@@ -219,7 +221,7 @@ while ( <STDIN> )
 	    $ok = 0;
 	  }
 	  # ATTENTION: Return here :(
-	  ycpReturnSkalarAsBoolean( $ok );
+	  ycp::Return( $ok );
 	}
 
 
@@ -243,22 +245,23 @@ while ( <STDIN> )
 
 	# valid are:
 	# vendor-bus-model
-	ycpReturnSkalarAsBoolean( $ok );
+
+	$ok?ycp::Return( "true" ):ycp::Return( "false" );
       }
       else {
-	y2error( "Unknown action <$action>" );
-	ycpReturnSkalarAsBoolean (0);	
+	y2error( "Unknown action <$path>" );
+	ycp::Return( "false" );
       }
     }
 
     # Execute command
-    elsif ( ycpCommandIsExecute() ) {
-      if ( $action =~ /revertall/ ) {
+    elsif ( $action eq "Execute" ) {
+      if ( $path =~ /revertall/ ) {
 
 	y2debug( "Handling action revert all" );
 	revertAll();
-	ycpReturnSkalarAsBoolean( 1 );
-      } elsif ( $action =~ /removeDriver/ ) {
+        ycp::Return( "true" );
+      } elsif ( $path =~ /removeDriver/ ) {
 	my $ok = 0;
 	my $driver = findInHash( "scanner_driver", \%scanner );
 
@@ -300,9 +303,9 @@ while ( <STDIN> )
 	    y2error( "ERROR: Driver was not given but is a required argument for removeDriver!" );
 	  }
 	}
-	ycpReturnSkalarAsBoolean( $ok );
+	$ok?ycp::Return( "true" ):ycp::Return( "false" );
 
-      } elsif ( $action =~ /scanimage/ ) {
+      } elsif ( $path =~ /scanimage/ ) {
 	y2debug( "Handling action scanimage" );
 	my $resFile = "";
 	my $devicefile = findInHash( "dev_name", \%scanner );
@@ -330,29 +333,29 @@ while ( <STDIN> )
 	    y2debug( "Acquired image to result-file <$resFile>" );
 	  }
 	}
-	ycpReturnSkalarAsString( $resFile );
+	ycp::Return( $resFile );
 
       } else {
-	y2error( "Unknown action <$action>" );
-	ycpReturnSkalarAsBoolean (0);	
+	y2error( "Unknown action <$path>" );
+	ycp::Return ( "false" );	
       }
     } 
     
     # Dir command
-    elsif ( ycpCommandIsDir() ) {
+    elsif ( $action eq "Dir" ) {
 	my @paths = ("driver","modellist","vendorlist","netscannerinfo","writeconfig","revertall","scanimage");
-	ycpReturn( \@paths );
+	ycp::Return( \@paths );
       }
     
     # Result
-    elsif ( ycpCommandIsResult() ) {
+    elsif ( $action eq "result" ) {
 	exit;
     }
 
     # Unknown
     else {
         y2error ("Unknown instruction ", ycpGetCommand, " or argument: ", ycpGetArgType);
-        ycpReturnSkalarAsBoolean (0);
+        ycp::Return ( "false" );
     }
 }
 
