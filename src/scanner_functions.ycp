@@ -19,82 +19,138 @@
 
 {
 
-textdomain "scanner";
+  textdomain "scanner";
 
 /**
  * Fill the map of all scanner settings from the SCR
  * @return map all scanner settings
  */
-global define ScannerRead() ``{
-    /* TODO: your code here ... */
-    return $[];
-}
+  global define ScannerRead() ``{
+      /* TODO: your code here ... */
+      return $[];
+  }
 
 /**
  * Update the SCR from the map of all scanner settings
  * @param m a map of all scanner settings
  * @return boolean success of operation
  */
-global define ScannerWrite(map settings) ``{
-    /* TODO your code here ... */
-    return true;
-}
+  global define ScannerWrite(map settings) ``{
+      /* TODO your code here ... */
+      return true;
+  }
 
 /**
  * Write the scanner data from SCR to the disk
  * @return list success of operation
  */
-global define ScannerFinish() ``{
-    /* TODO your code here ... */
-    sleep(1500);
-    return true;
-}
+  global define ScannerFinish() ``{
+      /* TODO your code here ... */
+      sleep(1500);
+      return true;
+  }
 
-global define GetCurrentScannerValue( string key ) ``{
-    string value = "";
-    integer current_id = lookup( user_settings, "scannerInWork", 0 );
-    map scanner_info = lookup( user_settings, "scannerInfo", $[] );
+  global define GetCurrentScannerValue( string key ) ``{
+      string value = "";
+      integer current_id = lookup( user_settings, "scannerInWork", 0 );
+      map scanner_info = lookup( user_settings, "scannerInfo", $[] );
     
-    if ( current_id != 0 )
-    {
-	value = lookup( lookup(scanner_info, current_id, $[]), key, ""); 
-    }
-    y2debug( "GET current value: %1", value );
-    return value;
-}
+      if ( current_id != 0 )
+      {
+	  value = lookup( lookup(scanner_info, current_id, $[]), key, ""); 
+      }
+      y2debug( "GET current value: %1", value );
+      return value;
+  }
 
-global define GetCurrentScanner(  ) ``{
-    string value = "";
-    integer current_id = lookup( user_settings, "scannerInWork", 0 );
-    map scanner_info = lookup( user_settings, "scannerInfo", $[] );
+  global define GetCurrentScanner(  ) ``{
+      string value = "";
+      integer current_id = lookup( user_settings, "scannerInWork", 0 );
+      map scanner_info = lookup( user_settings, "scannerInfo", $[] );
 
-    if ( current_id != 0 && scanner_info != $[] )
-    {
-	return ( lookup(scanner_info, current_id, $[]) );
-    }
-    else
-    {
-	return $[];
-    }
-}
+      if ( current_id != 0 && scanner_info != $[] )
+      {
+	  return ( lookup(scanner_info, current_id, $[]) );
+      }
+      else
+      {
+	  return $[];
+      }
+  }
 
-global define SetCurrentScannerValue( string key, string value ) ``{
-    integer current_id 	= lookup( user_settings, "scannerInWork", 0 );
-    map scanner_info 	= lookup( user_settings, "scannerInfo", $[] );
-    map current_scanner = lookup( scanner_info, current_id, $[] );
+  global define SetCurrentScannerValue( string key, string value ) ``{
+      integer current_id = lookup( user_settings, "scannerInWork", 0 );
+      map scanner_info = lookup( user_settings, "scannerInfo", $[] );
+      map current_scanner = lookup(scanner_info, current_id, $[]);
 
-    if ( current_id != 0 && current_scanner != $[] )
-    {
-	current_scanner = add( current_scanner, key, value );
-	scanner_info = add( scanner_info, current_id, current_scanner );
-	y2debug( "SET scannerInfo: %1", scanner_info );
-	user_settings = add( user_settings, "scannerInfo", scanner_info );
-	return true;
-    }
-    else
-    {
-	return false;
-    }
-}
+      if ( current_id != 0 && current_scanner != $[] )
+      {
+	  current_scanner = add( current_scanner, key, value );
+	  scanner_info = add( scanner_info, current_id, current_scanner );
+	  user_settings = add( user_settings, "scannerInfo", scanner_info );
+	  return true;
+      }
+      else
+      {
+	  return false;
+      }
+  }
 
+  global define DisplayScannerList( map scanners, string title ) ``{
+
+      list table_contents =  maplist( `key, `value, scanners,
+				 ``(`item(`id(key), lookup(value, "vendor", ""),lookup(value, "device", ""), lookup(value, "bus", ""))) );
+
+      UI(`OpenDialog(`opt( `decorated),
+		     `HBox(`VSpacing(15),
+			   `VBox( `HSpacing(50),
+				  `Left(`Heading(title)),
+				  `VSpacing(1.0),
+				  `Left(`Label(_("Please select a scanner from the list"))),
+				  `VBox( `VWeight( 3, `Table( `id(`table), `opt(`hvstretch),
+							      // This are the column headers of a list with several scanners.
+							      `header( _("Vendor"), _("Model"), _("Bus") ),
+							      table_contents )),
+					 // Button: install selected package
+					 `VWeight( 1, `HCenter(`PushButton( `id(`ok), `opt(`default), OKButtonLabel() )
+							       ))
+					 )
+				  )
+			   )
+		     )
+	 );
+      // select first list entry
+      UI( `ChangeWidget(`id(`table), `CurrentItem, select(select(select(table_contents,0) ,0) ,0)) );
+	  
+      any r = UI(`UserInput());
+
+      if ( r == `ok )
+      {
+	  any ret = UI(`QueryWidget( `id(`table), `CurrentItem ));
+	  UI(`CloseDialog());
+	  return( ret );
+      }
+      else
+      {
+	  UI(`CloseDialog());
+	  return ( r );
+      }
+  };
+
+  global define CheckUSBScanner( ) ``{
+      map scanner_map = lookup( user_settings, "scannerInfo", $[] );
+      boolean already_usb = false;
+
+      if ( scanner_map != $[] )
+      {
+	  foreach( `scan_id, `scanner, scanner_map, ``{
+	      if ( lookup( scanner, "bus", "" ) == "USB" )
+	      {
+		  already_usb = true;
+	      }   
+	  });
+      }
+      return already_usb;
+  }
+  
 }

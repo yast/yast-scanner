@@ -28,41 +28,53 @@
   
   global define ScannerNewDialog_UI( map new_scanner )``{
 
-      string scanner_descr = "default";
-
+      string model  = "default_model";
+      string vendor = "default_vendor";
+      string driver = "default_driver";
+      
       if ( new_scanner != $[] )
       {
-	  scanner_descr = lookup( new_scanner, "vendor", "" );
-	  scanner_descr = scanner_descr + "\n" + lookup( new_scanner, "device", "" );
-	  scanner_descr = scanner_descr + "\n" + lookup( new_scanner, "scanner_driver", "" );
+	  model = lookup( new_scanner, "device", "" );
+	  vendor = lookup( new_scanner, "vendor", "" );
+	  driver = lookup( new_scanner, "scanner_driver", "" );
       }
       
       term layout = `VBox (
-			   // the user can choose the installation mode for the new scanner
-			   `Left(`Label (`opt (`hstretch), _("Please choose installation mode for scanner\n"))),
+			   `VSpacing (1),
+			   `Left(`Label (`opt (`hstretch), _("The scanner model"))),
+			   `VSpacing(0.3),
 			   `HBox (`HSpacing(2.5),
-				  `HWeight(5, `Label (`opt (`outputField, `hstretch), scanner_descr)),
+				  `HWeight(5, `Label (`opt (`outputField, `hstretch), model)),
+				  `HWeight(1, `Empty())
+				  ),
+			   `VSpacing(0.5),
+			   `Left(`Label (`opt (`hstretch), _("from vendor"))),
+			   `VSpacing(0.3),
+			   `HBox (`HSpacing(2.5),
+				  `HWeight(5, `Label (`opt (`outputField, `hstretch), vendor)),
+				  `HWeight(1, `Empty())
+				  ),
+			   `VSpacing(0.5),
+			   `Left(`Label (`opt (`hstretch), _("uses the scanner driver"))),
+			   `VSpacing(0.3),
+			   `HBox (`HSpacing(2.5),
+				  `HWeight(5, `Label (`opt (`outputField, `hstretch), driver)),
 				  `HWeight(1, `Empty())
 				  ),
 			   `VSpacing (1),
 			   `Left(`RadioButtonGroup (
 						    `id (`action),
 						    `VBox (
-							   `RadioButton (`id (0), `opt (`hstretch), _("Standard installation (recommended)"), true),
-							   `VSpacing (0.3),
-							   //`RadioButton (`id (1), `opt (`hstretch), _("Custom configuration (Expert mode)")),
-							   //`VSpacing (0.3),
-							   `RadioButton (`id (2), `opt (`hstretch), _("Configure a network scanner and use the
-PC as a scanner server (Expert mode)")),
+							   // radio button1: install the scanner found by YaST2
+							   `RadioButton (`id (0), `opt (`hstretch), _("&Installation of this scanner"), true),
 							   `VSpacing (1.0),
-							   `RadioButton (`id (2), `opt (`hstretch), _("Scanner data aren't correct"))
+							   // radio button2: select another scanner
+							   `RadioButton (`id (2), `opt (`hstretch), _("&Select a different scanner"))
 							   )
 						    )
 				 ),
 			   `VSpacing (3.0)
 			   );
-
-
       return layout;
 
   };
@@ -76,18 +88,23 @@ PC as a scanner server (Expert mode)")),
       string help = "";
       map new_scanner = $[];
       
-      // part 1 of helptext of dialog New scanner found
+      // part 1 of helptext of dialog Scanner installation
       string help1    = UI(_("<p>YaST2 has detected a new scanner.
-Please check the data shown beneath and choose
-the installation mode.</p>"));
-      // part 2 of helptext of dialog New scanner found
-      string help2 = UI(_("<p>It is recommended to do a <b>Standard
-installation</b>. YaST2 will set reasonable values for all
-scanner options.</p>"));
+Please check the scanner data and go on
+with installation if the data are <i>OK</i>. 
+</p>"));
+      // part 2 of helptext of dialog scanner installation
+      string help2 = UI(_("<p>Click on <b>Next</b> to install
+the scanner. YaST2 will set reasonable values for all scanner options.</p>"));
 
-      help = help1 + help2;
+       // part 3 of helptext of dialog scanner installation
+      string help3 =  UI(_("<p>If you want to install a different scanner
+please click on the appropriate button.
+YaST2 will show you then a list of all supported scanners.</p>"));
       
-      string caption = UI(_("New Scanner found"));
+      help = help1 + help2 + help3;
+      
+      string caption = UI(_("Scanner installation"));
 
       y2debug( "New scanner: %1, %2", GetCurrentScannerValue( "vendor" ),
 	       GetCurrentScannerValue( "device" ));
@@ -95,7 +112,12 @@ scanner options.</p>"));
       term contents  = ScannerNewDialog_UI( GetCurrentScanner() );
 
       UI(`SetWizardContentsButtons(caption,contents,help,BackButtonLabel(),NextButtonLabel()));
-     
+
+      // TODO: *do* the scanner configuration
+      // if ( configure_ok )
+
+      SetCurrentScannerValue( "scanner_status", "installed" );
+      
       any ret = UI(`UserInput());
 
 

@@ -93,9 +93,6 @@ is supported.</p>"));
 	      go_on = false;
 	  }
 	  
-	  map scanner_map = lookup( user_settings, "scannerInfo", $[] );
-	  boolean already_usb = false;
-      
 	  if ( ret == `next )
 	  {
 	      symbol type = UI(`QueryWidget(`id(`scanner), `CurrentButton));
@@ -103,14 +100,7 @@ is supported.</p>"));
 	      // if the user clicked on USB -> check for already connected USB scanner
 	      if ( type == `usb )
 	      {
-		  y2debug( "MAP: %1", scanner_map );
-		  foreach( `scan_id, `scanner, scanner_map, ``{
-		      if ( lookup( scanner, "bus", "" ) == "USB" )
-		      {
-			  already_usb = true;
-		      }   
-		  });
-		  if ( already_usb )
+		  if ( CheckUSBScanner() )
 		  {
 		      // text of a warning popup
 		      UI(`WarningPopup(_("Only one USB scanner is supported.
@@ -125,7 +115,7 @@ delete the unused scanner configuration.")));
 		      list connected_scanner = SCR(`Read(.probe.scanner));
 		      if ( connected_scanner != [] )
 		      {
-			  // TODO !!!!!!!! only do some checks 
+			  // scanner_start 
 			  ret = `start;
 		      }
 		      else
