@@ -191,6 +191,8 @@ map bash_result = $[];
  * It reports the command via y2milestone in any case and it reports exit code, stdout
  * and stderr via y2milestone in case of non-zero exit code.
  * @return true on success
+ *
+ * The well working old version (without any feedback):
  */
 boolean ExecuteBashCommand( string bash_commandline )
 { y2milestone( "Executing bash commandline: %1", bash_commandline );
@@ -203,6 +205,77 @@ boolean ExecuteBashCommand( string bash_commandline )
   }
   return true;
 }
+/**
+ * An ugly new version (with simple automated feedback which is shown too often):
+ *
+boolean ExecuteBashCommand( string bash_commandline )
+{ y2milestone( "Executing bash commandline: %1", bash_commandline );
+  // if( "" == feeback_title )
+  // { feeback_title = "Executing " + bash_commandline;
+  string feeback_title = "Executing " + bash_commandline;
+  // }
+  // Show feedback in any case:
+  Popup::ShowFeedback( feeback_title, _("Please wait ... this takes some time.") );
+  bash_result = (map)SCR::Execute( .target.bash_output, bash_commandline );
+  // Wait at least one more second before clearing the feedback
+  // so that the user can read the feedback text in any case:
+  sleep( 1000 );
+  Popup::ClearFeedback();
+  if( bash_result["exit"]:9999 != 0 )
+  { y2milestone( "'%1' exit code is: %2", bash_commandline, bash_result["exit"]:9999 );
+    y2milestone( "'%1' stdout is: %2", bash_commandline, bash_result["stdout"]:"" );
+    y2milestone( "'%1' stderr is: %2", bash_commandline, bash_result["stderr"]:"" );
+    return false;
+  }
+  return true;
+}
+ *
+ * A future version (with sophisticated automated feedback), see
+ * yast/trunk/core/agents-perl/doc/ag_background.html
+ *
+boolean ExecuteBashCommand( string bash_commandline )
+{ // if( "" == feeback_title )
+  // { feeback_title = "Executing " + bash_commandline;
+  string feeback_title = "Executing " + bash_commandline;
+  // }
+  y2milestone( "Executing bash commandline: %1", bash_commandline );
+  // Run the bash_commandline in the background and get its stdout and stderr:
+  if( !(boolean)SCR::Read(.background.run_output_err, bash_commandline ) )
+  { y2milestone( "Cannot execute bash commandline: %1", bash_commandline );
+    return false;
+  }
+  // Wait for the bash_commandline to finish up to one second without feedback.
+  // After one second show feedback that it may take some time.
+  integer counter = 0;
+  while( (boolean)SCR::Read(.background.isrunning) )
+  { counter = counter + 1;
+    sleep( 100 );
+    if( counter == 10 )
+    { Popup::ShowFeedback( feeback_title, _("Please wait ... this takes some time.") );
+    }
+  }
+  // If feedback was shown, wait at least one more second before clearing the feedback
+  // so that the user can read the feedback text in any case:
+  if( counter >= 10 )
+  { while( counter < 20 )
+    { counter = counter + 1;
+      sleep( 100 );
+    }
+    Popup::ClearFeedback();
+  }
+  // Read exit code, stdout, and stderr from the finished bash_commandline:
+  bash_result["exit"] = SCR::Read(.background.status);
+  bash_result["stdout"] = SCR::Read(.background.buffer);
+  bash_result["stderr"] = SCR::Read(.background.buffer_err);
+  if( bash_result["exit"]:9999 != 0 )
+  { y2milestone( "'%1' exit code is: %2", bash_commandline, bash_result["exit"]:9999 );
+    y2milestone( "'%1' stdout is: %2", bash_commandline, bash_result["stdout"]:"" );
+    y2milestone( "'%1' stderr is: %2", bash_commandline, bash_result["stderr"]:"" );
+    return false;
+  }
+  return true;
+}
+ */
 
 /**
  * Determine the version of an installed package by calling a bash command (rpm).
@@ -448,7 +521,7 @@ global boolean Read()
   if( Abort() ) return false;
   Progress::NextStage();
   // only sleep one second to let the user notice that the progress has finished
-  sleep(1000);
+  sleep( 1000 );
   if( Abort() ) return false;
   return true;
 }
@@ -484,7 +557,7 @@ global boolean Write()
   if( Abort() ) return false;
   Progress::NextStage();
   // only sleep one second to let the user notice that the progress has finished
-  sleep(1000);
+  sleep( 1000 );
   if( Abort() ) return false;
   return true;
 }
@@ -560,8 +633,9 @@ global list Summary()
  * Create a list of items from the database entries
  * which is used for the SelectionBox in the SelectModelDialog
  */
-global list ModelItems()
+global list ModelItems( string filter_string )
 { // Make a list of the scanner models according to the database
+  // and take the filter_string into account (if it is not the empty string)
   // and try to preselect a model according to a selected autodetected scanner:
   integer database_index = -1;
   string model_string = "";
@@ -692,14 +766,32 @@ global list ModelItems()
                    }
                  }
                }
-               // If there was already a model selected before then preselect this model.
-               // This happens for example when going 'back' to the model selection screen
-               // or when a model in the database matches the selected autodetected scanner:
-               if( selected_model_database_index == database_index )
-               { model_items = add( model_items, `item( `id( database_index ), model_string, true ) );
+               // Take the filter_string into account:
+               if( "" != filter_string )
+               { // If the filter_string is not the empty string then
+                 // test whether the model_string matches to the filter_string:
+                 if( issubstring( tolower( model_string ), tolower( filter_string ) ) )
+                 { // If there was already a model selected before then preselect this model.
+                   // This happens for example when going 'back' to the model selection screen
+                   // or when a model in the database matches the selected autodetected scanner:
+                   if( selected_model_database_index == database_index )
+                   { model_items = add( model_items, `item( `id( database_index ), model_string, true ) );
+                   }
+                   else
+                   { model_items = add( model_items, `item( `id( database_index ), model_string ) );
+                   }
+                 }
                }
                else
-               { model_items = add( model_items, `item( `id( database_index ), model_string ) );
+               { // If there was already a model selected before then preselect this model.
+                 // This happens for example when going 'back' to the model selection screen
+                 // or when a model in the database matches the selected autodetected scanner:
+                 if( selected_model_database_index == database_index )
+                 { model_items = add( model_items, `item( `id( database_index ), model_string, true ) );
+                 }
+                 else
+                 { model_items = add( model_items, `item( `id( database_index ), model_string ) );
+                 }
                }
              }
            }
