@@ -122,6 +122,7 @@ $driver{USB}{Epson}{"PERFECTION 636U"} = "epson";
 $driver{USB}{Epson}{"PERFECTION 610"} = "epson";
 $driver{USB}{Epson}{"PERFECTION 640"} = "epson";
 $driver{SCSI}{Epson}{"PERFECTION 1200S"} = "epson";
+$driver{SCSI}{Epson}{"PERFECTION1200"} = "epson";
 $driver{USB}{Epson}{"PERFECTION 1200U"} = "epson";
 $driver{USB}{Epson}{"PERFECTION 1200PHOTO"} = "epson";
 $driver{SCSI}{Epson}{"PERFECTION 1240"} = "epson";
