@@ -35,7 +35,7 @@
   import "Label";
   import "String";
 
-  global define ScannerUSBDialog_UI( list device_list ) ``{
+  global define term ScannerUSBDialog_UI( list device_list ) ``{
 
       list module_list = ["scanner", "microtek"];
       term layout = `Empty();
@@ -73,7 +73,7 @@ Please select your scanner from the list below.")),
 /**
  * ScannerStartDialog
  */
-  global define ScannerUSBDialog()``{
+  global define symbol ScannerUSBDialog()``{
       string help = "";
 
       // help part 1 of dialog manual USB Scanner configuration
@@ -109,7 +109,7 @@ manual scanner selection by clicking <b>Next</b>.</p>");
       help = help1 + help2 + help3 + help4;
 
       // get a list of USB devices
-      list usb_devices = SCR::Read(.probe.usb);
+      list<map> usb_devices = (list<map>) SCR::Read(.probe.usb);
       y2milestone( "USB devices: %1", usb_devices );
 
       map usb_unknown = $[];
@@ -163,7 +163,7 @@ manual scanner selection by clicking <b>Next</b>.</p>");
       string list_entry = "";
 
       // get all unknown USB devices
-      foreach ( `device, usb_devices, ``{
+      foreach (map device, usb_devices, ``{
 	  if ( lookup( device, "drivers", [] ) == []		// driver unknown
 	       && lookup( device, "class_id", 0 ) != 266 )	// don't show hubs
 	  {
@@ -227,7 +227,7 @@ manual scanner selection by clicking <b>Next</b>.</p>");
 	      }
 	      else
 	      {
-		  string module_name = UI::QueryWidget(`id(`module), `Value);
+		  string module_name = (string) UI::QueryWidget(`id(`module), `Value);
 		  map device 	= lookup( usb_unknown, usb_device, $[] );
 		  integer vendor_id = lookup( device, "vendor_id", 0 );
 		  if (vendor_id != 0 )
@@ -254,7 +254,7 @@ manual scanner selection by clicking <b>Next</b>.</p>");
 							      "product": tohexstring(product_id)]);
 		      SetCurrentScannerValue("usb_usermap", usb_usermap );
 
-		      success = SCR::Execute(.target.modprobe, module_name, options );
+		      success = (boolean) SCR::Execute(.target.modprobe, module_name, options );
 		  }
 
 		  y2milestone( "Loading USB: modprobe %1 %2, exit status: %3", module_name, options, success );
@@ -262,7 +262,7 @@ manual scanner selection by clicking <b>Next</b>.</p>");
 		  if ( !success )
 		  {
 
-		      any cont = Popup::ContinueCancelHeadline( Label::ErrorMsg(),
+		      boolean cont = Popup::ContinueCancelHeadline( Label::ErrorMsg(),
 // text of an error popup: loading the module failed
 _("The USB module is NOT loaded successfully.
 Do you want to have another try or
@@ -311,7 +311,7 @@ You may proceed by clicking Next."));
 	  }
       }
 
-      return ret;
+      return (symbol) ret;
 
   }
 

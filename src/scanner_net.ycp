@@ -28,7 +28,7 @@
   import "Label";
   import "String";
 
-  global define ScannerNetDialog_UI() ``{
+  global define term ScannerNetDialog_UI() ``{
       term layout = `VBox (
 			   // This is a label, i.e. the line length should not exceed 50 characters.
 			   `Left(`Label (`opt (`hstretch), _("If you want to use a scanner from a network scan
@@ -52,7 +52,7 @@ Please enter the requested information.\n"))),
 /**
  * ScannerStartDialog
  */
-  global define ScannerNetDialog()``{
+  global define symbol ScannerNetDialog()``{
       string help = "";
       // help text part1 of the Network scan station dialog
       string help1    = _("<p>It is possible to use a scanner which
@@ -80,9 +80,9 @@ can be found in the SuSE support database.</p>");
 
 	  if ( ret == `next )
 	  {
-	      string host = String::CutBlanks( UI::QueryWidget(`id(`host), `Value ) );
+	      string host = String::CutBlanks( (string) UI::QueryWidget(`id(`host), `Value ) );
 
-	      list net_scanner = SCR::Read(.sane.netscannerinfo, $["bus":"Net", "host":host] );
+	      list<map> net_scanner = (list<map>) SCR::Read(.sane.netscannerinfo, $["bus":"Net", "host":host] );
 	      map new_net_scanner = $[];
 
 	      if ( net_scanner != [] )
@@ -92,7 +92,7 @@ can be found in the SuSE support database.</p>");
 
 		  boolean do_comma = false;
 
-		  foreach( `one_scanner, net_scanner, ``{
+		  foreach(map one_scanner, net_scanner, ``{
 		      if( do_comma == true )
 		      {
 			  new_net_scanner = change( new_net_scanner, "device",
@@ -117,7 +117,7 @@ can be found in the SuSE support database.</p>");
 	      {
 		  y2milestone( "NO network scanner available." );
 		  // popup text
-		  any r = Popup::ContinueCancel(sformat(_("No network scanner found on host %1
+		  boolean r = Popup::ContinueCancel(sformat(_("No network scanner found on host %1
 (or the scanner is switched off)"), host));
 		  if ( r )
 		  {
@@ -132,7 +132,7 @@ can be found in the SuSE support database.</p>");
 
       } until ( ret == `next || ret == `back || ret == `abort || ret == `cancel );
 
-      return ret;
+      return (symbol) ret;
 
   }
 

@@ -30,7 +30,7 @@
    * ScannerStartDialog Layout	
    */
   
-  global define ScannerNewDialog_UI( map new_scanner )``{
+  global define term ScannerNewDialog_UI( map new_scanner )``{
 
       string model  = "default_model";
       string vendor = "default_vendor";
@@ -43,7 +43,7 @@
 	  driver = lookup( new_scanner, "scanner_driver", "" );
 	  if ( driver == "" )
 	  {
-	      driver = SCR::Read(.sane.driver, new_scanner);
+	      driver = (string) SCR::Read(.sane.driver, new_scanner);
 	      SetCurrentScannerValue( "scanner_driver", driver );
 	  }
       }
@@ -95,7 +95,7 @@
 /**
  * ScannerStartDialog	
  */
-  global define ScannerNewDialog( )``{
+  global define symbol ScannerNewDialog( )``{
 
       boolean test_mode = lookup( user_settings, "test_mode", false );
 
@@ -142,7 +142,7 @@ a manual configuration.
 	  
 	  if ( ret == `next )
 	  {
-	      symbol choice = UI::QueryWidget(`id(`action), `CurrentButton );
+	      symbol choice = (symbol) UI::QueryWidget(`id(`action), `CurrentButton );
 	      y2debug( "CHOICE: %1", choice );
 
 	      if ( choice == `install )
@@ -172,7 +172,7 @@ a manual configuration.
 	  }
       } until ( ret == `next || ret == `back || ret == `abort || ret == `notfound || ret == `cancel );
       
-      return ret;
+      return (symbol) ret;
   };
 
 }

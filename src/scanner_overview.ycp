@@ -38,7 +38,7 @@
 
   import "Label";
   
-  global define ScannerOverviewDialog_UI( term table ) ``{
+  global define term ScannerOverviewDialog_UI( term table ) ``{
 
       term layout = `Empty();
 
@@ -63,11 +63,11 @@
   };
 
   // creates the table widget from scanner map
-  global define CreateScannerTable (map scanner_map) ``{
+  global define term CreateScannerTable (map scanner_map) ``{
     list scanner_table = [];
     string vendor_prefix = "";
-    foreach (`key, `value, scanner_map, ``{
-	if ( lookup(value, "scanner_status", `emtpy) == "installed" )
+    foreach (any key, map value, scanner_map, ``{
+	if ( value["scanner_status"]:"empty" == "installed" )
 	{
 	    string suffix = "";
 	    if( lookup( value, "bus", "") == "Net" ) 
@@ -97,7 +97,7 @@
    * OverviewDialog dialog
    */
    
-  global define ScannerOverviewDialog()``{
+  global define any ScannerOverviewDialog()``{
       map  scanner_map 	= lookup( user_settings, "scannerInfo", $[] );
       
       string help = "";
@@ -151,7 +151,7 @@ will be discarded and your system will be reverted to the previous state.
 	  if ( ret == `delete )
 	  {
 	      // which scanner is selected?
-	      scanner_id = UI::QueryWidget( `id(`scanner_table), `CurrentItem );
+	      scanner_id = (integer) UI::QueryWidget( `id(`scanner_table), `CurrentItem );
 	      if ( scanner_id == nil )
 	      {
 		  // text of a popup
@@ -183,7 +183,7 @@ configuration of the scanner %1, %2 ?\n"), GetCurrentScannerValue("vendor"),
 	  else if ( ret == `finish )
 	  {
 	      // text of a popup with Yes/No button 
-	      any ret = Popup::YesNo(_("Save all settings and exit?"));
+	      boolean ret = Popup::YesNo(_("Save all settings and exit?"));
 	      if ( ret )
 	      {
 		  y2debug( "FINISH scanner workflow" );
