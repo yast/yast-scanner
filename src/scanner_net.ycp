@@ -75,12 +75,28 @@ can be found in the SuSE support database.</p>") );
 	  {
 	      string host = CutBlanks( UI(`QueryWidget(`id(`host), `Value )) );
 
-	      list net_scanner = SCR(`Read(.sane.netscannerinfo, $["bus":"Net", "dev_name":host] ) );
+	      list net_scanner = SCR(`Read(.sane.netscannerinfo, $["bus":"Net", "host":host] ) );
 
-	      y2milestone("Net Scanner: %1", net_scanner );
+	      if ( net_scanner != [] )
+	      {
+		  y2milestone("Net Scanner: %1", net_scanner );
 	      
-	      // Create the entry for the Network scanner
-	      CreateScannerEntry( $["bus":"Net", "dev_name":host, "device":net_scanner] ); 	      
+		  // Create the entry for the Network scanner
+		  CreateScannerEntry( $["bus":"Net", "host":host, "device":net_scanner] );
+	      }
+	      else
+	      {
+		  y2milestone( "NO network scanner available." );
+		  any r = UI(`ContinueCancelPopup(sformat("No network scanner found on host %1", host)));
+		  if ( r )
+		  {
+		      ret = `again;
+		  }
+		  else
+		  {
+		      ret == `abort;
+		  }
+	      }
 	  }
 	  
       } until ( ret == `next || ret == `back || ret == `abort );

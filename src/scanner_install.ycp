@@ -29,7 +29,25 @@
  */
 
   global define ScannerInstallDialog_UI( map installed_scanner, byteblock image ) ``{
-      string scanner = lookup( installed_scanner, "vendor", "" ) + " - " + lookup(installed_scanner, "device", "" );
+
+      string scanner = "";
+      
+      if ( lookup( installed_scanner, "bus", "" ) == "Net" )
+      {
+	  string devices = "";
+	  foreach ( `product, lookup(installed_scanner, "device", []), ``{
+	      devices = devices + lookup( product, "device", "" ) + " ";
+	  });
+	  // this is part a text which lists the network scanners, e.g.
+	  // Umax 12-G, Epson 1234 on host: 10.10.100.142
+	  scanner = devices + " " + _("on host:") + " " + lookup( installed_scanner, "host", "" );
+      }
+      else
+      {
+	  scanner = lookup( installed_scanner, "vendor", "" ) + " - " + lookup(installed_scanner, "device", "" );
+      }
+	   
+	  
 
       term contents = `VBox (
 			     `Left(`Label (`opt (`hstretch), _("The scanner"))),
