@@ -26,6 +26,8 @@
 
   import "Label";
   import "Scanner";
+  import "Wizard";
+  import "Popup";
     
   define list<term> CreateVendorList( ) ``{
       list<term> list_input = [];

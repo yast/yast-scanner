@@ -36,4 +36,6 @@ Summary:	Configuration of scanner
 @agentdir@/scannerDB.pm
 @scrconfdir@/scanner.scr
 @scrconfdir@/sane.scr
+@moduledir@/Scanner*
+@clientdir@/scanner*
 %doc @docdir@
