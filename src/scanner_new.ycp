@@ -149,14 +149,6 @@ a manual configuration.
 		      if ( configure_ok )
 		      {
 			  SetCurrentScannerValue( "scanner_status", "installed" );
-			  // this part becomes obsolete when .sane.writeconfig does the work
-			  integer exit_status  = SCR::Execute (.target.bash, sformat ("/bin/chmod 666 %1",
-								 GetCurrentScannerValue("dev_name")));
-			  if ( exit_status == 0 )
-			  {
-			      SCR::Write (.rc.system.ADJUST_SCSI_SCANNER_PERM, "yes");
-			      SCR::Write (.rc.system, nil); // flush
-			  }
 		      }
 		      else
 		      {
