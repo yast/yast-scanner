@@ -145,6 +145,47 @@ http://mostang.com/sane and http://sdb.suse.de.</p>");
 
       // headline of the dialog
       string caption = _("Manual scanner selection");
+
+      if ( Scanner::GetCurrentScanner() == $[] )
+      { // define a fallback scanner
+        // so that the vendor and model list is not empty
+        // even if no scanner was autodetected
+        map fallback_scanner = $["bus":"USB",
+                                 "bus_hwcfg":"usb",
+                                 "class_id":268,
+                                 "device":"unsupported",
+                                 "device_id":000000,
+                                 "hotplug":"usb",
+                                 "model":"Generic unsupported",
+                                 "old_unique_key":"O_5x.4_5nRFdycHD",
+                                 "resource":$["baud":[$["speed":1500000]]],
+                                 "rev":"1.00",
+                                 "sub_class_id":0,
+                                 "unique_key":"FKGF.e0BXa1UqUPA",
+                                 "vendor":"Generic",
+                                 "vendor_id":000000];
+        Scanner::CreateScannerEntry( fallback_scanner );
+        // show a warning popup which defaults to abort
+        string wmesg =
+_("No scanner was found.
+Therefore a dummy USB scanner is used as fallback now.
+If you have an USB scanner (but no HP all-in-one device)
+it may work to select the model manually.
+Caution:
+If you select the wrong model (i.e. the wrong driver)
+you may damage your scanner or your system may crash.
+Therefore it is recommended to abort now.
+");
+        if ( ! Popup::AnyQuestion( Label::WarningMsg(),
+                                   wmesg,
+                                   Label::ContinueButton(),
+                                   Label::AbortButton(),
+                                   `focus_no )
+           ) return (symbol) `abort;
+      }
+
+      y2milestone("MANUAL scanner selection for current scanner: %1", Scanner::GetCurrentScanner() );
+
       term contents  = ScannerManualDialog_UI( Scanner::GetCurrentScanner() );
 
       Wizard::SetContentsButtons(caption,contents,help,Label::BackButton(),Label::NextButton());
