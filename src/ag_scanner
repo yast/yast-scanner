@@ -64,10 +64,10 @@ while ( <STDIN> )
 		$class   =~ s/\"//g;
 		$vendor  =~ s/\"//g;
 		$model   =~ s/\"//g;
-
+		
 		y2debug( "Found $class $vendor $model on $devfile" );
 
-		# Check if there are links and skip them
+                # Check if there are links and skip them
 		if( -l $devfile ) 
 		{
 		    y2debug( "$devfile is a link -> skipping !" );
@@ -75,33 +75,40 @@ while ( <STDIN> )
 		}
 	
 		push ( @scanners , 
-		{ bus => "SCSI", 
-		      class_id => "",
-		      device => $model,
-		      device_id => "",
-		      resource =>"",
-		      rev => "",
-		      sub_class_id => "",
-		      sub_device => $model,
-		      sub_vendor => $vendor,
-		      unique_key => "",
-		      vendor => $vendor,
-		      vendor_id => "",
-		      dev_name => $devfile } );
+		{ 
+		    bus => "SCSI", 
+		    class_id => "",
+		    device => $model,
+		    device_id => "",
+		    resource =>"",
+		    rev => "",
+		    sub_class_id => "",
+		    sub_device => $model,
+		    sub_vendor => $vendor,
+		    unique_key => "",
+		    vendor => $vendor,
+		    vendor_id => "",
+		    dev_name => $devfile } );
 		$cnt ++;
 	    }
 	    close CMD;
 	    y2debug( "Found $cnt scsi-scanners !");
+	    # '
 	}
 	else
 	{
 	    y2debug( "ERROR: Could not open sane-find-scanner!" );
 	}
-
     }
     elsif( $action =~ /configured/i )
     {
-         @scanners = performScanimage();
+        y2debug( "Handling action <configured>" );
+        @scanners = performScanimage();
+    }
+    elsif( $action =~ /net/i )
+    {
+        y2debug( "Handling action <net>" );
+        @scanners = performScanimage( 1 );
     }
     else
     {
@@ -112,3 +119,4 @@ while ( <STDIN> )
     ycpReturn( \@scanners );
 
 }
+
