@@ -23,3 +23,5 @@ desktop_DATA = scanner.desktop
 agent_SCRIPTS = ag_scanner ag_sane scannerDB.pm
 
 EXTRA_DIST = $(client_DATA) $(scanner_DATA) $(agent_SCRIPTS) $(desktop_DATA)
+
+include $(top_srcdir)/Makefile.am.common
