@@ -186,11 +186,11 @@ configuration.")));
 	  while ( !found && m < size(installed_scanner) )
 	  {
 	      scan = select( installed_scanner, m );
-	      if ( (lookup( scan, "vendor", "") == lookup( scanner, "vendor", "")) &&
-		   ((lookup( scan, "device", "") == lookup( scanner, "device", "")) ||
-		    (CutBlanks((lookup( scan, "sub_device", "")) == CutBlanks(lookup( scanner, "sub_device", "")))) )  &&
-		   (lookup( scan, "bus", "") )  == lookup( scanner, "bus", "") &&
-		   (lookup( scan, "dev_name", "") == lookup( scanner, "dev_name", "")) )
+	      if ( ( lookup( scan, "vendor", "") 	== lookup( scanner, "vendor", "") ) 	&&
+		   ( (lookup( scan, "device", "") 	== lookup( scanner, "device", "")) ||
+		     (CutBlanks(lookup( scan, "sub_device", "")) == CutBlanks(lookup( scanner, "sub_device", ""))) )  &&
+		   ( lookup( scan, "bus", "") 		== lookup( scanner, "bus", "") ) 	&&
+		   ( lookup( scan, "dev_name", "") 	== lookup( scanner, "dev_name", "") ) )
 	      {
 		  scanner = add( scanner, "scanner_status", "installed" );
 		  found = true;
