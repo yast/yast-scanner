@@ -76,6 +76,7 @@ hardware probing of 'USB' and/or the 'SCSI' port(s).
 	  
 	  if( sane_installed == 1 && magic_installed == 1)
 	  {
+	      // Translators: 'SANE' is a package name - don't translate!
 	      mesg = _("For scanner access under Linux, the SANE library is required
 and this YaST2 configuration module needs the package ImageMagick.");
 	      packs_to_install = ["sane", "ImageMagick"];
@@ -88,6 +89,7 @@ ImageMagick is needed.");
 	  }
 	  else if( sane_installed == 1)
 	  {
+	      // Translators: 'SANE' is a package name - don't translate!
 	      mesg = _("For scanner access under Linux, the SANE library is required
 (Package sane).");
 	      packs_to_install = ["sane"];
@@ -101,8 +103,7 @@ ImageMagick is needed.");
 Do you want to install the package(s) now ?
 ");
 
-	      // Translators: 'SANE' is a package name - don't translate!
-	      boolean cont = UI ( `ContinueCancelPopup(mesg) );
+	      boolean cont = UI ( `YesNoPopup(mesg) );
 	      if ( cont )
 	      {
 		  string tmpdir = SCR (`Read (.target.tmpdir));
@@ -116,7 +117,6 @@ Do you want to install the package(s) now ?
 	      }
 	  }
 
-	  // TODO: check version of sane package (use PKGINFO rpm agent)
 	  // SANE should be installed by now - if not inform the user and exit
 	  if ( SCR (`Execute (.target.bash, "/bin/rpm -q sane")) != 0 )
 	  {
@@ -169,12 +169,7 @@ the scanner configuration\n.")));
 	  connected_scanner = union(connected_scanner, scsi_scanner);
           y2milestone( "SCSI Scanner: %1", scsi_scanner );
 
-	  // also add net scanner
-          // list net_scanner = SCR(`Read(.scanner.net));
-	  // y2debug( "Netscanner %1", net_scanner );
-	  // connected_scanner = union(connected_scanner, net_scanner);
-
-	  // y2milestone( "Net Scanner: %1", net_scanner );
+	  // add net scanner/call SCR(`Read(.scanner.net) -> see below
 
       }
       else
@@ -183,7 +178,7 @@ the scanner configuration\n.")));
       }
 
       UI(`ProgressMilestoneUI( 300, _("Checking already installed scanners"), 2 ));
-      sleep(100);
+      //sleep(100);
 
       list installed_scanner = [];
       if ( !test_mode )
@@ -197,7 +192,7 @@ the scanner configuration\n.")));
       }
       
       UI(`ProgressMilestoneUI( 1000, _("Finishing the check procedure"), 2 ));
-      sleep(500);
+      sleep(300);
 
       // find out which scanner is already installed / which is new / which is supported
       map scanner_info = $[];
