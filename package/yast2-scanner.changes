@@ -1,4 +1,9 @@
 -------------------------------------------------------------------
+Thu Aug 21 15:39:54 CEST 2003 - gs@suse.de
+
+- bugfix in scannerDB.pm ( correct path is: /usr/bin/scanimage )
+
+-------------------------------------------------------------------
 Mon Aug 18 18:11:09 CEST 2003 - arvin@suse.de
 
 - use String::CutBlanks
