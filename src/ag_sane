@@ -139,6 +139,17 @@ while ( <STDIN> )
 	my $use_driver = "";
 	$use_driver = findInHash( $model, \%models );
 
+	# If no entry was found regularly, try a version of the model without any
+	# whitespaces. That makes for example Perfection1200 from 'Perfection 1200'
+	# Seems to be common with Epson, that they skip the whitespaces.
+	if( $use_driver eq "" )
+	{
+	    my $wsfree = $model;
+	    $wsfree =~ s/\s//g;
+	    y2debug( "Found no driver for <$model>, try whitespace free <$wsfree>" );
+	    # And then, try again...
+	    $use_driver = findInHash( $wsfree, \%models );
+	}
 	y2debug( "Returning <$use_driver>" );
 
 	ycpReturnSkalarAsString( $use_driver );
