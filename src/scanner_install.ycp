@@ -135,16 +135,18 @@ The <b>Gimp</b> also provides scan support.</p>");
 	  if ( ret == `test )
 	  {
 	      map scanner = GetCurrentScanner();
+	      string tmpdir = SCR::Read(.target.tmpdir);
+	      y2debug("TmpDir is tmpdir %1", tmpdir );
 	      
-	      scanner = add( scanner, "tmpdir", SCR( `Read(.target.tmpdir)));
-	      string filename = SCR(`Read(.sane.scanimage, GetCurrentScanner()));
+	      scanner = add( scanner, "tmpdir", tmpdir );
+	      string filename = SCR(`Read(.sane.scanimage, scanner ));
 	      if ( filename != "" )
 	      {
 		  byteblock image_data = Read(.local.byte, filename);
 		  image = `Image(  image_data, _("Test picture"));
 
 		  UI( `ReplaceWidget(`id(`replace), image ));
-		  Execute (.target.remove, filename );
+		  SCR::Execute( .target.bash, "/bin/rm -rf " + tmpdir );
 	      }
 	  }
 	  
