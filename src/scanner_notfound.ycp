@@ -1,0 +1,148 @@
+/**
+ * File:
+ *   scanner_notfound.ycp
+ *
+ * Module:
+ *   Configuration of scanner
+ *
+ * Summary:
+ *   
+ *
+ * Authors:
+ *   Gabriele Strattner <gs@suse.de>
+ *
+ * $Id$
+ *
+ * 
+ * Notfound dialog. 
+ * 
+ *
+ */
+
+{
+  textdomain "scanner";
+
+  global define ScannerNotFoundDialog_UI() ``{
+
+      term layout = `Empty();
+
+      layout = `VBox( `Label(`opt (`hstretch), _("Your scanner was not detected automatically -
+a manual configuration is necessary.")),
+		      `VSpacing(1.5),
+		      `HBox(`HSpacing(0.5),
+			    `Frame (_("Select the scanner type"),
+				    `RadioButtonGroup(`id(`scanner),
+						      `VBox(`VSpacing (0.6),
+							    `Left(`RadioButton(`id(`usb),`opt (`hstretch),
+									       _("&USB scanner"), true) ),
+							    `VSpacing (0.6),
+							    `Left(`RadioButton(`id(`scsi),`opt(`hstretch),
+									       _("SCSI scanner"),  false) ),
+							    `VSpacing (1.2),
+							    `Left(`RadioButton(`id(`net),`opt(`hstretch),
+									       _("&Network scan station") ,  false) ),
+							    `VSpacing (0.6)
+							    )
+						      )
+				    ),
+			    `HSpacing(3.0)
+			    ),
+		      `VSpacing(1.0)
+		      );
+      return layout;
+  }
+
+/**
+ * ScannerStartDialog
+ */
+  global define ScannerNotFoundDialog()``{
+      string help = "";
+      string help1    = UI(_("<p>Please check first whether your scanner is
+connected correctly and is switched on.</p> "));
+      string help2    = UI(_("<p>In case of USB you can connect and switch
+on the scanner before going on.<br>
+<i><b>Attention!</b></i> Do NOT connect or disconnect a SCSI scanner
+on running system - but <b>Abort</b> scanner installation, shutdown
+and reboot. 
+</p>"));
+      string help3    = UI(_("<p>YaST2 provides assistence for manual
+USB and SCSI scanner configuration. You can also
+configure a network scan station. Select the correct button
+and click on <b>Next</b>.</p>"));
+       string help4    = UI(_("<p>Please note: only <i>one</i> USB scanner
+is supported.</p>"));
+
+      help = help1 + help2 + help3 + help4;
+      
+      string caption = UI(_("Manual scanner configuration"));
+      term contents  = ScannerNotFoundDialog_UI();
+
+      UI(`SetWizardContentsButtons(caption,contents,help,BackButtonLabel(),NextButtonLabel()));
+
+      any ret = nil;
+      boolean go_on = true;
+
+      while ( go_on )
+      {
+	  go_on = true;
+	  
+	  ret = UI(`UserInput());
+
+	  if ( ret == `next || ret == `abort || ret == `back )
+	  {
+	      go_on = false;
+	  }
+	  
+	  map scanner_map = lookup( user_settings, "scannerInfo", $[] );
+	  boolean already_usb = false;
+      
+	  if ( ret == `next )
+	  {
+	      symbol type = UI(`QueryWidget(`id(`scanner), `CurrentButton));
+	      y2debug("TYPE: %1", type );
+	      // if the user clicked on USB -> check for already connected USB scanner
+	      if ( type == `usb )
+	      {
+		  y2debug( "MAP: %1", scanner_map );
+		  foreach( `scan_id, `scanner, scanner_map, ``{
+		      if ( lookup( scanner, "bus", "" ) == "USB" )
+		      {
+			  already_usb = true;
+		      }   
+		  });
+		  if ( already_usb )
+		  {
+		      // text of a warning popup
+		      UI(`WarningPopup(_("Only one USB scanner is supported.
+Please disconnect the unwanted USB scanner,
+go back to the Overview dialog and
+delete the unused scanner configuration.")));
+		      go_on = true;
+		  }
+		  else
+		  {
+		      // try again to detect a USB scanner ( maybe it's switched on now)
+		      list connected_scanner = SCR(`Read(.probe.scanner));
+		      if ( connected_scanner != [] )
+		      {
+			  // TODO !!!!!!!! only do some checks 
+			  ret = `start;
+		      }
+		      else
+		      {
+			  // go to manual USB scanner configuration
+			  ret = `usb;
+		      }
+		  }
+	      }
+	      else
+	      {
+		  ret = type;
+	      }
+	  }
+      };
+
+      return ret;
+  }
+
+}
