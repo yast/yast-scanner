@@ -198,9 +198,11 @@ successfully you can proceed to the
 	      {
 		  string module_name = UI(`QueryWidget(`id(`module), `Value));
 		  map device 	= lookup( usb_unknown, usb_device );
+		  integer vendor_id = lookup( device, "vendor_id", "");
+		  integer product_id = lookup( device, "device_id", "");
 		  string options = sformat("vendor=0x%1 product=0x%1",
-					   lookup( device, "vendor_id", ""),
-					   lookup( device, "device_id", ""));
+					   tohexstring(vendor_id),
+					   tohexstring(product_id) );
 
 		  // SCR(`Execute(.target.bash, modprobe ));
 		  boolean success = SCR::Execute(.target.modprobe, module_name, options );
