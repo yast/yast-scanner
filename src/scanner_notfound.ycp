@@ -194,18 +194,18 @@ or abort the scanner configuration now?"),
 		      y2error( "command 'ptal-init setup-usb' failed" );
 
 		      boolean ret_bool = Popup::AnyQuestion( Label:: ErrorMsg(),
-			   // Text of an error popup. YaST2 should automatically detect USB
-			   // connected devices (if switched on). If an error occurs or if connected
-                           // to JetDirect the user has to do the configuration manually.
+			   // Text of an error popup. YaST2 should automatically detect
+			   // HP all-in-one devices connected to USB (if switched on).
+		           // If an error occurs or if connected to JetDirect the
+                           // user has to do the configuration manually.
 			   _("The initialisation of the HP all-in-one device failed.
 Make sure the device is switched on and try again.
-If the device cannot installed correctly, try to
-call 'ptal-init setup' manually (you must be root
-to do this). Configure the scanner by enabling the
+If failure continues abort the scanner installation and
+call 'ptal-init setup' manually (you must be root to
+do this). Configure the scanner by enabling the
 'hpoj' driver in '/etc/sane.d/dll.conf.
-In the case of a JetDirect connection, abort the
-scanner configuration now and also do the setup
-and configuration manually.
+In case of a JetDirect connection also abort and do the
+configuration manually.
 "),
 							Label::RetryButton(),
 							Label::AbortButton(),
