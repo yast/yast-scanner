@@ -23,12 +23,8 @@ import "Package";
 import "Label";
 
 /**
- * Prototypes
- */
-global boolean Modified();
-
-/**
- * Data was modified?
+ * Something was committed to the system?
+ * True if system may have been modified.
  */
 global boolean modified = false;
 
@@ -43,29 +39,19 @@ global boolean proposal_valid = false;
 global boolean write_only = false;
 
 /**
- * Abort function
- * return boolean return true if abort
- */
-global boolean() AbortFunction = Modified;
-
-/**
- * Abort function
- * @return boolean return true if abort
- */
-global define boolean Abort()
-``{ if( AbortFunction != nil )
-    { return AbortFunction () == true;
-    }
-    return false;
-  }
-
-/**
- * Data was modified?
- * @return true if modified
+ * Something was committed to the system?
+ * @return true if system may have been modified
  */
 global boolean Modified()
-{ y2debug( "modified=%1", modified );
-  return modified;
+{ return modified;
+}
+
+/**
+ * Abort function
+ * @return true if not modified and user requested abort
+ */
+global boolean Abort()
+{ return !Modified() && UI::PollInput() == `abort;
 }
 
 // Settings:
@@ -461,10 +447,9 @@ global boolean Read()
   // Progress last stage (progress finished):
   if( Abort() ) return false;
   Progress::NextStage();
-  // only sleep half a second to let the user notice that the progress has finished
-  sleep(500);
+  // only sleep one second to let the user notice that the progress has finished
+  sleep(1000);
   if( Abort() ) return false;
-  modified = false;
   return true;
 }
 
@@ -498,8 +483,8 @@ global boolean Write()
   // Progress last stage (progress finished):
   if( Abort() ) return false;
   Progress::NextStage();
-  // only sleep half a second to let the user notice that the progress has finished
-  sleep(500);
+  // only sleep one second to let the user notice that the progress has finished
+  sleep(1000);
   if( Abort() ) return false;
   return true;
 }
@@ -778,6 +763,9 @@ Should the PTAL system for USB be initialized, activated and started now?"
       return false;
     }
   }
+  // To be safe assume that something will really be modified.
+  // If there is in fact nothing modified, it doesn't harm if 'modified' is 'true':
+  modified = true;
   // Test if the package which provides the backend is installed
   // and if not then try to install it.
   // This makes only sense if a database_index was specified
@@ -879,6 +867,9 @@ global boolean DeactivateBackend( string backend_name, integer database_index, b
       return false;
     }
   }
+  // To be safe assume that something will really be modified.
+  // If there is in fact nothing modified, it doesn't harm if 'modified' is 'true':
+  modified = true;
   // Determine which of the active scanners will be deactivated.
   list< map< string, string > > scanners_to_deactivate = [];
   foreach( map< string, string > active_scanner,
