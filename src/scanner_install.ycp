@@ -111,7 +111,7 @@ basic functionality for scanning.</p>");
       string help4 = _("<p>The scan program <b>Kooka</b>
 (requires installation of the package <i>kdegraphics3-scan</i>)
 offers more scan- and image processing functionality.
-The <b>Gimp</b> and <b>xsane</b> also provides scan support.</p>");
+The <b>Gimp</b> and <b>xsane</b> also provide scan support.</p>");
       
       help = help1 + help2 + help3 + help4;
 
