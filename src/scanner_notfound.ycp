@@ -46,6 +46,10 @@ manual configuration is required.")),
 							    `Left(`RadioButton(`id(`scsi),`opt(`hstretch),
 									       // radiobutton2
 									       _("&SCSI scanner"),  false) ),
+    							    `VSpacing (0.6),
+							    `Left(`RadioButton(`id(`ptal),`opt(`hstretch),
+									       // radiobutton3
+									       _("&HP all-in-one"),  false) ),
 							    `VSpacing (1.2),
 							    `Left(`RadioButton(`id(`net),`opt(`hstretch),
 									       // radiobutton3
@@ -82,7 +86,8 @@ while the system is running. If you have not yet connected your USB scanner, do 
 
       // help of Manual Scanner Configuration (continued)
       string help4    = _("<p>YaST2 provides assistance for manual
-USB and SCSI scanner configuration. You can also use
+USB and SCSI scanner configuration as well as for Hewlett-Packard
+all-in-one devices (e.g. hp psc 2200 series). You can also use
 a scanner from a network scan station.</p>");
 
        // Note for translators: the functionality to configure more than one USB scanner
@@ -179,6 +184,72 @@ USB scanner, because only ONE is supported.") + "\n" + msg);
 		      CreateScannerEntry( $["bus":"USB", "dev_name":"/dev/usbscanner"]);
 		      
 		  }
+	      }
+	      else if ( type == `ptal )
+	      {
+		  // check whether the package hp-officeJet is installed
+		  integer exitcode = SCR::Execute (.target.bash, "/bin/rpm -q hp-officeJet");
+
+		  if ( exitcode != 0 )
+		  {
+		      // popup text: install the package Yes/No?
+		      string mesg = _("The installation of a HP all-in-one device
+requires the package hp-officeJet to be installed.
+
+Do you want to install the package now ?
+");
+		      list packs_to_install = ["hp-officeJet"];
+
+		      boolean cont = Popup::YesNo(mesg);
+
+		      if ( cont )
+		      {
+			  WFM::CallFunction (`sw_single (packs_to_install));
+		      }
+		  }
+
+		  // hp-officeJet is mandatory - must be installed
+		  exitcode = SCR::Execute (.target.bash, "/bin/rpm -q hp-officeJet");
+
+		  if ( exitcode != 0 )
+		  {
+		      // Text of an error popup.
+		      // translators: Please do not translate 'SANE'! - (it's a package name)
+	              Popup::Error(_("The package 'hp-officeJet' is not installed correctly.
+This package is mandatory for the installation of an HP all-in-one device.
+Please make sure that you have the SuSE CD set available
+and restart the scanner installation - or install the package
+with the YaST2 module 'Install/Remove Software'.\n"));
+		      return `cancel;
+		  }
+		      
+		  // call ptal-init setup
+		  exitcode = SCR::Execute (.target.bash, "ptal-init setup-usb 2>&1 > /dev/null" );
+
+		  if ( exitcode != 0 )
+		  {
+		      y2error( "command 'ptal-init setup' failed" );
+		      // Text of an error popup.
+		      Popup::Error(_("Initialisation of the PTAL device failed.\n
+Make sure that the device is switched on and try again.
+If failure continous, abort the scanner installation
+and try to call <b>'ptal-init setup'</b>
+manually (you must be \"root\" to do this). ") );
+
+		      return `again;
+		  }
+
+		  ret = `manual;
+
+                  // TO DO: get ptal device name
+		  
+		  // scanimage -L does NOT work here !!! because hpoj driver is not yet activated
+		  // # scanimage -L
+		  // device `hpoj:mlc:usb:PSC_2200_Series' is a Hewlett-Packard PSC 2200 Series multi-function peripheral
+
+		  // create the entry for the PTAL scanner
+		  CreateScannerEntry( $["bus":"PTAL", "dev_name":"mlc:usb:PSC_2200_Series"]);
+		  y2milestone ( "RET: %1", ret );
 	      }
 	      else
 	      {
