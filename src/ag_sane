@@ -109,6 +109,15 @@ while ( <STDIN> )
     my $vendor = findInHash( "vendor", \%scanner );
     my $bus    = findInHash( "bus", \%scanner  );
     my $model  = findInHash( "device", \%scanner );
+    if( ! defined( $vendor ) )
+    {
+	$vendor = findInHash( "sub_vendor", \%scanner );
+    }
+    if( ! defined( $model ) )
+    {
+	$model = findInHash( "sub_device", \%scanner );
+    }
+
 
     if( $action =~ /^\s*\.*driver\s*$/i )
     {
