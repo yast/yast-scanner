@@ -18,6 +18,7 @@ use vars qw(@ISA @EXPORT @EXPORT_OK $VERSION);
 use Exporter;
 use File::Copy;
 use ycp;
+use English;
 
 @ISA            = qw(Exporter);
 @EXPORT         = qw( getModel 
@@ -31,7 +32,9 @@ use ycp;
 		      writeIndividualConf
 		      acquireTestImage 
 		      performScanimage 
-		      getNetInfo );
+		      getNetInfo 
+		      revertAll
+		      enableNetScan );
 
 use vars qw ( %driver $prefix);
 
@@ -1242,9 +1245,9 @@ sub writeNetConf( $ )
 
     if( -e "$prefix/etc/sane.d/net.conf" )
     {
-	move ( "$prefix/etc/sane.d/net.conf", 
-	       "$prefix/etc/sane.d/net.conf.yast2save" );
-	y2debug( "Backup file of previous net.conf in net.conf.yast2save" );
+	my $backupfile = "$prefix/etc/sane.d/net.conf.yast2-$PID";
+	move ( "$prefix/etc/sane.d/net.conf", $backupfile);
+	y2debug( "Backup file of previous net.conf is $backupfile" );
     }	
     
     my $fi = "$prefix/etc/sane.d/net.conf";
@@ -1303,8 +1306,9 @@ sub writeDllconf( $ )
 
     if( -e "$prefix/etc/sane.d/dll.conf" )
     {
-	move ( "$prefix/etc/sane.d/dll.conf", 
-	       "$prefix/etc/sane.d/dll.conf.yast2save" );
+	my $backupfile = "$prefix/etc/sane.d/dll.conf.yast2-$PID";
+	move ( "$prefix/etc/sane.d/dll.conf", $backupfile );
+	      
 	y2debug( "Backup file of previous dll.conf in dll.conf.yast2save" );
     }	
     
@@ -1362,7 +1366,7 @@ sub patchConfigFile( $$$ )
     {
 	my @cfg_file = <F>;
 	close F;
-	my $backup = $cfg_file_name . ".yast2";
+	my $backup = $cfg_file_name . ".yast2-$PID";
 	y2debug( "Config-File exists, copying to <$backup>" );
 	copy( $cfg_file_name, $backup  );
 	my $tempcfgfile = $cfg_file_name . ".new";
@@ -1431,8 +1435,9 @@ sub writeIndividualConf( $$$ )
 
     if( -e $cfg_file )
     {
-	copy ( $cfg_file , $cfg_file . ".yast2save" );
-	y2debug( "<$cfg_file> already exists, copying to <$cfg_file.yast2save>" );
+	my $backupfile = $cfg_file . ".yast2-$PID";
+	copy ( $cfg_file , $backupfile );
+	y2debug( "<$cfg_file> already exists, copying to <$backupfile>" );
 
 	# $res = patchConfigFile( $cfg_file, $bus, $device );
     }
@@ -1585,13 +1590,38 @@ sub getNetInfo( $ )
     # Sort out which scanners are connected to the required station
     foreach my $scanref ( @scanners )
     {
-	y2debug( "This is scanref->host: " . %$scanref->{host} );
-	if ( %$scanref->{ host } eq $host )
+	my $referto = %$scanref->{host};
+
+	y2debug( "This is scanref->host: <$referto>" );
+
+	if ( $referto =~ /$host/i )
 	{
 	    push @hostscanners, $scanref;
 	}
     }
     return( @hostscanners );
+}
+
+sub revertAll
+{
+    # reverting: search for all files ending on yast2-$PID
+    # and remove them to their old name 
+ 
+    my $path = "$prefix/etc/sane.d/*.yast2-$PID";
+    y2debug( "Globbing for <$path>" );
+
+    my @files = glob($path);
+    my $countfiles = @files;
+
+    foreach my $bfile ( @files )
+    {
+	my $origfile = $bfile;
+	$origfile =~ s/\.yast2-$PID$//;
+	y2debug( "Reverting file <$bfile> to <$origfile>" );
+
+	move ( $bfile, $origfile );
+    }
+    y2debug( "Reverted $countfiles files" );
 }
 
 
