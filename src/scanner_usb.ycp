@@ -98,7 +98,7 @@ Make sure that the data entered in next dialog is correct.</p>");
 
       // get a list of USB devices
       list<map> usb_devices = (list<map>) SCR::Read(.probe.usb);
-      y2milestone( "USB devices: %1", usb_devices );
+      foreach (map device, usb_devices, ``{ y2milestone( "found USB device: %1", device ); } );
 
       map usb_unknown = $[];
       list usb_selbox = [];
@@ -152,8 +152,11 @@ Make sure that the data entered in next dialog is correct.</p>");
 
       // get all unknown USB devices
       foreach (map device, usb_devices, ``{
-	  if ( lookup( device, "drivers", [] ) == []		// driver unknown
-	       && lookup( device, "class_id", 0 ) != 266 )	// don't show hubs
+	  if ( lookup( device, "bus", "" ) == "USB"             // show only USB devices
+               && ( lookup( device, "driver", "" ) == ""        // if driver unknown (scanner?)
+                    || lookup( device, "class_id", 0 ) == 268   // or if scanner
+                    || lookup( device, "class_id", 0 ) == 265 ) // or if printer (all-in-one?)
+	       && lookup( device, "class_id", 0 ) != 266 )      // and don't show hubs
 	  {
 	      usb_unknown = add( usb_unknown, no, device );
 	      string device_str = lookup( device, "device", "");
@@ -253,6 +256,9 @@ Make sure that the data entered in next dialog is correct.</p>");
 		  {
 		      Scanner::SetCurrentScannerValue( "vendor", String::CutBlanks(lookup(device, "sub_vendor", "")) );
 		  }
+
+                  y2milestone( "Current scanner is: %1", Scanner::GetCurrentScanner() );
+
 	      }
 	  }
       }

@@ -86,7 +86,7 @@ hardware probing of 'USB' or 'SCSI' ports.
 	      // Popup text: ask the user 'Install package sane?' 
 	      // Translators: 'SANE' is a library - don't translate!
 	      mesg = _("For scanner access under Linux, the SANE library is required.
-The package 'sane' has to be installed before proceeding with
+The package 'sane' must be installed before proceeding with
 the scanner configuration.
 
 Install the package now?

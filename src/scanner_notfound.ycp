@@ -54,7 +54,7 @@ manual configuration is required.")),
 							    `Left(`RadioButton(`id(`ptal),`opt(`hstretch),
 									       // radiobutton3 - Hewlett-Packard multi functional
 									       // devices; german: Multifunktionsgeraete
-									       _("&HP all-in-one USB device (OfficeJet or PSC)"),  false) ),
+									       _("&HP All-in-One USB Device (OfficeJet or PSC)"),  false) ),
 							    `VSpacing (1.2),
 							    `Left(`RadioButton(`id(`net),`opt(`hstretch),
 									       // radiobutton4 - network scanner
@@ -133,6 +133,11 @@ scanner at the same time.</p>");
 	      if ( type == `usb )
 	      {
                   // try again to detect an USB scanner (maybe it is switched on now)
+                  Popup::Message(
+_("Now YaST will try to autodetect an USB scanner.
+If you have not yet connected and switched on the USB scanner, do so right now.
+After connecting it, wait a few seconds so that the hotplug system can make it available
+."));
 		  list<map> connected_scanner = (list<map>) SCR::Read(.probe.scanner);
 		  list<map> usb_scanner = filter(map scanner, connected_scanner,
 					      ``( scanner["bus"]:"" == "USB" ) );
@@ -159,6 +164,7 @@ USB scanner, because only ONE is supported.") + "\n" + msg);
 		  }
 		  else if ( size (usb_scanner) == 1 )
 		  {
+                      Scanner::CreateScannerEntry( usb_scanner[0]:$[]);
 		      ret = `manual;
 		  }
 		  else
