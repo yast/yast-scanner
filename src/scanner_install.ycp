@@ -77,7 +77,7 @@ Press <b>Next</b> to finish the installation.</p>");
 from package <i>sane</i> (already installed) provides
 basic functionality for scanning.</p>");
       // help part 4 of dialog scanner test
-      string help help4 = _("<p><b>xsane</b>
+      string help4 = _("<p><b>xsane</b>
 (requires installation of the package <i>xsane</i>)
 offers more scan- and image processing functionality.
 The <b>Gimp</b> also provides scan support.</p>");
