@@ -96,7 +96,7 @@
  * @return map scanner info
  */
   global define GetCurrentScanner(  ) ``{
-      string value = "";
+      any value = "";
       integer current_id = lookup( user_settings, "scannerInWork", 0 );
       map scanner_info = lookup( user_settings, "scannerInfo", $[] );
 
@@ -116,7 +116,7 @@
  * @param string value
  * @return boolean
  */
-  global define SetCurrentScannerValue( string key, string value ) ``{
+  global define SetCurrentScannerValue( string key, any value ) ``{
       integer current_id = lookup( user_settings, "scannerInWork", 0 );
       map scanner_info = lookup( user_settings, "scannerInfo", $[] );
       map current_scanner = lookup(scanner_info, current_id, $[]);
