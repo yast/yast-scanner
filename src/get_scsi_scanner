@@ -12,56 +12,63 @@ BEGIN { unshift @INC, "/usr/lib/YaST2/agents_non_y2/"; }
 
 use ycp;
 
-sub parseOutputLine( $ )
-{
-    
-}
-
-
 my @scsi_scanners;
-
 
 while ( <STDIN> )
 {
     ycpDoVerboseLog();
     ycpInit( $_ );
 
-    my $cmd = "/usr/X11R6/bin/sane-find-scanner -s";
+    my $action = ycpGetPath();
 
-    if( open( CMD, "$cmd |" ) )
+    if( $action =~ /scsi/i )
     {
-	while( <CMD> )
+	y2debug( "Performing scsi bus scan for scanners!" );
+	my $cmd = "/usr/X11R6/bin/sane-find-scanner -s";
+	
+	if( open( CMD, "$cmd |" ) )
 	{
-	    chomp;
-	    my ($devfile, $class, $vendor, $model ) = split( /\s+\"/ );
-	    $class    =~ s/\"//g;
-	    $vendor  =~ s/\"//g;
-	    $model   =~ s/\"//g;
+	    while( <CMD> )
+	    {
+		chomp;
+		my ($devfile, $class, $vendor, $model ) = split( /\s+\"/ );
+		$class    =~ s/\"//g;
+		$vendor  =~ s/\"//g;
+		$model   =~ s/\"//g;
 
-	    y2debug( "Found $class $vendor $model on $devfile" );
+		y2debug( "Found $class $vendor $model on $devfile" );
 
-	    push ( @scsi_scanners , 
-		   { bus => "SCSI", 
-		     class_id => "",
-		     device => $model,
-		     device_id => "",
-		     resource =>"",
-		     rev => "",
-		     sub_class_id => "",
-		     sub_device => $model,
-		     sub_vendor => $vendor,
-		     unique_key => "",
-		     vendor => $vendor,
-		     vendor_id => "",
-		     device_file => $devfile } );
+		push ( @scsi_scanners , 
+		{ bus => "SCSI", 
+		      class_id => "",
+		      device => $model,
+		      device_id => "",
+		      resource =>"",
+		      rev => "",
+		      sub_class_id => "",
+		      sub_device => $model,
+		      sub_vendor => $vendor,
+		      unique_key => "",
+		      vendor => $vendor,
+		      vendor_id => "",
+		      device_file => $devfile } );
+	    }
+	    close CMD;
 	}
-	close CMD;
+	else
+	{
+	    y2debug( "ERROR: Could not open sane-find-scanner!" );
+	}
+
+        ycpReturn( \@scsi_scanners );
+    }
+    elsif( $action =~ /configured/i )
+    {
+        y2debug( "Searching for configured scanners!" );
+
     }
     else
     {
-	y2debug( "ERROR: Could not open sane-find-scanner!" );
+        y2debug( "ERROR: Unspecified action !" );
     }
-
-    
-    ycpReturn( \@scsi_scanners );
 }
