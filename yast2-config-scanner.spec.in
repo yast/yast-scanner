@@ -1,46 +1,26 @@
-#
-# spec file for package @RPMNAME@
-# 
-# Copyright  (c)  2000  SuSE GmbH  Nuernberg, Germany.
-#
-# please send bugfixes or comments to @MAINTAINER@
-#
-
+@HEADER-COMMENT@
 # neededforbuild yast2-devtools  autoconf automake ycpdoc yast2-testsuite dejagnu expect tcl yast2-base libycp liby2 libyui libscr yast2-core-wfm yast2-core-scr 
 
-Vendor:		SuSE GmbH, Nuernberg, Germany
-Distribution:	SuSE Linux 6.4 (i386)
-Name:		@RPMNAME@
-Release:	1
-Copyright:	(c) 2000 SuSE GmbH
-Group:		System Environment/YaST
+@HEADER@
 Requires:	yast2 yast2-trans-scanner yast2-lib-wizard yast2-lib-sequencer yast2-config-runlevel
+
 BuildArchitectures:	noarch
 
-Packager:	@MAINTAINER@
-
 Summary:	Configuration of scanner
-Version:	@VERSION@
-Source0:	@RPMNAME@-@VERSION@.tar.bz2
 
 %description
 -
 
-%prep
-%setup -n @RPMNAME@-@VERSION@
+@PREP@
 
-%build
-./configure
-make
+@BUILD-YCP@
 
-%install
-make install
-#make check
-%{?suse_check}
+@INSTALL-YCP@
+
+@CLEAN@
 
 %files
-%dir @YAST2DIR@/clients
-%dir @YAST2DIR@/menuentries
+%defattr(-,root,root)
 @YAST2DIR@/menuentries/menuentry_scanner.y2cc
 @YAST2DIR@/clients/scanner.ycp
 @YAST2DIR@/include/scanner/scanner_functions.ycp
@@ -58,6 +38,4 @@ make install
 @YAST2DIR@/servers_non_y2/scannerDB.pm
 @YAST2DIR@/scrconf/scanner.scr
 @YAST2DIR@/scrconf/sane.scr
-
-%dir @DOCDIR@
-@DOCDIR@/*
+%doc @DOCDIR@
