@@ -24,6 +24,7 @@
   textdomain "scanner";
 
 /**
+ *  ------- UNUSED ---------
  * Fill the map of all scanner settings from the SCR
  * @return map all scanner settings
  */
@@ -33,7 +34,7 @@
   }
 
 /**
- * Write additional data/settings
+ * Write additional data/settings.
  * @param m a map of all scanner settings
  * @return boolean success of operation
  */
