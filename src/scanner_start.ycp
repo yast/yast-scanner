@@ -160,7 +160,7 @@ with the YaST2 module 'Install and Remove Software'.\n"));
 		  scanner_list = add(scanner_list, scanner);
 	      }
 	  });
-	  connected_scanner = scanner_list;
+	  connected_scanner = (list<map>)scanner_list;
 
 	  if ( usb_count > 1 )
 	  {
@@ -325,9 +325,9 @@ the scanner configuration\n."));
 		      if( station_name == host )
 		      {
 			  // ok, the host is already known, just add the device.
-			  station = change( station, "count", lookup( station, "count", 0 ) +1 );
-			  station = change( station, "device", lookup( station, "device", "" ) + ", " + dev );
-			  station = change( station, "vendor", lookup( station, "vendor", "" ) + ", " + vend );
+			  station = add( station, "count", lookup( station, "count", 0 ) +1 );
+			  station = add( station, "device", lookup( station, "device", "" ) + ", " + dev );
+			  station = add( station, "vendor", lookup( station, "vendor", "" ) + ", " + vend );
 		      }
 		      dummy = add( dummy, station );
 		  });

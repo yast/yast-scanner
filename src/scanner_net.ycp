@@ -95,10 +95,10 @@ can be found in the SuSE support database.</p>");
 		  foreach(map one_scanner, net_scanner, ``{
 		      if( do_comma == true )
 		      {
-			  new_net_scanner = change( new_net_scanner, "device",
+			  new_net_scanner = add( new_net_scanner, "device",
 						    lookup( new_net_scanner, "device", "" )+", "+
 						    lookup( one_scanner, "device", "" ) );
-			  new_net_scanner = change( new_net_scanner, "vendor",
+			  new_net_scanner = add( new_net_scanner, "vendor",
 						    lookup( new_net_scanner, "vendor", "" )+", "+
 						    lookup( one_scanner, "vendor", "" ) );
 		      }
