@@ -1,4 +1,9 @@
 -------------------------------------------------------------------
+Fri Jul 05 12:07:48 CEST 2002 - arvin@suse.de
+
+- moved non binary files to /usr/share/YaST2
+
+-------------------------------------------------------------------
 Tue Jul  2 16:39:12 CEST 2002 - msvec@suse.cz
 
 - renamed to yast2-scanner
@@ -7,7 +12,7 @@ Tue Jul  2 16:39:12 CEST 2002 - msvec@suse.cz
 -------------------------------------------------------------------
 Tue Mar 26 14:02:20 CET 2002 - gs@suse.de
 
-- (#15510) mark installed scanner as configured for hardware detection 
+- (#15510) mark installed scanner as configured for hardware detection
 
 -------------------------------------------------------------------
 Mon Mar 25 15:51:36 CET 2002 - kkaempf@suse.de
@@ -21,16 +26,16 @@ Tue Mar 19 14:02:25 CET 2002 - gs@suse.de
 - bugfixes: the test scan for network scanners is working again,
   ignore case while comparing installed and connected scanner
 - removed dependency on ImageMagick tool convert since the image
-  widget is now able to scale by itself 
+  widget is now able to scale by itself
 - #14937: it is possible now to close the scanner configuration with
-  the window manager 
+  the window manager
 
 -------------------------------------------------------------------
 Fri Mar 15 11:02:02 CET 2002 - gs@suse.de
 
 - reworked the config file templates to use the ones from 1.0.7
  (fixing bug #14899)
-- parenthesises removed since they break the ycp-perl interface 
+- parenthesises removed since they break the ycp-perl interface
 
 -------------------------------------------------------------------
 Fri Mar  1 15:03:30 CET 2002 - gs@suse.de
@@ -42,13 +47,13 @@ Fri Mar  1 15:03:30 CET 2002 - gs@suse.de
 -------------------------------------------------------------------
 Mon Feb 25 15:44:28 CET 2002 - gs@suse.de
 
-- scannerDB: adapt to sane version 1.07  
+- scannerDB: adapt to sane version 1.07
 
 -------------------------------------------------------------------
 Mon Feb 18 17:32:31 CET 2002 - freitag@suse.de
 
 - bugfix: Printing lines with only comments again, which were blank
-  before. Changed call to scanimage for sane version 1.0.7 
+  before. Changed call to scanimage for sane version 1.0.7
 
 -------------------------------------------------------------------
 Tue Feb  5 11:07:17 CET 2002 - gs@suse.de
@@ -59,9 +64,9 @@ Tue Feb  5 11:07:17 CET 2002 - gs@suse.de
 -------------------------------------------------------------------
 Mon Feb  4 15:20:46 CET 2002 - freitag@suse.de
 
-- removed bug that skips the bus in the device file line in the 
+- removed bug that skips the bus in the device file line in the
   scanner conf, makes /dev/usbscanner from usb /dev/usbscanner
-- checked the database for sane 1.0.6 
+- checked the database for sane 1.0.6
 
 -------------------------------------------------------------------
 Thu Nov  8 10:24:27 CET 2001 - freitag@suse.de
@@ -75,7 +80,7 @@ Thu Nov  8 10:24:27 CET 2001 - freitag@suse.de
   with the rcscript on system shutdown
 - added mustek_usb to the available drivers list.
 - corrected path in revertAll from /var/log/sane to /var/lib/sane.
-- added snapscan 1236U to the scanner DB 
+- added snapscan 1236U to the scanner DB
 
 -------------------------------------------------------------------
 Thu Sep 20 19:08:03 CEST 2001 - gs@suse.de
@@ -87,23 +92,23 @@ Thu Sep 20 19:08:03 CEST 2001 - gs@suse.de
 Tue Sep 18 16:59:58 CEST 2001 - freitag@suse.de
 
 - write /etc/hotplug/usb.usermap for scanners not automatically detected.
-  Makes the correct module loaded and unloaded on mounting or 
+  Makes the correct module loaded and unloaded on mounting or
   unmounting of the device.
 - better recognition of scanners by whitespace insensitive pattern match.
-- added config-template for USB-mustek scanners, they were accidential 
-  missing. 
+- added config-template for USB-mustek scanners, they were accidential
+  missing.
 
 -------------------------------------------------------------------
 Fri Sep 14 15:33:02 CEST 2001 - freitag@suse.de
 
-- manual USB scanner install works for Scanners not reporting a 
-  proper vendor/model name 
+- manual USB scanner install works for Scanners not reporting a
+  proper vendor/model name
 
 -------------------------------------------------------------------
 Wed Sep 12 10:26:17 CEST 2001 - freitag@suse.de
 
 - fixed bugs in reverting the installation, created files for the
-  sane startup and shutdown scripts that fix permissions. 
+  sane startup and shutdown scripts that fix permissions.
   Bugfix that removes temporaer files, setting the sane permission
   fix variable in rc.config and behaviour in case no scsi device
   was found in manual scanner configuration (bzilla #10310)
@@ -113,7 +118,7 @@ Tue Sep  4 17:06:53 CEST 2001 - freitag@suse.de
 
 - installation of scsi and usb scanners work now, deletion is also
   working. Networkstation-scanners will be detected and installed.
-  Abort also works. 
+  Abort also works.
 
 -------------------------------------------------------------------
 Mon Aug 20 19:31:00 CEST 2001 - gs@suse.de
