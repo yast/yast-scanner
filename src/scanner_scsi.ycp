@@ -32,7 +32,9 @@
 {
 
   textdomain "scanner";
-  
+
+  import "Label";
+    
   /**
    * ScannerSCSIDialog Layout	
    */
@@ -146,14 +148,14 @@ can be obtained by issuing the command <b>/usr/sbin/hwinfo --storage_ctrl</b>
 
       term contents  = ScannerSCSIDialog_UI( scsi_selbox );
 
-      Wizard::SetContentsButtons(caption,contents,help,BackButtonLabel(),NextButtonLabel());
+      Wizard::SetContentsButtons(caption,contents,help,Label::BackButton(),Label::NextButton());
 
       any ret = nil;
 
       if( size( scsi_selbox ) == 0 )
       {
 	  // text of a warning popup
-	  UI::WarningPopup(_("\nThere were no SCSI scanner found.\n"));
+	  Popup::Warning(_("\nThere were no SCSI scanner found.\n"));
       }
       
       repeat {
@@ -173,7 +175,7 @@ can be obtained by issuing the command <b>/usr/sbin/hwinfo --storage_ctrl</b>
 	      else if ( scsi_device == nil )
 	      {
 		  // text of a popup
-		  UI::NotifyPopup(_("Please select a scanner from the list."));
+		  Popup::Notify(_("Please select a scanner from the list."));
 		  ret = `again;
 	      }
 	      else

@@ -25,7 +25,9 @@
 {
 
   textdomain "scanner";
-  
+
+  import "Label";
+    
   global define ScannerNetDialog_UI() ``{
       term layout = `VBox (
 			   // This is a label, i.e. the line length should not exceed 50 characters.
@@ -68,7 +70,7 @@ can be found in the SuSE support database.</p>");
       string caption = _("Network scan station client");
       term contents  = ScannerNetDialog_UI();
 
-      Wizard::SetContentsButtons(caption,contents,help,BackButtonLabel(),NextButtonLabel());
+      Wizard::SetContentsButtons(caption,contents,help,Label::BackButton(),Label::NextButton());
 
       any ret = nil;
 
@@ -114,7 +116,7 @@ can be found in the SuSE support database.</p>");
 	      else
 	      {
 		  y2milestone( "NO network scanner available." );
-		  any r = UI::ContinueCancelPopup(sformat("No network scanner found on host %1
+		  any r = Popup::ContinueCancel(sformat("No network scanner found on host %1
 (or the scanner is switched off)", host));
 		  if ( r )
 		  {

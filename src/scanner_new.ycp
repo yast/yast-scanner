@@ -23,8 +23,10 @@
 
 {
    textdomain "scanner";
-   
-  /**
+
+   import "Label";
+
+   /**
    * ScannerStartDialog Layout	
    */
   
@@ -129,7 +131,7 @@ a manual configuration.
 
       term contents  = ScannerNewDialog_UI( GetCurrentScanner() );
 
-      Wizard::SetContentsButtons(caption,contents,help,BackButtonLabel(),NextButtonLabel());
+      Wizard::SetContentsButtons(caption,contents,help,Label::BackButton(),Label::NextButton());
 
       boolean go_on = true;
       any ret = nil;
@@ -157,7 +159,7 @@ a manual configuration.
 		      else
 		      {
 			  // text of an error popup
-			  UI::ErrorPopup(_("The scanner configuration was not successful."));
+			  Popup::Error(_("The scanner configuration was not successful."));
 			  ret = `abort;
 		      }
 		  }

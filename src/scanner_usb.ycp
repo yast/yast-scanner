@@ -31,8 +31,10 @@
 
 {
 
-    textdomain "scanner";
-    
+  textdomain "scanner";
+
+  import "Label";  
+
   global define ScannerUSBDialog_UI( list device_list ) ``{
 
       list module_list = ["scanner", "microtek"];
@@ -181,7 +183,7 @@ successfully you can proceed to the
       string caption = _("Manual USB scanner configuration for Experts");
       term contents  = ScannerUSBDialog_UI( usb_selbox );
 
-      Wizard::SetContentsButtons(caption,contents,help,BackButtonLabel(),NextButtonLabel());
+      Wizard::SetContentsButtons(caption,contents,help,Label::BackButton(),Label::NextButton());
 
       any ret = nil;
       boolean go_on = true;
@@ -207,7 +209,7 @@ successfully you can proceed to the
 	      if ( usb_device == nil )
 	      {
 		  // text of a notify popup
-		  UI::NotifyPopup(_("Please select a scanner from the list."));
+		  Popup::Notify(_("Please select a scanner from the list."));
 		  go_on = true;
 	      }
 	      else
@@ -229,8 +231,9 @@ successfully you can proceed to the
 					   tohexstring(product_id) );
 		  string usb_usermap = sformat("%1  %2", tohexstring(vendor_id), tohexstring(product_id) );
 		  
-		  boolean success = false;
-
+		  //boolean success = false;
+		  boolean success = true;
+		  
 		  if ( vendor_id != 0 && product_id != 0 )
 		  {
 		      SetCurrentScannerValue("usb_module", module_name);
@@ -246,7 +249,7 @@ successfully you can proceed to the
 		  if ( !success )
 		  {
 		    
-		      any cont = UI::ContinueCancelHeadlinePopup( ErrorMsg(),
+		      any cont = Popup::ContinueCancelHeadline( Label::ErrorMsg(),
 // text of an error popup: loading the module failed			  
 _("The USB module is NOT loaded successfully.
 Do you want to have another try or
@@ -287,7 +290,7 @@ exit the scanner configuration?"));
 		      if ( ret == `load )
 		      {
 			  // text of a notify popup: the loading was successful
-			  UI::NotifyPopup(_("The USB module is loaded successfully.
+			  Popup::Notify(_("The USB module is loaded successfully.
 You may proceed by clicking Next."));
 		      }
 		  }  

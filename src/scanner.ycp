@@ -29,8 +29,9 @@
 
   include "wizard/sequencer.ycp";
   import "Wizard";
-  include "ui/common_popups.ycp";
-  include "ui/common_messages.ycp";
+  import "Popup";
+  import "Label";
+
   include "ui/common_functions.ycp";
   
   include "scanner/scanner_functions.ycp";
@@ -212,14 +213,14 @@
  */
   global define AbortDialog() ``{
 
-      any ret = UI::ReallyAbortPopup(true);
+      any ret = Popup::ReallyAbort(true);
       if ( ret==true )
       {
 	  y2milestone("ABORT the scanner installation - undo all changes.");
 	  boolean ok = SCR::Execute(.sane.revertall);
 	  if(!ok)
 	  {
-	    UI::MessagePopup(_("It was not possible to revert the already made changes"));
+	    Popup::Message(_("It was not possible to revert the already made changes"));
 	  }
 	  return `yes;
       }
