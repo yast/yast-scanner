@@ -95,10 +95,7 @@ Do you want to install the package(s) now ?
 	      boolean cont = UI::YesNoPopup(mesg);
 	      if ( cont )
 	      {
-		  string tmpdir = SCR::Read (.target.tmpdir);
-		  string filename = tmpdir + "/sw_single_input";
-		  SCR::Write (.target.ycp, filename, $["install":packs_to_install, "userInput" : false ]);
-		  WFM::CallFunction (`sw_single (filename));
+		  WFM::CallFunction (`sw_single (packs_to_install));
 	      }
 	      else
 	      {
