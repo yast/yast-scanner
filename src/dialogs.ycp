@@ -143,7 +143,7 @@ any OverviewDialog()
                                                                    ),
                                                         `PushButton( `id( `network_scanning_button ),
                                                                      // Label of a PushButton to go to the network scanning dialog:
-                                                                     _("Scanning Via &Network")
+                                                                     _("Scanning via &Network")
                                                                    )
                                                       ),
                                                  nil
@@ -195,7 +195,7 @@ any OverviewDialog()
         continue;
       }
       if( ! Popup::YesNo( sformat( // Question of a Popup::YesNo where %1 will be replaced by the backend name:
-                                   _("Deactivate %1 ?"), backend_name ) ) )
+                                   _("Deactivate %1?"), backend_name ) ) )
       { continue;
       }
       Wizard::DisableBackButton();
@@ -348,11 +348,11 @@ any SelectModelDialog()
  */
 any ConfigureBackendDialog()
 { // Caption of the ConfigureBackendDialog:
-  string caption = _("Scanner and Driver Set Up");
+  string caption = _("Scanner and Driver Setup");
   y2milestone( "Selected model is: %1", Scanner::database[Scanner::selected_model_database_index]:$[] );
   string backend_name = Scanner::database[Scanner::selected_model_database_index,"backend"]:"unknown";
   term contents = `Label( sformat( // Message where %1 will be replaced by the backend name:
-                                   _("Setting up %1"), backend_name ) );
+                                   _("Setting up %1..."), backend_name ) );
   Wizard::SetContentsButtons( caption,
                               contents,
                               HELPS["configure_backend"]:"",
@@ -412,18 +412,18 @@ any ConfigureNetworkScanningDialog()
   string net_backend_hosts = Scanner::network_scanning_config["net_backend_hosts"]:"";
   string saned_hosts = Scanner::network_scanning_config["saned_hosts"]:"";
   // Caption of the ConfigureNetworkScanningDialog:
-  string caption = _("Set Up Scanning Via Network");
+  string caption = _("Set Up Scanning via Network");
   term contents = `VBox( `ReplacePoint( `id(`saned_hosts_input_replace_point),
                                         `TextEntry( `id(`saned_hosts_input),
                                                     // Header of a TextEntry user input field:
-                                                    _("&Permitted hosts for the 'saned' (comma seperated list of hosts or subnets):"),
+                                                    _("&Permitted Hosts for 'saned' (comma-separated list of hosts or subnets):"),
                                                     saned_hosts
                                                   )
                                       ),
                          `ReplacePoint( `id(`net_backend_hosts_input_replace_point),
                                         `TextEntry( `id(`net_backend_hosts_input),
                                                     // Header of a TextEntry user input field:
-                                                    _("&Used hosts for the 'net' meta-driver (comma seperated list of hosts):"),
+                                                    _("&Hosts Used for the 'net' Metadriver (comma-separated list of hosts):"),
                                                     net_backend_hosts
                                                   )
                                       ),
@@ -452,14 +452,14 @@ any ConfigureNetworkScanningDialog()
     { UI::ReplaceWidget( `id(`saned_hosts_input_replace_point),
                          `TextEntry( `id(`saned_hosts_input),
                                      // Header of a TextEntry user input field:
-                                     _("&Permitted hosts for the 'saned' (comma seperated list of hosts or subnets):"),
+                                     _("&Permitted Hosts for 'saned' (comma-separated list of hosts or subnets):"),
                                      "localhost,127.0.0.0/8"
                                    )
                        );
       UI::ReplaceWidget( `id(`net_backend_hosts_input_replace_point),
                          `TextEntry( `id(`net_backend_hosts_input),
                                      // Header of a TextEntry user input field:
-                                     _("&Used hosts for the 'net' meta-driver (comma seperated list of hosts):"),
+                                     _("&Hosts Used for the 'net' Metadriver (comma-separated list of hosts):"),
                                      "localhost"
                                    )
                        );
