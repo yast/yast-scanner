@@ -2,8 +2,8 @@
 # neededforbuild yast2-devel-packages
 
 @HEADER@
-Requires:	yast2
-Requires:	yast2-runlevel
+Requires:	yast2 yast2-runlevel
+
 Provides:	yast2-config-scanner
 Obsoletes:	yast2-config-scanner
 
@@ -26,19 +26,11 @@ Summary:	Configuration of scanner
 %defattr(-,root,root)
 @configdir@/scanner.y2cc
 @clientdir@/scanner.ycp
-@yncludedir@/scanner/scanner_functions.ycp
-@yncludedir@/scanner/scanner_start.ycp
-@yncludedir@/scanner/scanner_new.ycp
-@yncludedir@/scanner/scanner_overview.ycp
-@yncludedir@/scanner/scanner_scsi.ycp
-@yncludedir@/scanner/scanner_manual.ycp
-@yncludedir@/scanner/scanner_install.ycp
-@yncludedir@/scanner/scanner_usb.ycp
-@yncludedir@/scanner/scanner_net.ycp
-@yncludedir@/scanner/scanner_notfound.ycp
-@execcompdir@/servers_non_y2/ag_scanner
-@execcompdir@/servers_non_y2/ag_sane
-@execcompdir@/servers_non_y2/scannerDB.pm
+%dir @yncludedir@/scanner
+@yncludedir@/scanner/*
+@agentdir@/ag_scanner
+@agentdir@/ag_sane
+@agentdir@/scannerDB.pm
 @scrconfdir@/scanner.scr
 @scrconfdir@/sane.scr
 %doc @docdir@
