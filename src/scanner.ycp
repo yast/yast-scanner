@@ -55,7 +55,7 @@
   map settings = ScannerRead();
 
 
-
+  // this is the global data map
   map user_settings = $[];
 
 
@@ -77,7 +77,7 @@
 	   test_mode = true;
 	   test_status = `supported;
       }
-      else if (Args(arg_n) == .test_driver)
+      else if (Args(arg_n) == .test_manual)
       {
 	   test_mode = true;
 	   test_status = `detected;
@@ -92,19 +92,83 @@
   if ( test_mode )
   {
       y2debug("Scanner TESTMODE");
-      list connected_scanner =  [$["bus":"USB",
+      list connected_scanner = [];
+      if ( test_status == `detected )
+      {
+	  connected_scanner = [
+			       $["bus":"USB",
 				  "class_id":268,
 				  "device":"Perfection 640",
 				  "device_id":196876,
 				  "scanner_status":test_status,
-				  "scanner_driver":"test123",
 				  "resource":$["baud":[$["speed":1500000]]],
 				  "rev":"0.01", "sub_class_id":0,
 				  "sub_device":"Perfection640  ",
 				  "sub_vendor":"EPSON",
 				  "unique_key":"PTVH.9Hr5DGWrbRF",
 				  "vendor":"Epson",
-				  "vendor_id":197816]];
+				  "vendor_id":197816],
+			       $["bus":"SCSI",
+				   "class_id":268,
+				   "device":"UMAX 12G",
+				   "device_id":196876,
+				   "resource":$["baud":[$["speed":1500000]]],
+				   "rev":"0.01", "sub_class_id":0,
+				   "sub_device":"UMAX 12G  ",
+				   "sub_vendor":"EPSON",
+				   "unique_key":"PTVH.9Hr5DGWrbRF",
+				   "vendor":"UMAX",
+				   "vendor_id":197816
+				   ] ];
+      }
+      else if ( test_status == `supported )
+      {
+	  connected_scanner = [
+			       $["bus":"USB",
+				"class_id":268,
+				"device":"Perfection 640",
+				"device_id":196876,
+				"scanner_status":test_status,
+				"resource":$["baud":[$["speed":1500000]]],
+				"rev":"0.01", "sub_class_id":0,
+				"scanner_driver":"test123",
+				"sub_device":"Perfection640  ",
+				"sub_vendor":"EPSON",
+				"unique_key":"PTVH.9Hr5DGWrbRF",
+				"vendor":"Epson",
+				"vendor_id":197816],
+			       $["bus":"SCSI",
+				"class_id":268,
+				"device":"UMAX 12G",
+				"device_id":196876,
+				"resource":$["baud":[$["speed":1500000]]],
+				"rev":"0.01", "sub_class_id":0,
+				"sub_device":"UMAX 12G  ",
+				"scanner_driver":"test456",
+				"sub_vendor":"EPSON",
+				"unique_key":"PTVH.9Hr5DGWrbRF",
+				"vendor":"UMAX",
+				"vendor_id":197816
+			       ]
+	  ];  
+      }
+      else
+      {
+	  connected_scanner = [
+			       $["bus":"USB",
+				"class_id":268,
+				"device":"Perfection 640",
+				"device_id":196876,
+				"scanner_status":test_status,
+				"resource":$["baud":[$["speed":1500000]]],
+				"rev":"0.01", "sub_class_id":0,
+				"sub_device":"Perfection640  ",
+				"sub_vendor":"EPSON",
+				"unique_key":"PTVH.9Hr5DGWrbRF",
+				"vendor":"Epson",
+				"vendor_id":197816]];
+      }
+
       list installed_scanner = [];
       if ( test_status == `supported || test_status == `detected )
       {
@@ -114,8 +178,8 @@
 				   "device_id":196876,
 				   "resource":$["baud":[$["speed":1500000]]],
 				   "rev":"0.01", "sub_class_id":0,
-				   "sub_device":"Perfection640  ",
-				   "scanner_driver":"test123",
+				   "sub_device":"Perfection641  ",
+				   "scanner_driver":"test456",
 				   "sub_vendor":"EPSON",
 				   "unique_key":"PTVH.9Hr5DGWrbRF",
 				   "vendor":"Epson",
@@ -178,20 +242,16 @@
   map sequence = $[
 		   "ws_start"     :   "scanner_start",
 		   "scanner_start":   $[
-					`abort     :   "abort",
+					`abort    :   "abort",
 					`cancel	  :   `cancel,
-					`overview  :   "scanner_overview",
+					`overview :   "scanner_overview",
 					`new	  :   "scanner_new",
-					`manual    :   "scanner_notfound",
-					`driver	  :	"scanner_manual",
-					`next      :   "scanner_overview"],
+					`notfound :   "scanner_notfound",
+					`manual	  :   "scanner_manual",
+					`next     :   "scanner_overview"],
 		   "scanner_overview":   $[
 					   `abort     :   "abort",
-					   `edit      :   "scanner_options",
-					   `delete    :   "scannner_delete",
-					   `add       :   "scanner_notfound",
-					   `new	      :   "scanner_new",
-					   `next	 :   `ok,
+					   `next	 :   "scanner_start",
 					   `finish	  :   `ok ],	// finish
 		   "scanner_new" :   $[
 				       `abort     :   "abort",

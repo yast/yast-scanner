@@ -39,13 +39,15 @@
 
       layout = `VBox(
 		     `VSpacing( 0.2 ),
+		     `Left(`Label(_("List of installed/configured scanner(s)"))),
+		     `VSpacing( 0.2 ),
 		     `Table(`id(`scanner_table),`opt(`notify, `hvstretch), 
 			    `header( _("Vendor"), _("Model"), _("Bus") ),
 			    table_contents
 			    ),
 		     `VSpacing(2.0),
 		     `HBox(
-			   `HWeight(1, `PushButton(`id(`edit), _("&Edit"))),
+			   //`HWeight(1, `PushButton(`id(`edit), _("&Edit"))),
 			   `HWeight(1, `PushButton(`id(`delete), _("&Delete"))),
 			   `HWeight(1, `PushButton(`id(`add), `opt(`default), _("&Add"))),
 			   `HStretch()
@@ -67,25 +69,25 @@
       string help = "";
       
       string help1    = UI(_("<p>The overview dialog shows the
-configured  scanner(s).
-Click on button <b>Edit</b> if you want to change a scanner
-configuration.</p>"
+newly configured and/or already installed scanner(s).</p>"
 			     ));
       string help2 = UI(_("<p>
-You also can uninstall a scanner, select the list entry and
-choose <b>Delete</b>. If you want to install a new scanner
+If you want to remove a scanner configuration,
+select the list entry and choose <b>Delete</b>.
+If you want to install a new scanner
 click on <b>Add</b> button. 
 </p>"));
       string help3 = UI(_("<p>
-Press button <b>Finish</b> to save all scanner settings
-and exit the scanner configuration workflow.
+Press the <b>Finish</b> button to save the new configuration
+(or to commit the removal of a scanner)
+and to exit the scanner configuration workflow.
 If you leave this dialog with <b>Abort</b> all changes
 made on your system will be reseted.
 </p>"));
       help = help1 + help2 + help3;
       
       foreach (`key, `value, scanner_map, ``{
-	  if ( lookup(value, "scanner_status", `emtpy) == `installed )
+	  if ( lookup(value, "scanner_status", `emtpy) == "installed" )
 	  {
 	      scanner_table = add(scanner_table,
 				  `item(`id(key),
@@ -107,48 +109,57 @@ made on your system will be reseted.
       UI(`ReplaceWizardNextButton( finish_button ));
       
       any ret = nil;
-      
-      repeat {
+      boolean go_on = true;
+
+      while (go_on )
+      {
 	  integer scanner_id = 0;
-	  boolean go_on = true;
-	   
+
 	  ret = UI(`UserInput());
 
-	  if ( ret == `finish || ret == `delete || ret == `edit )
+	  if ( ret == `delete )
 	  {
 	      // which scanner is selected?
-	       scanner_id = UI(`QueryWidget( `id(`scanner_table), `CurrentItem ));
-	       y2debug( "IIIDDD: %1", scanner_id );
-	       if ( scanner_id == nil )
-	       {
-		   UI(`NotifyPopup(_("Please select a scanner in list.")));
-		   ret = `again;
-		   go_on = false;
-	       }
-	       else
-	       {
-		   user_settings = add(user_settings, "scannerInWork", scanner_id);
-		   y2debug( "SELECTED SCANNER: %1", GetCurrentScannerValue("device") );
-	       }
-	  }
-
-	  if ( go_on )
-	  {
-	      if ( ret == `delete )
+	      scanner_id = UI(`QueryWidget( `id(`scanner_table), `CurrentItem ));
+	      if ( scanner_id == nil )
 	      {
+		  UI(`NotifyPopup(_("Please select a scanner in list.")));
+	      }
+	      else
+	      {
+		  user_settings = add(user_settings, "scannerInWork", scanner_id);
+		  y2debug( "DELETE scanner: %1", GetCurrentScannerValue("device") );
+
 		  string message = sformat( UI(_("Do you really want to remove the
-configuration of the scanner
-%1, %2 ?\n")), GetCurrentScannerValue("vendor"),GetCurrentScannerValue("device") );   
+configuration of the scanner %1, %2 ?\n")), GetCurrentScannerValue("vendor"),
+					    GetCurrentScannerValue("device") );   
 
 		  UI(`YesNoHeadlinePopup( WarningMsg(), message) );
-	      }
-	      else if ( ret == `edit )
-	      {
-	      
+		  
 	      }
 	  }
-
-      } until ( ret == `finish || ret == `abort || ret == `back || ret == `add );
+	  else if ( ret == `finish )
+	  {
+	      // TODO: is there anything to do ???? 
+	      any ret = UI(`YesNoPopup(_("Save all settings and exit?")));
+	      if ( ret )
+	      {
+		  y2debug( "FINISH scanner workflow" );
+		  go_on = false;
+	      }
+	  }
+	  else if ( ret == `add )
+	  {
+	      user_settings = add( user_settings, "add_mode", true );
+	      ret = `next;
+	      go_on = false;
+	  }
+	  else
+	  {
+	      go_on = false;
+	  }
+	  
+      }
 
       // restore Next button
       term next_button = `PushButton(`id(`next), NextButtonLabel() );

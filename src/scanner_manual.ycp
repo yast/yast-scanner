@@ -26,7 +26,7 @@
 
       term layout = `Empty();
 
-      layout = `VBox( `Label(`opt (`hstretch), _("Select Scanner driver")),
+      layout = `VBox( `Label(`opt (`hstretch), _("Manual scanner selection")),
 		      `VSpacing(1.5),
 		      `HBox(`HSpacing(0.5),
 			     `Frame (_("Select the scanner driver"),

@@ -26,13 +26,38 @@
  * ScannerInstallDialog
  */
   
-  global define ScannerInstallDialog_UI() ``{
+  global define ScannerInstallDialog_UI( map installed_scanner ) ``{
+      string scanner = lookup( installed_scanner, "vendor", "" ) + " - " + lookup(installed_scanner, "device", "" );
 
+      term contents = `VBox (
+			     `VSpacing (1),
+			     `Left(`Label (`opt (`hstretch), _("The scanner"))),
+			     `VSpacing(0.3),
+			     `HBox (`HSpacing(2.5),
+				    `HWeight(5, `Label (`opt (`outputField, `hstretch), scanner)),
+				    `HWeight(1, `Empty())
+				    ),
+			     `VSpacing(0.5),
+			     `Left(`Label (`opt (`hstretch), _("was installed on"))),
+			     `VSpacing(0.3),
+			     `HBox (`HSpacing(2.5),
+				    `HWeight(5, `Label (`opt (`outputField, `hstretch),
+							lookup(installed_scanner, "devicefile", "")) ),
+				    `HWeight(1, `Empty())
+				    ),
+			     `VSpacing (1),
+			     `HBox (
+				    `HSpacing (1.0),
+				    `PushButton (`id (`test), _("&Test")),
+				    `HSpacing (1.0)
+				    ),
+			     `VSpacing (3.0)
+			     );
+
+/*
       string summary = "";
-
       string scanner = GetCurrentScannerValue( "vendor" ) + " - " + GetCurrentScannerValue( "device" );
       summary = summaryAddSimpleSection( summary,  _( "The scanner" ), scanner );
-
       string devicefile = GetCurrentScannerValue( "devicefile" );
       summary = summaryAddSimpleSection( summary, _( "was installed on device" ), devicefile );
 
@@ -44,6 +69,7 @@
 				  ),
 			    `VSpacing( 0.5 )
 			    );
+*/
       return contents;
   }
 
@@ -53,14 +79,18 @@
   global define ScannerInstallDialog()``{
       string help    = "";
       
-      // part 1 of helptext of dialog New scanner found
+      // part 1 of helptext of dialog scanner test
       string help1    = _("<p>Your new scanner was installed
 successfully.</p>");
-
-      help = help1;
+      // part 2 of helptext of dialog scanner test
+      string help2    = _("<p>You can test your scanner now.
+Insert a test page and click on button <b>Test</b>.</p>");
+      
+      help = help1 + help2;
       
       string caption = _("Scanner Test");
-      term contents  = ScannerInstallDialog_UI();
+
+      term contents  = ScannerInstallDialog_UI( GetCurrentScanner() );
 
       UI(`SetWizardContentsButtons(caption,contents,help,BackButtonLabel(),NextButtonLabel()));
      
