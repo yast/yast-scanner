@@ -39,6 +39,11 @@
 	  model = lookup( new_scanner, "device", "" );
 	  vendor = lookup( new_scanner, "vendor", "" );
 	  driver = lookup( new_scanner, "scanner_driver", "" );
+	  if ( driver == "" )
+	  {
+	      driver = SCR(`Read(.sane.driver, new_scanner));
+	      SetCurrentScannerValue( "driver", driver );
+	  }
       }
       
       term layout = `VBox (
