@@ -516,8 +516,10 @@ device YAST2_DEVICE
 
 #
 # to define a new device, start with a new section:
-# [usb] or [parport]
+# [usb]
 #
+[usb]
+device auto
 
 EndOfConf
 
