@@ -1,4 +1,9 @@
 -------------------------------------------------------------------
+Thu Feb 26 13:25:52 CET 2004 - gs@suse.de
+
+- don't show scanner USB dialog (scanner.o is obsolete)
+
+-------------------------------------------------------------------
 Mon Feb 09 17:39:23 CET 2004 - arvin@suse.de
 
 - removed config files (*.y2cc)
