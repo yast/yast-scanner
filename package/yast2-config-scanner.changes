@@ -1,4 +1,18 @@
 -------------------------------------------------------------------
+Thu Nov  8 10:24:27 CET 2001 - freitag@suse.de
+
+- changed writeConfig-sub to do not write a comment after the device
+  file in the backend.conf file in /etc/sane.d. The comment confuses
+  at least the mustek and the snapscan backend (bug #12063)
+- added mkdir /var/lib/sane to the function that writes the devices
+  file in the directory for sane's rcscript. If the directory does
+  not exist, the file could not be written which causes a problem
+  with the rcscript on system shutdown
+- added mustek_usb to the available drivers list.
+- corrected path in revertAll from /var/log/sane to /var/lib/sane.
+- added snapscan 1236U to the scanner DB 
+
+-------------------------------------------------------------------
 Thu Sep 20 19:08:03 CEST 2001 - gs@suse.de
 
 - multiple scanner tests are possible  (bug #11026)
@@ -7,7 +21,7 @@ Thu Sep 20 19:08:03 CEST 2001 - gs@suse.de
 -------------------------------------------------------------------
 Tue Sep 18 16:59:58 CEST 2001 - freitag@suse.de
 
-- write /etc/hotplug/usr.map for scanners not automatically detected.
+- write /etc/hotplug/usb.usermap for scanners not automatically detected.
   Makes the correct module loaded and unloaded on mounting or 
   unmounting of the device.
 - better recognition of scanners by whitespace insensitive pattern match.
