@@ -107,7 +107,7 @@ scanner at the same time.</p>"));
 	  if ( ret == `next )
 	  {
 	      symbol type = UI(`QueryWidget(`id(`scanner), `CurrentButton));
-	      y2debug("TYPE: %1", type );
+	      y2milestone("Selected Scanner type: %1", type );
 
 	      if ( type == `usb )
 	      {
@@ -168,24 +168,9 @@ USB scanner, because only ONE is supported.") + "\n" + msg));
 		      
 		  }
 	      }
-	      else if( type == `scsi )
-	      {
-		  list connected_scanner = SCR(`Read(.probe.bybus.scsi));
-		  y2debug( "Found a SCSI-Scanner, connected_scanner is %1", size( connected_scanner ) );
-		  if( size( connected_scanner ) == 0 )
-		  {		      
-		      UI(`WarningPopup(_("\nThere where no SCSI-devices found.\n")));
-		      ret = `back;
-		  }
-		  else
-		  {
-		      ret = type;
-		  }
-		  
-	      }
 	      else
 	      {
-		  y2debug( "Retruning type %1", type );
+		  y2debug( "Returning type %1", type );
 		  ret = type;
 	      }
 	  }
