@@ -1,0 +1,33 @@
+#! /bin/bash
+#
+# Johannes Meixner <jsmeix@suse.de>, 2005
+
+#set -x
+export PATH="/sbin:/usr/sbin:/usr/bin:/bin"
+export LC_ALL="POSIX"
+export LANG="POSIX"
+
+# The ptal service and the hplip service exclude each other.
+# Disable the hplip service if it exists:
+if [ -x /etc/init.d/hplip ]
+then /etc/init.d/hplip stop
+     insserv -r hplip
+fi
+
+# Setup ptal USB devices:
+if [ -x /usr/sbin/ptal-init ]
+then ptal-init setup-usb &>/dev/null || { echo "failed: ptal-init setup-usb" 1>&2 ; exit 2 ; }
+else echo "cannot execute /usr/sbin/ptal-init" 1>&2
+     exit 1
+fi
+
+# Setup the ptal service:
+if [ -x /etc/init.d/ptal ] 
+then insserv ptal || { echo "failed: insserv ptal" 1>&2 ; exit 4 ; }
+     /etc/init.d/ptal restart || { echo "failed: /etc/init.d/ptal restart" 1>&2 ; exit 5 ; }
+else echo "cannot execute /etc/init.d/ptal" 1>&2
+     exit 3
+fi
+
+exit 0
+

@@ -58,14 +58,14 @@ symbol WriteDialog()
  * @return dialog result
  */
 any SummaryDialog()
-{ /* Scanner summary dialog caption */
+{ // Caption of the SummaryDialog:
   string caption = _("Scanner Configuration");
-  /* create the content of the summary */
+  // Create the content of the summary:
   list summary = Scanner::Summary();
   string configured = summary[0]:"";
   list autodetected = summary[1]:[];
-  /* Frame label */
-  term contents = Wizard_hw::DetectedContent( _("Scanners to Configure"),
+  // Label of the frame where the "Autodetected Scanners" are shown:
+  term contents = Wizard_hw::DetectedContent( _("Autodetected Scanners"),
                                               autodetected,
                                               false,
                                               configured
@@ -126,16 +126,21 @@ any SummaryDialog()
  * @return dialog result
  */
 any OverviewDialog()
-{ string caption = _("Scanner Overview");
+{ // Caption of the OverviewDialog:
+  string caption = _("Scanner Overview");
   list overview_table = Scanner::Overview();
-  term contents = Wizard_hw::ConfiguredContent( `header( _("Backend"),
+  term contents = Wizard_hw::ConfiguredContent( `header( // A table column header: 
+                                                         _("Backend"),
+                                                         // A table column header:
                                                          _("Scanners which use the backend")
                                                        ),
                                                  overview_table,
                                                  nil,
                                                  nil,
                                                  nil,
-                                                 `PushButton( `id( `test_button ), _("&Test"))
+                                                 `PushButton( `id( `test_button ),
+                                                              // Label of a PushButton to test a scanner:
+                                                              _("&Test"))
                                                );
   contents = Wizard_hw::SpacingAround( contents, 1.5, 1.5, 1.0, 1.0 );
   Wizard::SetContentsButtons( caption,
@@ -176,14 +181,20 @@ any OverviewDialog()
       y2milestone( "Selected backend to be deleted (i.e. deactivated) is: %1", backend_name );
       if( nil == backend_name
           || "" == backend_name )
-      { Popup::AnyMessage( _("No backend selected"), _("You must select a backend.") );
+      { Popup::AnyMessage( // Header of a Popup::AnyMessage when no backend was selected:
+                           _("No backend selected"),
+                           // Body of a Popup::AnyMessage when no backend was selected:
+                           _("You must select a backend.")
+                         );
         continue;
       }
-      if( ! Popup::YesNo( sformat( _("Should the backend %1 be deactivated?"), backend_name ) ) )
+      if( ! Popup::YesNo( sformat( // Question of a Popup::YesNo where %1 will be replaced by the backend name:
+                                   _("Should the backend %1 be deactivated?"), backend_name ) ) )
       { continue;
       }
       if( ! Scanner::DeactivateBackend( backend_name, -1, true ) )
-      { Popup::Error( sformat( _("Failed to deactivate backend %1."), backend_name ) );
+      { Popup::Error( // Message of a Popup::Error where %1 will be replaced by the backend name:
+                      sformat( _("Failed to deactivate backend %1."), backend_name ) );
         continue;
       }
       ret = `overview;
@@ -195,11 +206,16 @@ any OverviewDialog()
       y2milestone( "Selected backend to be tested is: %1", backend_name );
       if( nil == backend_name
           || "" == backend_name )
-      { Popup::AnyMessage( _("No backend selected"), _("You must select a backend.") );
+      { Popup::AnyMessage( // Header of a Popup::AnyMessage when no backend was selected:
+                           _("No backend selected"),
+                           // Body of a Popup::AnyMessage when no backend was selected:
+                           _("You must select a backend.")
+                         );
         continue;
       }
       if( ! Scanner::TestBackend( backend_name ) )
-      { Popup::Error( sformat( _("Failed to test backend %1."), backend_name ) );
+      { Popup::Error( // Message of a Popup::Error where %1 will be replaced by the backend name:
+                      sformat( _("Failed to test backend %1."), backend_name ) );
         continue;
       }
       ret = `overview;
@@ -222,17 +238,21 @@ any OverviewDialog()
  * @return dialog result
  */
 any SelectModelDialog()
-{ string caption = _("Scanner Model Selection");
+{ // Caption of the SelectModelDialog:
+  string caption = _("Scanner Model Selection");
   string filter_string = "";
   term contents = `VBox( `HBox( `TextEntry( `id(`filter_input),
+                                            // Header of a TextEntry user input field:
                                             _("&Enter a search string (case doesn't matter):")
                                           ),
                                 `PushButton( `id(`apply_filter),
+                                             // Label of a PushButton to apply a search string to a list:
                                              _("&Apply")
                                            )
                               ),
                          `ReplacePoint( `id(`model_selection_replace_point),
                                         `SelectionBox( `id(`model_selection),
+                                                       // Header of a SelectionBox with a list of models:
                                                        _("&Select a scanner model (and the appropriate SANE backend):"),
                                                        Scanner::ModelItems( filter_string )
                                                      )
@@ -265,6 +285,7 @@ any SelectModelDialog()
     { filter_string = (string)UI::QueryWidget( `id(`filter_input), `Value );
       UI::ReplaceWidget( `id(`model_selection_replace_point),
                          `SelectionBox( `id(`model_selection),
+                                        // Header of a SelectionBox with a list of models:
                                         _("&Select a scanner model (and the appropriate SANE backend):"),
                                         Scanner::ModelItems( filter_string )
                                       )
@@ -275,11 +296,17 @@ any SelectModelDialog()
     if( ret == `next )
     { Scanner::selected_model_database_index = (integer)UI::QueryWidget( `id(`model_selection), `CurrentItem );
       if( nil == Scanner::selected_model_database_index )
-      { Popup::AnyMessage( _("No model selected"), _("You must select a model.") );
+      { Popup::AnyMessage( // Header of a Popup::AnyMessage when no model was selected:
+                           _("No model selected"),
+                           // Body of a Popup::AnyMessage when no model was selected:
+                           _("You must select a model.")
+                         );
         continue;
       }
       if( "unsupported" == Scanner::database[Scanner::selected_model_database_index,"status"]:"unknown" )
-      { Popup::AnyMessage( _("Unsupported model"),
+      { Popup::AnyMessage( // Header of a Popup::AnyMessage when an unsupported model was selected:
+                           _("Unsupported model"),
+                           // Body of a Popup::AnyMessage when an unsupported model was selected:
                            _("This model is not supported by SANE.\nAsk the manufacturer for a Linux driver.")
                          );
         continue;
@@ -297,10 +324,12 @@ any SelectModelDialog()
  * @return dialog result
  */
 any ConfigureBackendDialog()
-{ string caption = _("Scanner Backend Configuration");
+{ // Caption of the ConfigureBackendDialog:
+  string caption = _("Scanner Backend Configuration");
   y2milestone( "Selected model is: %1", Scanner::database[Scanner::selected_model_database_index]:$[] );
   string backend_name = Scanner::database[Scanner::selected_model_database_index,"backend"]:"unknown";
-  term contents = `Label( sformat( _("Setting up the backend %1"), backend_name ) );
+  term contents = `Label( sformat( // Message where %1 will be replaced by the backend name:
+                                   _("Setting up the backend %1"), backend_name ) );
   Wizard::SetContentsButtons( caption,
                               contents,
                               HELPS["configure_backend"]:"",
@@ -308,7 +337,8 @@ any ConfigureBackendDialog()
                               Label::NextButton()
                             );
   if( ! Scanner::ActivateBackend( "", Scanner::selected_model_database_index, true ) )
-  { Popup::Error( sformat( _("Failed to activate backend %1."), backend_name ) );
+  { Popup::Error( sformat( // Message of a Popup::Error where %1 will be replaced by the backend name:
+                           _("Failed to activate backend %1."), backend_name ) );
   }
   any ret = nil;
   while(true)
@@ -321,7 +351,8 @@ any ConfigureBackendDialog()
     }
     if( ret == `back )
     { if( ! Scanner::DeactivateBackend( "", Scanner::selected_model_database_index, false ) )
-      { Popup::Error( sformat( _("Failed to deactivate backend %1."), backend_name ) );
+      { Popup::Error( sformat( // Message of a Popup::Error where %1 will be replaced by the backend name:
+                               _("Failed to deactivate backend %1."), backend_name ) );
         break;
       }
       break;
