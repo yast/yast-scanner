@@ -1181,7 +1181,7 @@ sub getModel( $$ )
     {
 	my $mfg_scanner_ref = findInHash( $vendor, $bus_scanners ); # ->{ uc $vendor};
 
-	if( defined $mfg_scanner_ref )
+	if( ref($mfg_scanner_ref)  eq "HASH" ) # defined $mfg_scanner_ref )
 	{
 	    %foundscanner = %$mfg_scanner_ref;
 	}
