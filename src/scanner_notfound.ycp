@@ -208,17 +208,17 @@ USB scanner, because only ONE is supported.") + "\n" + msg);
 		      y2error( "command 'ptal-init setup-usb' failed" );
 
 		      boolean ret_bool = Popup::AnyQuestion( Label:: ErrorMsg(),
-			   // Text of an error popup. YaST2 automatically detects USB
-			   // connected devices (if switched on). If connected to JetDirect
-			   // the user has to do the configuration manually.
-			   _("No HP all-in-one device detected.
+			   // Text of an error popup. YaST2 should automatically detect USB
+			   // connected devices (if switched on). If an error occurs or if connected
+                           // to JetDirect the user has to do the configuration manually.
+			   _("The initialisation of the HP all-in-one device failed.
 Make sure the device is switched on and try again.
-
-In the case of a JetDirect connection, abort the scanner
-configuration and call 'ptal-init setup' manually.
-Configure the scanner by enabling the 'hpoj' driver in
-'/etc/sane.d/dll.conf' (you must be root to do this).
-
+If the error continues, abort the scanner configuration
+and call 'ptal-init setup' manually (you must be root
+to do this).
+In the case of a JetDirect connection, also call
+'ptal-init setup' and configure the scanner by enabling
+the 'hpoj' driver in '/etc/sane.d/dll.conf'.
 "),
 							Label::RetryButton(),
 							Label::AbortButton(),
