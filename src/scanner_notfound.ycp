@@ -155,11 +155,14 @@ USB scanner, because only ONE is supported.") + "\n" + msg);
 		  else if ( size (usb_scanner) == 1 )
 		  {
 		      // start again with scanner start dialog
-		      // TODO ? sollte immer funktionieren ?
-		      //    -> scanner jetzt eingesteckt/aber bereits installiert -> overview
-		      //	-> scanner neu, scanner nicht unterstützt -> manual
-		      //	-> scanner neu und unterstützt -> new
-		      user_settings = add(user_settings, "check_again", true);
+		      // -> scanner already configured -> overview dialog
+		      // -> new unsupported scanner  -> manual
+		      // -> new supported scanner  -> new
+		      if ( !lookup( user_settings, "check_again", false ) )
+			  user_settings = add(user_settings, "check_again", true);
+		      else
+			  user_settings = add(user_settings, "check_again", false);
+		      
 		      ret = `start;
 		  }
 		  else
