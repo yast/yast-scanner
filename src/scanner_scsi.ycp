@@ -136,7 +136,7 @@ can be obtained by issuing the command <b>/usr/sbin/hwinfo --storage_ctrl</b>
 	      sg_devices = add( sg_devices, no, device );
 	      list_entry = sformat( "%1 - %2 - %3", lookup( device, "vendor", ""),
 				                    lookup( device, "device", ""),
-				                    lookup( device, "dev_name" ));
+				                    lookup( device, "dev_name", "" ));
 
 	      scsi_selbox = add( scsi_selbox, `item(`id(no), list_entry ));
 	      no = no+1;
@@ -173,7 +173,7 @@ can be obtained by issuing the command <b>/usr/sbin/hwinfo --storage_ctrl</b>
 	      }
 	      else
 	      {
-		  device 	= lookup( sg_devices, scsi_device );
+		  device 	= lookup( sg_devices, scsi_device, $[] );
 		  y2milestone( "Selected SCSI scanner: %1", device );  
 	      }
 
