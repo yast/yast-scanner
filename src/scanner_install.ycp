@@ -51,9 +51,8 @@
 	    scanner = lookup( installed_scanner, "vendor", "" ) + " - " + lookup(installed_scanner, "device", "" );
 	    info = lookup(installed_scanner, "dev_name", "");
 	}
-	   
-	  
 
+	
 	term contents = `HBox (
 			       `HWeight(1, `VBox (
 						  // label of an output field
@@ -122,9 +121,14 @@ offers more scan and image processing functionality.
 	string caption = _("Scanner Test");
 	map installed = GetCurrentScanner();
 
+	byteblock logo =  #[00000001];
+	logo = (byteblock) SCR::Read( .local.byte,
+				      "/usr/share/doc/packages/sane/sane-backends/umax/sane-logo2.jpg");
+	if ( logo == nil )
+	     logo = #[00000001];
+	
 	term contents  = ScannerInstallDialog_UI( installed,
-                                                        (byteblock) SCR::Read( .local.byte,
-							"/usr/share/doc/packages/sane/sane-backends/umax/sane-logo2.jpg"));
+						  logo );
 
 	Wizard::SetContentsButtons(caption,contents,help,Label::BackButton(),Label::NextButton());
 
@@ -187,7 +191,12 @@ do the firmware upload. See 'man sane-gt68xx' or
 		string filename = (string) SCR::Execute(.sane.scanimage, scanner );
 		if ( filename != "" )
 		{
-		    byteblock image_data = (byteblock) SCR::Read(.local.byte, filename);
+		    byteblock image_data = #[00000001];
+		    image_data = (byteblock) SCR::Read(.local.byte, filename);
+
+		    if ( image_data == nil )
+			image_data = #[00000001];
+		    
 		    image = `Image( `opt(`scaleToFit), image_data, _("Test picture"));
 
 		    UI::ReplaceWidget(`id(`replace), image );
