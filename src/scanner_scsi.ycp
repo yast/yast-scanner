@@ -151,6 +151,12 @@ can be obtained by issuing the command <b>/usr/sbin/hwinfo --storage_ctrl</b>
 
       any ret = nil;
 
+      if( size( scsi_selbox ) == 0 )
+      {		      
+	  UI(`WarningPopup(_("\nThere were no SCSI scanner found.\n")));
+	  return (`back);
+      }
+      
       repeat {
 	  
 	  ret = UI(`UserInput());
