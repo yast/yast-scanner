@@ -24,7 +24,7 @@ Summary:	Configuration of scanner
 
 %files
 %defattr(-,root,root)
-@configdir@/menuentry_scanner.y2cc
+@configdir@/scanner.y2cc
 @clientdir@/scanner.ycp
 @yncludedir@/scanner/scanner_functions.ycp
 @yncludedir@/scanner/scanner_start.ycp
