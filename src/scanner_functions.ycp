@@ -372,7 +372,7 @@
       });
 
     string driver=lookup(deleted_entry,"scanner_driver","");
-    boolean ok = SCR::Read(.sane.removeDriver, add(deleted_entry, "driver", driver));
+    boolean ok = SCR::Execute(.sane.removeDriver, add(deleted_entry, "driver", driver));
     if(!ok)
     {
       //TRANSLATOR: %1 stands for the driver name
