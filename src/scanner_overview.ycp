@@ -62,11 +62,16 @@
     foreach (`key, `value, scanner_map, ``{
 	if ( lookup(value, "scanner_status", `emtpy) == "installed" )
 	{
+	    string suffix = "";
+	    if( lookup( value, "bus", "") == "Net" ) 
+	    {
+		suffix = " (" + lookup( value, "host", "localhost" ) + ") ";
+	    } 
 	    scanner_table = add(scanner_table,
 				`item(`id(key),
 				      lookup(value, "vendor", ""),
 				      lookup(value, "device", ""),
-				      lookup(value, "bus", "")));
+				      lookup(value, "bus", "") + suffix));
 	}
     });
 
