@@ -61,6 +61,11 @@
 
   list arg_list = [];
 
+  // start tests:
+  // gs@sturm: > y2base scanner '(.test)' ncurses
+  // gs@sturm: > y2base scanner '(.test_manual)' ncurses
+  // gs@sturm: > y2base scanner '(.test_new)' ncurses
+  
   while (arg_n >= 0) {
       if (WFM::Args(arg_n) == .test)
       {

@@ -139,16 +139,24 @@ manual scanner selection by clicking <b>Next</b>.</p>");
       {
 	  usb_devices = [
 			 $["bus":"USB", "class_id":268, "device":"Perfection 640",
-			  "device_id":196876,
-			  "drivers":[$["active":true,"modprobe":true, "modules":$["scanner":""]]],
-			  "resource":$["baud":[$["speed":1500000]]],
-			  "rev":"0.01", "sub_class_id":0, "sub_device":"Perfection640  ", "sub_vendor":"EPSON",
-			  "unique_key":"ldbq.9Hr5DGWrbRF", "vendor":"Epson", "vendor_id":197816],
+			   "device_id":196876,
+			   "drivers":[$["active":true,"modprobe":true, "modules":$["scanner":""]]],
+			   "resource":$["baud":[$["speed":1500000]]],
+			   "rev":"0.01", "sub_class_id":0, "sub_device":"Perfection640  ", "sub_vendor":"EPSON",
+			   "unique_key":"ldbq.9Hr5DGWrbRF", "vendor":"Epson", "vendor_id":197816],
+			 $["bus":"USB", "class_id":0, "device_id":213171, "hotplug":"usb",
+			   "model":"Microtek Unclassified device", "old_unique_key":"WbLO.WQVSSXduHiC",
+			   "resource":$["baud":[$["speed":1500000]]], "sub_class_id":0,
+			   "unique_key":"B3Fu.WQVSSXduHiC", "vendor":"Microtek", "vendor_id":198106],
+			 $["bus":"USB", "class_id":266, "device":"USB UHCI Root Hub", "hotplug":"usb",
+			   "model":"USB UHCI Root Hub", "old_unique_key":"Xfjy.mJyjyEydu_4",
+			   "resource":$["baud":[$["speed":1500000]]], "sub_class_id":0,
+			   "unique_key":"B3Fu.mJyjyEydu_4"],
 			 $["bus":"USB", "class_id":268, "device":"Perfection 649",
-			  "device_id":196876,
-			  "resource":$["baud":[$["speed":1500000]]],
-			  "rev":"0.01", "sub_class_id":0, "sub_device":"Perfection640  ", "sub_vendor":"EPSON",
-			  "unique_key":"ldbq.9Hr5DGWrbRF", "vendor":"Epson", "vendor_id":197816]  ];
+			   "device_id":196876,
+			   "resource":$["baud":[$["speed":1500000]]],
+			   "rev":"0.01", "sub_class_id":0, "sub_device":"Perfection640  ", "sub_vendor":"EPSON",
+			   "unique_key":"ldbq.9Hr5DGWrbRF", "vendor":"Epson", "vendor_id":197816]  ];
       }
 
       integer no = 1;
@@ -164,12 +172,17 @@ manual scanner selection by clicking <b>Next</b>.</p>");
 	      {
 		  device_str = lookup( device, "sub_device", "");
 	      }
+	      if ( device_str == "" )
+	      {
+		  device_str = lookup( device, "model", "");
+	      }
+	      
 	      string vendor_str = lookup( device, "vendor", "");
 	      if ( vendor_str == "" )
 	      {
 		  vendor_str = lookup( device, "sub_vendor", "");
 	      }
-	      if ( vendor_str != "" && device_str != "" )
+	      if ( vendor_str != "" || device_str != "" )
 	      {
 		  list_entry = sformat( "%1 - %2", vendor_str, device_str );
 		  usb_selbox = add( usb_selbox, `item(`id(no), list_entry ));

@@ -145,9 +145,9 @@ a manual configuration.
 	      symbol choice = UI::QueryWidget(`id(`action), `CurrentButton );
 	      y2debug( "CHOICE: %1", choice );
 
-	      if ( !test_mode )
+	      if ( choice == `install )
 	      {
-		  if ( choice == `install )
+		  if ( !test_mode )
 		  {
 		      //  *do* the scanner configuration
 		      boolean configure_ok = SCR::Write(.sane.writeconfig, GetCurrentScanner());
@@ -163,11 +163,11 @@ a manual configuration.
 			  ret = `abort;
 		      }
 		  }
-		  else
-		  {
-		      // go on with manual configuration
-		      ret = `notfound;
-		  }
+	      }
+	      else
+	      {
+		  // go on with manual configuration
+		  ret = `notfound;
 	      }
 	  }
       } until ( ret == `next || ret == `back || ret == `abort || ret == `notfound || ret == `cancel );
