@@ -1,9 +1,9 @@
 /**
  * File:
- *   scanner_start.ycp
+ *   scanner_new.ycp
  *
  * Module:
- *   Configuration of scanner
+ *   Configuration scanner
  *
  * Summary:
  *   
@@ -20,27 +20,102 @@
  */
 
 {
-  include "scanner/scanner_new_ui.ycp";
+
+  /**
+   * ScannerStartDialog Layout	
+   */
+  
+  global define ScannerNewDialog_UI( map new_scanner )``{
+
+      string scanner_descr = "default";
+
+      if ( new_scanner != $[] )
+      {
+	  scanner_descr = lookup( new_scanner, "vendor", "" );
+	  scanner_descr = scanner_descr + "\n" + lookup( new_scanner, "device" );
+      }
+      
+      term layout = `VBox (
+			   // the user can choose the installation mode for the new scanner
+			   `Left(`Label (`opt (`hstretch), _("Please choose installation mode for scanner\n"))),
+			   `HBox (`HSpacing(2.5),
+				  `HWeight(5, `Label (`opt (`outputField, `hstretch), scanner_descr)),
+				  `HWeight(1, `Empty())
+				  ),
+			   `VSpacing (1),
+			   `Left(`RadioButtonGroup (
+						    `id (`action),
+						    `VBox (
+							   `RadioButton (`id (0), `opt (`hstretch), _("Standard installation (recommended)"), true),
+							   `VSpacing (0.3),
+							   `RadioButton (`id (1), `opt (`hstretch), _("Custom configuration (Expert mode)")),
+							   `VSpacing (0.3),
+							   `RadioButton (`id (2), `opt (`hstretch), _("Configure a network scanner and use the
+PC as a scanner server (Expert mode)")),
+							   `VSpacing (1.0),
+							   `RadioButton (`id (2), `opt (`hstretch), _("Scanner data aren't correct"))
+							   )
+						    )
+				 ),
+			   `VSpacing (3.0)
+			   );
 
 
+      return layout;
+
+  };
+
+  
 /**
- * ScannerStartDialog
+ * ScannerStartDialog	
  */
-  global define ScannerNewDialog()``{
-      string help    = UI(_("BeginDialog help..."));
+  global define ScannerNewDialog( )``{
 
-     
-      string caption = UI(_("New Sanner found"));
-      term contents  = ScannerNewDialog_UI();
+      string help = "";
+      list scanner_info = lookup( user_settings, "scannerInfo", [] );
 
-      //UI(`SetWizardContentsButtons(caption,contents,help,BackButtonLabel(),NextButtonLabel()));
-      UI(`SetWizardContentsButtons(caption,contents,help,"Back", "Next"));
+      y2debug("Scanner INFO: %1", scanner_info );
+
+      list new_scanner = maplist( `scanner, scanner_info, ``{
+	  if ( lookup( scanner, "new_scanner", false ) )
+	  {
+	      y2debug("Scanner NEW?: %1", lookup( scanner, "new_scanner", false ));
+	      return scanner;
+	  }
+      });
+      if ( new_scanner == [nil] )
+      {
+	  new_scanner = [];
+      }
+      y2debug("New scanner: %1", new_scanner );
+      
+      // part 1 of helptext of dialog New scanner found
+      string help1    = UI(_("<p>YaST2 has detected a new scanner.
+Please check the data shown beneath and choose
+the mode used for the installation.</p>"));
+      // part 2 of helptext of dialog New scanner found
+      string help2 = UI(_("<p>It is recommended to do a <b>Standard
+installation</b>. YaST2 will set reasonable scanner options.</p>"));
+
+      help = help1 + help2;
+      
+      string caption = UI(_("New Scanner found"));
+      map scanner_map = $[];
+      
+      if ( new_scanner != [] )
+      {
+	  scanner_map = select(new_scanner, 0);
+      }
+
+      term contents  = ScannerNewDialog_UI( scanner_map );
+
+      UI(`SetWizardContentsButtons(caption,contents,help,BackButtonLabel(),NextButtonLabel()));
      
       any ret = UI(`UserInput());
 
-      /* your code ... */
 
       return ret;
-  }
+      
+  };
 
 }

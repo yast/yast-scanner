@@ -19,7 +19,6 @@
  */
 
 {
-  include "scanner/scanner_install_ui.ycp";
 
 
 /**

@@ -20,7 +20,6 @@
 
 {
 
-  include "scanner/scanner_overview_ui.ycp";
 
   /**
    * OverviewDialog dialog

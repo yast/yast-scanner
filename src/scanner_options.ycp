@@ -20,7 +20,6 @@
  */
 
 {
-  include "scanner/scanner_options_ui.ycp";
 
 
 /**

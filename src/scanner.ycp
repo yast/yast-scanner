@@ -50,20 +50,59 @@
 // NOT USED
   map settings = ScannerRead();
 
+
+
   map user_settings = $[];
 
 
+  // check test_mode
+  integer arg_n = size(Args()) - 1;
 
+  boolean test_mode = false;
+  boolean test_new = false;
+  
+  list arg_list = [];
+  
+  while (arg_n >= 0) {
+      if (Args(arg_n) == .test)
+      {
+	  test_mode = true;
+      }
+      else if (Args(arg_n) == .test_new)
+      {
+	   test_mode = true;
+	   test_new = true;
+      }
+      else
+      {
+	  arg_list = add(arg_list, Args(arg_n));
+      }
+      arg_n = arg_n - 1;
+  }
+  
   if ( test_mode )
   {
-      map test_info = $["vendor": "HP",
-		       "model" :  "567U"];
+      y2debug( "Scanner TESTMODE");
+      list scanner_info = [$["bus":"USB",
+			  "class_id":268,
+			  "device":"Perfection 640",
+			  "device_id":196876,
+			  "resource":$["baud":[$["speed":1500000]]],
+			  "rev":"0.01", "sub_class_id":0,
+			  "sub_device":"Perfection640  ",
+			  "sub_vendor":"EPSON",
+			  "unique_key":"PTVH.9Hr5DGWrbRF",
+			  "vendor":"Epson",
+			  "vendor_id":197816,
+			  "new_scanner" : test_new]];
       user_settings = add( user_settings, "test_mode", true ); 
-      user_settings = add( user_settings, "scannerInfo", test_info);
+      user_settings = add( user_settings, "scannerInfo", scanner_info);
+  }
+  else
+  {
+      user_settings = add( user_settings, "test_mode", false ); 
   }
 
-
-  y2debug("settings=%1",settings);
 
 /**
  * Abort dialog
@@ -78,13 +117,13 @@
   UI(`CreateWizardDialog());
 
   map aliases = $[
-		  "scanner_start"      :   ``(ScannerStartDialog(user_settings)),
-		  "scanner_overview"   :   ``(ScannerOverviewDialog()),
-		  "scanner_new"	:   ``(ScannerNewDialog()),
-		  "scanner_install"    :   ``(ScannerInstallDialog()),
-		  "scanner_options"	:   ``(ScannerOptionsDialog()),
-		  "scanner_notfound"	:   ``(ScannerNotFoundDialog()),
-		  "abort"              :   ``(AbortDialog())
+		  "scanner_start"	:   ``( ScannerStartDialog() ),
+		  "scanner_overview"	:   ``( ScannerOverviewDialog() ),
+		  "scanner_new"		:   ``( ScannerNewDialog() ),
+		  "scanner_install"	:   ``( ScannerInstallDialog() ),
+		  "scanner_options"	:   ``( ScannerOptionsDialog() ),
+		  "scanner_notfound"	:   ``( ScannerNotFoundDialog() ),
+		  "abort"              	:   ``( AbortDialog() )
   ];
     
     

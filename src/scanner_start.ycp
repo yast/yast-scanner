@@ -16,8 +16,8 @@
  * 0. is package "sane" installed?
  *    if NOT -> call sw_single
  * 1. Hardware probing
- *    .probe.scanner / scsi (perl)
- * 2. Check already installed scanner (perl)
+ *    .probe.scanner / scsi (perl script)
+ * 2. Check already installed scanner (perl script)
  * 3. Decide whether the detected scanner(s) is (are) installed
  * 4. Decide which dialog is called next
  *    - at least one new scanner detected/no scanner configured
@@ -26,9 +26,9 @@
  *	-> show dialog scanner_overview AND a popup
  *	   "New scanner - configuration wanted?"
  *    - nothing new, but at least one scanner configured
- *      -> show dialog overview
+ *      -> show dialog scanner_overview
  *    - nothing detected at all
- *	-> go to dialog scanner_manual_1
+ *	-> go to dialog scanner_notfound
  * 
  * Shows the progress of hardware probing and scanner checking. 
  * 
@@ -43,10 +43,12 @@
 /**
  * ScannerStartDialog
  */
-  global define ScannerStartDialog( map user_settings )``{
+  global define ScannerStartDialog( )``{
 
       any ret = nil;
-      map scannerInfo = lookup( user_settings, "scannerInfo", $[]);
+      list scanner_info = lookup( user_settings, "scannerInfo", []);
+      boolean test_mode = lookup( user_settings, "test_mode", false );
+
       
    // Help text for last dialog of base installation
       string help_text = UI(_("<p>
@@ -72,58 +74,88 @@ with manual installation in following dialogs.
 			help_text )
        );
 
-    UI(`ProgressMilestoneUI( 10, _("Checking for SANE"), 0 ));
-
-    // check whether 'sane' is installed
-    if ( SCR (`Execute (.target.bash, "/bin/rpm -q sane")) != 0 )
+    UI(`ProgressMilestoneUI( 100, _("Checking for SANE"), 0 ));
+    sleep(1000);
+    
+    if ( !test_mode )
     {
-	string tmpdir = SCR (`Read (.target.tmpdir));
-        string filename = tmpdir + "/sw_single_input";
-        SCR (`Write (.target.ycp, filename, $["install":["sane"], "userInput" : false ]));
-        CallFunction (`sw_single (filename));
-    }
+	// check whether 'sane' is installed
+	if ( SCR (`Execute (.target.bash, "/bin/rpm -q sane")) != 0 )
+	{
+	    string tmpdir = SCR (`Read (.target.tmpdir));
+	    string filename = tmpdir + "/sw_single_input";
+	    SCR (`Write (.target.ycp, filename, $["install":["sane"], "userInput" : false ]));
+	    CallFunction (`sw_single (filename));
+	}
 
-    // SANE should be installed by now - if not notify the user and exit
-    if ( SCR (`Execute (.target.bash, "/bin/rpm -q sane")) != 0 )
-    {
-	UI( `ErrorPopup(_("Package 'sane' is not installed correctly.
+	// SANE should be installed by now - if not notify the user and exit
+	if ( SCR (`Execute (.target.bash, "/bin/rpm -q sane")) != 0 )
+	{
+	    UI( `ErrorPopup(_("Package 'sane' is not installed correctly.
 This package is mandatory for the scanner installation.
 Please make sure that you have the SuSE CD set available
 and start scanner installation again - or install the package
 with YaST2 module 'Install/Remove Software'.\n")));
 
-	return `cancel;
+	    return `cancel;
+	}
     }
+    
+    UI(`ProgressMilestoneUI( 200, _("Hardware probing"), 1 ));
+    sleep(100);
 
-    UI(`ProgressMilestoneUI( 20, _("Hardware probing"), 0 ));
-
-    // probe USB ports
-    list connected_scanner = SCR(`Read(.probe.scanner));
-    y2debug("USB Scanner: %1", connected_scanner);
-
-    // check SCSI ports
-    //connected_scanner = add( connected_scanner, SCR(`Execute(.target.bash, "check_scsi" )));
-    y2debug("SCSI Scanner: %1", connected_scanner);
-  
-    UI(`ProgressMilestoneUI( 30, _("Checking for already installed scanner"), 0 ));
-
-    //map installed_scanner = SCR(`Execute(.target.bash, "check_installed" ));
-
-    if ( lookup(user_settings, "test_mode", false) )
+    list connected_scanner = [];
+    
+    if ( !test_mode )
     {
-	if ( lookup( scannerInfo, "test_new", false))
-	    ret = `new;
-	else
-	    ret = `manual;
-    }
+	// probe USB ports
+	connected_scanner = SCR(`Read(.probe.scanner));
 
-    // find out which scanner is already installed/which is new
+	// check SCSI ports
+	// connected_scanner = add(connected_scanner, SCR(`Execute(.target.bash, "check_scsi" )));
+	y2debug("Connected Scanner: %1", connected_scanner);
+    }
 
     
-    // ret = UI(`UserInput());
+    UI(`ProgressMilestoneUI( 300, _("Checking for already installed scanner"), 2 ));
+    sleep(100);
+    
+    if ( !test_mode )
+    {
+	//map installed_scanner = SCR(`Execute(.target.bash, "check_installed" ));
+    }
 
-    ret = `next;
-				
+    UI(`ProgressMilestoneUI( 1000, _("Checking for already installed scanner"), 2 ));
+    sleep(500);
+
+    // find out which scanner is already installed/which is new
+    // TEST: add "new_scanner" true to scanner map and return new
+
+    map scan = select (connected_scanner, 0 );
+    scan = add(scan, "new_scanner", true );
+    scanner_info = add( scanner_info,  scan);
+    ret = `new;
+
+    
+    if ( test_mode )
+    {
+	if ( lookup( select(scanner_info, 0), "new_scanner", false) )
+	{
+	    ret = `new;
+	}
+	else
+	{
+	    ret = `overview;
+	}
+    }
+
+    if ( scanner_info != [] )
+    {
+	// write scanner data to user_settings
+	user_settings = add( user_settings, "scannerInfo", scanner_info );
+    }
+
+
     return ret;
   }
 

@@ -11,17 +11,12 @@ clients_DATA =		\
 
 include_DATA =		\
 	scanner_start.ycp	\
-	scanner_start_ui.ycp	\
 	scanner_overview.ycp	\
-	scanner_overview_ui.ycp \
 	scanner_new.ycp		\
 	scanner_options.ycp	\
-	scanner_options_ui.ycp	\
 	scanner_new_ui.ycp	\
 	scanner_install.ycp	\
-	scanner_install_ui.ycp	\
 	scanner_manual.ycp	\
-	scanner_manual_ui.ycp	\
 	scanner_functions.ycp
 
 menu_DATA = menuentry_scanner.ycp
