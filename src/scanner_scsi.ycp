@@ -70,6 +70,7 @@ your SCSI devices can be obtained by issuing the command <b>hwinfo --scsi</b>
 (you must be 'root' to do this).</p>"));
 
       // helptext of dialog SCSI scanner configuration (continued)
+      // Translators: do not translate 'Device File'
       string help3 = UI(_("<p>You will find the <i>Device File</i> of your scanner in the
 respective section of the hwinfo output.</p>"));
 
