@@ -69,7 +69,7 @@ on a running system - if you want to connect a SCSI scanner, choose
 
       // help of Manual Scanner Configuration (continued)
       string help3    = UI(_("<p>USB scanners may be plugged in and switched on
-while the system is running. If you have not yet connected your USB scanner, do so right now.<br>
+while the system is running. If you have not yet connected your USB scanner, do so right now.
 </p>"));
 
       // help of Manual Scanner Configuration (continued)
