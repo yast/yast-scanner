@@ -215,7 +215,7 @@ while ( <STDIN> )
 	  if ( defined $host ) {
 	    $ok = enableNetScan( $host );
 	  } else {
-	    y2debug( "ERROR: Host is not defined or empty!" );
+	    y2error( "ERROR: Host is not defined or empty!" );
 	    $ok = 0;
 	  }
 	  # ATTENTION: Return here :(
@@ -226,7 +226,7 @@ while ( <STDIN> )
 	# Not net !
 	my $driver = findInHash( "scanner_driver", \%scanner );
 	my $devicefile = findInHash( "dev_name", \%scanner );
-	y2debug( "Installing driver <$driver> for scanner <$vendor/$model> on <$devicefile>" );
+	y2milestone( "Installing driver <$driver> for scanner <$vendor/$model> on <$devicefile>" );
 
 	if ( grep( /$driver/, @cfg_backends ) ) {
 	  y2debug( "Backend <$driver> is already configured!" );
@@ -246,7 +246,7 @@ while ( <STDIN> )
 	ycpReturnSkalarAsBoolean( $ok );
       }
       else {
-	y2debug( "Unknown action <$action>" );
+	y2error( "Unknown action <$action>" );
 	ycpReturnSkalarAsBoolean (0);	
       }
     }
@@ -297,7 +297,7 @@ while ( <STDIN> )
 	      $ok = 1;
 	    }
 	  } else {
-	    y2debug( "ERR: Driver was not given but is a required argument for removeDriver!" );
+	    y2error( "ERROR: Driver was not given but is a required argument for removeDriver!" );
 	  }
 	}
 	ycpReturnSkalarAsBoolean( $ok );
@@ -319,7 +319,7 @@ while ( <STDIN> )
 	    if (defined $host) {
 	      $devstring = "net:" . $host .":". $devstring;
 	    } else {
-	      y2debug( "ERROR: Tried to scan net, but no host given !" );
+	      y2error( "ERROR: Tried to scan net, but no host given !" );
 	      $devstring = undef;
 	    }
 	  }
@@ -333,7 +333,7 @@ while ( <STDIN> )
 	ycpReturnSkalarAsString( $resFile );
 
       } else {
-	y2debug( "Unknown action <$action>" );
+	y2error( "Unknown action <$action>" );
 	ycpReturnSkalarAsBoolean (0);	
       }
     } 
@@ -351,7 +351,7 @@ while ( <STDIN> )
 
     # Unknown
     else {
-        y2debug ("Unknown instruction ", ycpGetCommand, " or argument: ", ycpGetArgType);
+        y2error ("Unknown instruction ", ycpGetCommand, " or argument: ", ycpGetArgType);
         ycpReturnSkalarAsBoolean (0);
     }
 }
