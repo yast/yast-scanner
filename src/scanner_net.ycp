@@ -58,7 +58,7 @@ is connected to a different computer, provided it is configured as scan station 
 of that computer and click on <b>Next</b>.
 </p>") );
       string help3    = UI(_("<p>More information on setting up network scan stations
-can be found in the SuSE support database.<p>") );
+can be found in the SuSE support database.</p>") );
       help = help1 + help2;
       
       string caption = UI(_("Network scan station client"));
