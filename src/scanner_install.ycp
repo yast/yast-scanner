@@ -36,16 +36,7 @@
       
       if ( lookup( installed_scanner, "bus", "" ) == "Net" )
       {
-	  list net_scanner = lookup(installed_scanner, "device", []);
-	  integer n = 1;
-	  foreach ( `product, net_scanner, ``{
-	      scanner = scanner + lookup( product, "device", "" );
-	      if ( n < size(net_scanner) )
-	      {
-		  scanner = scanner + ",  ";
-	      }
-	      n = n+1;
-	  });
+	  scanner = lookup(installed_scanner, "device", []);
 	  info = lookup(installed_scanner, "host", "");
 	  
 	  // label of an outfield showing the IP address of the scanstation
@@ -135,8 +126,6 @@ The <b>Gimp</b> also provides scan support.</p>");
 	  // TODO also do the test when clicking NEXT
 	  if ( ret == `test )
 	  {
-	      // TODO: create the tmp-file name in YaST2 !!!!!!!
-	      // get the test picture from SANE
 	      map scanner = GetCurrentScanner();
 	      scanner = add( scanner, "tmpdir", SCR( `Read(.target.tmpdir)));
 	      string filename = SCR(`Read(.sane.scanimage, GetCurrentScanner()));
@@ -146,6 +135,10 @@ The <b>Gimp</b> also provides scan support.</p>");
 		  image = `Image(  image_data, _("Test picture"));
 
 		  UI( `ReplaceWidget(`id(`replace), image ));
+		  if( ! Execute (.target.remove, filename ) )
+		  {
+		      y2debug( "Could not delete tmp-file" );
+		  }
 	      }
 	  }
 	  
