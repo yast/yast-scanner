@@ -134,6 +134,8 @@ with the YaST2 module 'Install/Remove Software'.\n"));
 		      boolean installed = CheckOfficeJet();
 		      if ( installed )
 		      {
+			   // call ptal-init setup
+			  integer exitcode = SCR::Execute (.target.bash, "ptal-init setup-usb 2>&1 > /dev/null" );
 			  // replace scanner entry
 			  list ptal_devices = SCR::Read(.scanner.ptal);
 			  foreach (`device, ptal_devices, ``{
