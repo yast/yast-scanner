@@ -213,8 +213,10 @@ while ( <STDIN> )
     }
     elsif( $action =~ /revertall/ )
     {
+	
 	y2debug( "Handling action revert all" );
 	revertAll();
+	ycpReturnSkalarAsBoolean( 1 );
     }
     elsif( $action =~ /removeDriver/ )
     {
