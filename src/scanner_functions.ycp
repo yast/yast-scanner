@@ -43,7 +43,7 @@
  * @return boolean success of operation
  */
   global define ScannerWrite(map scanner_info) ``{
-      any ret = true;
+      boolean ret = true;
       
       foreach( `key, `scanner, scanner_info, ``{
 	  // if required write the options for the scanner kernel module to /etc/modules.conf
@@ -57,15 +57,16 @@
 	  
 	  if( is_installed == "installed" )
 	  {
+	      boolean success = false;
 	      
-	      any ret = SCR::Write(.probe.status.configured, unique_key, `yes);
+	      SCR::Write(.probe.status.configured, unique_key, `yes);
 	      y2milestone ( "Mark scanner %1 as configured",  unique_key );
 	      
 	      if ( usb_module != "" && usb_options != $[] )
 	      {
-		  ret = SCR::Write(.modules.options, usb_options , usb_module );
+		  success = SCR::Write(.modules.options, usb_options , usb_module );
 		  y2debug( "Write /etc/modules.conf: %1 %2", usb_options , usb_module );
-		  if ( ret )
+		  if ( success )
 		  {
 		      // WRITE /etc/modules.conf now and call "depmod"
 		      Write(.modules.nil);
@@ -76,16 +77,34 @@
 		      string user_entry = sformat ("%1  0x0003  %2  0x0000       0x0000       0x00         0x00            0x00            0x00            0x00            0x00            0x00000000", usb_module, usb_usermap );
 		      SCR::Execute(.target.bash, sformat("echo \"%1\" >> /etc/hotplug/usb/sane.usermap", user_entry ) );
 		  }
+		  else
+		  {
+		      ret = false;
+		  }
 	      }
-	      if( bus == "SCSI" )
+	      else if ( bus == "SCSI" )
 	      {
 		  // set the link in /etc/init.d/rc3.d to start the script /usr/sbin/rcsane
 		  // (which sets and resets the permissions 666 on /dev/sg0 )
-		  boolean success = Runlevel::ServiceAdjust( "sane", "enable" );
+		  success = Runlevel::ServiceAdjust( "sane", "enable" );
 		  y2milestone( "ServiceAdjust( sane, enable ) returns: %1", success );
+		  if ( !success )
+		      ret = false;
+	      }
+	      else if ( bus == "PTAL" )
+	      {
+		  // enable PTAL service and hotplug
+		  success = Runlevel::ServiceAdjust ("hotplug", "enable");
+		  if ( success )
+		  {
+		      success = Runlevel::ServiceAdjust ("ptal", "enable");
+		  }
+		  if ( !success )
+		      ret = false;
+		  
+		  y2milestone ( "PTAL service %1", success?"enabled":"NOT enabled" );
 	      }
 	  }
-
       });
 
       return ret;
