@@ -6,7 +6,14 @@
  *   Configuration of scanner
  *
  * Summary:
- *   
+ *
+ * This dialog is called only if the USB scanner is not detected by hw-library (
+ * All scanners from driver source files /usr/src/linux-<kernel-version>.SuSE/drivers/usb/
+ * scanner.c or microtek.c are listed in dynamically created file /lib/modules/<kernel-version>/
+ * modules.usbmap.
+ * In case the scanner is known the USB module will be loaded automatically (hotplugin).
+ * Otherwise the module must be loaded with: modprobe ID ID <module name>
+ * The options must be added to /etc/modules.conf.    
  *
  * Authors:
  *   Gabriele Strattner <gs@suse.de>
@@ -67,17 +74,27 @@ Please enter the required scanner data.")),
       string help = "";
 
       // help part 1 of dialog manual USB Scanner configuration
-      string help1    = UI(_("<p>Please enter the product (model) ID,
+      string help1_unused    = UI(_("<p>Please enter the product (model) ID,
 the vendor ID and the USB module name (usually 'scanner')
 and press the <b>Load</b> button.</p>"));
 
       // help part 2 of dialog manual USB Scanner configuration
       // Translators: Please DO NOT translate 'Vendor:' and 'Model:'!
-      string help2    = UI(_("<p>The information on the IDs can be obtained
+      string help2_unused    = UI(_("<p>The information on the IDs can be obtained
 by issuing the command <b>hwinfo --usb</b> (look for the '<i>Vendor:</i>'
 and '<i>Model:</i>' entries and take the digits in front, e.g. 010c).
 </p> "));
 
+      // help part 1 of dialog manual USB Scanner configuration
+      string help1    = UI(_("<p>YaST2 shows a list of USB devices which are not
+clearly identified. If you find your scanner,
+please select the corresponding list entry.</p>"
+ ));
+
+      // help part 2 of dialog manual USB Scanner configuration
+      string help2 = UI(_("Also select the USB module (usually 'scanner')
+and press the <b>Load</b> button.</p>"));
+      
       // help part 3 of dialog manual USB Scanner configuration
       string help3    = UI(_("<p>YaST2 will try to load the
 USB kernel module.</p> "));
@@ -96,15 +113,28 @@ successfully you can proceed to the
       UI(`SetWizardContentsButtons(caption,contents,help,BackButtonLabel(),NextButtonLabel()));
 
       any ret = nil;
+      boolean load_ok = false;
+
+
 
       repeat {
 	  ret = UI(`UserInput());
 
-	  if ( ret == `load )
+	  if ( ret == `load || ret == `next )
 	  {
 	      // get data and try to load the module
-	      // if ( !load_ok )
-	      //   ret = `abort;
+
+	      // if ( load_ok )
+	      // {
+	      //   popup OK -> you can go on
+	      //   
+	      // }
+	      // else
+	      //   popup ContinueCancel -> try again or abort
+	  }
+	  if ( ret == `next && !load_ok )
+	  {
+	      // popup ERROR -> you can't go on
 	  }
 
       } until ( ret == `next || ret == `back || ret == `abort );
