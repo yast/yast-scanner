@@ -67,25 +67,26 @@
       list scanner_table = [];
       
       string help = "";
-      
+      // help part1 of scanner overview dialog
       string help1    = UI(_("<p>This overview dialog shows the
  currently configured and/or installed scanners.</p>"
 			     ));
+       // help part2 of scanner overview dialog
       string help2 = UI(_("<p>
 If you want to remove a scanner configuration,
 select the corresponding entry from the list and press <b>Delete</b>.
 If you want to install a new scanner,
 press the <b>Add</b> button. 
 </p>"));
-      string help3 = UI(_("<p>
-Press the <b>Finish</b> button to save the new configuration.
-(Changes will not take effect unless you clicked on <b>Finish</b>)
-and to exit the scanner configuration module.
-
-If you leave this dialog with <b>Abort</b>  changes
+       // help part3 of scanner overview dialog
+      string help3 = UI(_("<p>Press the <b>Finish</b> button to save the
+new configuration.</p>"));
+      // help part4 of scanner overview dialog
+      string help4 = UI(_("<p>
+If you leave this dialog with <b>Abort</b> all changes
 made on your system will be undone.
 </p>"));
-      help = help1 + help2 + help3;
+      help = help1 + help2 + help3 + help4;
       
       foreach (`key, `value, scanner_map, ``{
 	  if ( lookup(value, "scanner_status", `emtpy) == "installed" )
