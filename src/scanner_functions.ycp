@@ -111,7 +111,6 @@
 							      // This are the column headers of a list with several scanners.
 							      `header( _("Vendor"), _("Model"), _("Bus") ),
 							      table_contents )),
-					 // Button: install selected package
 					 `VWeight( 1, `HCenter(`PushButton( `id(`ok), `opt(`default), OKButtonLabel() )
 							       ))
 					 )
