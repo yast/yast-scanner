@@ -48,21 +48,21 @@
       
       term layout = `VBox (
 			   `VSpacing (1),
-			   `Left(`Label (`opt (`hstretch), _("The scanner model"))),
+			   `Left(`Label (`opt (`hstretch), _("Scanner model"))),
 			   `VSpacing(0.3),
 			   `HBox (`HSpacing(2.5),
 				  `HWeight(5, `Label (`opt (`outputField, `hstretch), model)),
 				  `HWeight(1, `Empty())
 				  ),
 			   `VSpacing(0.5),
-			   `Left(`Label (`opt (`hstretch), _("from vendor"))),
+			   `Left(`Label (`opt (`hstretch), _("Vendor"))),
 			   `VSpacing(0.3),
 			   `HBox (`HSpacing(2.5),
 				  `HWeight(5, `Label (`opt (`outputField, `hstretch), vendor)),
 				  `HWeight(1, `Empty())
 				  ),
 			   `VSpacing(0.5),
-			   `Left(`Label (`opt (`hstretch), _("uses the SANE driver"))),
+			   `Left(`Label (`opt (`hstretch), _("SANE driver"))),
 			   `VSpacing(0.3),
 			   `HBox (`HSpacing(2.5),
 				  `HWeight(5, `Label (`opt (`outputField, `hstretch), driver)),

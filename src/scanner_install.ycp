@@ -49,12 +49,12 @@
 	  info = lookup(installed_scanner, "host", "");
 	  
 	  // label of an outfield showing the IP address of the scanstation
-	  label = _("Scanstation:");
+	  label = _("Scanstation");
       }
       else
       {
 	  // label of an outfield showing the device file, e.g. /dev/sg0
-	  label = _("Device:");
+	  label = _("Device");
 	  scanner = lookup( installed_scanner, "vendor", "" ) + " - " + lookup(installed_scanner, "device", "" );
 	  info = lookup(installed_scanner, "dev_name", "");
       }
@@ -63,7 +63,7 @@
 
       term contents = `VBox (
 			     // label of an outpufield
-			     `Left(`Label (`opt (`hstretch), _("Scanner:"))),
+			     `Left(`Label (`opt (`hstretch), _("Scanner"))),
 			     `VSpacing(0.3),
 			     `HBox (`HSpacing(2.5),
 				    `HWeight(5, `Label (`opt (`outputField, `hstretch), scanner)),
