@@ -97,7 +97,7 @@ is supported.</p>"));
 	  {
 	      symbol type = UI(`QueryWidget(`id(`scanner), `CurrentButton));
 	      y2debug("TYPE: %1", type );
-	      // if the user clicked on USB -> check for already connected USB scanner
+
 	      if ( type == `usb )
 	      {
                   // try again to detect a USB scanner ( maybe it's switched on now)
@@ -124,13 +124,23 @@ and restart the Scanner configuration.")));
 		  }
 		  else
 		  {
-		      // go to manual USB scanner configuration
+		      boolean usb_loaded = false;
+		      
 		      // TODO: make sure module scanner is not yet loaded -> lsmod
 		      //       ONLY go to dialog load USB module if NOT yet loaded
-		      // if ( usb_notloaded ) 
-		      ret = `usb;
-		      // else
-		      // ret = `manual;
+
+		      if ( usb_notloaded )
+		      {
+			  ret = `usb;
+		      }
+		      else
+		      {
+                          // USB module is already loaded -> go to manual scanner selection
+			  ret = `manual;
+		      }
+		      // create the entry for the USB scanner
+		      CreateScannerEntry( $["bus":"USB", "devicefile":"/dev/usbscanner"]);
+		      
 		  }
 	      }
 	      else

@@ -29,7 +29,8 @@
   include "ui/wizard_dialog.ycp";
   include "ui/common_popups.ycp";
   include "ui/common_messages.ycp";
-
+  include "ui/common_functions.ycp";
+  
   include "scanner/scanner_functions.ycp";
 
   include "scanner/scanner_start.ycp";
@@ -275,7 +276,7 @@
 				       `next      :   "scanner_manual"],
 		   "scanner_net"   : $[
 				       `abort     :   "abort",
-				       `next      :   "scanner_install"],
+				       `next      :   "scanner_new"],
 		   "scanner_manual"   : $[
 				       `abort     :   "abort",
 				       `next      :   "scanner_new"],

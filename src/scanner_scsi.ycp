@@ -30,15 +30,16 @@
   global define ScannerSCSIDialog_UI( )``{
 
       term layout = `VBox (
-			   `VSpacing (1),
-			   // the user has to enter the SCSI device, e.g. /dev/sg0
-			   `Left(`Label (`opt (`hstretch), _("It is necessary to know the device file
-before going on with installation.\n
+			   // This is a label, i.e. the line lenght should not be more than 50 characters.
+			   // Please also respect the newlines (\n).
+			   `Left(`Label (`opt (`hstretch), _("It is necessary to know the device file before
+going on with installation.\n
 Please enter the device, e.g. /dev/sg0.\n"))),
+			   `VSpacing (1),
 			   `HBox (
 				  `HWeight(4, `TextEntry(`id(`device),
-					     // Input field label for device file
-					     _("&SCSI device file"),
+							 // Input field label for device file
+							 _("&SCSI device file"),
 							 "" )),
 				  `HWeight(1, `Empty())
 				  ),
@@ -64,7 +65,7 @@ used by your SCSI scanner (e.g. /dev/sg0 ).
 </p>"));
       // part 2 of helptext of dialog SCSI scanner configuration
       string help2 = UI(_("<p>You can get informations about all
-your SCSI devices with command <i>hwinfo --scsi</i> (call it
+your SCSI devices with command <b>hwinfo --scsi</b> (call it
 as user 'root').
 Search the output for your scanner to get the
 <i>Device File:</i>.</p>"));
@@ -76,20 +77,24 @@ Search the output for your scanner to get the
       term contents  = ScannerSCSIDialog_UI( );
 
       UI(`SetWizardContentsButtons(caption,contents,help,BackButtonLabel(),NextButtonLabel()));
-     
-      any ret = UI(`UserInput());
 
-      string devicefile = UI(`QueryWidget(`id(`device), `Value ));
+      any ret = nil;
 
-      // TODO: create the entry for CurrentScanner
+      repeat {
+	  
+	  ret = UI(`UserInput());
 
-      map scanner_info = lookup( user_settings, "scannerInfo", $[] );
-      integer key = size(scanner_info);
-      
-      scanner_info = add( scanner_info, key, $["bus":"SCSI", "devicefile":devicefile] );
+	  if ( ret == `next )
+	  {
+	      string devicefile = CutBlanks( UI(`QueryWidget(`id(`device), `Value )) );
+
+	      // Create the entry for the SCSI scanner
+	      CreateScannerEntry( $["bus":"SCSI", "devicefile":devicefile] ); 
+	  }
+	  
+      } until ( ret == `next || ret == `back || ret == `abort );
       
       return ret;
-      
   };
 
 }

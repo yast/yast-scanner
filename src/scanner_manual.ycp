@@ -61,33 +61,32 @@
 	  mstring = lookup( current_scanner, "devicefile", "" );
       }
       
-      string scanner = vstring + " - " + lookup( current_scanner, "device", "" );
-      term   layout = `Empty();
+      string scanner = vstring + " - " + mstring;
 
       list vendor_list = CreateVendorList();
-      list model_list = CreateModelList( select( select(vendor_list, 0), 1) );
+      list model_list  = CreateModelList( select( select(vendor_list, 0), 1) );
 
-      layout = `VBox(
-		     `VSpacing (1),
-		     `Left(`Label (`opt (`hstretch), _("The scanner"))),
-		     `VSpacing(0.3),
-		     `HBox (`HSpacing(2.5),
-			    `HWeight(5, `Label (`opt (`outputField, `hstretch), scanner)),
-			    `HWeight(1, `Empty())
-			    ),
-		     `VSpacing(0.6),
-		     `Left( `Label (`opt (`hstretch), _("shall be installed as:")) ),
-		     `VSpacing (0.3),
-		     `HBox(`HSpacing(0.5),
-			   `HBox (`SelectionBox (`id (`vendor), `opt (`notify),
-						 _("&Select vendor"), vendor_list ),
-				  `ReplacePoint (`id (`model_rep),`SelectionBox (`id (`model), `opt (`notify),
-										 // selection box label
-										 _("Select &model"), model_list))),
-			   `HSpacing(3.0)
-			   ),
-		     `VSpacing(1.0)
-		     );
+      term layout = `VBox(
+			  `VSpacing (1),
+			  `Left(`Label (`opt (`hstretch), _("The scanner"))),
+			  `VSpacing(0.3),
+			  `HBox (`HSpacing(2.5),
+				 `HWeight(5, `Label (`opt (`outputField, `hstretch), scanner)),
+				 `HWeight(1, `Empty())
+				 ),
+			  `VSpacing(0.6),
+			  `Left( `Label (`opt (`hstretch), _("shall be installed as:")) ),
+			  `VSpacing (0.3),
+			  `HBox(`HSpacing(0.5),
+				`HBox (`SelectionBox (`id (`vendor), `opt (`notify),
+						      _("&Select vendor"), vendor_list ),
+				       `ReplacePoint (`id (`model_rep),`SelectionBox (`id (`model), `opt (`notify),
+										      // selection box label
+										      _("Select &model"), model_list))),
+				`HSpacing(3.0)
+				),
+			  `VSpacing(1.0)
+			  );
       return layout;
   }
 
@@ -97,7 +96,7 @@
   global define ScannerManualDialog()``{
       string help	= "";
       // helptext1 for dialog Manual scanner selection
-      // - don't translate SANE ((Scanner Access Now Easy) - 
+      // - don't translate SANE (Scanner Access Now Easy) - 
       string help1    	= UI(_("<p>This dialog shows all scanners which are supported
 by SANE (Scanner Access Now Easy) library.</p> "));
       // helptext2 for dialog Manual scanner selection

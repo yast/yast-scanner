@@ -224,6 +224,19 @@
       }
 
       return ret;
-
   }
+
+  global define CreateScannerEntry( map new_entry ) ``{
+
+      map scanner_info = lookup( user_settings, "scannerInfo", $[] );
+      y2debug("INFO before: %1", scanner_info);
+      integer key = size(scanner_info) + 1;
+      
+      scanner_info = add( scanner_info, key, new_entry );
+      y2debug("INFO after: %1", scanner_info);
+
+      user_settings = add( user_settings, "scannerInfo", scanner_info );
+      user_settings = add( user_settings, "scannerInWork", key ); 
+  }
+  
 }
