@@ -21,7 +21,8 @@
 # sane configured scanners, even network accessible scanners.
 #
 
-BEGIN { unshift @INC, "/usr/lib/YaST2/agents_non_y2/"; }
+BEGIN { unshift @INC, "/usr/lib/YaST2/agents_non_y2/";
+	unshift @INC, "/usr/lib/YaST2/servers_non_y2/"; }
 
 use strict;
 use ycp;
