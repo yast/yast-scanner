@@ -1520,13 +1520,17 @@ sub acquireTestImage( $ )
     y2debug( "Scanning test image from <$usedev>" );
 
     my $tmpfile = "$prefix/tmp/y2testimage.pnm";
-    
-    my $cmd = sprintf( "/usr/X11R6/bin/scanimage -d %s --mode=Color --resolution=100 > %s",
-		       $usedev, $tmpfile );
-    
+    my $tmpfile2 = "$prefix/tmp/y2testimage.png";
+    my $w = 200; my $h = 250;
+ 
+       my $cmd = sprintf( "/usr/X11R6/bin/scanimage -d %s > %s && /usr/bin/convert -border 3x3 -bordercolor darkgreen -geometry %dx%d "
+		       ." %s %s", $usedev, $tmpfile, $w, $h, $tmpfile, $tmpfile2 );
+
+    y2debug( "Scanning test image with command <$cmd>" );
+ 
     system( $cmd );
 
-    return( $tmpfile );
+    return( $tmpfile2 );
 
 }
 
