@@ -206,15 +206,12 @@ and restart the scanner configuration.")));
       // default: go next to Overview Dialog
       symbol ret = `next;
       
-      if ( scanner_info != $[] )
-      {
 	  // write scanner data to user_settings
 	  user_settings = add( user_settings, "scannerInfo", scanner_info );
 	  y2debug( "Writing SCANNER INFO: %1", scanner_info );
 
 	  // decide which dialog comes next
 	  ret = DecideDialog( `start );
-      }
 
       return ret;
   }
