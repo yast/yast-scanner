@@ -86,9 +86,9 @@ dialog by clicking on <b>Next</b>.</p>");
       string help3 = _("<p>If your scanner is not in the list and
 you added a new SCSI controller to your computer, you will probably
 have to load the SCSI kernel module (driver) first.
-Press <b>Abort</b> to exit the scanner installation and follow the
-steps described in chapter 'Scanning in Linux'
-of the SuSE Configuration Manual.</p>
+Press <b>Abort</b> to exit the scanner installation and call
+module <b>Hardware/Disk controller</b> to configure the new 
+controller.</p>
 ");
       
       // helptext of dialog SCSI scanner configuration (continued)
@@ -155,7 +155,6 @@ can be obtained by issuing the command <b>/usr/sbin/hwinfo --storage_ctrl</b>
       {
 	  // text of a warning popup
 	  UI::WarningPopup(_("\nThere were no SCSI scanner found.\n"));
-	  return (`back);
       }
       
       repeat {
@@ -166,8 +165,13 @@ can be obtained by issuing the command <b>/usr/sbin/hwinfo --storage_ctrl</b>
 	  {
 	      any scsi_device = UI::QueryWidget(`id(`sel_scsi), `CurrentItem);
 	      map device = $[];
-	      
-	      if ( scsi_device == nil )
+
+	      if ( size( scsi_selbox ) == 0 )
+	      {
+		  // go back in case that no SCSI scanner is found
+		  ret = `back;
+	      }
+	      else if ( scsi_device == nil )
 	      {
 		  // text of a popup
 		  UI::NotifyPopup(_("Please select a scanner from the list."));
