@@ -50,9 +50,9 @@
   
   UI(`CreateWizardDialog());  
 
-  if ( size(Args()) != 0 )
+  if ( size(WFM::Args()) != 0 )
   {
-      function = Args(0);
+      function = WFM::Args(0);
   }
   
   eval(function);

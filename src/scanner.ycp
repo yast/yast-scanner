@@ -56,30 +56,30 @@
 
 
   // check test_mode
-  integer arg_n = size(Args()) - 1;
+  integer arg_n = size(WFM::Args()) - 1;
 
   symbol test_status = `installed;
   
   list arg_list = [];
   
   while (arg_n >= 0) {
-      if (Args(arg_n) == .test)
+      if (WFM::Args(arg_n) == .test)
       {
 	  test_mode = true;
       }
-      else if (Args(arg_n) == .test_new)
+      else if (WFM::Args(arg_n) == .test_new)
       {
 	   test_mode = true;
 	   test_status = `supported;
       }
-      else if (Args(arg_n) == .test_manual)
+      else if (WFM::Args(arg_n) == .test_manual)
       {
 	   test_mode = true;
 	   test_status = `detected;
       }
       else
       {
-	  arg_list = add(arg_list, Args(arg_n));
+	  arg_list = add(arg_list, WFM::Args(arg_n));
       }
       arg_n = arg_n - 1;
   }
