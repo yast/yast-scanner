@@ -33,7 +33,6 @@ use English;
 		      writeIndividualConf
 		      acquireTestImage 
 		      performScanimage 
-		      probePtalDevice
 		      getNetInfo 
 		      revertAll
 		      enableNetScan 
@@ -1380,8 +1379,8 @@ sub storeDevice($$)
 	my $interface = $device->{interface};
 
 	#
-	# At the moment we are only interested in SCSI and
-	# USB devices. No need to care for the others.
+	# At the moment we are only interested in SCSI, USB
+	# and PTAL devices. No need to care for the others.
 	#
 
 	# Make sure only scanner will come.
@@ -2277,17 +2276,6 @@ The full filename of the image.
 
 # ################################################################################
 
-sub probePtalDevice()
-{
-    y2debug( "Probing ptal device" );
-
-    my $cmd = sprintf( "/usr/X11R6/bin/scanimage -L > %s", "/tmp/tmpfile" );
-
-    y2debug( "Executing command <$cmd>" );
- 
-    system( $cmd );  
-
-}
 
 sub acquireTestImage( $$ )
 {
@@ -2533,13 +2521,22 @@ sub performScanimage( ;$ )
 	    
 	    if( $name =~ /(\S+):(\S+):(\S+):(\S+)/ )
 	    {
-                # A Network scanner was found with a name like 
-                # net:d213.suse.de:umax:/dev/sg0
-		$bus = "Net";
-		$host =  $2;
-		$driver =  $3;
-		$devfile =  $4;
-		y2debug( "Found new network scanner: $bus:$host:$driver:$devfile" );
+		if ( $1 eq "net" )
+		{
+		    # A Network scanner was found with a name like 
+		    # net:d213.suse.de:umax:/dev/sg0
+		    $bus = "Net";
+		    $host =  $2;
+		    $driver =  $3;
+		    $devfile =  $4;
+		    y2debug( "Found new network scanner: $bus:$host:$driver:$devfile" );
+	        } else {
+		    # A PTAL device found, e.g.
+		    # hpoj:mlc:usb:PSC_2200_Series
+		    $bus = "PTAL";
+		    $driver = $1;
+		    $devfile = $2.":".$3.":".$4;
+		}
 	    }
 	    else
 	    {
