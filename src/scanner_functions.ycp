@@ -50,6 +50,11 @@
 	  {
 	      ret = SCR(`Write(.modules.options, usb_options , usb_module ));
 	      y2debug( "Write /etc/modules.conf: %1 %2", usb_options , usb_module );
+	      if ( ret )
+	      {
+		  // WRITE /etc/modules.conf and call "depmod"
+		  Write(.modules.nil); 
+	      }
 	  }
 
       });
@@ -58,12 +63,13 @@
   }
 
 /**
- *  ------- UNUSED ---------   
  * Write the scanner data from SCR to the disk
  * @return list success of operation
  */
   global define ScannerFinish() ``{
-      /* TODO your code here ... */
+
+      // TODO your code here ... */
+      // e.g. Write(.modules.nil);
       return true;
   }
 

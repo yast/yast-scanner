@@ -141,7 +141,8 @@ The <b>Gimp</b> also provides scan support.</p>");
 
 	  term image = `Empty();
 
-	  if ( ret == `test || ret == `next )
+	  // TODO also do the test when clicking NEXT
+	  if ( ret == `test )
 	  {
 	      // get the test picture from SANE
 	      string filename = SCR(`Read(.sane.scanimage, GetCurrentScanner()));
