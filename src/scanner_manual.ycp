@@ -14,7 +14,7 @@
  * $Id$
  *
  * 
- * Manual scanner detection. 
+ * Manual scanner selection. 
  * 
  *
  */
@@ -22,55 +22,143 @@
 {
   textdomain "scanner";
 
-  global define ScannerManualDialog_UI() ``{
+  global define CreateVendorList( ) ``{
+      list list_input = [];
+      list vlist = SCR(`Read(.sane.vendorlist, GetCurrentScanner()));
+      y2debug( "Vendorlist: %1", vlist );
+      
+      foreach( `vendor, vlist, ``{
+		  list_input = add( list_input, `item(`id(vendor), vendor));
+	      });
 
-      term layout = `Empty();
+      return list_input; 
+  }
 
-      layout = `VBox( `Label(`opt (`hstretch), _("Manual scanner selection")),
-		      `VSpacing(1.5),
-		      `HBox(`HSpacing(0.5),
-			     `Frame (_("Select the scanner driver"),
-				     `VBox(
-					   `VSpacing(0.3),
-					   `Empty(),
-					   `VSpacing(0.3)
-					   )),
-			    `HSpacing(3.0)
+  global define CreateModelList( string vendor ) ``{
+      list list_input = [];
+      SetCurrentScannerValue( "vendor", vendor );
+      list mlist = SCR(`Read(.sane.modellist, GetCurrentScanner()));
+      y2debug( "Modellist: %1", mlist );
+
+      foreach( `model, mlist, ``{
+		  list_input = add( list_input, `item(`id(model), model));
+	      });
+
+      return list_input; 
+  }
+  
+  global define ScannerManualDialog_UI( map current_scanner ) ``{
+
+      string vstring =  lookup( current_scanner, "vendor", "" );
+      
+      if ( vstring == "" )
+      {
+	  vstring = lookup( current_scanner, "bus", "" ) + " - " + _("scanner");
+      }
+      string mstring = lookup( current_scanner, "device", "" );
+      if ( mstring == "" )
+      {
+	  mstring = lookup( current_scanner, "devicefile", "" );
+      }
+      
+      string scanner = vstring + " - " + lookup( current_scanner, "device", "" );
+      term   layout = `Empty();
+
+      list vendor_list = CreateVendorList();
+      list model_list = CreateModelList( select( select(vendor_list, 0), 1) );
+
+      layout = `VBox(
+		     `VSpacing (1),
+		     `Left(`Label (`opt (`hstretch), _("The scanner"))),
+		     `VSpacing(0.3),
+		     `HBox (`HSpacing(2.5),
+			    `HWeight(5, `Label (`opt (`outputField, `hstretch), scanner)),
+			    `HWeight(1, `Empty())
 			    ),
-		      `VSpacing(1.0)
-		      );
+		     `VSpacing(0.6),
+		     `Left( `Label (`opt (`hstretch), _("shall be installed as:")) ),
+		     `VSpacing (0.3),
+		     `HBox(`HSpacing(0.5),
+			   `HBox (`SelectionBox (`id (`vendor), `opt (`notify),
+						 _("&Select vendor"), vendor_list ),
+				  `ReplacePoint (`id (`model_rep),`SelectionBox (`id (`model), `opt (`notify),
+										 // selection box label
+										 _("Select &model"), model_list))),
+			   `HSpacing(3.0)
+			   ),
+		     `VSpacing(1.0)
+		     );
       return layout;
   }
 
 /**
- * ScannerStartDialog
+ * ScannerManualDialog
  */
   global define ScannerManualDialog()``{
-      string help = "";
-      string help1    = UI(_("<p></p> "));
-      string help2    = UI(_("<p></p>"));
-      string help3    = UI(_("<p></p>"));
+      string help	= "";
+      // helptext1 for dialog Manual scanner selection
+      // - don't translate SANE ((Scanner Access Now Easy) - 
+      string help1    	= UI(_("<p>This dialog shows all scanners which are supported
+by SANE (Scanner Access Now Easy) library.</p> "));
+      // helptext2 for dialog Manual scanner selection
+      string help2    	= UI(_("<p>If one of the vendor/model pairs fits
+to your scanner select the list entries and go on with installation.</p>"));
+      // helptext3 for dialog Manual scanner selection
+      // - don't translate SANE -
+      string help3    	= UI(_("<p>If your scanner model is not
+yet contained in the lists but you know for sure 
+which SANE driver will work, select \"Generic\" in the vendor list
+and the driver in model list.</p>"));
+      // helptext4 for dialog Manual scanner selection
+      string help4    	= UI(_("<p><b>Attention</b>: only do the manual
+selection if you are absolutely sure. Wrong data may cause a hardware
+failure.</p>"));
+      // helptext5 for dialog Manual scanner selection
+      string help5    	= UI(_("<p>Informations can be found on
+http://mostang.com/sane and http://sdb.suse.de.</p>"));
+      help = help1 + help2 + help3 + help4 + help5;
 
-      help = help1 + help2 + help3;
-      
-      string caption = UI(_("Select scanner driver"));
-      term contents  = ScannerManualDialog_UI();
+      string caption = UI(_("Manual scanner selection"));
+      term contents  = ScannerManualDialog_UI( GetCurrentScanner() );
 
       UI(`SetWizardContentsButtons(caption,contents,help,BackButtonLabel(),NextButtonLabel()));
 
       any ret = nil;
+      string vendor = "";
+      string model = "";
+      
+      repeat {
+	  ret = UI(`UserInput());
 
-      ret = UI(`UserInput());
+	  if ( ret == `vendor )
+	  {
+	      vendor = UI(`QueryWidget(`id(`vendor), `CurrentItem));
 
-      if ( ret == `next )
-      {
-	  return ( UI(`QueryWidget(`id(`scanner), `CurrentButton)) );
-      }
-      else
-      {
-	  return ret;
-      }
+	      UI(`ReplaceWidget(`id(`model_rep), `SelectionBox (`id (`model),
+								`opt (`notify),
+								// selection box label
+								_("Select &model:"), CreateModelList(vendor))));
+	  }
+	  else if ( ret == `next )
+	  {
+	      vendor = UI( `QueryWidget( `id(`vendor), `CurrentItem) );
+	      if ( vendor != nil )
+	      {
+		  SetCurrentScannerValue( "vendor", vendor );
+	      }
+	      model  = UI( `QueryWidget( `id(`model ), `CurrentItem) );
+	      if ( model != nil )
+	      {
+		  SetCurrentScannerValue( "device", model );
+	      }
+	  }
 	      
-  }
+	  
+      
+      } until ( ret == `next || ret == `back || ret == `abort );
 
+      return ret;
+      
+  } 	// end ScannerManualDialog()
+      
 }

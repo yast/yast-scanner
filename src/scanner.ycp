@@ -250,21 +250,35 @@
 					`manual	  :   "scanner_manual",
 					`next     :   "scanner_overview"],
 		   "scanner_overview":   $[
-					   `abort     :   "abort",
-					   `next	 :   "scanner_start",
-					   `finish	  :   `ok ],	// finish
+					   `abort     	:   "abort",
+					   //`edit      :   "scanner_options",
+					   `new	  	:   "scanner_new",
+					   `notfound 	:   "scanner_notfound",
+					   `manual	:   "scanner_manual",
+					   `finish	:   `ok ],	// finish
 		   "scanner_new" :   $[
 				       `abort     :   "abort",
+				       `notfound  :   "scanner_notfound",
 				       `next      :   "scanner_install"],
 		   "scanner_notfound" : $[
-					`scsi	:	"scannner_scsi",
+					`scsi	:	"scanner_scsi",
 					`usb   	:	"scanner_usb",
+					`manual :	"scanner_manual",
 					`net	:	"scanner_net",
 					`start  : 	"scanner_start",
 					`abort     :   "abort" ],
-		   "scanner_manual"   : $[
+		   "scanner_usb"   : $[
+				       `abort     :   "abort",
+				       `next      :   "scanner_manual"],
+		   "scanner_scsi"   : $[
+				       `abort     :   "abort",
+				       `next      :   "scanner_manual"],
+		   "scanner_net"   : $[
 				       `abort     :   "abort",
 				       `next      :   "scanner_install"],
+		   "scanner_manual"   : $[
+				       `abort     :   "abort",
+				       `next      :   "scanner_new"],
 		   "scanner_install":   $[
 					  `abort     :   "abort",
 					  `next      :   "scanner_overview"],

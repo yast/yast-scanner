@@ -66,10 +66,10 @@
 						    `id (`action),
 						    `VBox (
 							   // radio button1: install the scanner found by YaST2
-							   `RadioButton (`id (0), `opt (`hstretch), _("&Installation of this scanner"), true),
+							   `RadioButton (`id (`install), `opt (`hstretch), _("&Installation of this scanner"), true),
 							   `VSpacing (1.0),
 							   // radio button2: select another scanner
-							   `RadioButton (`id (2), `opt (`hstretch), _("&Select a different scanner"))
+							   `RadioButton (`id (`different), `opt (`hstretch), _("&Select a different scanner"))
 							   )
 						    )
 				 ),
@@ -86,23 +86,27 @@
   global define ScannerNewDialog( )``{
 
       string help = "";
-      map new_scanner = $[];
       
       // part 1 of helptext of dialog Scanner installation
-      string help1    = UI(_("<p>YaST2 has detected a new scanner.
-Please check the scanner data and go on
-with installation if the data are <i>OK</i>. 
-</p>"));
+      string help1    = UI(_("<p>All required scanner data
+are detected. Please check whether the vendor and the
+model are correct and go on with installation if the
+data are <i>OK</i>.</p>"));
+      
       // part 2 of helptext of dialog scanner installation
       string help2 = UI(_("<p>Click on <b>Next</b> to install
 the scanner. YaST2 will set reasonable values for all scanner options.</p>"));
 
        // part 3 of helptext of dialog scanner installation
-      string help3 =  UI(_("<p>If you want to install a different scanner
-please click on the appropriate button.
-YaST2 will show you then a list of all supported scanners.</p>"));
+      string help3 =  UI(_("<p>If the data are not correct or you want
+to install a different scanner please click on the appropriate button.
+</p>"));
+      // part 4 of helptext of dialog scanner installation
+      string help4 =  UI(_("<p>You will have the possibilty to do
+a manual configuration.
+</p>"));
       
-      help = help1 + help2 + help3;
+      help = help1 + help2 + help3 + help4;
       
       string caption = UI(_("Scanner installation"));
 
@@ -113,16 +117,33 @@ YaST2 will show you then a list of all supported scanners.</p>"));
 
       UI(`SetWizardContentsButtons(caption,contents,help,BackButtonLabel(),NextButtonLabel()));
 
-      // TODO: *do* the scanner configuration
-      // if ( configure_ok )
-
-      SetCurrentScannerValue( "scanner_status", "installed" );
+      boolean go_on = true;
+      any ret = nil;
       
-      any ret = UI(`UserInput());
+      repeat  {
 
-
+	  ret = UI(`UserInput());
+	  
+	  if ( ret == `next )
+	  {
+	      symbol choice = UI(`QueryWidget(`id(`action), `CurrentButton ));
+	      y2debug( "CHOICE: %1", choice );
+	      
+	      if ( choice == `install )
+	      {
+		  // TODO: *do* the scanner configuration
+		  // if ( configure_ok )
+		  SetCurrentScannerValue( "scanner_status", "installed" );
+	      }
+	      else
+	      {
+		  // go on with manual configuration
+		  ret = `notfound;
+	      }
+	  }
+      } until ( ret == `next || ret == `back || ret == `abort || ret == `notfound );
+      
       return ret;
-      
   };
 
 }

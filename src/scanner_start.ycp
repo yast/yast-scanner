@@ -38,59 +38,54 @@
 
       any ret = nil;
       boolean test_mode = lookup( user_settings, "test_mode", false );
-      boolean add_mode  = lookup( user_settings, "add_mode", false );
-      if (add_mode)  y2debug("ADD MODE");
 
       // Help text for start dialog (checking and probing)
       string help_text = UI(_("<p>YaST2 is doing some checks, e.g. the 
 hardware probing of 'USB' and/or the 'SCSI' port(s).
 </p>"));
 	
-      if ( !add_mode )
-      {
-	  UI(`ProgressSetupUI(
-			      // Headline for start dialog of scanner configuration
-			      _("Initializing scanner module ..."),
-			      "",	// progress_title
-			      1000,	// length
-			      [
-			       _("Checking whether SANE library is installed"),
-			       _("Hardware probing - looking for connected scanner(s)"),
-			       _("Checking for already installed scanner")
-			      ],
-			      help_text )
-	     );
+      UI(`ProgressSetupUI(
+			  // Headline for start dialog of scanner configuration
+			  _("Initializing scanner module ..."),
+			  "",	// progress_title
+			  1000,	// length
+			  [
+			   _("Checking whether SANE library is installed"),
+			   _("Hardware probing - looking for connected scanner(s)"),
+			   _("Checking for already installed scanner")
+			  ],
+			  help_text )
+	 );
 
-	  UI(`ProgressMilestoneUI( 100, _("Checking for SANE"), 0 ));
-	  //sleep(100);
+      UI(`ProgressMilestoneUI( 100, _("Checking for SANE library"), 0 ));
+      //sleep(100);
     
-	  if ( !test_mode )
+      if ( !test_mode )
+      {
+	  // check whether 'sane' is installed
+	  if ( SCR (`Execute (.target.bash, "/bin/rpm -q sane")) != 0 )
 	  {
-	      // check whether 'sane' is installed
-	      if ( SCR (`Execute (.target.bash, "/bin/rpm -q sane")) != 0 )
-	      {
-		  string tmpdir = SCR (`Read (.target.tmpdir));
-		  string filename = tmpdir + "/sw_single_input";
-		  SCR (`Write (.target.ycp, filename, $["install":["sane"], "userInput" : false ]));
-		  CallFunction (`sw_single (filename));
-	      }
+	      string tmpdir = SCR (`Read (.target.tmpdir));
+	      string filename = tmpdir + "/sw_single_input";
+	      SCR (`Write (.target.ycp, filename, $["install":["sane"], "userInput" : false ]));
+	      CallFunction (`sw_single (filename));
+	  }
 
-	      // SANE should be installed by now - if not notify the user and exit
-	      if ( SCR (`Execute (.target.bash, "/bin/rpm -q sane")) != 0 )
-	      {
-		  UI( `ErrorPopup(_("The package 'sane' is not installed correctly.
+	  // SANE should be installed by now - if not inform the user and exit
+	  if ( SCR (`Execute (.target.bash, "/bin/rpm -q sane")) != 0 )
+	  {
+	      UI( `ErrorPopup(_("The package 'sane' is not installed correctly.
 This package is mandatory for the scanner installation.
 Please make sure that you have the SuSE CD set available
 and start the scanner installation again - or install the package
 with the YaST2 module 'Install/Remove Software'.\n")));
 
-		  return `cancel;
-	      }
+	      return `cancel;
 	  }
-    
-	  UI(`ProgressMilestoneUI( 200, _("Hardware probing"), 1 ));
-	  //sleep(100);
       }
+    
+      UI(`ProgressMilestoneUI( 200, _("Hardware probing"), 1 ));
+      //sleep(100);
       
       list connected_scanner = [];
       if ( !test_mode )
@@ -119,13 +114,9 @@ and restart the scanner configuration.")));
       {
 	  connected_scanner = lookup( user_settings, "test_connected", [] );
       }
-      y2debug("HWINFO: connected Scanner: %1", connected_scanner);
 
-      if ( !add_mode )
-      {
-	  UI(`ProgressMilestoneUI( 300, _("Checking for already installed scanner"), 2 ));
-	  sleep(100);
-      }
+      UI(`ProgressMilestoneUI( 300, _("Checking for already installed scanner"), 2 ));
+      sleep(100);
 
       list installed_scanner = [];
       if ( !test_mode )
@@ -138,17 +129,13 @@ and restart the scanner configuration.")));
 	  installed_scanner = lookup( user_settings, "test_installed", [] );	
       }
 
-      if ( !add_mode )
-      {
-	  UI(`ProgressMilestoneUI( 1000, _("Checking for already installed scanner"), 2 ));
-	  sleep(500);
-      }
+      UI(`ProgressMilestoneUI( 1000, _("Checking for already installed scanner"), 2 ));
+      sleep(500);
 
       // find out which scanner is already installed/which is new/which is supported
       map scanner_info = $[];
     
       integer no = 1;
-      boolean installed = false;
       
       foreach ( `scanner, connected_scanner, ``{
 	  string driver = "";
@@ -183,7 +170,6 @@ and restart the scanner configuration.")));
 		       (lookup( scan, "devicefile", "") == lookup( scan, "devicefile", "")) )
 		  {
 		      scanner = add( scanner, "scanner_status", "installed" );
-		      installed = true;
 		  }
 		  else if ( driver != "" )
 		  {
@@ -200,72 +186,17 @@ and restart the scanner configuration.")));
 	  no = no+1;
       });
 
-      map new_scanner = $[]; 	  //  new scanner which are supported by SANE
-      map detected_scanner = $[]; //  detected scanner which are NOT supported by SANE
+      // default: go next to Overview Dialog
+      symbol ret = `next;
       
-      if ( scanner_info != $[] )
-      {
-	  foreach (`scan_id, `scanner, scanner_info, ``{
-	      if ( lookup( scanner, "scanner_status", nil ) == "supported" )
-	      {
-		  new_scanner = add( new_scanner, scan_id, scanner);
-	      }
-	      else if ( lookup( scanner, "scanner_status", nil ) == "detected" )
-	      {
-		  detected_scanner = add( detected_scanner, scan_id, scanner);
-	      }
-	  });
-      }
-      y2debug( "SUPPORTED: %1, DETECTED: %2", new_scanner, detected_scanner );
-
-      if ( installed && !add_mode )
-      {
-	  // if one (or more) already configured scanner is/are found go to "Scanner overview"
-	  ret = `overview;
-      }
-      else if ( new_scanner != $[] )
-      {
-	  // if one (or more) new supported scanner is/are found go to "Scanner installation"
-	  integer scan_id = 0;
-	  if ( size(new_scanner) == 1 ) 
-	  {
-	      scan_id = select( maplist(`key, `value, new_scanner, ``{ return key;}), 0 );
-	  }
-	  else if ( size(new_scanner) > 1 )
-	  {
-	      string title = _("List of new supported scanners");
-	      scan_id = DisplayScannerList( new_scanner, title );
-	  }             
-	  ret = `new;
-	  user_settings = add( user_settings, "scannerInWork", scan_id );
-      }
-      else if ( detected_scanner != $[] )
-      {
-	  // if one (or more) NOT supported scanner is/are found go to "Manual Selection"
-	  integer scan_id = 0;
-	  if ( size(detected_scanner) == 1 ) 
-	  {
-	      scan_id = select( maplist(`key, `value, detected_scanner, ``{ return key;}), 0 );
-	  }
-	  else if ( size(detected_scanner) > 1 )
-	  {
-	      string title = _("List of detected scanners");
-	      scan_id = DisplayScannerList( detected_scanner, title );
-	  }
-	  ret = `manual;
-	  user_settings = add( user_settings, "scannerInWork", scan_id ); 
-      }
-      else
-      {
-	  // no scanner found at all -> go to dialog Scanner not found
-	  ret = `notfound;
-      }
-
       if ( scanner_info != $[] )
       {
 	  // write scanner data to user_settings
 	  user_settings = add( user_settings, "scannerInfo", scanner_info );
 	  y2debug( "Writing SCANNER INFO: %1", scanner_info );
+
+	  // decide which dialog comes next
+	  ret = DecideDialog( `start );
       }
 
       return ret;
