@@ -76,7 +76,7 @@ manual configuration is required.")),
 properly connected and switched on.</p> ");
 
        // help of Manual Scanner Configuration (continued)
-      string help2    = _("<p><i><b>Attention!</b></i> Do NOT connect or disconnect SCSI scanners
+      string help2    = _("<p><b>Attention!</b> Do NOT connect or disconnect SCSI scanners
 on a running system - if you want to connect a SCSI scanner, choose
 <b>Abort</b> and shutdown your system first.</p>");
 
@@ -159,7 +159,8 @@ USB scanner, because only ONE is supported.") + "\n" + msg);
 		  else
 		  {
 		      if ( Popup::AnyQuestion( Label::WarningMsg(),
-					      _("Your USB scanner cannot be configured manually.
+					       // text of a warning popup
+					      _("Your USB scanner was not detected.
 Do you want to go on with manual USB configuration
 (recommended for experts only)
 or abort the scanner configuration now?"),
