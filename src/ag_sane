@@ -339,11 +339,15 @@ while ( <STDIN> )
 	y2debug( "Handling action scanimage" );
 	my $resFile = "";
 	my $devicefile = findInHash( "dev_name", \%scanner );
+	if ( !defined $devicefile ) 
+	{
+	    $devicefile = "";
+	}
 	my $driver = findInHash( "scanner_driver", \%scanner );
 	my $tmpdir = findInHash( "tmpdir", \%scanner );
 	y2debug( "Scanning to temp-dir: $tmpdir" );
-	if ( !defined $driver || $driver eq "" || !defined $devicefile || $devicefile eq "" ) {
-	  y2debug( "Driver or devicefile is not defined - can not scan !" );
+	if ( !defined $driver || $driver eq "" || !defined $devicefile ) {
+	  y2error( "Driver or devicefile is not defined - can not scan !" );
 	} else {
 	  my $devstring = sprintf( "%s:%s", lc $driver, $devicefile );
 
