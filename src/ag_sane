@@ -80,6 +80,15 @@ use scannerDB;
 # returns a list of maps with scanner descriptions of the remote scanners connected to
 # the work station 'host'.
 #
+# firmware
+# ========
+# 
+# Required Parameter: scanner_driver
+#
+# Returns either strings none, all or some.
+# That says if the scanners served by the driver require a firmware file configured
+# in their .conf file.
+#
 # ##############################################################################
 
 
@@ -159,6 +168,23 @@ while ( <STDIN> )
 	ycp::Return( $use_driver );
 
 	# my $retdriver = $driver;
+      } elsif ( $path =~ /firmware\s*$/ ) {
+	  my $fw = "none";
+	  my $driver = findInHash( "scanner_driver", \%scanner );
+
+	  if( $driver eq "" ) 
+	  {
+	      y2error("Param driver required for firmware!");
+	  }
+	  else
+	  {
+	      $fw = "some" if( $driver =~ /^\s*snapscan\s*$/i );
+	      $fw = "all"  if( $driver =~ /^\s*artec_eplus48u\s*/ ||
+			       $driver =~ /^\s*gt68xx\s*/ );
+	  }
+	 
+	  ycp::Return( $fw );
+
       } elsif ( $path =~ /modellist\s*$/ ) {
 	# Only the vendor and the bus must be set in the incoming parameter hash -
 	# returning a list of available drivers.
