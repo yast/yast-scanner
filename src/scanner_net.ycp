@@ -53,7 +53,7 @@ Please enter the requested information into the field below.\n"))),
   global define ScannerNetDialog()``{
       string help = "";
       string help1    = UI(_("<p>It is possible to use a scanner which
-is connected to a different computer, provided it is configured as scan station server.</p> "));
+is connected to a different computer, if the computer is configured as network scan station.</p> "));
       string help2    = UI(_("<p>Enter the IP address or hostname
 of that computer and click on <b>Next</b>.
 </p>") );
