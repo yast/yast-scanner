@@ -71,11 +71,13 @@
 						       `HWeight(1, `Empty())
 						       ),
 						`VSpacing (1),
+						// button label
 						`PushButton (`id (`test), _("&Test"))
 						)
 				      ),
 			     `HWeight( 1, `VBox (
 						 `VSpacing (2),
+						 // label of the image
 						 `ReplacePoint(`id(`replace), `Image( image, _("Test picture"))),
 						 `VSpacing (2)
 						 )
@@ -111,7 +113,8 @@ offers more scan- and image processing functionality.
 The <b>Gimp</b> also provides scan support.</p>");
       
       help = help1 + help2 + help3 + help4;
-      
+
+      // headline of the test dialog
       string caption = _("Scanner Test");
 
       term contents  = ScannerInstallDialog_UI( GetCurrentScanner(),

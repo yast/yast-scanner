@@ -180,6 +180,7 @@
 			   `VBox( `HSpacing(50),
 				  `Left(`Heading(title)),
 				  `VSpacing(1.0),
+				  // popup text
 				  `Left(`Label(_("Please select a scanner from the list"))),
 				  `VBox( `VWeight( 3, `Table( `id(`table), `opt(`hvstretch),
 							      // This are the column headers of a list with several scanners.
@@ -279,6 +280,7 @@
 	  }
 	  else if ( size(new_scanner) > 1 )
 	  {
+	      // text of a popup showing new supported scanners
 	      string title = _("List of new supported scanners");
 	      scan_id = DisplayScannerList( new_scanner, title );
 	  }             
@@ -295,6 +297,7 @@
 	  }
 	  else if ( size(detected_scanner) > 1 )
 	  {
+	      // text of a popup showing the detected scanners
 	      string title = _("List of detected scanners");
 	      scan_id = DisplayScannerList( detected_scanner, title );
 	  }

@@ -27,20 +27,26 @@
 
       term layout = `Empty();
 
+      // This is a label, i.e. the line length should not exceed 50 characters.
+      // Inform the user that a manual configuration is necessary.
       layout = `VBox( `Label(`opt (`hstretch), _("Your scanner was not detected automatically -
 manual configuration is required.")),
 		      `VSpacing(1.5),
 		      `HBox(`HSpacing(0.5),
+			    // label of a frame with radiobuttons
 			    `Frame (_("Select the scanner type"),
 				    `RadioButtonGroup(`id(`scanner),
 						      `VBox(`VSpacing (0.6),
 							    `Left(`RadioButton(`id(`usb),`opt (`hstretch),
+									       // radiobutton1
 									       _("&USB scanner"), true) ),
 							    `VSpacing (0.6),
 							    `Left(`RadioButton(`id(`scsi),`opt(`hstretch),
+									       // radiobutton2
 									       _("&SCSI scanner"),  false) ),
 							    `VSpacing (1.2),
 							    `Left(`RadioButton(`id(`net),`opt(`hstretch),
+									       // radiobutton3
 									       _("N&etwork scan station") ,  false) ),
 							    `VSpacing (0.6)
 							    )
@@ -77,14 +83,15 @@ while the system is running. If you have not yet connected your USB scanner, do 
 USB and SCSI scanner configuration. You can also use
 a scanner from a network scan station.</p>");
 
-       // Note for translators: YaST2 does not yet provide the functionality to
-       // configure more than one USB scanner. In theory, however, it *is* possible.
+       // Note for translators: the functionality to configure more than one USB scanner
+       // is not yet provided. In theory, however, it *is* possible.
        // help of Manual Scanner configuration (continued)
        string help5    = _("<p>Please note: you cannot configure or use more than <i>one</i> USB
 scanner at the same time.</p>");
 
       help = help1 + help2 + help3 + help4 + help5;
-      
+
+      // headline of the dialog
       string caption = _("Manual scanner configuration");
       term contents  = ScannerNotFoundDialog_UI();
 
@@ -114,13 +121,14 @@ scanner at the same time.</p>");
                   // try again to detect an USB scanner (maybe it is switched on now)
 		  list connected_scanner = SCR::Read(.probe.scanner);
 
+                  // text part 2 of the warning popup - disconnect unused scanners
 		  string msg = _("Please disconnect all unwanted USB scanners
 and restart the scanner configuration.");
 
                   // we support only ONE USB scanner
 		  if ( size (connected_scanner) > 1 )
 		  {
-		      // text of a warning popup
+		      // text part 1 of the warning popup - disconnect unused scanners
 		      UI::WarningPopup(_("YaST2 has detected several USB scanners, 
 but you can only use ONE of them.") + "\n" + msg);
 		      ret = `back;

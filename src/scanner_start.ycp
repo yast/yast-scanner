@@ -86,6 +86,7 @@ hardware probing of 'USB' and/or the 'SCSI' port(s).
 	  // if sane is missing, start installation.
 	  if ( sane_installed == 1 )
 	  {
+	      // ask the user whether to install package 'SANE' now
 	      mesg = mesg + _("
 
 Do you want to install the package(s) now ?
@@ -108,7 +109,7 @@ Do you want to install the package(s) now ?
 	  // SANE should be installed by now - if not inform the user and exit
 	  if ( SCR::Execute (.target.bash, "/bin/rpm -q sane") != 0 )
 	  {
-              // Translators: Please do not translate 'SANE'!
+              // Translators: Please do not translate 'SANE'! (it's a package name)
 	      UI::ErrorPopup(_("The package 'SANE' is not installed correctly.
 This package is mandatory for the scanner installation.
 Please make sure that you have the SuSE CD set available

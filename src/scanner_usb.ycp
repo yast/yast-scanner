@@ -38,8 +38,8 @@
       list module_list = ["scanner", "microtek"];
       term layout = `Empty();
       
-      // This is a label, i.e. the line length should not exceed 50 characters.
       layout = `VBox(`VSpacing(1.0),
+// This is a label, i.e. the line length should not exceed 50 characters.		     
 		     `Label(`opt (`hstretch), _("YaST2 could not load the USB scanner
 module automatically.\n
 Please select your scanner from the list below.")),
@@ -203,6 +203,7 @@ successfully you can proceed to the
 
 	      if ( usb_device == nil )
 	      {
+		  // text of a notify popup
 		  UI::NotifyPopup(_("Please select a scanner from the list."));
 		  go_on = true;
 	      }
@@ -241,8 +242,9 @@ successfully you can proceed to the
 
 		  if ( !success )
 		  {
-		      // text of an error popup: loading the module failed
+		    
 		      any cont = UI::ContinueCancelHeadlinePopup( ErrorMsg(),
+// text of an error popup: loading the module failed			  
 _("The USB module is NOT loaded successfully.
 Do you want to have another try or
 exit the scanner configuration?"));

@@ -52,15 +52,19 @@ Please enter the requested information.\n"))),
  */
   global define ScannerNetDialog()``{
       string help = "";
+      // help text part1 of the Network scan station dialog
       string help1    = _("<p>It is possible to use a scanner which
 is connected to a different computer, if the computer is configured as network scan station.</p> ");
+       // help text part2 of the Network scan station dialog
       string help2    = _("<p>Enter the IP address or hostname
 of that computer and click on <b>Next</b>.
 </p>");
+      // help text part3 of the Network scan station dialog
       string help3    = _("<p>More information on setting up network scan stations
 can be found in the SuSE support database.</p>");
       help = help1 + help2 + help3;
-      
+
+      // headline of the dialog
       string caption = _("Network scan station client");
       term contents  = ScannerNetDialog_UI();
 
