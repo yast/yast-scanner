@@ -1,4 +1,10 @@
 -------------------------------------------------------------------
+Tue Aug 26 14:37:50 CEST 2003 - gs@suse.de
+
+- V 2.8.8
+- activate services hotplug_usb and ptal for HP all-in-one devices 
+
+-------------------------------------------------------------------
 Thu Aug 21 15:39:54 CEST 2003 - gs@suse.de
 
 - bugfix in scannerDB.pm ( correct path is: /usr/bin/scanimage )
