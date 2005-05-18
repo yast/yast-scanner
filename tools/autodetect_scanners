@@ -18,20 +18,36 @@ OUTPUT_FORMAT="$1"
 TMP_DATA=$(mktemp -u /tmp/$MY_NAME.XXXXXX)
 
 # Get the raw data
-sane-find-scanner | egrep '^found SCSI |^found USB ' | sort -u | sed -e 's/^found //' | tr \" \' >$TMP_DATA
+MAXIMUM_WAIT="10"
+if [ -x /usr/bin/sane-find-scanner ]
+then sane-find-scanner >${TMP_DATA}.raw &
+     sanefindscannerPID=$!
+     for i in $( seq $MAXIMUM_WAIT )
+     do ps hp $sanefindscannerPID | grep -q sane-find-scanner || break
+        sleep 1
+     done
+     if ps hp $sanefindscannerPID | grep -q sane-find-scanner
+     then kill -9 $sanefindscannerPID &>/dev/null
+     fi
+else 
+    echo "Cannot execute /usr/bin/sane-find-scanner" 1>&2
+    exit 2
+fi
+cat ${TMP_DATA}.raw | egrep '^found SCSI |^found USB ' | sort -u | sed -e 's/^found //' | tr \" \' >$TMP_DATA && rm ${TMP_DATA}.raw
 
 # Output:
 
 # Output header:
 if [ "$OUTPUT_FORMAT" = "YCP" ]
 then echo "[" 
-else echo "CONNECTION|MANUFACTURER|MODEL|DESCRIPTION"
+else echo "CONNECTION|DEVICE|MANUFACTURER|MODEL|DESCRIPTION"
 fi
 
 # Output scanner entries:
 exec <$TMP_DATA
 while read DESCRIPTION
 do echo $DESCRIPTION | grep -q '^USB ' && CONNECTION="USB" || CONNECTION="SCSI"
+   DEVICE=$( echo $DESCRIPTION | sed -e 's/.* at \(.*\)/\1/' )
    MANUFACTURER=""
    MODEL=""
    if [ "$CONNECTION" = "USB" ]
@@ -39,8 +55,8 @@ do echo $DESCRIPTION | grep -q '^USB ' && CONNECTION="USB" || CONNECTION="SCSI"
         [ -n "$MODEL" ] && MANUFACTURER=$( echo $DESCRIPTION | tr '[]' '||' | cut -d '|' -s -f 2 )
    fi
    if [ "$OUTPUT_FORMAT" = "YCP" ]
-   then echo -e "  \$[ \"connection\":\"$CONNECTION\",\n     \"manufacturer\":\"$MANUFACTURER\",\n     \"model\":\"$MODEL\",\n     \"description\":\"$DESCRIPTION\"\n  ],"
-   else echo "$CONNECTION|$MANUFACTURER|$MODEL|$DESCRIPTION"
+   then echo -e "  \$[ \"connection\":\"$CONNECTION\",\n     \"device\":\"$DEVICE\",\n     \"manufacturer\":\"$MANUFACTURER\",\n     \"model\":\"$MODEL\",\n     \"description\":\"$DESCRIPTION\"\n  ],"
+   else echo "$CONNECTION|$DEVICE|$MANUFACTURER|$MODEL|$DESCRIPTION"
    fi
 done
 

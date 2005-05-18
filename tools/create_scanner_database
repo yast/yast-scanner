@@ -18,9 +18,10 @@ OUTPUT_FORMAT="$1"
 TMP_DATA=$(mktemp -u /tmp/$MY_NAME.XXXXXX)
 cat /dev/null >$TMP_DATA
 
-# Function to extract entries from a description file with SANE syntax:
+# Function to extract entries from a description file with SANE syntax.
+# Quoted quotation marks '\"' (happens in comments) are replaced by ' ':
 Extract()
-{ egrep -o '^[[:space:]]*:backend[[:space:]]*"[^"]*"|^[[:space:]]*:mfg[[:space:]]*"[^"]*"|^[[:space:]]*:model[[:space:]]*"[^"]*"|^[[:space:]]*:firmware[[:space:]]*"[^"]*"|^[[:space:]]*:interface[[:space:]]*"[^"]*"|^[[:space:]]*:status[[:space:]]*:[a-z]*|^[[:space:]]*:comment[[:space:]]*"[^"]*"' $1
+{ cat $1 | sed -e 's/\\"/ /g' | egrep -o '^[[:space:]]*:backend[[:space:]]*"[^"]*"|^[[:space:]]*:mfg[[:space:]]*"[^"]*"|^[[:space:]]*:model[[:space:]]*"[^"]*"|^[[:space:]]*:firmware[[:space:]]*"[^"]*"|^[[:space:]]*:interface[[:space:]]*"[^"]*"|^[[:space:]]*:status[[:space:]]*:[a-z]*|^[[:space:]]*:comment[[:space:]]*"[^"]*"'
 }
 
 # Process the SANE description files:
@@ -69,23 +70,30 @@ fi
 
 # Process the collected data:
 
-# Remove leading and trailing spaces:
-sed -i -e 's/^[[:space:]]*//' $TMP_DATA
-sed -i -e 's/[[:space:]]*$//' $TMP_DATA
+# Replace HTML tags:
+sed -i -e 's/<[Bb][Rr]>/, /g' \
+       -e 's/<[Pp]>/, /g' \
+       -e 's/<[^>]*>/ /g' $TMP_DATA
 
 # Condense multiple spaces and convert tabs to blanks:
 sed -i -e 's/[[:space:]][[:space:]]*/ /g' $TMP_DATA
+
+# Remove leading and trailing spaces:
+sed -i -e 's/^[[:space:]]*//' \
+       -e 's/[[:space:]]*$//' \
+       -e 's/"[[:space:]]*/"/' \
+       -e 's/[[:space:]]*"$/"/' $TMP_DATA
 
 # Convert the status value to the usual string format:
 sed -i -e 's/^:status :\(.*\)/:status "\1"/' $TMP_DATA
 
 # Equalize different spelling of same manufacturers:
-sed -i -e 's/"AGFA"/"Agfa"/g' $TMP_DATA
-sed -i -e 's/"UMAX"/"Umax"/g' $TMP_DATA
+sed -i -e 's/"AGFA"/"Agfa"/g' \
+       -e 's/"UMAX"/"Umax"/g' $TMP_DATA
 
 # Change meaningless references to a meaningful reference:
-sed -i -e 's/see link/see http:\/\/www.sane-project.org/g' $TMP_DATA
-sed -i -e 's/See link/See http:\/\/www.sane-project.org/g' $TMP_DATA
+sed -i -e 's/see link/see http:\/\/www.sane-project.org/g' \
+       -e 's/See link/See http:\/\/www.sane-project.org/g' $TMP_DATA
 
 # Output:
 

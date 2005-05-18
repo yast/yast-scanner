@@ -16,7 +16,7 @@ X-SuSE-YaST-Geometry=
 X-SuSE-YaST-SortKey=
 X-SuSE-YaST-AutoInstResource=
 
-Icon=yast-scanner
+Icon=scanner
 Exec=/sbin/yast2 scanner 
 
 Name=Scanner
@@ -51,4 +51,3 @@ Name[sl]=Optični bralnik (scanner)
 GenericName[sl]=Nastavitev optičnega bralnika (scannerja)
 Name[tr]=Tarayıcı
 GenericName[tr]=Tarayıcı yapılandırması
-X-KDE-SubstituteUID=true
