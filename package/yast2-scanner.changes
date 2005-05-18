@@ -1,4 +1,30 @@
 -------------------------------------------------------------------
+Wed May 18 13:37:40 CEST 2005 - jsmeix@suse.de
+
+- V 2.12.0
+- Fixed a bug to to find SCSI scanners (avoid false positives).
+- Made the "sed" calls in create_scanner_database look nicer.
+- Removed the needless additional Popup::TimedOKCancel(...)
+  confirmation request before installing additional packages.
+- Added "Progress:..." in ActivateBackend() (Bug #74446).
+
+-------------------------------------------------------------------
+Wed Mar  2 14:20:09 CET 2005 - jsmeix@suse.de
+
+- V 2.11.6
+- Applied proofread texts.
+- Additionally changed only 'arive' to 'arise' in helps.ycp
+
+-------------------------------------------------------------------
+Mon Feb 28 11:52:42 CET 2005 - jsmeix@suse.de
+
+- V 2.11.5
+- Removed already configured scanners (i.e. active scanners)
+  from list of shown autodetected scanners.
+- Added time bombs where external programs may hang up.
+- Several bug fixes.
+
+-------------------------------------------------------------------
 Tue Feb 15 10:39:03 CET 2005 - jsmeix@suse.de
 
 - V 2.11.4

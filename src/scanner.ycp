@@ -32,7 +32,7 @@ include "scanner/wizards.ycp";
 map command_line_description =
 $[ "id" : "scanner",
    // Text for the command_line_description:
-   "help" : _("Configuration of scanner"),
+   "help" : _("Scanner Configuration"),
    "guihandler" : ScannerSequence,
    "initialize" : Scanner::Read,
    "finish" : Scanner::Write,

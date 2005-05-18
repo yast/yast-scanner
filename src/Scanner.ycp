@@ -89,7 +89,7 @@ global list< map< string, string > > database = [];
  * which outputs on stdout a YCP list of scanner maps in the following format:
  * [
  *   $[ "backend":"The name of the backend (required)",
- *      "device":"The SANE device (required)",
+ *      "sane_device":"The SANE device (required)",
  *      "manufacturer":"The manufacturer name of the scanner (required)",
  *      "model":"The model name of the scanner (required)",
  *   ],
@@ -132,6 +132,7 @@ global list< string > active_backends = [];
  * The result is a YCP list of scanner maps in the following format:
  * [
  *   $[ "connection":"Either USB or SCSI (required)",
+ *      "device":"The device, e.g. '/dev/sg0' or 'libusb:001:002' (may be the empty string)"
  *      "manufacturer":"The manufacturer name of the scanner (may be the empty string)",
  *      "model":"The model name of the scanner (may be the empty string)",
  *      "description":"The sane-find-scanner output description string (required)"
@@ -332,21 +333,6 @@ boolean TestAndInstallPackage( string package_name )
                    );
       return false;
     }
-    if( ! Popup::TimedOKCancel( sformat( // Message of a Popup::TimedOKCancel where %1 will be replaced by the package name:
-                                         _("Required package %1 is not installed. It will be installed now."),
-                                         package_name
-                                       ),
-                                10
-                              )
-      )
-    { y2milestone( "Package %1 is required and must be installed.", package_name );
-      Report::Error( // Message of a Report::Error where %1 will be replaced by the package name:
-                     sformat( _("Package %1 is required and must be installed."),
-                              package_name
-                            )
-                   );
-      return false;
-    }
     if( ! Package::Install( package_name ) )
     { y2milestone( "Failed to install required package %1.", package_name );
       Report::Error( // Message of a Report::Error where %1 will be replaced by the package name:
@@ -475,18 +461,22 @@ boolean AutodetectScanners()
 }
 
 /**
- * Search the active_scanners list for possible SCSI scanners ("/dev/" in SANE device)
+ * Search the active_scanners list for possible SCSI scanners (":/dev/" in SANE device)
  * and if at least one possible SCSI scanner was found,
  * then run /etc/init.d/sane-dev (using "restart" to be safe that outdated permissions are reset)
  *      and enable it for reboot ("insserv")
- * otherwise stop it and disable it for reboot ("insserv -r")
+ * otherwise stop it and disable it for reboot ("insserv -r").
+ * Note that it must search for ":/dev/" to find only SCSI scanners ("backend:/dev/sg...")
+ * because for example the hpaio backend may have also "/dev/" in its device,
+ * e.g.: "hpaio:/usb/HP_LaserJet_1220?device=/dev/usb/lp0",
+ * this depends on the particular model (e.g. when it doesn't report a serial number).
  * @return true on success
  */
 boolean SetScsiScannerAccessPermissions()
 { boolean run_and_activate_sane_dev = false;
   foreach( map< string, string > active_scanner,
            active_scanners,
-           { if( issubstring( active_scanner["device"]:"", "/dev/" ) )
+           { if( issubstring( active_scanner["sane_device"]:"", ":/dev/" ) )
              { run_and_activate_sane_dev = true;
              }
            }
@@ -616,7 +606,7 @@ global boolean Read()
   if( database == nil )
   { y2milestone( "Aborting: Failed to read %1", database_filename );
     Report::Error( sformat( // Message of a Report::Error where %1 will be replaced by the file name:
-                            _("Aborting: Failed to read %1"),
+                            _("Aborting: Failed to read %1."),
                             database_filename
                           )
                  );
@@ -692,29 +682,47 @@ global boolean Write()
 global list Summary()
 { // Make a list of the autodetected scanners:
   list< term > detected_scanners = [];
-  integer autodetected_scanners_index = 0;
+  integer autodetected_scanners_index = -1;
+  boolean preselected = false;
   foreach( map< string, string > autodetected_scanner,
            autodetected_scanners,
-           { string description = autodetected_scanner["description"]:"";
+           { // Set the autodetected_scanners_index to the index number
+             // of the actual autodetected_scanner in autodetected_scanners:
+             autodetected_scanners_index = autodetected_scanners_index +1;
+             // Use local variables to have shorter variable names:
+             string description = autodetected_scanner["description"]:"";
+             string device = autodetected_scanner["device"]:"";
              if( "" != description )
-             { if( selected_autodetected_scanners_index == autodetected_scanners_index )
-               { // If there was already a scanner selected before then preselect it.
-                 // This happens for example when going 'back' to the summary screen.
-                 detected_scanners = add( detected_scanners,
-                                          `item( `id( autodetected_scanners_index ), description, true )
-                                        );
+             { // Test whether the autodetected_scanner is one of the active_scanners.
+               // If yes, then there is no need to set it up again
+               // and then don't show it in the list of detected_scanners:
+               boolean show_as_detected_scanner = true;
+               foreach( map< string, string > active_scanner,
+                        active_scanners,
+                        { if( issubstring( active_scanner["sane_device"]:"unknown", device ) )
+                          { show_as_detected_scanner = false;
+                          }
+                        }
+                      );
+               if( show_as_detected_scanner )
+               { if( selected_autodetected_scanners_index == autodetected_scanners_index )
+                 { // If there was already a scanner selected before then preselect it.
+                   // This happens for example when going 'back' to the summary screen.
+                   detected_scanners = add( detected_scanners,
+                                            `item( `id( autodetected_scanners_index ), description, true )
+                                          );
+                   preselected = true;
+                 }
+                 else
+                 { detected_scanners = add( detected_scanners,
+                                            `item( `id( autodetected_scanners_index ), description )
+                                          );
+                 }
                }
-               else
-               { detected_scanners = add( detected_scanners,
-                                          `item( `id( autodetected_scanners_index ), description )
-                                        );
-               }
-               // Increase the autodetected_scanners_index only if a new item was added:
-               autodetected_scanners_index = autodetected_scanners_index +1;
              }
            }
          );
-  if( selected_autodetected_scanners_index < 0 )
+  if( ! preselected )
   { detected_scanners = add( detected_scanners, `item( `id( -1 ), "Other (not detected)", true ) );
   }
   else
@@ -742,7 +750,7 @@ global list Summary()
                                               // Fallback model name if the real model name is missing:
                                               active_scanner["model"]:_("unknown model"),
                                               // Fallback device name if the real device name is missing:
-                                              active_scanner["device"]:_("unknown device")
+                                              active_scanner["sane_device"]:_("unknown device")
                                             );
                summary_text = summary_text + active_scanner_text;
              }
@@ -994,29 +1002,32 @@ global boolean ActivateBackend( string backend_name, integer database_index, boo
   // The body of a Popup::AnyMessage for scanners which require a firmware upload
   // Below this message on a seperated line a special command will be shown:
 _("A firmware file contains software that must be uploaded to the scanner's memory.
-Without firmware, the scanner cannot work.\n
-As firmware is licensed by the scanner manufacturer, we cannot distribute it.
+Without firmware, the scanner cannot work.
+
+Because firmware is licensed by the scanner manufacturer, we cannot distribute it.
 Usually the firmware file is somehow stored on the manufacturer's CD.
 Alternatively, it may be possible to download it from the manufacturer's Web site.
 Ask the manufacturer how to get the firmware file for your particular scanner.
 Find additional useful information on the SANE Web site:
-http://www.sane-project.org/\n
+http://www.sane-project.org/
+
 After you get the firmware file, you must configure the driver manually.
 The man page of the driver describes how to configure it for firmware upload.
-The following command shows the man page for your driver:"
-);
+The following command shows the man page for your driver:
+");
   string hpaio_message =
   // The message of a Popup::YesNo for scanners which should be set up with the hpaio backend:
 _("The hpaio driver requires the hplip service to be up and running.
-Additionally the hplip service should be activated to be started when booting.
+Additionally, the hplip service should be configured to start when booting.
 The hplip service and the PTAL system exclude each other.
 Therefore a running PTAL system would be stopped and deactivated
 before the the hplip service is activated and started.
-The hplip service doesn't support parallel-port scanners.
-For more information see the following article in our support portal:
-http://portal.suse.com/sdb/en/2002/05/ke_hp-officejet.html\n
-Should the hplip service be activated and started now?"
-);
+The hplip service does not support parallel-port scanners.
+For more information, see the following article in our support portal:
+http://portal.suse.com/sdb/en/2002/05/ke_hp-officejet.html
+
+Should the hplip service be activated and started now?
+");
   string hpoj_message =
   // The message of a Popup::YesNo for scanners which should be set up with the hpoj backend:
 _("The hpoj driver requires the PTAL system be set up and running.
@@ -1034,8 +1045,7 @@ a running ptal service monopolizes the USB device file (e.g., /dev/usb/lp0),
 so the printer can no longer be addressed via the USB device file.
 See the following article in our support portal:
 http://portal.suse.com/sdb/en/2002/05/ke_hp-officejet.html\n
-Should the PTAL system for USB be initialized, activated, and started now?"
-);
+Should the PTAL system for USB be initialized, activated, and started now?");
   // Here the real code starts with proper indentation:
   if( backend_name == "" )
   { if( database_index < 0 )
@@ -1051,12 +1061,52 @@ Should the PTAL system for USB be initialized, activated, and started now?"
   // To be safe assume that something will really be modified.
   // If there is in fact nothing modified, it doesn't harm if 'modified' is 'true':
   modified = true;
+
+  // Define the progress stages:
+  Progress::New( // Header of a Progress::New:
+                 // %1 will be replaced by the backend name
+                 sformat( _("Setting up driver %1"),
+                          backend_name
+                        ),
+                 " ",
+                 6,
+                 [ // 1. stage description of a Progress::New:
+                   _("Check whether additional packages must be installed"),
+                   // 2. stage description of a Progress::New:
+                   _("Check whether firmware upload is required"),
+                   // 3. stage description of a Progress::New:
+                   _("Test and set up special requirements for particular drivers"),
+                   // 4. stage description of a Progress::New:
+                   _("Activate the driver"),
+                   // 5. stage description of a Progress::New:
+                   _("Determine active scanners"),
+                   // 6. stage description of a Progress::New:
+                   _("Test and set SCSI scanner access permissions")
+                 ],
+                 [ // 1. stage work in progress message of a Progress::New:
+                   _("Checking whether additional packages must be installed..."),
+                   // 2. stage work in progress message of a Progress::New:
+                   _("Checking whether firmware upload is required..."),
+                   // 3. stage work in progress message of a Progress::New:
+                   _("Testing and setting set up special requirements for particular drivers..."),
+                   // 4. stage work in progress message of a Progress::New:
+                   _("Activating the driver..."),
+                   // 5. stage work in progress message of a Progress::New:
+                   _("Determining active scanners..."),
+                   // 6. stage work in progress message of a Progress::New:
+                   _("Testing and setting SCSI scanner access permissions..."),
+                   // Last work in progress message of a Progress::New:
+                   _("Finished")
+                 ],
+                 ""
+               );
   // Test if the package which provides the backend is installed
   // and if not then try to install it.
   // This makes only sense if a database_index was specified
   // because which package is required for which backend is stored in the database
   // and additionally user confirmation must be requested.
   // Otherwise skip this section.
+  Progress::NextStage();
   string package_name = database[database_index,"package"]:"unknown";
   if( package_name != "unknown"
       && user_confirmation
@@ -1080,6 +1130,7 @@ Should the PTAL system for USB be initialized, activated, and started now?"
   // because which scanner requires firmware upload is stored in the database
   // and additionally user confirmation must be requested.
   // Otherwise skip this section.
+  Progress::NextStage();
   string firmware_entry = database[database_index,"firmware"]:"unknown";
   if( "required" == firmware_entry
       && user_confirmation
@@ -1089,6 +1140,8 @@ Should the PTAL system for USB be initialized, activated, and started now?"
                        firmware_message + "\n    man sane-" + backend_name
                      );
   }
+  // Set up special requirements for particular backends (e.g. "hpaio", "hpoj"):
+  Progress::NextStage();
   // The hpaio backend (from the package hplip) requires the hplip service to be up and running.
   // This makes only sense if user confirmation is requested.
   // Otherwise skip this section.
@@ -1150,6 +1203,7 @@ Should the PTAL system for USB be initialized, activated, and started now?"
     }
   }
   // Activate the backend via bash script:
+  Progress::NextStage();
   if( ! ExecuteBashCommand( activate_backend_commandline + " " + backend_name ) )
   { return false;
   }
@@ -1157,11 +1211,18 @@ Should the PTAL system for USB be initialized, activated, and started now?"
   // and set SCSI scanner access permissions anew.
   // Return successfully regardless of the result of this steps
   // because the backend was successfully activated.
+  Progress::NextStage();
   if( ! DetermineActiveScanners() )
   { active_scanners = [];
+    // This Progress::NextStage makes sure that
+    // the stage "Test and set SCSI scanner access permissions"
+    // is shown to the user even if it is not actually executed.
+    // But because of the word "Test" it is not wrong to show it.
+    Progress::NextStage();
   }
   else
-  { if( ! SetScsiScannerAccessPermissions()
+  { Progress::NextStage();
+    if( ! SetScsiScannerAccessPermissions()
         && user_confirmation
       )
     { Report::Warning( sformat( // Message of a Report::Warning when setting SCSI scanner access permissions failed
@@ -1177,6 +1238,7 @@ Should the PTAL system for USB be initialized, activated, and started now?"
   if( ! DetermineActiveBackends() )
   { active_backends = [];
   }
+  Progress::NextStage();
   return true;
 }
 
@@ -1238,7 +1300,7 @@ global boolean DeactivateBackend( string backend_name, integer database_index, b
                          + " "
                          + scanner_to_deactivate["model"]:"unknown"
                          + " at "
-                         + scanner_to_deactivate["device"]:"unknown";
+                         + scanner_to_deactivate["sane_device"]:"unknown";
              }
            );
     if( ! Popup::YesNo( message ) )
@@ -1294,7 +1356,7 @@ global boolean TestBackend( string backend_name )
   foreach( map< string, string > active_scanner,
            active_scanners,
            { if( backend_name == active_scanner["backend"]:"unknown" )
-             { sane_device = active_scanner["device"]:"unknown";
+             { sane_device = active_scanner["sane_device"]:"unknown";
                if( sane_device != "unknown" )
                { string model_string = active_scanner["manufacturer"]:"unknown"
                                        + " "
@@ -1370,7 +1432,7 @@ global boolean TestBackend( string backend_name )
   }
   Popup::ClearFeedback();
   Report::ShowText( sformat( // Header of a Report::ShowText where %1 will be replaced by the backend name:
-                             _("Successfully tested %1"), backend_name
+                             _("Successfully Tested %1"), backend_name
                            ),
                     sformat( // Body of a Report::ShowText where
                              // %1 will be replaced by the SANE device identifier
@@ -1409,7 +1471,7 @@ global list Overview()
                                             + " "
                                             + active_scanner["model"]:"unknown"
                                             + " at "
-                                            + active_scanner["device"]:"unknown";
+                                            + active_scanner["sane_device"]:"unknown";
                           }
                         }
                       );
@@ -1434,7 +1496,7 @@ global list Overview()
 global boolean DetermineNetworkScanningConfig()
 { if( ! ExecuteBashCommand( determine_network_scanning_config_commandline ) )
   { Report::Error( // Message of a Report::Error:
-                   _("Failed to determine the config for scanning via network.")
+                   _("Failed to determine the configuration for scanning via network.")
                  );
     return false;
   }
