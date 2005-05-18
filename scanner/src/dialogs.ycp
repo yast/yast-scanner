@@ -1,0 +1,499 @@
+/**
+ * File:        include/scanner/dialogs.ycp
+ * Package:     Configuration of scanner
+ * Summary:     Dialogs definitions
+ * Authors:     Johannes Meixner <jsmeix@suse.de>
+ *
+ * $Id$
+ * $Id$
+ */
+
+{
+
+textdomain "scanner";
+
+import "Label";
+import "Popup";
+import "Wizard";
+import "Wizard_hw";
+import "Scanner";
+
+include "scanner/helps.ycp";
+
+boolean ReallyAbort()
+{ // At present the transaction semantik is not implemented.
+  // At present all changings are committed to the system instantly, for example
+  // - enable/disable backends in /etc/sane/dll.conf
+  // - install additional packages (like iscan)
+  // - set up and start additional services (like PTAL)
+  // It is necessary to commit them instantly to be able to test a scanner
+  // and to show a true feedback to the user which scanners are actually active.
+  // As roll-back is not implemented 'Popup::ReallyAbort(true)' doesn't make sense.
+  // Scanner::Modified() returns true if something was committed to the system.
+  return !Scanner::Modified() || Popup::ReallyAbort(false);
+}
+
+/**
+ * Read settings dialog
+ * @return `abort if aborted and `next otherwise
+ */
+symbol ReadDialog()
+{ Wizard::RestoreHelp(HELPS["read"]:"");
+  boolean ret = Scanner::Read();
+  return ret ? `next : `abort;
+}
+
+/**
+ * Write settings dialog
+ * @return `abort if aborted and `next otherwise
+ */
+symbol WriteDialog()
+{ Wizard::RestoreHelp(HELPS["write"]:"");
+  boolean ret = Scanner::Write();
+  return ret ? `next : `abort;
+}
+
+/**
+ * Summary dialog
+ * @return dialog result
+ */
+any SummaryDialog()
+{ // Caption of the SummaryDialog:
+  string caption = _("Scanner Configuration");
+  // Create the content of the summary:
+  list summary = Scanner::Summary();
+  string configured = summary[0]:"";
+  list autodetected = summary[1]:[];
+  // Label of the frame where the "Autodetected Scanners" are shown:
+  term contents = Wizard_hw::DetectedContent( _("Autodetected Scanners"),
+                                              autodetected,
+                                              false,
+                                              configured
+                                            );
+  Wizard::SetContentsButtons( caption,
+                              contents,
+                              HELPS["summary"]:"",
+                              Label::BackButton(),
+                              Label::FinishButton()
+                            );
+  any ret = nil;
+  while(true)
+  { ret = UI::UserInput();
+    /* back or abort */
+    if( ret == `abort
+        || ret == `cancel
+        || ret == `back
+      )
+    { if( ! ReallyAbort() ) continue;
+      break;
+    }
+    /* change */
+    if( ret == `edit_button )
+    { ret = `overview;
+      break;
+    }
+    /* finish */
+    if(ret == `next)
+    { break;
+    }
+    /* select a device */
+    if( ret == `detected_selbox ) continue;
+    /* configure the selected device */
+    if( ret == `configure_button )
+    { Scanner::selected_autodetected_scanners_index = (integer)UI::QueryWidget( `id( `detected_selbox ), `CurrentItem );
+      y2milestone( "Selected autodetected scanners index in SummaryDialog is: %1", Scanner::selected_autodetected_scanners_index );
+      if( Scanner::selected_autodetected_scanners_index < 0 )
+      { ret = `other;
+      }
+      else
+      { // Unselect a previously selected model in the database
+        // to have it no longer preselected in the select model dialog
+        // when the user has really selected an autodetected scanner:
+        Scanner::selected_model_database_index = -1;
+        ret = `configure;
+      }
+      break;
+    }
+    y2milestone( "Ignoring unexpected returncode in SummaryDialog: %1", ret );
+    continue;
+  }
+  y2milestone( "SummaryDialog returns: %1", ret );
+  return ret;
+}
+
+/**
+ * Overview dialog
+ * @return dialog result
+ */
+any OverviewDialog()
+{ // Caption of the OverviewDialog:
+  string caption = _("Scanner Overview");
+  list overview_table = Scanner::Overview();
+  term contents = Wizard_hw::ConfiguredContent( `header( // A table column header: 
+                                                         _("Driver Name"),
+                                                         // A table column header:
+                                                         _("Associated Scanners")
+                                                       ),
+                                                 overview_table,
+                                                 nil,
+                                                 nil,
+                                                 `HBox( `PushButton( `id( `test_button ),
+                                                                     // Label of a PushButton to test a scanner:
+                                                                     _("&Test")
+                                                                   ),
+                                                        `PushButton( `id( `network_scanning_button ),
+                                                                     // Label of a PushButton to go to the network scanning dialog:
+                                                                     _("Scanning via &Network")
+                                                                   )
+                                                      ),
+                                                 nil
+                                               );
+  contents = Wizard_hw::SpacingAround( contents, 1.5, 1.5, 1.0, 1.0 );
+  Wizard::SetContentsButtons( caption,
+                              contents,
+                              HELPS["overview"]:"",
+                              Label::BackButton(),
+                              Label::FinishButton()
+                            );
+  any ret = nil;
+  while(true)
+  { ret = UI::UserInput();
+    /* back or abort */
+    if( ret == `abort
+        || ret == `cancel
+      )
+    { if( ! ReallyAbort() ) continue;
+      break;
+    }
+    /* add */
+    if( ret == `add_button )
+    { // Unselect a previously selected autodetected scanner
+      // to have it no longer preselected in the select model dialog:
+      Scanner::selected_autodetected_scanners_index = -1;
+      ret = `add;
+      break;
+    }
+    /* edit */
+    if( ret == `edit_button )
+    { // Unselect a previously selected autodetected scanner
+      // to have it no longer preselected in the select model dialog:
+      Scanner::selected_autodetected_scanners_index = -1;
+      ret = `edit;
+      break;
+    }
+    /* delete */
+    if( ret == `delete_button )
+    { string backend_name = (string)UI::QueryWidget( `id(`table), `CurrentItem );
+      y2milestone( "Selected backend to be deleted (i.e. deactivated) is: %1", backend_name );
+      if( nil == backend_name
+          || "" == backend_name )
+      { Popup::AnyMessage( // Header of a Popup::AnyMessage when no backend was selected:
+                           _("Nothing Selected"),
+                           // Body of a Popup::AnyMessage when no backend was selected:
+                           _("Select an entry.")
+                         );
+        continue;
+      }
+      if( ! Popup::YesNo( sformat( // Question of a Popup::YesNo where %1 will be replaced by the backend name:
+                                   _("Deactivate %1?"), backend_name ) ) )
+      { continue;
+      }
+      Wizard::DisableBackButton();
+      Wizard::DisableAbortButton();
+      Wizard::DisableNextButton();
+      if( ! Scanner::DeactivateBackend( backend_name, -1, true ) )
+      { Popup::Error( // Message of a Popup::Error where %1 will be replaced by the backend name:
+                      sformat( _("Failed to deactivate %1."), backend_name ) );
+        Wizard::EnableBackButton();
+        Wizard::EnableAbortButton();
+        Wizard::EnableNextButton();
+        continue;
+      }
+      Wizard::EnableBackButton();
+      Wizard::EnableAbortButton();
+      Wizard::EnableNextButton();
+      ret = `overview;
+      break;
+    }
+    /* test */
+    if( ret == `test_button )
+    { string backend_name = (string)UI::QueryWidget( `id(`table), `CurrentItem );
+      y2milestone( "Selected backend to be tested is: %1", backend_name );
+      if( nil == backend_name
+          || "" == backend_name )
+      { Popup::AnyMessage( // Header of a Popup::AnyMessage when no backend was selected:
+                           _("Nothing Selected"),
+                           // Body of a Popup::AnyMessage when no backend was selected:
+                           _("Select an entry.")
+                         );
+        continue;
+      }
+      if( ! Scanner::TestBackend( backend_name ) )
+      { Popup::Error( // Message of a Popup::Error where %1 will be replaced by the backend name:
+                      sformat( _("Failed to test %1."), backend_name ) );
+        continue;
+      }
+      ret = `overview;
+      break;
+    }
+    /* network scanning */
+    if( ret == `network_scanning_button )
+    { ret = `network_scanning;
+      break;
+    }
+    /* next or back */
+    if( ret == `next
+        || ret == `back
+      )
+    { break;
+    }
+    y2milestone( "Ignoring unexpected returncode in OverviewDialog: %1", ret );
+    continue;
+  }
+  return ret;
+}
+
+/**
+ * Select model dialog
+ * @return dialog result
+ */
+any SelectModelDialog()
+{ // Caption of the SelectModelDialog:
+  string caption = _("Scanner Model Selection");
+  string filter_string = "";
+  term contents = `VBox( `HBox( `TextEntry( `id(`filter_input),
+                                            // Header of a TextEntry user input field:
+                                            _("S&earch String (case insensitive):")
+                                          ),
+                                `PushButton( `id(`apply_filter),
+                                             // This button must be the default
+                                             // (it is activated when the user pressed the Enter key)
+                                             // because when the user has clicked into TextEntry to enter something
+                                             // it is normal to finish entering by pressing the Enter key
+                                             // but if the Enter key was linked to 'Next' or 'Back',
+                                             // the user would get the wrong action.
+                                             `opt(`default),
+                                             // Label of a PushButton to apply a search string to a list:
+                                             _("&Apply")
+                                           )
+                              ),
+                         `ReplacePoint( `id(`model_selection_replace_point),
+                                        `SelectionBox( `id(`model_selection),
+                                                       // Header of a SelectionBox with a list of models:
+                                                       _("&Scanner Model and Driver:"),
+                                                       Scanner::ModelItems( filter_string )
+                                                     )
+                                      )
+                       );
+  Wizard::SetContentsButtons( caption,
+                              contents,
+                              HELPS["select_model"]:"",
+                              Label::BackButton(),
+                              Label::NextButton()
+                            );
+  any ret = nil;
+  while(true)
+  { ret = UI::UserInput();
+    if( ret == `abort
+        || ret == `cancel
+      )
+    { if( ! ReallyAbort() ) continue;
+      break;
+    }
+    if ( ret == `back )
+    { break;
+    }
+    /* apply a filter to the model list */
+    if( ret == `apply_filter )
+    { filter_string = (string)UI::QueryWidget( `id(`filter_input), `Value );
+      UI::ReplaceWidget( `id(`model_selection_replace_point),
+                         `SelectionBox( `id(`model_selection),
+                                        // Header of a SelectionBox with a list of models:
+                                        _("&Scanner Model and Driver:"),
+                                        Scanner::ModelItems( filter_string )
+                                      )
+                       );
+      continue;
+    }
+    /* select a scanner */
+    if( ret == `next )
+    { Scanner::selected_model_database_index = (integer)UI::QueryWidget( `id(`model_selection), `CurrentItem );
+      if( nil == Scanner::selected_model_database_index )
+      { Popup::AnyMessage( // Header of a Popup::AnyMessage when no model was selected:
+                           _("Nothing Selected"),
+                           // Body of a Popup::AnyMessage when no model was selected:
+                           _("Select an entry.")
+                         );
+        continue;
+      }
+      if( "unsupported" == Scanner::database[Scanner::selected_model_database_index,"status"]:"unknown" )
+      { Popup::AnyMessage( // Header of a Popup::AnyMessage when an unsupported model was selected:
+                           _("Unsupported Model"),
+                           // Body of a Popup::AnyMessage when an unsupported model was selected:
+                           _("This model is not supported.\nAsk the manufacturer for a Linux driver.")
+                         );
+        continue;
+      }
+      break;
+    }
+    y2milestone( "Ignoring unexpected returncode in SelectModelDialog: %1", ret );
+    continue;
+  }
+  return ret;
+}
+
+/**
+ * Configure backend dialog
+ * @return dialog result
+ */
+any ConfigureBackendDialog()
+{ // Caption of the ConfigureBackendDialog:
+  string caption = _("Scanner and Driver Setup");
+  y2milestone( "Selected model is: %1", Scanner::database[Scanner::selected_model_database_index]:$[] );
+  string backend_name = Scanner::database[Scanner::selected_model_database_index,"backend"]:"unknown";
+  // The content here is only a dummy.
+  // The real content is what the "Progress:..." shows in ActivateBackend().
+  term contents = `Label( "" );
+  Wizard::SetContentsButtons( caption,
+                              contents,
+                              HELPS["configure_backend"]:"",
+                              Label::BackButton(),
+                              Label::NextButton()
+                            );
+  Wizard::DisableBackButton();
+  Wizard::DisableAbortButton();
+  Wizard::DisableNextButton();
+  if( ! Scanner::ActivateBackend( "", Scanner::selected_model_database_index, true ) )
+  { Popup::Error( sformat( // Message of a Popup::Error where %1 will be replaced by the backend name:
+                           _("Failed to activate %1."), backend_name ) );
+  }
+  Wizard::EnableBackButton();
+  Wizard::EnableAbortButton();
+  Wizard::EnableNextButton();
+  any ret = nil;
+  while(true)
+  { ret = UI::UserInput();
+    /* abort or cancel */
+    if( ret == `abort
+        || ret == `cancel )
+    { if( ! ReallyAbort() ) continue;
+      break;
+    }
+    if( ret == `back )
+    { Wizard::DisableBackButton();
+      Wizard::DisableAbortButton();
+      Wizard::DisableNextButton();
+      if( ! Scanner::DeactivateBackend( "", Scanner::selected_model_database_index, false ) )
+      { Popup::Error( sformat( // Message of a Popup::Error where %1 will be replaced by the backend name:
+                               _("Failed to deactivate %1."), backend_name ) );
+      }
+      Wizard::EnableBackButton();
+      Wizard::EnableAbortButton();
+      Wizard::EnableNextButton();
+      break;
+    }
+    if( ret == `next )
+    { break;
+    }
+    y2milestone( "Ignoring unexpected returncode in ConfigureBackendDialog: %1", ret );
+    continue;
+  }
+  return ret;
+}
+
+/**
+ * Network scanning dialog
+ * @return dialog result
+ */
+any ConfigureNetworkScanningDialog()
+{ // Determine the network scanning config
+  // but don't care if this fails because then empty strings are used as secure fallback
+  // and empty strings will disable network scanning (i.e. the net backend and the saned):
+  Scanner::DetermineNetworkScanningConfig();
+  string net_backend_hosts = Scanner::network_scanning_config["net_backend_hosts"]:"";
+  string saned_hosts = Scanner::network_scanning_config["saned_hosts"]:"";
+  // Caption of the ConfigureNetworkScanningDialog:
+  string caption = _("Set Up Scanning via Network");
+  term contents = `VBox( `ReplacePoint( `id(`saned_hosts_input_replace_point),
+                                        `TextEntry( `id(`saned_hosts_input),
+                                                    // Header of a TextEntry user input field:
+                                                    _("&Permitted Hosts for 'saned' (comma-separated list of hosts or subnets):"),
+                                                    saned_hosts
+                                                  )
+                                      ),
+                         `ReplacePoint( `id(`net_backend_hosts_input_replace_point),
+                                        `TextEntry( `id(`net_backend_hosts_input),
+                                                    // Header of a TextEntry user input field:
+                                                    _("&Hosts Used for the 'net' Metadriver (comma-separated list of hosts):"),
+                                                    net_backend_hosts
+                                                  )
+                                      ),
+                         `PushButton( `id(`propose_config),
+                                      // Label of a PushButton to propose a configuration:
+                                      _("&Propose")
+                                    )
+                       );
+  Wizard::SetContentsButtons( caption,
+                              contents,
+                              HELPS["configure_network_scanning"]:"",
+                              Label::BackButton(),
+                              Label::NextButton()
+                            );
+  any ret = nil;
+  while(true)
+  { ret = UI::UserInput();
+    /* abort or cancel */
+    if( ret == `abort
+        || ret == `cancel )
+    { if( ! ReallyAbort() ) continue;
+      break;
+    }
+    /* propose a configuration */
+    if( ret == `propose_config )
+    { UI::ReplaceWidget( `id(`saned_hosts_input_replace_point),
+                         `TextEntry( `id(`saned_hosts_input),
+                                     // Header of a TextEntry user input field:
+                                     _("&Permitted Hosts for 'saned' (comma-separated list of hosts or subnets):"),
+                                     "localhost,127.0.0.0/8"
+                                   )
+                       );
+      UI::ReplaceWidget( `id(`net_backend_hosts_input_replace_point),
+                         `TextEntry( `id(`net_backend_hosts_input),
+                                     // Header of a TextEntry user input field:
+                                     _("&Hosts Used for the 'net' Metadriver (comma-separated list of hosts):"),
+                                     "localhost"
+                                   )
+                       );
+      continue;
+    }
+    /* set up the configuration */
+    if( ret == `next )
+    { Scanner::network_scanning_config["net_backend_hosts"] = (string)UI::QueryWidget( `id(`net_backend_hosts_input), `Value );
+      Scanner::network_scanning_config["saned_hosts"] = (string)UI::QueryWidget( `id(`saned_hosts_input), `Value );
+      Wizard::DisableBackButton();
+      Wizard::DisableAbortButton();
+      Wizard::DisableNextButton();
+      if( ! Scanner::SetupNetworkScanningConfig() )
+      { Wizard::EnableBackButton();
+        Wizard::EnableAbortButton();
+        Wizard::EnableNextButton();
+        continue;
+      }
+      Wizard::EnableBackButton();
+      Wizard::EnableAbortButton();
+      Wizard::EnableNextButton();
+      break;
+    }
+    if( ret == `back )
+    { break;
+    }
+    y2milestone( "Ignoring unexpected returncode in ConfigureBackendDialog: %1", ret );
+    continue;
+  }
+  return ret;
+}
+
+/* EOF */
+
+}
+
