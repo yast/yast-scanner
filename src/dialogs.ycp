@@ -16,6 +16,7 @@ import "Label";
 import "Popup";
 import "Wizard";
 import "Wizard_hw";
+import "Arch";
 import "Scanner";
 
 include "scanner/helps.ycp";
@@ -326,13 +327,59 @@ any SelectModelDialog()
                          );
         continue;
       }
+      // Compare how the ModelItems function builds the matching status_strings by using the same logic:
       if( "unsupported" == Scanner::database[Scanner::selected_model_database_index,"status"]:"unknown" )
-      { Popup::AnyMessage( // Header of a Popup::AnyMessage when an unsupported model was selected:
-                           _("Unsupported Model"),
-                           // Body of a Popup::AnyMessage when an unsupported model was selected:
-                           _("This model is not supported.\nAsk the manufacturer for a Linux driver.")
-                         );
+      { string backend = Scanner::database[Scanner::selected_model_database_index,"backend"]:"unknown";
+        if( "unsupported" == backend )
+        { Popup::AnyMessage( // Header of a Popup::AnyMessage when an unsupported model was selected:
+                             _("Unsupported Model"),
+                             // Body of a Popup::AnyMessage when an unsupported model was selected:
+                             _("This model is not supported.\nAsk the manufacturer for a Linux driver.")
+                           );
+        }
+        else
+        { Popup::AnyMessage( sformat( // Header of a Popup::AnyMessage when a model was selected
+                                      // which is listed as "unsupported" for a particular driver:
+                                      // %1 will be replaced by the backend (scanner driver) name
+                                      _("Model not Supported by the Driver '%1'"),
+                                      backend
+                                    ),
+                             // Body of a Popup::AnyMessage when a model was selected
+                             // which is listed as "unsupported" for a particular driver:
+                             _("Check if another driver supports it,\nor select a compatible model,\nor ask the manufacturer for a Linux driver.")
+                           );
+        }
         continue;
+      }
+      // The epkowa backend (package iscan) is only available for i386-compatible architectures.
+      // It would be possible to test for non-i386-compatible architecture in the ModelItems function
+      // and suppress the epkowa backend entries in the model list but intentionally this is not done.
+      // All available known model information is always shown to the user.
+      // There is never known information secretly hidden from the user.
+      // If something is not supported in a special case, an additional information message is shown.
+      // Otherwise a user on a non-i386-compatible architecture would not understand
+      // when others (who use i386) tell him that "model XYZ is listed and works perfectly"
+      // until after a long discusssion they find out that it depends on the architecture.
+      if( "epkowa" == Scanner::database[Scanner::selected_model_database_index,"backend"]:"unknown" )
+      { if( !Arch::i386() )
+        { if( !Arch::x86_64() )
+          { Popup::AnyMessage( // Header of a Popup::AnyMessage when the epkowa backend was selected
+                               // on a non-i386-compatible architecture (i.e. neither i386 nor x86_64):
+                               _("Unsupported Driver"),
+                               // Body of a Popup::AnyMessage when the epkowa backend was selected
+                               // on a non-i386-compatible architecture (i.e. neither i386 nor x86_64):
+                               _("The epkowa driver (package iscan) is only available for i386-compatible architectures.")
+                             );
+            continue;
+          }
+          else
+          { Popup::AnyMessage( // Header of a Popup::AnyMessage when the epkowa backend was selected on x86_64:
+                               _("Possibly Problematic Driver"),
+                               // Body of a Popup::AnyMessage when the epkowa backend was selected on x86_64:
+                               _("The epkowa driver may cause problems on 64-bit architectures.\nSee our support database for details.")
+                             );
+          }
+        }
       }
       break;
     }
