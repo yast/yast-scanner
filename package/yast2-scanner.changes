@@ -1,4 +1,12 @@
 -------------------------------------------------------------------
+Fri May 20 12:30:07 CEST 2005 - jsmeix@suse.de
+
+- V 2.12.1
+- Added popup messages regarding iscan/epkowa problems for x86_64
+  and for non-i386-compatible architectures (bug #73985).
+- Introduced translatable support status strings (bug #73780).
+
+-------------------------------------------------------------------
 Wed May 18 13:37:40 CEST 2005 - jsmeix@suse.de
 
 - V 2.12.0

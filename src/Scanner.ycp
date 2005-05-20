@@ -787,6 +787,9 @@ global list ModelItems( string filter_string )
   // and try to preselect a model according to a selected autodetected scanner:
   integer database_index = -1;
   string model_string = "";
+  string status_string = "";
+  // Scanner model list firmware entry for models which require a firmware upload:
+  string firmware_string = _("Firmware upload required.");
   list< term > model_items = [];
   foreach( map< string, string > database_entry,
            database,
@@ -808,72 +811,120 @@ global list ModelItems( string filter_string )
                  && status != "unknown"
                )
              { // Enclose a comment in brackets to seperate it from the rest of the model_string
-               // because the comment is untranslatable English text:
+               // because the comment is untranslatable English text from the *desc files:
                if( "" != comment )
                { comment = "[ " + comment + " ]";
                }
-               // Enclose the backend name and the support status in single quotes to seperate them
+               // Build a translatable status_string:
+               // These are the exiting status values according to the *desc files in sane-1.0.15 (9.3)
+               // and how often each value apppears:
+               //   "good"        (452)
+               //   "unsupported" (257)
+               //   "complete"    (227)
+               //   "untested"    (151)
+               //   "basic"       (66)
+               //   "minimal"     (14)
+               // Enclose the backend name and the package name in single quotes to seperate them
                // from the rest of the model_string because they are untranslatable English words.
-               if( "unsupported" == status )
-               { // The model_string for unsupported models:
-                 model_string = sformat( // Scanner model list entry for unsupported models where
-                                         // %1 will be replaced by the manufacturer name
-                                         // %2 will be replaced by the model name
-                                         // %3 will be replaced by an optional model dependent comment
-                                         //    which is only available in English
-                                         //    and therefore the comment is included in brackets
-                                         _("%1 %2 : This scanner is not supported. %3"),
+               if( "good" == status )
+               { status_string = sformat( // Scanner model list status entry for "good" supported models:
+                                          // %1 will be replaced by the backend (scanner driver) name
+                                          // %2 will be replaced by the package name which provides the backend
+                                          _("Driver '%1' (package '%2') provides good functionality."),
+                                          backend,
+                                          package
+                                        );
+               }
+               else
+               { if( "unsupported" == status )
+                 { if( "unsupported" == backend )
+                   { // Scanner model list status entry for unsupported models
+                     status_string = _( "This scanner is not supported." );
+                   }
+                   else
+                   { status_string = sformat( // Scanner model list status entry for models
+                                              // which are listed as "unsupported" for a particular driver:
+                                              // %1 will be replaced by the backend (scanner driver) name
+                                              // %2 will be replaced by the package name which provides the backend
+                                              _("This scanner is not supported by the driver '%1' (package '%2')."),
+                                              backend,
+                                              package
+                                            );
+                   }
+                 }
+                 else
+                 { if( "complete" == status )
+                   { status_string = sformat( // Scanner model list status entry for "complete" supported models:
+                                              // %1 will be replaced by the backend (scanner driver) name
+                                              // %2 will be replaced by the package name which provides the backend
+                                              _("Driver '%1' (package '%2') provides complete functionality."),
+                                              backend,
+                                              package
+                                            );
+                   }
+                   else
+                   { if( "untested" == status )
+                     { status_string = sformat( // Scanner model list status entry for "untested" models:
+                                                // %1 will be replaced by the backend (scanner driver) name
+                                                // %2 will be replaced by the package name which provides the backend
+                                                _("Driver '%1' (package '%2') may work but was not tested."),
+                                                backend,
+                                                package
+                                              );
+                     }
+                     else
+                     { if( "basic" == status )
+                       { status_string = sformat( // Scanner model list status entry for "basic" supported models:
+                                                  // %1 will be replaced by the backend (scanner driver) name
+                                                  // %2 will be replaced by the package name which provides the backend
+                                                  _("Driver '%1' (package '%2') provides basic functionality."),
+                                                  backend,
+                                                  package
+                                                );
+                       }
+                       else
+                       { if( "minimal" == status )
+                         { status_string = sformat( // Scanner model list status entry for "minimal" supported models:
+                                                    // %1 will be replaced by the backend (scanner driver) name
+                                                    // %2 will be replaced by the package name which provides the backend
+                                                    _("Driver '%1' (package '%2') provides minimal functionality."),
+                                                    backend,
+                                                    package
+                                                  );
+                         }
+                         else
+                         { status_string = sformat( // Fallback scanner model list status entry for models
+                                                    // which are listed but without a known support status:
+                                                    // %1 will be replaced by the backend (scanner driver) name
+                                                    // %2 will be replaced by the package name which provides the backend
+                                                    _("Driver '%1' (package '%2') may work but the functionality is unknown."),
+                                                    backend,
+                                                    package
+                                                  );
+                         }
+                       }
+                     }
+                   }
+                 }
+               }
+               if( "required" == firmware )
+               { // The model_string for supported models which require a firmware upload:
+                 model_string = sformat( "%1 %2 : %3 %4 %5",
                                          manufacturer,
                                          model,
+                                         firmware_string,
+                                         status_string,
                                          comment
                                        );
                }
                else
-               { if( "required" == firmware )
-                 { // The model_string for supported models which require a firmware upload:
-                   model_string = sformat( // Scanner model list entry for supported models
-                                           // which require a firmware upload where
-                                           // %1 will be replaced by the manufacturer name
-                                           // %2 will be replaced by the model name
-                                           // %3 will be replaced by the backend (scanner driver) name
-                                           // %4 will be replaced by the package name which provides the backend
-                                           // %5 will be replaced by the support status
-                                           //    which is only available in English
-                                           //    and varies from 'complete' to 'minimal'
-                                           // %6 will be replaced by an optional model dependent comment
-                                           //    which is only available in English
-                                           //    and therefore the comment is included in brackets
-                                           _("%1 %2 : Firmware upload required. Driver '%3' (package '%4') provides '%5' functionality. %6"),
-                                           manufacturer,
-                                           model,
-                                           backend,
-                                           package,
-                                           status,
-                                           comment
-                                         );
-                 }
-                 else
-                 { // The model_string for all normal supported models:
-                   model_string = sformat( // Scanner model list entry for normal supported models where
-                                           // %1 will be replaced by the manufacturer name
-                                           // %2 will be replaced by the model name
-                                           // %3 will be replaced by the backend (scanner driver) name
-                                           // %4 will be replaced by the package name which provides the backend
-                                           // %5 will be replaced by the support status
-                                           //    which is only available in English
-                                           //    and varies from 'complete' to 'minimal'
-                                           // %6 will be replaced by an optional model dependent comment
-                                           //    which is only available in English
-                                           //    and therefore the comment is included in brackets
-                                           _("%1 %2 : Driver '%3' (package '%4') provides '%5' functionality. %6"),
-                                           manufacturer,
-                                           model,
-                                           backend,
-                                           package,
-                                           status,
-                                           comment
-                                         );
-                 }
+               { // The model_string for all other supported and unsupported models:
+                 model_string = sformat( "%1 %2 : %3 %4",
+                                         manufacturer,
+                                         model,
+                                         status_string,
+                                         comment
+                                       );
                }
                // If there is an autodetected scanner selected then try to determine
                // whether the model in the database matches to the selected autodetected scanner
