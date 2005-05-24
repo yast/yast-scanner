@@ -85,25 +85,32 @@ Press <b>Scanning via Network</b>.</p>
 "),
 
 "select_model" :
-// SelectModel dialog help 1/4:
+// SelectModel dialog help 1/5:
 _("<p><b><big>Scanner Model Selection</big></b><br>
 All known scanner models, both supported and unsupported, are listed here.
 Read all information carefully before selecting a model and pressing <b>Next</b>.
 The information is based on data of the SANE project at<br>
 http://www.sane-project.org/</p>") +
-// SelectModel dialog help 2/4:
+// SelectModel dialog help 2/5:
 _("<p><b><big>Supported Models:</big></b><br>
 A model is supported if there is at least one appropriate scanner driver available.
 Most scanner drivers are provided by the 'sane' package.
 The support status varies from minimal to complete.</p>") +
-// SelectModel dialog help 3/4:
+// SelectModel dialog help 3/5:
 _("<p><b><big>Unsupported Models:</big></b><br>
 Even if there is no driver available, the manufacturer might have a driver.
 Therefore, you should ask the scanner manufacturer for a driver.</p>") +
-// SelectModel dialog help 4/4:
+// SelectModel dialog help 4/5:
 _("<p><b><big>Additional Comments:</big></b><br>
 When additional comments are available, they are shown in brackets.
-Such comments are only available in English.</p>"),
+Such comments are only available in English.</p>") +
+// SelectModel dialog help 4/5:
+_("<p><b><big>Search String:</big></b><br>
+If the scanner was autodetected and when the manufacturer name is available in this list,
+the search string is preset with the manufacturer name, for example '^Epson.*'.
+To refine the search results, append model specific details to the search string.
+For example append a word which is part of the model name like '^Epson.*perfection'
+or append some digits which are part of the model name like '^Epson.*1200'.</p>"),
 
 "configure_backend" :
 // ConfigureBackend dialog help 1/4:

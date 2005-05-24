@@ -1,4 +1,18 @@
 -------------------------------------------------------------------
+Tue May 24 16:08:54 CEST 2005 - jsmeix@suse.de
+
+- V 2.12.2
+- If the scanner was autodetected and when the manufacturer name
+  is known, the search string is preset with the manufacturer name
+  so that only the scanners which match to the autodetected
+  manufacturer are listed.
+- Workaround for strange problem (Bug #75709):
+  Sometimes AutodetectScanners (i.e. "sane-find-scanner") doesn't
+  detect a scanner but usually it works well for a second attempt.
+  Therefore AutodetectScanners is simply called one second time
+  if it didn't detect a scanner on the first run.
+
+-------------------------------------------------------------------
 Fri May 20 12:30:07 CEST 2005 - jsmeix@suse.de
 
 - V 2.12.1
