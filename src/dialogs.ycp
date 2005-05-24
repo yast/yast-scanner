@@ -261,10 +261,38 @@ any OverviewDialog()
 any SelectModelDialog()
 { // Caption of the SelectModelDialog:
   string caption = _("Scanner Model Selection");
+  // If there is an autodetected scanner selected
+  // then preset the filter_string with the autodetected manufacturer
+  // if the autodetected manufacturer exists in the database
+  // to avoid an empty model selection list.
+  // If there is no autodetected manufacturer or if its value is the empty string
+  // or if the autodetected manufacturer does not exist in the database
+  // then the empty filter_string results no filtering at all:
   string filter_string = "";
+  if( Scanner::selected_autodetected_scanners_index >= 0 )
+  { string autodetected_manufacturer = Scanner::autodetected_scanners[Scanner::selected_autodetected_scanners_index,"manufacturer"]:"";
+    // Unify known ambiguous autodetected manufacturer names:
+    if( "hp" == tolower( autodetected_manufacturer ) )
+    { autodetected_manufacturer = "Hewlett-Packard";
+    }
+    // Preset the filter_string only if the autodetected manufacturer exists in the database.
+    // The leading "^" avoids to find entries which do not really belong to this manufacturer
+    // (e.g. when the manufacturer name is mentioned only in a comment of another model)
+    // because the actual manufacturer name is the first part of the model string.
+    // The trailing ".*" is only to have a user-friendly preset regular expression
+    // so that it works when the user simply appends more stuff (e.g. a part of the model name):
+    foreach( string database_manufacturer,
+             Scanner::database_manufacturers,
+             { if( tolower( database_manufacturer ) == tolower( autodetected_manufacturer ) )
+               { filter_string = "^" + autodetected_manufacturer + ".*";
+               }
+             }
+           );
+  }
   term contents = `VBox( `HBox( `TextEntry( `id(`filter_input),
                                             // Header of a TextEntry user input field:
-                                            _("S&earch String (case insensitive):")
+                                            _("S&earch String (case insensitive regular expression):"),
+                                            filter_string
                                           ),
                                 `PushButton( `id(`apply_filter),
                                              // This button must be the default

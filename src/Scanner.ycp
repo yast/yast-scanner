@@ -83,6 +83,14 @@ global boolean Abort()
 global list< map< string, string > > database = [];
 
 /**
+ * Manufacturer list:
+ * List of unique manufacturer names.
+ * Derived during startup from the scanner database
+ * (in the Read function stage "Read or create the scanner database").
+ */
+global list< string > database_manufacturers = [];
+
+/**
  * Active scanners:
  * Determined at runtime via Scanner::DetermineActiveScanners() which calls the bash script
  * "/usr/lib/YaST2/bin/determine_active_scanners YCP"
@@ -612,6 +620,13 @@ global boolean Read()
                  );
     return false;
   }
+  // Extract a (sorted) list of unique manufacturer names from the scanner database:
+  foreach( map< string, string > database_entry,
+           database,
+           { database_manufacturers = add( database_manufacturers, database_entry["manufacturer"]:"unknown" );
+           }
+         );
+  database_manufacturers = toset( database_manufacturers );
   // Progress 3. stage (Determine active scanners):
   if( Abort() ) return false;
   Progress::NextStage();
@@ -629,6 +644,21 @@ global boolean Read()
   Progress::NextStage();
   if( ! AutodetectScanners() )
   { autodetected_scanners = [];
+  }
+  else
+  { // An ugly workaround for a strange problem (Suse/Novell Bugzilla bug #75709):
+    // Sometimes AutodetectScanners (i.e. "sane-find-scanner") doesn't detect a scanner
+    // but usually it works well for a second attempt (at the moment the reason is unknown).
+    // Therefore AutodetectScanners is simply called a second time
+    // if it ran without errors but didn't detect a scanner on the first run.
+    // At least one sane-find-scanner output description string must exist
+    // if sane-find-scanner had detected a scanner:
+    if( "no description" == autodetected_scanners[0,"description"]:"no description" )
+    { y2milestone( "No autodetected scanners on the first run. To be safe run AutodetectScanners a second time." );
+      if( ! AutodetectScanners() )
+      { autodetected_scanners = [];
+      }
+    }
   }
   // Progress last stage (progress finished):
   if( Abort() ) return false;
@@ -1002,7 +1032,7 @@ global list ModelItems( string filter_string )
                if( "" != filter_string )
                { // If the filter_string is not the empty string then
                  // test whether the model_string matches to the filter_string:
-                 if( issubstring( tolower( model_string ), tolower( filter_string ) ) )
+                 if( regexpmatch( tolower( model_string ), tolower( filter_string ) ) )
                  { // If there was already a model selected before then preselect this model.
                    // This happens for example when going 'back' to the model selection screen
                    // or when a model in the database matches the selected autodetected scanner:
