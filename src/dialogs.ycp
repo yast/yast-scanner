@@ -492,14 +492,14 @@ any ConfigureNetworkScanningDialog()
   term contents = `VBox( `ReplacePoint( `id(`saned_hosts_input_replace_point),
                                         `TextEntry( `id(`saned_hosts_input),
                                                     // Header of a TextEntry user input field:
-                                                    _("&Permitted Hosts for 'saned' (comma-separated list of hosts or subnets):"),
+                                                    _("&Permitted Clients for 'saned' (comma-separated list of hosts or subnets):"),
                                                     saned_hosts
                                                   )
                                       ),
                          `ReplacePoint( `id(`net_backend_hosts_input_replace_point),
                                         `TextEntry( `id(`net_backend_hosts_input),
                                                     // Header of a TextEntry user input field:
-                                                    _("&Hosts Used for the 'net' Metadriver (comma-separated list of hosts):"),
+                                                    _("&Servers Used for the 'net' Metadriver (comma-separated list of hosts):"),
                                                     net_backend_hosts
                                                   )
                                       ),

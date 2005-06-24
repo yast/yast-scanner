@@ -19,161 +19,218 @@ $[
 
 "read" :
 // Read dialog help 1/1:
-_("<p><b><big>Initializing Scanner Configuration</big></b><br>
-Please wait...</p>"),
+_("<p>
+<b><big>Initializing Scanner Configuration</big></b><br>
+Please wait...
+</p>"),
 
 "write" :
 // Write dialog help 1/1:
-_("<p><b><big>Saving Scanner Configuration</big></b><br>
-Please wait...</p>"),
+_("<p>
+<b><big>Saving Scanner Configuration</big></b><br>
+Please wait...
+</p>"),
 
 "summary" :
 // Summary dialog help 1/7:
-_("<p><b><big>Scanner Configuration</big></b><br>
-Set up or change the scanner configuration and show the already active scanners.</p>") +
+_("<p>
+<b><big>Scanner Configuration</big></b><br>
+Set up or change the scanner configuration and show the already active scanners.
+</p>") +
 // Summary dialog help 2/7:
-_("<p><b><big>Set Up a New Scanner:</big></b><br>
-Choose the scanner from the list of autodetected scanners and press <b>Configure</b>.</p>") +
+_("<p>
+<b><big>Set Up a New Scanner:</big></b><br>
+Choose the scanner from the list of autodetected scanners and press <b>Configure</b>.
+</p>") +
 // Summary dialog help 3/7:
-_("<p><b><big>Setting Up a USB Scanner:</big></b><br>
+_("<p>
+<b><big>Setting Up a USB Scanner:</big></b><br>
 A normal USB scanner should be autodetected.
 If it was not autodetected, it may work to proceed with 'Other (not detected)'.
 In particular, HP all-in-one USB devices, such as OfficeJets and PSCs, are not autodetected,
 but can be configured with 'Other (not detected)'.
 If you have difficulties configuring your scanner with YaST,
 check whether it appears in the output of '/sbin/lsusb'.
-If it is not listed there, the USB system cannot communicate with the scanner.</p>") +
+If it is not listed there, the USB system cannot communicate with the scanner.
+</p>") +
 // Summary dialog help 4/7:
-_("<p><b><big>Setting Up a SCSI Scanner:</big></b><br>
+_("<p>
+<b><big>Setting Up a SCSI Scanner:</big></b><br>
 SCSI scanners are normally autodetected.
 If difficulties arise proceeding with 'Other (not detected)',
 check whether your scanner is shown by the command 'lsscsi'.
 If not, the SCSI system cannot communicate with the scanner.
-Verify that an appropriate kernel module for the SCSI host adapter has been loaded.</p>") +
+Verify that an appropriate kernel module for the SCSI host adapter has been loaded.
+</p>") +
 // Summary dialog help 5/7:
-_("<p><b><big>Setting Up a Parallel Port Scanner:</big></b><br>
+_("<p>
+<b><big>Setting Up a Parallel Port Scanner:</big></b><br>
 Parallel port scanners cannot be configured with YaST.
-These devices must be configured manually.</p>") +
+These devices must be configured manually.
+</p>") +
 // Summary dialog help 6/7:
-_("<p><b><big>Configuration Summary:</big></b><br>
-The configuration summary shows the active scanners.</p>") +
+_("<p>
+<b><big>Configuration Summary:</big></b><br>
+The configuration summary shows the active scanners.
+</p>") +
 // Summary dialog help 7/7:
-_("<p><b><big>Changing or Testing Existing Configurations and Setting Up Scanning via Network:</big></b><br>
+_("<p>
+<b><big>Changing or Testing Existing Configurations and Setting Up Scanning via Network:</big></b><br>
 If you press <b>Change</b>, an additional dialog opens
-in which to edit the configuration, test active scanners, or set up scanning via network.</p>
-"),
+in which to edit the configuration, test active scanners, or set up scanning via network.
+</p>"),
 
 "overview" :
 // Overview dialog help 1/5:
-_("<p><b><big>Scanner Overview</big></b><br>
+_("<p>
+<b><big>Scanner Overview</big></b><br>
 Obtain an overview of the setup.
-Additionally change or test the configuration.</p>") +
+Additionally change or test the configuration.
+</p>") +
 // Overview dialog help 2/5:
-_("<p><b><big>Setting Up a New Scanner:</big></b><br>
-Press <b>Add</b> to configure a new scanner.</p>") +
+_("<p>
+<b><big>Setting Up a New Scanner:</big></b><br>
+Press <b>Add</b> to configure a new scanner.
+</p>") +
 // Overview dialog help 3/5:
-_("<p><b><big>Change the Configuration:</big></b><br>
+_("<p>
+<b><big>Change the Configuration:</big></b><br>
 Select a scanner to modify.
-Then press <b>Edit</b> or <b>Delete</b>.</p>") +
+Then press <b>Edit</b> or <b>Delete</b>.
+</p>") +
 // Overview dialog help 4/5:
-_("<p><b><big>Testing the Configuration:</big></b><br>
+_("<p>
+<b><big>Testing the Configuration:</big></b><br>
 Select a scanner to test.
-Then press <b>Test</b>.</p>") +
+Then press <b>Test</b>.
+</p>") +
 // Overview dialog help 5/5:
-_("<p><b><big>Set Up Scanning via Network:</big></b><br>
-Press <b>Scanning via Network</b>.</p>
-"),
+_("<p>
+<b><big>Set Up Scanning via Network:</big></b><br>
+Press <b>Scanning via Network</b>.
+</p>"),
 
 "select_model" :
 // SelectModel dialog help 1/5:
-_("<p><b><big>Scanner Model Selection</big></b><br>
+_("<p>
+<b><big>Scanner Model Selection</big></b><br>
 All known scanner models, both supported and unsupported, are listed here.
 Read all information carefully before selecting a model and pressing <b>Next</b>.
 The information is based on data of the SANE project at<br>
-http://www.sane-project.org/</p>") +
+http://www.sane-project.org/
+</p>") +
 // SelectModel dialog help 2/5:
-_("<p><b><big>Supported Models:</big></b><br>
+_("<p>
+<b><big>Supported Models:</big></b><br>
 A model is supported if there is at least one appropriate scanner driver available.
 Most scanner drivers are provided by the 'sane' package.
-The support status varies from minimal to complete.</p>") +
+The support status varies from minimal to complete.
+</p>") +
 // SelectModel dialog help 3/5:
-_("<p><b><big>Unsupported Models:</big></b><br>
+_("<p>
+<b><big>Unsupported Models:</big></b><br>
 Even if there is no driver available, the manufacturer might have a driver.
-Therefore, you should ask the scanner manufacturer for a driver.</p>") +
+Therefore, you should ask the scanner manufacturer for a driver.
+</p>") +
 // SelectModel dialog help 4/5:
-_("<p><b><big>Additional Comments:</big></b><br>
+_("<p>
+<b><big>Additional Comments:</big></b><br>
 When additional comments are available, they are shown in brackets.
-Such comments are only available in English.</p>") +
+Such comments are only available in English.
+</p>") +
 // SelectModel dialog help 4/5:
-_("<p><b><big>Search String:</big></b><br>
+_("<p>
+<b><big>Search String:</big></b><br>
 If the scanner was autodetected and when the manufacturer name is available in this list,
 the search string is preset with the manufacturer name, for example '^Epson.*'.
 To refine the search results, append model specific details to the search string.
 For example append a word which is part of the model name like '^Epson.*perfection'
-or append some digits which are part of the model name like '^Epson.*1200'.</p>"),
+or append some digits which are part of the model name like '^Epson.*1200'.
+</p>"),
 
 "configure_backend" :
 // ConfigureBackend dialog help 1/4:
-_("<p><b><big>Scanner and Driver Setup</big></b><br>
+_("<p>
+<b><big>Scanner and Driver Setup</big></b><br>
 The driver is activated and the associated scanners are probed.
 This may take a few seconds, so you must wait until you can press <b>Next</b>.<br>
-If you press <b>Back</b>, the driver is deactivated.</p>
-") +
+If you press <b>Back</b>, the driver is deactivated.
+</p>") +
 // ConfigureBackend dialog help 2/4:
-_("<p><b><big>Additional Packages:</big></b><br>
+_("<p>
+<b><big>Additional Packages:</big></b><br>
 If the package which provides the driver is not yet installed,
 an appropriate dialog is shown to install the package.
 Such packages may not be available for all architectures
-(for example, the 'iscan' package is only available for i386 architectures).</p>
-") +
+(for example, the 'iscan' package is only available for i386 architectures).
+</p>") +
 // ConfigureBackend dialog help 3/4:
-_("<p><b><big>Firmware Upload:</big></b><br>
+_("<p>
+<b><big>Firmware Upload:</big></b><br>
 Some models require a firmware upload.
 Otherwise the scanner does not work.
-In this case, an appropriate explanatory text is shown.</p>") +
+In this case, an appropriate explanatory text is shown.
+</p>") +
 // ConfigureBackend dialog help 4/4:
-_("<p><b><big>HP All-in-One Devices:</big></b><br>
+_("<p>
+<b><big>HP All-in-One Devices:</big></b><br>
 HP all-in-one devices require a special setup.
 Otherwise the scanner does not work.
 In this case, an appropriate dialog is shown.
 There are two software packages that provide support for HP all-in-one devices:
 the old HPOJ software (package 'hp-officeJet'),
-which provides the PTAL system (with the 'ptal' service) to access HP all-in-one devices, and the new HPLIP software (package 'hplip'),
+which provides the PTAL system (with the 'ptal' service) to access HP all-in-one devices,
+and the new HPLIP software (package 'hplip'),
 which provides the 'hplip' service to access HP all-in-one devices.
 Both software packages can be installed at the same time
 but the services ('ptal' and 'hplip') cannot be run together.
 Because a running service is required to access the device,
-either 'ptal' or 'hplip' must be used to access all HP all-in-one devices.</p>
-"),
+either 'ptal' or 'hplip' must be used to access all HP all-in-one devices.
+</p>"),
 
 "configure_network_scanning" :
-// ConfigureNetworkScanning dialog help 1/4:
-_("<p><b><big>Set Up Scanning via Network</big></b><br>
+// ConfigureNetworkScanning dialog help 1/5:
+_("<p>
+<b><big>Set Up Scanning via Network</big></b><br>
 Enter the appropriate information or use <b>Propose</b>
-and press <b>Next</b> to set up scanning via network.</p>
-") +
-// ConfigureNetworkScanning dialog help 2/4:
-_("<p><b><big>Server Configuration:</big></b><br>
+and press <b>Next</b> to set up scanning via network.
+</p>") +
+// ConfigureNetworkScanning dialog help 2/5:
+_("<p>
+<b><big>Server Configuration:</big></b><br>
 If you have local connected scanners and want to make them accessible via network,
 set up the 'saned' network scanning daemon so that your host becomes a server.
 Enter which client hosts are permitted to access the 'saned' on your server.
-If no client hosts are permitted, 'saned' is not activated.</p>
-") +
-// ConfigureNetworkScanning dialog help 3/4:
-_("<p><b><big>Client Configuration:</big></b><br>
+If no client hosts are permitted, 'saned' is not activated.
+</p>") +
+// ConfigureNetworkScanning dialog help 3/5:
+_("<p>
+<b><big>Client Configuration:</big></b><br>
 If you want to access scanners connected to other hosts (servers) in the network,
 set up the 'net' metadriver to access them via the 'saned' running on the servers.
 The 'saned' on the servers must permit the access.
 Enter which servers should be used.
-If no servers should be used, 'net' is not activated.</p>
-") +
-// ConfigureNetworkScanning dialog help 4/4:
-_("<p><b><big>Local Host Configuration:</big></b><br>
+If no servers should be used, 'net' is not activated.
+</p>") +
+// ConfigureNetworkScanning dialog help 4/5:
+_("<p>
+<b><big>Local Host Configuration:</big></b><br>
 By using the loopback network, the above is useful even on your local host.
 In this case, the server and client are the same machine ('localhost').
 Some scanners, such as parallel port scanners, require root privileges.
 When you enter 'localhost' for both the server and the client,
-you can access such a scanner even as a normal user on your local host.</p>")
+you can access such a scanner even as a normal user on your local host.
+</p>") +
+// ConfigureNetworkScanning dialog help 5/5:
+_("<p>
+<b><big>Firewall Settings:</big></b><br>
+The default firewall settings during system installation protect your host from remote access.
+This is o.k. for the 'client configuration' and for the 'local host configuration'.
+But for a 'server configuration' you must allow remote access for the intended client hosts.
+Otherwise the firewall would prevent any client access to the 'saned' port on your server.
+The 'saned' on your server is accessible via port 6566.
+Use the YaST firewall configuration to allow access to port 6566 for the client hosts.
+</p>")
 
 ];
 
