@@ -66,7 +66,7 @@ any SummaryDialog()
   string configured = summary[0]:"";
   list autodetected = summary[1]:[];
   // Label of the frame where the "Autodetected Scanners" are shown:
-  term contents = Wizard_hw::DetectedContent( _("Autodetected Scanners"),
+  term contents = Wizard_hw::DetectedContent( _("Detected Scanners"),
                                               autodetected,
                                               false,
                                               configured
@@ -144,7 +144,7 @@ any OverviewDialog()
                                                                    ),
                                                         `PushButton( `id( `network_scanning_button ),
                                                                      // Label of a PushButton to go to the network scanning dialog:
-                                                                     _("Scanning via &Network")
+                                                                     _("Scanning via &Network...")
                                                                    )
                                                       ),
                                                  nil
@@ -291,7 +291,7 @@ any SelectModelDialog()
   }
   term contents = `VBox( `HBox( `TextEntry( `id(`filter_input),
                                             // Header of a TextEntry user input field:
-                                            _("S&earch String (case insensitive regular expression):"),
+                                            _("S&earch String"),
                                             filter_string
                                           ),
                                 `PushButton( `id(`apply_filter),
@@ -309,7 +309,7 @@ any SelectModelDialog()
                          `ReplacePoint( `id(`model_selection_replace_point),
                                         `SelectionBox( `id(`model_selection),
                                                        // Header of a SelectionBox with a list of models:
-                                                       _("&Scanner Model and Driver:"),
+                                                       _("&Scanner Model and Driver"),
                                                        Scanner::ModelItems( filter_string )
                                                      )
                                       )
@@ -338,7 +338,7 @@ any SelectModelDialog()
       UI::ReplaceWidget( `id(`model_selection_replace_point),
                          `SelectionBox( `id(`model_selection),
                                         // Header of a SelectionBox with a list of models:
-                                        _("&Scanner Model and Driver:"),
+                                        _("&Scanner Model and Driver"),
                                         Scanner::ModelItems( filter_string )
                                       )
                        );
@@ -369,12 +369,12 @@ any SelectModelDialog()
         { Popup::AnyMessage( sformat( // Header of a Popup::AnyMessage when a model was selected
                                       // which is listed as "unsupported" for a particular driver:
                                       // %1 will be replaced by the backend (scanner driver) name
-                                      _("Model not Supported by the Driver '%1'"),
+                                      _("Model Not Supported by the Driver %1"),
                                       backend
                                     ),
                              // Body of a Popup::AnyMessage when a model was selected
                              // which is listed as "unsupported" for a particular driver:
-                             _("Check if another driver supports it,\nor select a compatible model,\nor ask the manufacturer for a Linux driver.")
+                             _("Check if another driver supports it,\nselect a compatible model,\nor ask the manufacturer for a Linux driver.")
                            );
         }
         continue;
@@ -491,15 +491,15 @@ any ConfigureNetworkScanningDialog()
   string caption = _("Set Up Scanning via Network");
   term contents = `VBox( `ReplacePoint( `id(`saned_hosts_input_replace_point),
                                         `TextEntry( `id(`saned_hosts_input),
-                                                    // Header of a TextEntry user input field:
-                                                    _("&Permitted Clients for 'saned' (comma-separated list of hosts or subnets):"),
+                                                    // Header of a TextEntry user input field, saned is sane daemon--do not change:
+                                                    _("&Permitted Clients for saned"),
                                                     saned_hosts
                                                   )
                                       ),
                          `ReplacePoint( `id(`net_backend_hosts_input_replace_point),
                                         `TextEntry( `id(`net_backend_hosts_input),
-                                                    // Header of a TextEntry user input field:
-                                                    _("&Servers Used for the 'net' Metadriver (comma-separated list of hosts):"),
+                                                    // Header of a TextEntry user input field, net is driver name--do not change:
+                                                    _("&Servers Used for the net Metadriver"),
                                                     net_backend_hosts
                                                   )
                                       ),
@@ -527,15 +527,15 @@ any ConfigureNetworkScanningDialog()
     if( ret == `propose_config )
     { UI::ReplaceWidget( `id(`saned_hosts_input_replace_point),
                          `TextEntry( `id(`saned_hosts_input),
-                                     // Header of a TextEntry user input field:
-                                     _("&Permitted Hosts for 'saned' (comma-separated list of hosts or subnets):"),
+                                     // Header of a TextEntry user input field, saned is sane daemon--do not change:
+                                     _("&Permitted Hosts for saned"),
                                      "localhost,127.0.0.0/8"
                                    )
                        );
       UI::ReplaceWidget( `id(`net_backend_hosts_input_replace_point),
                          `TextEntry( `id(`net_backend_hosts_input),
-                                     // Header of a TextEntry user input field:
-                                     _("&Hosts Used for the 'net' Metadriver (comma-separated list of hosts):"),
+                                     // Header of a TextEntry user input field, net is driver name--do not change:
+                                     _("&Hosts Used for the net Metadriver"),
                                      "localhost"
                                    )
                        );
