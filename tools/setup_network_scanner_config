@@ -1,11 +1,13 @@
 #! /bin/bash
 #
-# Johannes Meixner <jsmeix@suse.de>, 2004
+# Johannes Meixner <jsmeix@suse.de>, 2004, 2005
 
 #set -x
-export PATH="/sbin:/usr/bin:/bin"
+
+export PATH="/sbin:/usr/sbin:/usr/bin:/bin"
 export LC_ALL="POSIX"
 export LANG="POSIX"
+umask 022
 
 NET_BACKEND_CONFIG_FILE="/etc/sane.d/net.conf"
 SANED_CONFIG_FILE="/etc/sane.d/saned.conf"
