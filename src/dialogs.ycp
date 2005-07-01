@@ -21,17 +21,21 @@ import "Scanner";
 
 include "scanner/helps.ycp";
 
+/**
+ * Ask for user confirmation if necessary before aborting.
+ * At present the transaction semantik is not implemented.
+ * At present all changings are committed to the system instantly,
+ * for example:
+ * - enable/disable backends in /etc/sane/dll.conf
+ * - install additional packages (like iscan)
+ * - set up and start additional services (like PTAL, HPLIP, or saned + xinetd).
+ * It is necessary to commit them instantly to be able to test a scanner
+ * and to show a true feedback to the user which scanners are actually active.
+ * As roll-back is not implemented 'Popup::ReallyAbort(true)' doesn't make sense.
+ * Scanner::Modified() returns true if something was committed to the system.
+ */
 boolean ReallyAbort()
-{ // At present the transaction semantik is not implemented.
-  // At present all changings are committed to the system instantly, for example
-  // - enable/disable backends in /etc/sane/dll.conf
-  // - install additional packages (like iscan)
-  // - set up and start additional services (like PTAL)
-  // It is necessary to commit them instantly to be able to test a scanner
-  // and to show a true feedback to the user which scanners are actually active.
-  // As roll-back is not implemented 'Popup::ReallyAbort(true)' doesn't make sense.
-  // Scanner::Modified() returns true if something was committed to the system.
-  return !Scanner::Modified() || Popup::ReallyAbort(false);
+{ return !Scanner::Modified() || Popup::ReallyAbort(false);
 }
 
 /**
@@ -130,7 +134,7 @@ any OverviewDialog()
 { // Caption of the OverviewDialog:
   string caption = _("Scanner Overview");
   list overview_table = Scanner::Overview();
-  term contents = Wizard_hw::ConfiguredContent( `header( // A table column header: 
+  term contents = Wizard_hw::ConfiguredContent( `header( // A table column header:
                                                          _("Driver Name"),
                                                          // A table column header:
                                                          _("Associated Scanners")
@@ -143,7 +147,9 @@ any OverviewDialog()
                                                                      _("&Test")
                                                                    ),
                                                         `PushButton( `id( `network_scanning_button ),
-                                                                     // Label of a PushButton to go to the network scanning dialog:
+                                                                     // Label of a PushButton to go to the network scanning dialog.
+                                                                     // Do not confuse "scanning via network" (i.e. use a remote scanner via network)
+                                                                     // with "scanning the network" (i.e. scan the network for other hosts or services).
                                                                      _("Scanning via &Network...")
                                                                    )
                                                       ),
@@ -188,14 +194,14 @@ any OverviewDialog()
       y2milestone( "Selected backend to be deleted (i.e. deactivated) is: %1", backend_name );
       if( nil == backend_name
           || "" == backend_name )
-      { Popup::AnyMessage( // Header of a Popup::AnyMessage when no backend was selected:
+      { Popup::AnyMessage( // Header of a Popup::AnyMessage when no driver was selected:
                            _("Nothing Selected"),
-                           // Body of a Popup::AnyMessage when no backend was selected:
+                           // Body of a Popup::AnyMessage when no driver was selected:
                            _("Select an entry.")
                          );
         continue;
       }
-      if( ! Popup::YesNo( sformat( // Question of a Popup::YesNo where %1 will be replaced by the backend name:
+      if( ! Popup::YesNo( sformat( // Question of a Popup::YesNo where %1 will be replaced by the driver name:
                                    _("Deactivate %1?"), backend_name ) ) )
       { continue;
       }
@@ -203,7 +209,9 @@ any OverviewDialog()
       Wizard::DisableAbortButton();
       Wizard::DisableNextButton();
       if( ! Scanner::DeactivateBackend( backend_name, -1, true ) )
-      { Popup::Error( // Message of a Popup::Error where %1 will be replaced by the backend name:
+      { Popup::Error( // Message of a Popup::Error where %1 will be replaced by the driver (backend) name.
+                      // Only a simple message because before the function Scanner::DeactivateBackend
+                      // was called and this function would have shown more specific messages.
                       sformat( _("Failed to deactivate %1."), backend_name ) );
         Wizard::EnableBackButton();
         Wizard::EnableAbortButton();
@@ -230,7 +238,9 @@ any OverviewDialog()
         continue;
       }
       if( ! Scanner::TestBackend( backend_name ) )
-      { Popup::Error( // Message of a Popup::Error where %1 will be replaced by the backend name:
+      { Popup::Error( // Message of a Popup::Error where %1 will be replaced by the driver (backend) name.
+                      // Only a simple message because before the function Scanner::TestBackend
+                      // was called and this function would have shown more specific messages.
                       sformat( _("Failed to test %1."), backend_name ) );
         continue;
       }
@@ -392,10 +402,13 @@ any SelectModelDialog()
       { if( !Arch::i386() )
         { if( !Arch::x86_64() )
           { Popup::AnyMessage( // Header of a Popup::AnyMessage when the epkowa backend was selected
-                               // on a non-i386-compatible architecture (i.e. neither i386 nor x86_64):
+                               // on a non-i386-compatible architecture (i.e. neither i386 nor x86_64).
                                _("Unsupported Driver"),
                                // Body of a Popup::AnyMessage when the epkowa backend was selected
-                               // on a non-i386-compatible architecture (i.e. neither i386 nor x86_64):
+                               // on a non-i386-compatible architecture (i.e. neither i386 nor x86_64).
+                               // Do not change or translate "epkowa", it is a driver name.
+                               // Do not change or translate "iscan", it is a package name.
+                               // Do not change or translate "i386", it is an architecture name.
                                _("The epkowa driver (package iscan) is only available for i386-compatible architectures.")
                              );
             continue;
@@ -403,7 +416,8 @@ any SelectModelDialog()
           else
           { Popup::AnyMessage( // Header of a Popup::AnyMessage when the epkowa backend was selected on x86_64:
                                _("Possibly Problematic Driver"),
-                               // Body of a Popup::AnyMessage when the epkowa backend was selected on x86_64:
+                               // Body of a Popup::AnyMessage when the epkowa backend was selected on x86_64.
+                               // Do not change or translate "epkowa", it is a driver name.
                                _("The epkowa driver may cause problems on 64-bit architectures.\nSee our support database for details.")
                              );
           }
@@ -439,7 +453,9 @@ any ConfigureBackendDialog()
   Wizard::DisableAbortButton();
   Wizard::DisableNextButton();
   if( ! Scanner::ActivateBackend( "", Scanner::selected_model_database_index, true ) )
-  { Popup::Error( sformat( // Message of a Popup::Error where %1 will be replaced by the backend name:
+  { Popup::Error( sformat( // Message of a Popup::Error where %1 will be replaced by the driver (backend) name.
+                           // Only a simple message because before the function Scanner::ActivateBackend
+                           // was called and this function would have shown more specific messages.
                            _("Failed to activate %1."), backend_name ) );
   }
   Wizard::EnableBackButton();
@@ -459,7 +475,9 @@ any ConfigureBackendDialog()
       Wizard::DisableAbortButton();
       Wizard::DisableNextButton();
       if( ! Scanner::DeactivateBackend( "", Scanner::selected_model_database_index, false ) )
-      { Popup::Error( sformat( // Message of a Popup::Error where %1 will be replaced by the backend name:
+      { Popup::Error( sformat( // Message of a Popup::Error where %1 will be replaced by the driver (backend) name.
+                               // Only a simple message because before the function Scanner::DeactivateBackend
+                               // was called and this function would have shown more specific messages.
                                _("Failed to deactivate %1."), backend_name ) );
       }
       Wizard::EnableBackButton();
@@ -491,14 +509,17 @@ any ConfigureNetworkScanningDialog()
   string caption = _("Set Up Scanning via Network");
   term contents = `VBox( `ReplacePoint( `id(`saned_hosts_input_replace_point),
                                         `TextEntry( `id(`saned_hosts_input),
-                                                    // Header of a TextEntry user input field, saned is sane daemon--do not change:
+                                                    // Header of a TextEntry user input field.
+                                                    // Do not change or translate "saned", it is a program (sane daemon) name.
                                                     _("&Permitted Clients for saned"),
                                                     saned_hosts
                                                   )
                                       ),
                          `ReplacePoint( `id(`net_backend_hosts_input_replace_point),
                                         `TextEntry( `id(`net_backend_hosts_input),
-                                                    // Header of a TextEntry user input field, net is driver name--do not change:
+                                                    // Header of a TextEntry user input field.
+                                                    // Do not change or translate "net", it is a metadriver name.
+                                                    // Do not simply use "driver" because net is no normal driver but a metadriver.
                                                     _("&Servers Used for the net Metadriver"),
                                                     net_backend_hosts
                                                   )
@@ -527,15 +548,18 @@ any ConfigureNetworkScanningDialog()
     if( ret == `propose_config )
     { UI::ReplaceWidget( `id(`saned_hosts_input_replace_point),
                          `TextEntry( `id(`saned_hosts_input),
-                                     // Header of a TextEntry user input field, saned is sane daemon--do not change:
-                                     _("&Permitted Hosts for saned"),
+                                     // Header of a TextEntry user input field.
+                                     // Do not change or translate "saned", it is a program (sane daemon) name.
+                                     _("&Permitted Clients for saned"),
                                      "localhost,127.0.0.0/8"
                                    )
                        );
       UI::ReplaceWidget( `id(`net_backend_hosts_input_replace_point),
                          `TextEntry( `id(`net_backend_hosts_input),
-                                     // Header of a TextEntry user input field, net is driver name--do not change:
-                                     _("&Hosts Used for the net Metadriver"),
+                                     // Header of a TextEntry user input field.
+                                     // Do not change or translate "net", it is a metadriver name.
+                                     // Do not simply use "driver" because net is no normal driver but a metadriver.
+                                     _("&Servers Used for the net Metadriver"),
                                      "localhost"
                                    )
                        );

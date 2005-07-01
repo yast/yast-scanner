@@ -1,11 +1,13 @@
 #! /bin/bash
 #
-# Johannes Meixner <jsmeix@suse.de>, 2004
+# Johannes Meixner <jsmeix@suse.de>, 2004, 2005
 
 #set -x
-export PATH="/usr/bin:/bin"
+
+export PATH="/sbin:/usr/sbin:/usr/bin:/bin"
 export LC_ALL="POSIX"
 export LANG="POSIX"
+umask 022
 
 MY_NAME=${0##*/}
 OUTPUT_FORMAT="$1"
@@ -20,7 +22,7 @@ TMP_DATA=$(mktemp -u /tmp/$MY_NAME.XXXXXX)
 # Get the raw data
 MAXIMUM_WAIT="10"
 if [ -x /usr/bin/sane-find-scanner ]
-then sane-find-scanner >${TMP_DATA}.raw &
+then sane-find-scanner -q >${TMP_DATA}.raw &
      sanefindscannerPID=$!
      for i in $( seq $MAXIMUM_WAIT )
      do ps hp $sanefindscannerPID | grep -q sane-find-scanner || break

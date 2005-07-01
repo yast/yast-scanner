@@ -1,11 +1,13 @@
 #! /bin/bash
 #
-# Johannes Meixner <jsmeix@suse.de>, 2005
+# Johannes Meixner <jsmeix@suse.de>, 2004, 2005
 
 #set -x
-export PATH="/sbin:/usr/bin:/bin"
+
+export PATH="/sbin:/usr/sbin:/usr/bin:/bin"
 export LC_ALL="POSIX"
 export LANG="POSIX"
+umask 022
 
 # The hplip service and the ptal service exclude each other.
 # Disable the ptal service if it exists:
