@@ -1,4 +1,14 @@
 -------------------------------------------------------------------
+Wed Jul  6 14:26:32 CEST 2005 - jsmeix@suse.de
+
+- V 2.12.6
+- Added tests whether dependant CUPS print queues exists
+  and show user information if there are conflicts because
+  of dependant CUPS print queues.
+  This happens only for HP all-in-one devices and their required
+  services hplip or ptal which cannot run at the same time.
+
+-------------------------------------------------------------------
 Fri Jul  1 15:31:36 CEST 2005 - jsmeix@suse.de
 
 - V 2.12.5

@@ -545,6 +545,50 @@ boolean SetScsiScannerAccessPermissions()
   return true;
 }
 
+/**
+ * Test whether there exist a print queue which depends on the specified SANE backend.
+ * Examples:
+ * hpaio (package hplip):
+ * Setting up the hpaio backend requires to activate/start the hplip service.
+ * It may happen that the conflicting service ptal is in use by the CUPS printing system.
+ * I.e. there may be a print queue which uses the ptal CUPS backend.
+ * hpoj (package hp-officeJet):
+ * Setting up the hpoj backend requires to initialize/activate/start the ptal service.
+ * It may happen that the conflicting service hplip is in use by the CUPS printing system.
+ * I.e. there may be a print queue which uses the hp CUPS backend.
+ * Note:
+ * The test is only implememnted for the CUPS printing system.
+ * A dependant print queue can exists only for the SANE backends hpaio and hpoj.
+ * For all other backends no dependant print queue can exists.
+ * @param backend_name string of the SANE backend name
+ * @return true if a dependant CUPS print queue exists for the backend hpaio
+ * @return true if a dependant CUPS print queue exists for the backend hpoj
+ * @return false otherwise
+ */
+boolean DependantPrintQueueExists( string backend_name )
+{ // Example of a "/usr/bin/lpstat -v" output when the hp CUPS backend is used:
+  //   device for Queue1: hp:/usb/HP_LaserJet_1220?device=/dev/usb/lp0
+  // Example of a "/usr/bin/lpstat -v" output when the ptal CUPS backend is used:
+  //   device for Queue2: ptal:/mlc:par:HP_LaserJet_1220
+  //   device for Queue3: ptal:/mlc:usb:HP_LaserJet_1220
+  // If /usr/bin/lpstat (from the package cups-client) is not installed
+  // or if it is not from CUPS (e.g. from LPRng or from a third-party printing system)
+  // and doesn't support the -v parameter or results a different output
+  // then it returns "false" which is perfectly o.k. because then
+  // there is no CUPS printing system installed (because cups requires cups-client)
+  // and then no print queue exists which uses a CUPS backend.
+  // Note that therefore it is not detected when the hplip service or the ptal service
+  // is required by a print queue for LPRng or for a third-party printing system.
+  if( "hpaio" == backend_name )
+  { return ExecuteBashCommand( "/usr/bin/lpstat -v | /bin/grep -q ': hp:/'" );
+  }
+  if( "hpoj" == backend_name )
+  { return ExecuteBashCommand( "/usr/bin/lpstat -v | /bin/grep -q ': ptal:/'" );
+  }
+  // Fallback to false i.e. assume that there is no conflicting print queue:
+  return false;
+}
+
 /*
  * Global functions:
  */
@@ -1162,7 +1206,7 @@ The man page of the driver describes how to configure it for firmware upload.
 The following command shows the man page for your driver:
 ");
   string hpaio_message =
-  // The message of a Popup::YesNo for scanners which should be set up with the hpaio backend.
+  // Message of a Popup::YesNo for scanners which should be set up with the hpaio driver.
   // Do not change or translate "hpaio", it is a driver name.
   // Do not change or translate "hplip", it is a service name.
   // Do not change or translate "PTAL", it is a subsystem name.
@@ -1171,18 +1215,30 @@ Additionally, the hplip service should be configured to start when booting.
 The hplip service and the PTAL system exclude each other.
 Therefore a running PTAL system would be stopped and deactivated
 before the the hplip service is activated and started.
-The hplip service does not support parallel-port scanners.
 
 Should the hplip service be activated and started now?
 ");
+  string ptal_in_use_conflict_message =
+  // Message of a Popup::ContinueCancel for scanners which should be set up with the hpaio driver.
+  // Do not change or translate "ptal", it is a service name.
+  // Do not change or translate "hpoj", it is a driver name.
+  // Do not change or translate "hplip", it is a service name.
+_("There is at least one printer configuration that uses the ptal service.
+It is possible to proceed but then the ptal service would be stopped
+and all print queues that use the ptal service would no longer work.
+If the scanner is also supported by the hpoj driver, do not proceed.
+Instead use hpoj to set up the scanner.
+Alternatively proceed and change the printer configuration to use the hplip service.
+");
   string hpoj_message =
-  // The message of a Popup::YesNo for scanners which should be set up with the hpoj backend.
+  // Message of a Popup::YesNo for scanners which should be set up with the hpoj driver
   // Do not change or translate "hpoj", it is a driver name.
   // Do not change or translate "PTAL", it is a subsystem name.
   // Do not change or translate "ptal", it is a service name.
   // Do not change or translate "hplip", it is a service name.
 _("The hpoj driver requires the PTAL system to be set up and running.
-In particular, the ptal service must be up and running.\n
+In particular, the ptal service must be up and running.
+
 Before the ptal service can be started, the PTAL system must be initialized.
 Additionally, the ptal service should be activated for start when booting.
 The PTAL system and the hplip service exclude each other.
@@ -1196,6 +1252,18 @@ a running ptal service monopolizes the USB device file (e.g., /dev/usb/lp0),
 so the printer can no longer be addressed via the USB device file.
 
 Should the PTAL system for USB be initialized, activated, and started now?
+");
+  string hplip_in_use_conflict_message =
+  // Message of a Popup::ContinueCancel for scanners which should be set up with the hpoj driver.
+  // Do not change or translate "hplip", it is a service name.
+  // Do not change or translate "hpaio", it is a driver name.
+  // Do not change or translate "ptal", it is a service name.
+_("There is at least one printer configuration that uses the hplip service.
+It is possible to proceed but then the hplip service would be stopped
+and all print queues that use the hplip service would no longer work.
+If the scanner is also supported by the hpaio driver, do not proceed.
+Instead use hpaio to set up the scanner.
+Alternatively proceed and change the printer configuration to use the ptal service.
 ");
   // Here the real code starts with proper indentation:
   if( backend_name == "" )
@@ -1273,6 +1341,9 @@ Should the PTAL system for USB be initialized, activated, and started now?
                          // if the user has explicitely rejected to install it.
                          sformat( _("The driver %1 requires the package %2."), backend_name, package_name )
                        );
+      Progress::Title( // Last progress step progress bar title when the Progress was aborted:
+                       _("Aborted")
+                     );
       return false;
     }
   }
@@ -1303,7 +1374,8 @@ Should the PTAL system for USB be initialized, activated, and started now?
       && user_confirmation
     )
   { if( ! Popup::YesNo( hpaio_message ) )
-    { // Don't abort (i.e. return false) in this case because it is no error
+    { // The user has decided not to activate/start the hplip service:
+      // Don't abort (i.e. return false) in this case because it is no error
       // when the user has decided not to activate/start the hplip service
       // because it may be already up and running or the user may want to set it up manually.
       // Regardless of the state of the hplip service the backend can be activated in /etc/sane.d/dll.conf
@@ -1317,7 +1389,23 @@ Should the PTAL system for USB be initialized, activated, and started now?
                      );
     }
     else
-    { if( ! ExecuteBashCommand( setup_hplip_scanner_service_commandline ) )
+    { // The user has decided to activate/start the hplip service:
+      // It may happen that the conflicting service ptal is in use by the printing system.
+      // The ptal service is associated with the hpoj backend.
+      if( DependantPrintQueueExists( "hpoj" ) )
+      { // There is at least one conflicting print queue:
+        if( ! Popup::ContinueCancel( ptal_in_use_conflict_message ) )
+        { // The user doesn't want to proceed:
+          y2milestone( "Set up hpaio SANE backend aborted by user because of conflict: PTAL is in use by a CUPS queue." );
+          Progress::Title( // Last progress step progress bar title when the Progress was aborted:
+                           _("Aborted")
+                         );
+          return false;
+        }
+      }
+      // No conflicting print queue was found or
+      // a conflicting print queue was found but the user forced to proceed:
+      if( ! ExecuteBashCommand( setup_hplip_scanner_service_commandline ) )
       { Report::Error( sformat( // Message of a Report::Error where %1 will be replaced by the actual error message
                                 // which is usually only available in English.
                                 // Only a simple message because this error does not happen on a normal system
@@ -1328,6 +1416,9 @@ Should the PTAL system for USB be initialized, activated, and started now?
                                 bash_result["stderr"]:_("(no message available)")
                               )
                      );
+        Progress::Title( // Last progress step progress bar title when the Progress was aborted:
+                         _("Aborted")
+                       );
         return false;
       }
     }
@@ -1341,7 +1432,8 @@ Should the PTAL system for USB be initialized, activated, and started now?
       && user_confirmation
     )
   { if( ! Popup::YesNo( hpoj_message ) )
-    { // Don't abort (i.e. return false) in this case because it is no error
+    { // The user has decided not to initialize/activate/start the PTAL system:
+      // Don't abort (i.e. return false) in this case because it is no error
       // when the user has decided not to initialize/activate/start the PTAL system
       // because it may be already up and running or the user may want to set it up manually.
       // Regardless of the state of the PTAL system the backend can be activated in /etc/sane.d/dll.conf
@@ -1355,7 +1447,23 @@ Should the PTAL system for USB be initialized, activated, and started now?
                      );
     }
     else
-    { if( ! ExecuteBashCommand( setup_ptal_scanner_service_commandline ) )
+    { // The user has decided to initialize/activate/start the PTAL system:
+      // It may happen that the conflicting service hplip is in use by the printing system.
+      // The hplip service is associated with the hpaoi backend.
+      if( DependantPrintQueueExists( "hpaio" ) )
+      { // There is at least one conflicting print queue:
+        if( ! Popup::ContinueCancel( hplip_in_use_conflict_message ) )
+        { // The user doesn't want to proceed:
+          y2milestone( "Set up hpoj SANE backend aborted by user because of conflict: HPLIP is in use by a CUPS queue." );
+          Progress::Title( // Last progress step progress bar title when the Progress was aborted:
+                           _("Aborted")
+                         );
+          return false;
+        }
+      }
+      // No conflicting print queue was found or
+      // a conflicting print queue was found but the user forced to proceed:
+      if( ! ExecuteBashCommand( setup_ptal_scanner_service_commandline ) )
       { Report::Error( sformat( // Message of a Report::Error where %1 will be replaced by the actual error message
                                 // which is usually only available in English.
                                 // Only a simple message because this error does not happen on a normal system
@@ -1366,6 +1474,9 @@ Should the PTAL system for USB be initialized, activated, and started now?
                                 bash_result["stderr"]:_("(no message available)")
                               )
                      );
+        Progress::Title( // Last progress step progress bar title when the Progress was aborted:
+                         _("Aborted")
+                       );
         return false;
       }
     }
@@ -1373,7 +1484,10 @@ Should the PTAL system for USB be initialized, activated, and started now?
   // Activate the backend via bash script:
   Progress::NextStage();
   if( ! ExecuteBashCommand( activate_backend_commandline + " " + backend_name ) )
-  { return false;
+  { Progress::Title( // Last progress step progress bar title when the Progress was aborted:
+                     _("Aborted")
+                   );
+    return false;
   }
   // Determine active scanners and active backends anew
   // and set SCSI scanner access permissions anew.
@@ -1489,11 +1603,111 @@ global boolean DeactivateBackend( string backend_name, integer database_index, b
   }
   // Deactivate the backend via bash script:
   if( ! ExecuteBashCommand( deactivate_backend_commandline + " " + backend_name ) )
-  { Report::Error( sformat( // Message of a Report::Error where %1 will be replaced by the backend name.
+  { Report::Error( sformat( // Message of a Report::Error where %1 will be replaced by the driver name.
                             // Only a simple message because this error does not happen on a normal system
                             // (i.e. a system which is not totally broken or totally messed up).
                             _("Failed to deactivate %1."), backend_name ) );
     return false;
+  }
+  // Unset the special requirements for particular backends (e.g. "hpaio", "hpoj")
+  // if they are not needed otherwise (i.e. by the printing system):
+  if( "hpaio" == backend_name )
+  { // Stop and disable the hplip service if it is not needed by the printing system
+    // (i.e. if there is no print queue which uses the hplip service).
+    // The hplip service is associated with the hpaio backend.
+    if( DependantPrintQueueExists( "hpaio" ) )
+    { // There is at least one print queue which uses the hplip service:
+      // Don't abort (i.e. return false) in this case because it is perfectly o.k.
+      // but show a user notification why the hplip service must be still active.
+      if( user_confirmation )
+      { Popup::Notify ( // Message of a Popup::Notify after the hpaio driver was deactivated.
+                        // Only a simple message because everything is perfectly o.k.
+                        // but the user should get a notification
+                        // why the hplip service must be still active.
+                        // This works only if the CUPS printing system is used.
+                        // Do not change or translate "hplip", it is a service name.
+                        // Do not change or translate "CUPS", it is a subsystem name.
+                        _("The driver hpaio is deactivated but the associated service hplip is not deactivated because it is needed by the CUPS printing system.")
+                      );
+      }
+    }
+    else
+    { // There is no print queue which uses the hplip service:
+      // Therefore the hplip service will be stopped and disabled if it exists.
+      // Don't abort (i.e. return false) if this fails but show an error message to the user.
+      if( Service::Status( "hplip" ) >= 0 )
+      { // The hplip service exists:
+        if( ! Service::Stop( "hplip" ) )
+        { y2milestone( "Service::Stop('hplip') failed." );
+          if( user_confirmation )
+          { Report::Error( // Only a simple message because this error does not happen on a normal system
+                           // (i.e. a system which is not totally broken or totally messed up).
+                           // Do not change or translate "hplip", it is a service name.
+                           _("Failed to stop the hplip service.")
+                         );
+          }
+        }
+        if( ! Service::Disable( "hplip" ) )
+        { y2milestone( "Service::Disable('hplip') failed." );
+          if( user_confirmation )
+          { Report::Error( // Only a simple message because this error does not happen on a normal system
+                           // (i.e. a system which is not totally broken or totally messed up).
+                           // Do not change or translate "hplip", it is a service name.
+                           _("Failed to disable the hplip service.")
+                         );
+          }
+        }
+      }
+    }
+  }
+  if( "hpoj" == backend_name )
+  { // Stop and disable the ptal service if it is not needed by the printing system
+    // (i.e. if there is no print queue which uses the ptal service).
+    // The ptal service is associated with the hpoj backend.
+    if( DependantPrintQueueExists( "hpoj" ) )
+    { // There is at least one print queue which uses the ptal service:
+      // Don't abort (i.e. return false) in this case because it is perfectly o.k.
+      // but show a user notification why the ptal service must be still active.
+      if( user_confirmation )
+      { Popup::Notify ( // Message of a Popup::Notify after the hpoj driver was deactivated.
+                        // Only a simple message because everything is perfectly o.k.
+                        // but the user should get a notification
+                        // why the ptal service must be still active.
+                        // This works only if the CUPS printing system is used.
+                        // Do not change or translate "ptal", it is a service name.
+                        // Do not change or translate "CUPS", it is a subsystem name.
+                        _("The driver hpoj is deactivated but the associated service ptal is not deactivated because it is needed by the CUPS printing system.")
+                      );
+      }
+    }
+    else
+    { // There is no print queue which uses the ptal service:
+      // Therefore the ptal service will be stopped and disabled if it exists:
+      // Don't abort (i.e. return false) if this fails but show an error message to the user.
+      if( Service::Status( "ptal" ) >= 0 )
+      { // The ptal service exists:
+        if( ! Service::Stop( "ptal" ) )
+        { y2milestone( "Service::Stop('ptal') failed." );
+          if( user_confirmation )
+          { Report::Error( // Only a simple message because this error does not happen on a normal system
+                           // (i.e. a system which is not totally broken or totally messed up).
+                           // Do not change or translate "ptal", it is a service name.
+                           _("Failed to stop the ptal service.")
+                         );
+          }
+        }
+        if( ! Service::Disable( "ptal" ) )
+        { y2milestone( "Service::Disable('ptal') failed." );
+          if( user_confirmation )
+          { Report::Error( // Only a simple message because this error does not happen on a normal system
+                           // (i.e. a system which is not totally broken or totally messed up).
+                           // Do not change or translate "ptal", it is a service name.
+                           _("Failed to disable the ptal service.")
+                         );
+          }
+        }
+      }
+    }
   }
   // Determine active scanners and active backends anew
   // and set SCSI scanner access permissions anew.
