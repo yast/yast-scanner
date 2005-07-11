@@ -1,4 +1,11 @@
 -------------------------------------------------------------------
+Mon Jul 11 13:27:01 CEST 2005 - jsmeix@suse.de
+
+- V 2.12.7
+- Added a "restart detection" functionality in the SummaryDialog.
+- Did some minor text changes.
+
+-------------------------------------------------------------------
 Wed Jul  6 14:26:32 CEST 2005 - jsmeix@suse.de
 
 - V 2.12.6
