@@ -63,7 +63,8 @@ any MainSequence()
                    `next: `next,
                    `overview: "overview",
                    `configure: "configure",
-                   `other: "configure"
+                   `other: "configure",
+                   `restart_detection: "summary"
                  ],
      "overview": $[ `abort: `abort,
                     `next: `next,

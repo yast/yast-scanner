@@ -561,9 +561,7 @@ boolean SetScsiScannerAccessPermissions()
  * A dependant print queue can exists only for the SANE backends hpaio and hpoj.
  * For all other backends no dependant print queue can exists.
  * @param backend_name string of the SANE backend name
- * @return true if a dependant CUPS print queue exists for the backend hpaio
- * @return true if a dependant CUPS print queue exists for the backend hpoj
- * @return false otherwise
+ * @return true if a dependant CUPS print queue exists for the backends hpaio or hpoj
  */
 boolean DependantPrintQueueExists( string backend_name )
 { // Example of a "/usr/bin/lpstat -v" output when the hp CUPS backend is used:
@@ -796,6 +794,32 @@ global boolean Write()
   // Sleep one second to let the user notice that the progress has finished:
   sleep( 1000 );
   if( Abort() ) return false;
+  return true;
+}
+
+/**
+ * Restart the whole autodetection by calling all autodetection functions
+ * in the same order as during the initial Read():
+ * DetermineActiveScanners results a new active_scanners map
+ * which is empty if nothing was detected or if DetermineActiveScanners fails.
+ * DetermineActiveBackends results a new active_backends list
+ * which is empty if nothing was detected or if DetermineActiveBackends fails.
+ * AutodetectScanners results a new autodetected_scanners map
+ * which is empty if nothing was detected or if AutodetectScanners fails.
+ * RestartDetection is called when the user restarts the detection in the SummaryDialog.
+ * The result is that all information in the SummaryDialog is recreated.
+ * @return true in any case (errors result only empty maps or list).
+ */
+global boolean RestartDetection()
+{ if( ! DetermineActiveScanners() )
+  { active_scanners = [];
+  }
+  if( ! DetermineActiveBackends() )
+  { active_backends = [];
+  }
+  if( ! AutodetectScanners() )
+  { autodetected_scanners = [];
+  }
   return true;
 }
 
@@ -1595,7 +1619,7 @@ global boolean DeactivateBackend( string backend_name, integer database_index, b
                message = message + "\n" + entry;
              }
            );
-    if( ! Popup::YesNo( message ) )
+    if( ! Popup::ContinueCancel( message ) )
     { // Return true in this case because it is no error
       // when the user has decided not to deactivate the backend:
       return true;
@@ -1625,6 +1649,7 @@ global boolean DeactivateBackend( string backend_name, integer database_index, b
                         // but the user should get a notification
                         // why the hplip service must be still active.
                         // This works only if the CUPS printing system is used.
+                        // Do not change or translate "hpaio", it is a driver name.
                         // Do not change or translate "hplip", it is a service name.
                         // Do not change or translate "CUPS", it is a subsystem name.
                         _("The driver hpaio is deactivated but the associated service hplip is not deactivated because it is needed by the CUPS printing system.")
@@ -1674,6 +1699,7 @@ global boolean DeactivateBackend( string backend_name, integer database_index, b
                         // but the user should get a notification
                         // why the ptal service must be still active.
                         // This works only if the CUPS printing system is used.
+                        // Do not change or translate "hpoj", it is a driver name.
                         // Do not change or translate "ptal", it is a service name.
                         // Do not change or translate "CUPS", it is a subsystem name.
                         _("The driver hpoj is deactivated but the associated service ptal is not deactivated because it is needed by the CUPS printing system.")

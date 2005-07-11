@@ -32,18 +32,18 @@ Please wait...
 </p>"),
 
 "summary" :
-// Summary dialog help 1/6:
+// Summary dialog help 1/7:
 _("<p>
 <b><big>Scanner Configuration</big></b><br>
 Set up or change the scanner configuration and show the already active scanners.
 </p>") +
-// Summary dialog help 2/6:
+// Summary dialog help 2/7:
 _("<p>
 To set up a new scanner, choose the scanner from the list of
 detected scanners and press <b>Configure</b>.
 If your scanner has not been detected, use <b>Other</b> for a manual configuration.
 </p>") +
-// Summary dialog help 3/6:
+// Summary dialog help 3/7:
 // Do not change or translate "HP", it is a manufacturer name.
 // Do not change or translate "OfficeJet", it is a model name.
 // Do not change or translate "PSC", it is a model (Printer Scanner Copier) name.
@@ -51,13 +51,13 @@ If your scanner has not been detected, use <b>Other</b> for a manual configurati
 _("<p>
 A normal USB scanner should be detected automatically.
 If it was not detected, it may work to proceed with <b>Other</b>.
-In particular, HP all-in-one USB devices, such as OfficeJets and PSCs, are not detected,
-but can be configured this way.
+In particular, HP all-in-one devices, such as OfficeJets and PSCs,
+are not detected, but can be configured this way.
 If you have difficulties configuring your scanner here,
 check whether it appears in the output of <tt>/sbin/lsusb</tt>.
 If it is not listed there, the USB system cannot communicate with the scanner.
 </p>") +
-// Summary dialog help 4/6:
+// Summary dialog help 4/7:
 // Do not change or translate "lsscsi", it is a command name.
 _("<p>
 SCSI scanners are normally detected.
@@ -66,13 +66,26 @@ check whether your scanner is shown by the command <tt>lsscsi</tt>.
 If not, the SCSI system cannot communicate with the scanner.
 Verify that an appropriate kernel module for the SCSI host adapter has been loaded.
 </p>") +
-// Summary dialog help 5/6:
+// Summary dialog help 5/7:
 _("<p>
 Parallel port scanners cannot be configured with this tool.
 These devices must be configured manually.
 </p>") +
-// Summary dialog help 6/6:
-// Do not confuse "scanning via network" (i.e. use a remote scanner via network)
+// Summary dialog help 6/7:
+// Do not confuse a "network scanner" (i.e. a scanner which is directly accessible in the network)
+// with a "network scanner" (i.e. a program which scans the network for other hosts or services)
+// or with a "remote scanner" (i.e. a scanner which is connected to another host in the network).
+// Do not confuse "scanning via network" (i.e. use a remote scanner via another host in the network)
+// with "scanning the network" (i.e. scan the network for other hosts or services).
+_("<p>
+Network scanners cannot be configured with this tool.
+These devices must be configured manually.
+A network scanner is a scanner which has a network interface
+so that it is directly accessible in the network.
+In contrast scanning via network means to access a remote scanner via another host in the network.
+</p>") +
+// Summary dialog help 7/7:
+// Do not confuse "scanning via network" (i.e. use a remote scanner via another host in the network)
 // with "scanning the network" (i.e. scan the network for other hosts or services).
 _("<p>
 <b>Configuration Summary:</b>
@@ -83,7 +96,7 @@ in which to edit the configuration, test active scanners, or set up scanning via
 
 "overview" :
 // Overview dialog help 1/3:
-// Do not confuse "scanning via network" (i.e. use a remote scanner via network)
+// Do not confuse "scanning via network" (i.e. use a remote scanner via another host in the network)
 // with "scanning the network" (i.e. scan the network for other hosts or services).
 _("<p>
 <b><big>Scanner Overview</big></b><br>
@@ -99,7 +112,7 @@ Press <b>Delete</b> to remove the configuration.
 Press <b>Test</b> to test the scanner and its configuration.
 </p>") +
 // Overview dialog help 3/3:
-// Do not confuse "scanning via network" (i.e. use a remote scanner via network)
+// Do not confuse "scanning via network" (i.e. use a remote scanner via another host in the network)
 // with "scanning the network" (i.e. scan the network for other hosts or services).
 _("<p>
 To add a new scanner, press <b>Add</b>.
@@ -180,7 +193,8 @@ In this case, an appropriate explanatory text is shown.
 // Do not change or translate "HPLIP", it is a project name.
 // Do not change or translate "hplip", it is a package name.
 // Do not change or translate "hplip", it is a service name.
-// Note that the "all" is crucial in "either ptal or hplip must be used to access all HP all-in-one devices".
+// Note that the "all" is crucial in
+// "either ptal or hplip must be used to access all HP all-in-one devices".
 _("<p>
 <b><big>HP All-in-One Devices</big></b><br>
 HP all-in-one devices require a special setup.
@@ -198,7 +212,7 @@ either ptal or hplip must be used to access all HP all-in-one devices.
 
 "configure_network_scanning" :
 // ConfigureNetworkScanning dialog help 1/5:
-// Do not confuse "scanning via network" (i.e. use a remote scanner via network)
+// Do not confuse "scanning via network" (i.e. use a remote scanner via another host in the network)
 // with "scanning the network" (i.e. scan the network for other hosts or services).
 _("<p>
 <b><big>Scanning via Network</big></b><br>

@@ -23,19 +23,33 @@ include "scanner/helps.ycp";
 
 /**
  * Ask for user confirmation if necessary before aborting.
- * At present the transaction semantik is not implemented.
- * At present all changings are committed to the system instantly,
- * for example:
- * - enable/disable backends in /etc/sane/dll.conf
- * - install additional packages (like iscan)
- * - set up and start additional services (like PTAL, HPLIP, or saned + xinetd).
- * It is necessary to commit them instantly to be able to test a scanner
+ * At present full transaction semantics (with roll-back) is not implemented.
+ * What is implemented is that it does not leave the system in an inconsistent state.
+ * It does one setup completely or not at all (i.e. all or nothing semantics regarding one setup.)
+ * "One setup" means the smallest amount of setup actions
+ * which lead from one consistent state to another consistent state.
+ * "Consistent state" is meant from the user's point of view
+ * (i.e. set up one SANE backend completely or set up the saned completely)
+ * and not from a low-level (e.g. filesystem or kernel) point of view.
+ * If the user does malicious stuff (e.g. killing YaST)
+ * or if the user ignores warning messages then it is possible (and it is accepted)
+ * that the user can force to set up even an inconsistent state
+ * (e.g. activate a backend but don't activate a required service).
+ * At present all what is needed for one setup is committed to the system instantly.
+ * For example:
+ * Install additional packages (like hp-officeJet),
+ * then set up and start special required services (like ptal),
+ * then activate the backend in /etc/sane/dll.conf
+ * finally determine which scanners have become actually active
+ * (see the ActivateBackend and DeactivateBackend functions).
+ * It is necessary to commit instantly to be able to test a scanner
  * and to show a true feedback to the user which scanners are actually active.
- * As roll-back is not implemented 'Popup::ReallyAbort(true)' doesn't make sense.
- * Scanner::Modified() returns true if something was committed to the system.
+ * @return true if nothing was committed or if user confirms to abort
  */
 boolean ReallyAbort()
-{ return !Scanner::Modified() || Popup::ReallyAbort(false);
+{ // As roll-back is not implemented 'Popup::ReallyAbort(true)' doesn't make sense.
+  // Scanner::Modified() returns true if something was committed to the system.
+  return !Scanner::Modified() || Popup::ReallyAbort(false);
 }
 
 /**
@@ -72,7 +86,7 @@ any SummaryDialog()
   // Label of the frame where the "Autodetected Scanners" are shown:
   term contents = Wizard_hw::DetectedContent( _("Detected Scanners"),
                                               autodetected,
-                                              false,
+                                              true,
                                               configured
                                             );
   Wizard::SetContentsButtons( caption,
@@ -119,6 +133,17 @@ any SummaryDialog()
       }
       break;
     }
+    /* restart the whole autodetection */
+    if( ret == `restart_button )
+    { // Scanner::RestartDetection results true in any case, see the function comment.
+      Scanner::RestartDetection();
+      summary = Scanner::Summary();
+      configured = summary[0]:"";
+      autodetected = summary[1]:[];
+      // Exit this dialog and run it again via the sequencer in wizards.ycp:
+      ret = `restart_detection;
+      break;
+    }
     y2milestone( "Ignoring unexpected returncode in SummaryDialog: %1", ret );
     continue;
   }
@@ -148,7 +173,7 @@ any OverviewDialog()
                                                                    ),
                                                         `PushButton( `id( `network_scanning_button ),
                                                                      // Label of a PushButton to go to the network scanning dialog.
-                                                                     // Do not confuse "scanning via network" (i.e. use a remote scanner via network)
+                                                                     // Do not confuse "scanning via network" (i.e. use a remote scanner via another host in the network)
                                                                      // with "scanning the network" (i.e. scan the network for other hosts or services).
                                                                      _("Scanning via &Network...")
                                                                    )
