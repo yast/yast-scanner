@@ -20,7 +20,7 @@ Icon=scanner
 Exec=/sbin/yast2 scanner 
 
 Name=Scanner
-GenericName=Scanner configuration
+GenericName=Configure a scanner
 Name[cs]=Skener
 GenericName[cs]=Konfigurace skeneru
 GenericName[de]=Konfiguration des Scanners
