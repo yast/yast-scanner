@@ -80,9 +80,9 @@ These devices must be configured manually.
 _("<p>
 Network scanners cannot be configured with this tool.
 These devices must be configured manually.
-A network scanner is a scanner which has a network interface
-so that it is directly accessible in the network.
-In contrast scanning via network means to access a remote scanner via another host in the network.
+A network scanner is a scanner that has a network interface
+so it is directly accessible in the network.
+In contrast, scanning via network means accessing a remote scanner via another host in the network.
 </p>") +
 // Summary dialog help 7/7:
 // Do not confuse "scanning via network" (i.e. use a remote scanner via another host in the network)
