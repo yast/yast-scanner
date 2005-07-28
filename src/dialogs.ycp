@@ -137,9 +137,6 @@ any SummaryDialog()
     if( ret == `restart_button )
     { // Scanner::RestartDetection results true in any case, see the function comment.
       Scanner::RestartDetection();
-      summary = Scanner::Summary();
-      configured = summary[0]:"";
-      autodetected = summary[1]:[];
       // Exit this dialog and run it again via the sequencer in wizards.ycp:
       ret = `restart_detection;
       break;

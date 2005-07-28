@@ -59,14 +59,13 @@ then echo ":package \"$PACKAGE\"" >>$TMP_DATA
 else echo "Info: Cannot read $DESCRIPTION_FILE" 1>&2
 fi
 
-# Process the optional EPSON KOWA Image Scan external description file:
+# Process the optional EPSON AVASYS (formerly EPSON KOWA) Image Scan external description file:
 # The proprietary binary-only i386-only package iscan cannot be installed by default.
-# Note the "sed" to remove the leading comment character ';'.
 PACKAGE="iscan"
 DESCRIPTION_FILE="/usr/share/sane/descriptions-external/epkowa.desc"
 if [ -r "$DESCRIPTION_FILE" ]
 then echo ":package \"$PACKAGE\"" >>$TMP_DATA
-     sed -e 's/^;//' $DESCRIPTION_FILE | Extract >>$TMP_DATA
+     Extract $DESCRIPTION_FILE >>$TMP_DATA
 else echo "Info: Cannot read $DESCRIPTION_FILE" 1>&2
 fi
 
