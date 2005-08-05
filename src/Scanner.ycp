@@ -185,7 +185,7 @@ global integer selected_model_database_index = -1;
 /**
  * Selected autodetected scanners index:
  * The index in the autodetected scanners list (of autodetected scanner maps)
- * for the model which was selected by the user in the SummaryDialog.
+ * for the model which was selected by the user in the OverviewDialog.
  * Preset to -1 which indicates that no model is selected.
  */
 global integer selected_autodetected_scanners_index = -1;
@@ -221,8 +221,6 @@ string setup_network_scanning_config_commandline = "/usr/lib/YaST2/bin/setup_net
  * and stderr via y2milestone in case of non-zero exit code.
  * @param bash_commandline string of the bash command to be executed
  * @return true on success
- *
- * The well working old version (without any Popup::ShowFeedback):
  */
 boolean ExecuteBashCommand( string bash_commandline )
 { y2milestone( "Executing bash commandline: %1", bash_commandline );
@@ -235,77 +233,6 @@ boolean ExecuteBashCommand( string bash_commandline )
   }
   return true;
 }
-/*
- * An ugly new version (with simple automated Popup::ShowFeedback which is shown too often):
- *
-boolean ExecuteBashCommand( string bash_commandline )
-{ y2milestone( "Executing bash commandline: %1", bash_commandline );
-  // if( "" == feeback_title )
-  // { feeback_title = "Executing " + bash_commandline;
-  string feeback_title = "Executing " + bash_commandline;
-  // }
-  // Show feedback in any case:
-  Popup::ShowFeedback( feeback_title, _("Please wait...") );
-  bash_result = (map)SCR::Execute( .target.bash_output, bash_commandline );
-  // Wait at least one more second before clearing the feedback
-  // so that the user can read the feedback text in any case:
-  sleep( 1000 );
-  Popup::ClearFeedback();
-  if( bash_result["exit"]:9999 != 0 )
-  { y2milestone( "'%1' exit code is: %2", bash_commandline, bash_result["exit"]:9999 );
-    y2milestone( "'%1' stdout is: %2", bash_commandline, bash_result["stdout"]:"" );
-    y2milestone( "'%1' stderr is: %2", bash_commandline, bash_result["stderr"]:"" );
-    return false;
-  }
-  return true;
-}
- *
- * A future version (with sophisticated automated Popup::ShowFeedback), see
- * yast/trunk/core/agents-perl/doc/ag_background.html
- *
-boolean ExecuteBashCommand( string bash_commandline )
-{ // if( "" == feeback_title )
-  // { feeback_title = "Executing " + bash_commandline;
-  string feeback_title = "Executing " + bash_commandline;
-  // }
-  y2milestone( "Executing bash commandline: %1", bash_commandline );
-  // Run the bash_commandline in the background and get its stdout and stderr:
-  if( !(boolean)SCR::Read(.background.run_output_err, bash_commandline ) )
-  { y2milestone( "Cannot execute bash commandline: %1", bash_commandline );
-    return false;
-  }
-  // Wait for the bash_commandline to finish up to one second without feedback.
-  // After one second show feedback that it may take some time.
-  integer counter = 0;
-  while( (boolean)SCR::Read(.background.isrunning) )
-  { counter = counter + 1;
-    sleep( 100 );
-    if( counter == 10 )
-    { Popup::ShowFeedback( feeback_title, _("Please wait...") );
-    }
-  }
-  // If feedback was shown, wait at least one more second before clearing the feedback
-  // so that the user can read the feedback text in any case:
-  if( counter >= 10 )
-  { while( counter < 20 )
-    { counter = counter + 1;
-      sleep( 100 );
-    }
-    Popup::ClearFeedback();
-  }
-  // Read exit code, stdout, and stderr from the finished bash_commandline:
-  bash_result["exit"] = SCR::Read(.background.status);
-  bash_result["stdout"] = SCR::Read(.background.buffer);
-  bash_result["stderr"] = SCR::Read(.background.buffer_err);
-  if( bash_result["exit"]:9999 != 0 )
-  { y2milestone( "'%1' exit code is: %2", bash_commandline, bash_result["exit"]:9999 );
-    y2milestone( "'%1' stdout is: %2", bash_commandline, bash_result["stdout"]:"" );
-    y2milestone( "'%1' stderr is: %2", bash_commandline, bash_result["stderr"]:"" );
-    return false;
-  }
-  return true;
-}
- */
 
 /**
  * Determine the version of an installed package by calling a bash command (rpm).
@@ -502,6 +429,70 @@ boolean AutodetectScanners()
 }
 
 /**
+ * Search the active_scanners list for possible USB scanners (":libusb:" in SANE device)
+ * and if at least one possible USB scanner was found,
+ * then create the file /etc/resmgr.conf.d/50-scanner.conf with the following content:
+ * -----------------------------------------------------------------------------------
+ * # Grant access to all USB devices except for HID and hub devices
+ * exclude usb:class=3 scanner
+ * exclude usb:class=9 scanner
+ * add usb:any scanner
+ * -----------------------------------------------------------------------------------
+ * and (re)-start and enable the service "resmgr"
+ * otherwise remove the file /etc/resmgr.conf.d/50-scanner.conf
+ * and (re)-start the service "resmgr".
+ * @return true on success
+ */
+boolean SetUsbScannerAccessPermissions()
+{ boolean active_usb_scanner = false;
+  foreach( map< string, string > active_scanner,
+           active_scanners,
+           { if( issubstring( active_scanner["sane_device"]:"", ":libusb:" ) )
+             { active_usb_scanner = true;
+             }
+           }
+         );
+  if( active_usb_scanner )
+  { if( ExecuteBashCommand( "echo '# Grant access to all USB devices except for HID and hub devices' >/etc/resmgr.conf.d/50-scanner.conf" )
+        && ExecuteBashCommand( "echo 'exclude usb:class=3 scanner' >>/etc/resmgr.conf.d/50-scanner.conf" )
+        && ExecuteBashCommand( "echo 'exclude usb:class=9 scanner' >>/etc/resmgr.conf.d/50-scanner.conf" )
+        && ExecuteBashCommand( "echo 'add usb:any scanner' >>/etc/resmgr.conf.d/50-scanner.conf" )
+      )
+    { y2milestone( "Created /etc/resmgr.conf.d/50-scanner.conf" );
+      if( ! Service::Restart( "resmgr" ) )
+      { y2milestone( "Service::Restart('resmgr') failed." );
+        return false;
+      }
+      if( ! Service::Enable( "resmgr" ) )
+      { y2milestone( "Service::Enable('sane-dev') failed." );
+        return false;
+      }
+      y2milestone( "Service resmgr (re)-started and enabled." );
+      return true;
+    }
+    else
+    { y2milestone( "Failed to create /etc/resmgr.conf.d/50-scanner.conf" );
+      return false;
+    }
+  }
+  else
+  { if( ExecuteBashCommand( "rm -f /etc/resmgr.conf.d/50-scanner.conf" ) )
+    { y2milestone( "Removed /etc/resmgr.conf.d/50-scanner.conf (using 'rm -f')." );
+      if( ! Service::Restart( "resmgr" ) )
+      { y2milestone( "Service::Restart('resmgr') failed." );
+        return false;
+      }
+      y2milestone( "Service resmgr (re)-started." );
+      return true;
+    }
+    else
+    { y2milestone( "Failed to remove /etc/resmgr.conf.d/50-scanner.conf" );
+      return false;
+    }
+  }
+}
+
+/**
  * Search the active_scanners list for possible SCSI scanners (":/dev/" in SANE device)
  * and if at least one possible SCSI scanner was found,
  * then run /etc/init.d/sane-dev (using "restart" to be safe that outdated permissions are reset)
@@ -514,15 +505,15 @@ boolean AutodetectScanners()
  * @return true on success
  */
 boolean SetScsiScannerAccessPermissions()
-{ boolean run_and_activate_sane_dev = false;
+{ boolean active_scsi_scanner = false;
   foreach( map< string, string > active_scanner,
            active_scanners,
            { if( issubstring( active_scanner["sane_device"]:"", ":/dev/" ) )
-             { run_and_activate_sane_dev = true;
+             { active_scsi_scanner = true;
              }
            }
          );
-  if( run_and_activate_sane_dev )
+  if( active_scsi_scanner )
   { if( ! Service::Restart( "sane-dev" ) )
     { y2milestone( "Service::Restart('sane-dev') failed." );
       return false;
@@ -531,6 +522,7 @@ boolean SetScsiScannerAccessPermissions()
     { y2milestone( "Service::Enable('sane-dev') failed." );
       return false;
     }
+    y2milestone( "Service sane-dev (re)-started and enabled." );
   }
   else
   { if( ! Service::Stop( "sane-dev" ) )
@@ -541,6 +533,7 @@ boolean SetScsiScannerAccessPermissions()
     { y2milestone( "Service::Disable('sane-dev') failed." );
       return false;
     }
+    y2milestone( "Service sane-dev stopped and disabled." );
   }
   return true;
 }
@@ -806,12 +799,19 @@ global boolean Write()
  * which is empty if nothing was detected or if DetermineActiveBackends fails.
  * AutodetectScanners results a new autodetected_scanners map
  * which is empty if nothing was detected or if AutodetectScanners fails.
- * RestartDetection is called when the user restarts the detection in the SummaryDialog.
- * The result is that all information in the SummaryDialog is recreated.
+ * RestartDetection is called when the user restarts the detection in the OverviewDialog
+ * and if testing of an active scanner failed (see the TestBackend function).
+ * The result is that all information in the OverviewDialog is recreated.
  * @return true in any case (errors result only empty maps or list).
  */
 global boolean RestartDetection()
-{ if( ! DetermineActiveScanners() )
+{ Popup::ShowFeedback( // No title for a simple busy message:
+                       "",
+                       // Busy message:
+                       // Body of a Popup::ShowFeedback:
+                       _("Detecting USB and SCSI scanners...")
+                     );
+  if( ! DetermineActiveScanners() )
   { active_scanners = [];
   }
   if( ! DetermineActiveBackends() )
@@ -820,26 +820,50 @@ global boolean RestartDetection()
   if( ! AutodetectScanners() )
   { autodetected_scanners = [];
   }
+  Popup::ClearFeedback();
   return true;
 }
 
 /**
- * Create a textual summary and a list of detected scanners
- * @return list of the currently activated scanners and activated backends
+ * Create the content for WizardHW::SetContents
+ * @return a list of maps with keys
+ * "id" : string = the identification of the device,
+ * "rich_descr" : string = RichText description of the device
+ * "table_descr" : list<string> = fields of the table
  */
-global list Summary()
-{ // Make a list of the autodetected scanners:
-  list< term > detected_scanners = [];
+global list< map< string, any > > OverviewContents()
+{ list< map< string, any > > overview_contents = [];
+  // The id_prefix can be one of the following:
+  // "autodetected_scanner:", "active_scanner:", ""active_backend:", "nothing".
+  // An index number will be appended to the id_prefix except when it is "nothing"
+  // which results an unique id for each overview_content entry.
+  // Therefore the id can be one of the following:
+  // "autodetected_scanner:[0-9]*" where [0-9]* is the autodetected_scanners_index
+  // (i.e. the index in the autodetected_scanners list to which the overview_content entry matches)
+  // "active_scanner:[0-9]*" where [0-9]* is the active_scanners_index
+  // (i.e. the index in the active_scanners list to which the overview_content entry matches)
+  // "active_backend:[0-9]*" where [0-9]* is the active_backends_index
+  // (i.e. the index in the active_backends list to which the overview_content entry matches)
+  // "nothing" which is used as fallback only if none of the above was set
+  // (i.e. if neither a scanner was autodetected nor an active scanner nor an active backend exists)
+  string id_prefix = "";
+  // On top of the table list the autodetected but not yet configured scanners
+  // i.e. those scanners which are in autodetected_scanners but not in active_scanners:
+  id_prefix = "autodetected_scanner:";
+  // Process the autodetected_scanners list:
   integer autodetected_scanners_index = -1;
-  boolean preselected = false;
   foreach( map< string, string > autodetected_scanner,
            autodetected_scanners,
            { // Set the autodetected_scanners_index to the index number
              // of the actual autodetected_scanner in autodetected_scanners:
              autodetected_scanners_index = autodetected_scanners_index +1;
              // Use local variables to have shorter variable names:
+             string manufacturer = autodetected_scanner["manufacturer"]:"";
+             string model = autodetected_scanner["model"]:"";
              string description = autodetected_scanner["description"]:"";
              string device = autodetected_scanner["device"]:"";
+             // The last entry in the autodetected_scanners list is an empty map.
+             // Skip at least this last entry:
              if( "" != description )
              { // Test whether the autodetected_scanner is one of the active_scanners.
                // If yes, then there is no need to set it up again
@@ -853,84 +877,141 @@ global list Summary()
                         }
                       );
                if( show_as_detected_scanner )
-               { if( selected_autodetected_scanners_index == autodetected_scanners_index )
-                 { // If there was already a scanner selected before then preselect it.
-                   // This happens for example when going 'back' to the summary screen.
-                   detected_scanners = add( detected_scanners,
-                                            `item( `id( autodetected_scanners_index ), description, true )
-                                          );
-                   preselected = true;
+               { string id = id_prefix + tostring( autodetected_scanners_index );
+                 string rich_descr = "";
+                 string model_string = "";
+                 if( "" != manufacturer )
+                 { model_string = manufacturer + " ";
+                 }
+                 if( "" != model )
+                 { model_string = model_string + model + " ";
+                 }
+                 if( "" != model_string )
+                 { model_string = model_string + description;
                  }
                  else
-                 { detected_scanners = add( detected_scanners,
-                                            `item( `id( autodetected_scanners_index ), description )
-                                          );
+                 { model_string = description;
                  }
+                 list< string > table_descr = [ // A prefix for the first column of a table
+                                                // where autodetected scanners are listed in the second column
+                                                // to denote those scanners which are not configured yet:
+                                                _("Not configured:"),
+                                                model_string
+                                              ];
+                 map <string, any> overview_content = $[ "id": id,
+                                                         "rich_descr": rich_descr,
+                                                         "table_descr": table_descr
+                                                       ];
+                 overview_contents = add( overview_contents , overview_content );
                }
              }
            }
          );
-  if( ! preselected )
-  { detected_scanners = add( detected_scanners,
-                             `item( `id( -1 ),
-                                    // Label for not detected devices:
-                                    _("Other (not detected)"),
-                                    true
-                                  )
-                           );
-  }
-  else
-  { detected_scanners = add( detected_scanners,
-                             `item( `id( -1 ),
-                                    // Label for not detected devices:
-                                    _("Other (not detected)")
-                                  )
-                           );
-  }
-  // Make a configuration summary text:
-  // Header of the configuration summary text:
-  string summary_text = _("Configuration Summary");
-  // Make a summary text of the active scanners:
-  string active_scanner_text = "";
-  summary_text = summary_text
-                 + "<p>"
-                 // 1. sub-header of the configuration summary text:
-                 + _("Active Scanners:");
+  // In the middle of the table list the active scanners
+  // i.e. those scanners which are in active_scanners:
+  id_prefix = "active_scanner:";
+  // Process the autodetected_scanners list:
+  integer active_scanners_index = -1;
   foreach( map< string, string > active_scanner,
            active_scanners,
-           { if( "" != active_scanner["backend"]:"" )
-             { active_scanner_text = sformat( // Active scanner entry where
-                                              // %1 will be replaced by the manufacturer name
-                                              // %2 will be replaced by the model name
-                                              // %3 will be replaced by the device name where the scanner is connected to:
-                                              _("<br>%1 %2 at %3"),
-                                              // Fallback manufacturer name if the real manufacturer name is missing:
-                                              active_scanner["manufacturer"]:_("Unknown manufacturer"),
-                                              // Fallback model name if the real model name is missing:
-                                              active_scanner["model"]:_("Unknown model"),
-                                              // Fallback device name if the real device name is missing:
-                                              active_scanner["sane_device"]:_("Unknown device")
-                                            );
-               summary_text = summary_text + active_scanner_text;
+           { // Set the active_scanners_index to the index number
+             // of the actual active_scanner in active_scanners:
+             active_scanners_index = active_scanners_index +1;
+             // Use local variables to have shorter variable names:
+             string backend = active_scanner["backend"]:"";
+             // Fallback device name if the real device name is missing:
+             string sane_device = active_scanner["sane_device"]:_("Unknown device");
+             // Fallback manufacturer name if the real manufacturer name is missing:
+             string manufacturer = active_scanner["manufacturer"]:_("Unknown manufacturer");
+             // Fallback model name if the real model name is missing:
+             string model = active_scanner["model"]:_("Unknown model");
+             // The last entry in the active_scanners list is an empty map.
+             // Skip at least this last entry:
+             if( "" != backend )
+             { string id = id_prefix + tostring( active_scanners_index );
+               string rich_descr = "";
+               string active_scanner_text = sformat( // Active scanner entry where
+                                                     // %1 will be replaced by the manufacturer name
+                                                     // %2 will be replaced by the model name
+                                                     // %3 will be replaced by the device name
+                                                     // where the scanner is connected to:
+                                                     _("%1 %2 at %3"),
+                                                     manufacturer,
+                                                     model,
+                                                     sane_device
+                                                   );
+               list< string > table_descr = [ backend,
+                                              active_scanner_text
+                                            ];
+               map <string, any> overview_content = $[ "id": id,
+                                                       "rich_descr": rich_descr,
+                                                       "table_descr": table_descr
+                                                     ];
+               overview_contents = add( overview_contents , overview_content );
              }
            }
          );
-  // Make a summary text of the active backends:
-  summary_text = summary_text
-                 + "<p>"
-                 // Last sub-header of the configuration summary text:
-                 + _("Active Drivers:");
+  // At the bottom of the table list the active backends without an active scanner
+  // i.e. those backends which are in active_backends but not in active_scanners:
+  id_prefix = "active_backend:";
+  // Process the active_backends list:
+  integer active_backends_index = -1;
   foreach( string active_backend,
            active_backends,
-           { if( "" != active_backend )
-             { summary_text = summary_text
-                              + "<br>"
-                              + active_backend;
+           { // Set the active_backends_index to the index number
+             // of the actual active_backend in active_backends:
+             active_backends_index = active_backends_index +1;
+             // The last entry in the active_backends list is an empty string.
+             // Skip this last entry:
+             if( "" != active_backend )
+             { // Test whether the active_backend is one of the active_scanners.
+               // If yes, then there is no need to show it again:
+               boolean show_as_active_backend = true;
+               foreach( map< string, string > active_scanner,
+                        active_scanners,
+                        { if( active_backend == active_scanner["backend"]:"unknown" )
+                          { show_as_active_backend = false;
+                          }
+                        }
+                      );
+               if( show_as_active_backend )
+               { string id = id_prefix + tostring( active_backends_index );
+                 string rich_descr = "";
+                 list< string > table_descr = [ active_backend,
+                                                // A suffix for the second column of a table
+                                                // where active scanner drivers are listed
+                                                // in the first column to denote those drivers
+                                                // for which there is no matching active scanner:
+                                                _("No active scanner for this driver.")
+                                              ];
+                 map <string, any> overview_content = $[ "id": id,
+                                                         "rich_descr": rich_descr,
+                                                         "table_descr": table_descr
+                                                       ];
+                 overview_contents = add( overview_contents , overview_content );
+               }
              }
            }
          );
-  // return the list of detected scanners and the summary text of the active scanners and backends:
-  return [ summary_text, detected_scanners ];
+  // If the overview_contents list is still empty, set a fallback
+  // so that there is no empty table shown to the user:
+  if( size( overview_contents ) < 1 )
+  { list< string > table_descr = [ "",
+                                   // A fallback list entry so that there is no empty list shown to the user
+                                   // when neither a scanner was autodetected
+                                   // nor an active scanner was found
+                                   // nor an active driver was found:
+                                   _("Neither a scanner was detected nor an active scanner or driver exists.")
+                                 ];
+    overview_contents = [ $[ "id": "nothing",
+                             "rich_descr": "",
+                             "table_descr": table_descr
+                           ]
+                        ];
+  }
+  // Return the overview_contents list:
+  y2milestone( "Overview contents: %1", overview_contents );
+  return overview_contents;
 }
 
 /**
@@ -1324,7 +1405,7 @@ Alternatively proceed and change the printer configuration to use the ptal servi
                    // 5. progress stage name of a Progress::New:
                    _("Determine active scanners"),
                    // 6. progress stage name of a Progress::New:
-                   _("Test and set SCSI scanner access permissions")
+                   _("Test and set USB and SCSI scanner access permissions")
                  ],
                  [ // 1. progress step progress bar title of a Progress::New:
                    _("Checking whether additional packages must be installed..."),
@@ -1337,7 +1418,7 @@ Alternatively proceed and change the printer configuration to use the ptal servi
                    // 5. progress step progress bar title of a Progress::New:
                    _("Determining active scanners..."),
                    // 6. progress step progress bar title of a Progress::New:
-                   _("Testing and setting SCSI scanner access permissions..."),
+                   _("Testing and setting USB and SCSI scanner access permissions..."),
                    // Last progress step progress bar title of a Progress::New:
                    _("Finished")
                  ],
@@ -1521,13 +1602,27 @@ Alternatively proceed and change the printer configuration to use the ptal servi
   if( ! DetermineActiveScanners() )
   { active_scanners = [];
     // This Progress::NextStage makes sure that
-    // the stage "Test and set SCSI scanner access permissions"
+    // the stage "Test and set USB and SCSI scanner access permissions"
     // is shown to the user even if it is not actually executed.
     // But because of the word "Test" it is not wrong to show it.
     Progress::NextStage();
   }
   else
   { Progress::NextStage();
+    if( ! SetUsbScannerAccessPermissions()
+        && user_confirmation
+      )
+    { Report::Warning( sformat( // Message of a Report::Warning when setting USB scanner access permissions failed
+                                // where %1 will be replaced by the actual error message
+                                // which is usually only available in English.
+                                // Only a simple message because this error does not happen on a normal system
+                                // (i.e. a system which is not totally broken or totally messed up).
+                                _("Failed to set USB scanner access permissions.\nThe error message is:\n\n%1"),
+                                // Fallback error message if the real error message is missing:
+                                bash_result["stderr"]:_("(no message available)")
+                              )
+                     );
+    }
     if( ! SetScsiScannerAccessPermissions()
         && user_confirmation
       )
@@ -1600,11 +1695,11 @@ global boolean DeactivateBackend( string backend_name, integer database_index, b
       return true;
     }
     string entry = "";
-    // Header line of a list of scanners which will be deactivated:
-    string message = _("The following scanners will be deactivated:");
+    // Header message for a list of scanners which will be deactivated:
+    string message = _("The following scanners use the same driver.\nTherefore all those scanners will be deactivated:");
     foreach( map< string, string > scanner_to_deactivate,
              scanners_to_deactivate,
-             { entry = sformat( // Scanner to be deactivated entry where
+             { entry = sformat( // Entries of a list of scanners which will be deactivated.
                                 // %1 will be replaced by the manufacturer name
                                 // %2 will be replaced by the model name
                                 // %3 will be replaced by the device name where the scanner is connected to:
@@ -1736,14 +1831,28 @@ global boolean DeactivateBackend( string backend_name, integer database_index, b
     }
   }
   // Determine active scanners and active backends anew
-  // and set SCSI scanner access permissions anew.
+  // and set USB and SCSI scanner access permissions anew.
   // Return successfully regardless of the result of this steps
   // because the backend was successfully deactivated.
   if( ! DetermineActiveScanners() )
   { active_scanners = [];
   }
   else
-  { if( ! SetScsiScannerAccessPermissions()
+  { if( ! SetUsbScannerAccessPermissions()
+        && user_confirmation
+      )
+    { Report::Warning( sformat( // Message of a Report::Warning when setting USB scanner access permissions failed
+                                // where %1 will be replaced by the actual error message
+                                // which is usually only available in English.
+                                // Only a simple message because this error does not happen on a normal system
+                                // (i.e. a system which is not totally broken or totally messed up).
+                                _("Failed to set USB scanner access permissions.\nThe error message is:\n\n%1"),
+                                // Fallback error message if the real error message is missing:
+                                bash_result["stderr"]:_("(no message available)")
+                              )
+                     );
+    }
+    if( ! SetScsiScannerAccessPermissions()
         && user_confirmation
       )
     { Report::Warning( sformat( // Message of a Report::Warning when re-setting SCSI scanner access permissions failed
@@ -1852,6 +1961,13 @@ global boolean TestBackend( string backend_name )
                             bash_result["stderr"]:_("(no results available)")
                           )
                  );
+    // If the test failed, do the whole autodetection anew.
+    // Even if normally nothing should have changed because of a failed test,
+    // it might have happened that for example during the test somehow
+    // the scanner had fallen into coma or the USB or SCSI system had crashed
+    // and then the scanner would be no longer an active scanner nor could it be autodetected.
+    // To simulate such an event, simply unplug an USB scanner while it is being tested.
+    RestartDetection();
     return false;
   }
   Popup::ClearFeedback();
@@ -1870,45 +1986,6 @@ global boolean TestBackend( string backend_name )
                            )
                   );
   return true;
-}
-
-/**
- * Create an overview table with all active scanners and backends
- * @return list of table items
- */
-global list Overview()
-{ // Build the overview table (see ModelItems above):
-  list< term > overview_items = [];
-  foreach( string backend_name,
-           active_backends,
-           { if( "" != backend_name )
-             { // Determine which of the active scanners use the backend (see DeactivateBackend above):
-               string  models_string = "";
-               foreach( map< string, string > active_scanner,
-                        active_scanners,
-                        { if( active_scanner["backend"]:"unknown" == backend_name )
-                          { if( "" != models_string )
-                            { // Insert a delimiter when more than one model uses the same backend:
-                              models_string = models_string + " , ";
-                            }
-                            models_string = models_string
-                                            + active_scanner["manufacturer"]:"unknown"
-                                            + " "
-                                            + active_scanner["model"]:"unknown"
-                                            + " at "
-                                            + active_scanner["sane_device"]:"unknown";
-                          }
-                        }
-                      );
-               // The backend_name in the active_backends list is unique
-               // because in the determine_active_scanner_backends bash script 'sort -u' is used.
-               // Therefore the backend_name can be used as unique id for the table entries:
-               overview_items = add( overview_items, `item( `id( backend_name ), backend_name, models_string ) );
-             }
-           }
-         );
-  y2milestone( "Overview table_items: %1", overview_items );
-  return overview_items;
 }
 
 /**

@@ -1,4 +1,15 @@
 -------------------------------------------------------------------
+Fri Aug  5 11:31:02 CEST 2005 - jsmeix@suse.de
+
+- V 2.12.10
+- Changed from old Wizard_hw to new WizardHW design.
+- Implemented new resmgr handling to allow normal users
+  to access USB scanners (bug 100695).
+- Several minor improvements
+  (e.g. restart detection when test failed,
+   nicer model name for detected scanners, ...)
+
+-------------------------------------------------------------------
 Thu Jul 28 11:54:43 CEST 2005 - jsmeix@suse.de
 
 - V 2.12.9
