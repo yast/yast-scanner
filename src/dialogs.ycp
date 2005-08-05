@@ -15,9 +15,9 @@ textdomain "scanner";
 import "Label";
 import "Popup";
 import "Wizard";
-import "Wizard_hw";
 import "Arch";
 import "Scanner";
+import "WizardHW";
 
 include "scanner/helps.ycp";
 
@@ -73,205 +73,57 @@ symbol WriteDialog()
 }
 
 /**
- * Summary dialog
- * @return dialog result
- */
-any SummaryDialog()
-{ // Caption of the SummaryDialog:
-  string caption = _("Scanner Configuration");
-  // Create the content of the summary:
-  list summary = Scanner::Summary();
-  string configured = summary[0]:"";
-  list autodetected = summary[1]:[];
-  // Label of the frame where the "Autodetected Scanners" are shown:
-  term contents = Wizard_hw::DetectedContent( _("Detected Scanners"),
-                                              autodetected,
-                                              true,
-                                              configured
-                                            );
-  Wizard::SetContentsButtons( caption,
-                              contents,
-                              HELPS["summary"]:"",
-                              Label::BackButton(),
-                              Label::FinishButton()
-                            );
-  any ret = nil;
-  while(true)
-  { ret = UI::UserInput();
-    /* back or abort */
-    if( ret == `abort
-        || ret == `cancel
-        || ret == `back
-      )
-    { if( ! ReallyAbort() ) continue;
-      break;
-    }
-    /* change */
-    if( ret == `edit_button )
-    { ret = `overview;
-      break;
-    }
-    /* finish */
-    if(ret == `next)
-    { break;
-    }
-    /* select a device */
-    if( ret == `detected_selbox ) continue;
-    /* configure the selected device */
-    if( ret == `configure_button )
-    { Scanner::selected_autodetected_scanners_index = (integer)UI::QueryWidget( `id( `detected_selbox ), `CurrentItem );
-      y2milestone( "Selected autodetected scanners index in SummaryDialog is: %1", Scanner::selected_autodetected_scanners_index );
-      if( Scanner::selected_autodetected_scanners_index < 0 )
-      { ret = `other;
-      }
-      else
-      { // Unselect a previously selected model in the database
-        // to have it no longer preselected in the select model dialog
-        // when the user has really selected an autodetected scanner:
-        Scanner::selected_model_database_index = -1;
-        ret = `configure;
-      }
-      break;
-    }
-    /* restart the whole autodetection */
-    if( ret == `restart_button )
-    { // Scanner::RestartDetection results true in any case, see the function comment.
-      Scanner::RestartDetection();
-      // Exit this dialog and run it again via the sequencer in wizards.ycp:
-      ret = `restart_detection;
-      break;
-    }
-    y2milestone( "Ignoring unexpected returncode in SummaryDialog: %1", ret );
-    continue;
-  }
-  y2milestone( "SummaryDialog returns: %1", ret );
-  return ret;
-}
-
-/**
  * Overview dialog
- * @return dialog result
+ * does what the two dialogs SummaryDialog() and OverviewDialog() did before:
+ * A dialog showing the detected scanners and allowing to configure them.
+ * @return any The value of the resulting UserInput.
  */
 any OverviewDialog()
-{ // Caption of the OverviewDialog:
-  string caption = _("Scanner Overview");
-  list overview_table = Scanner::Overview();
-  term contents = Wizard_hw::ConfiguredContent( `header( // A table column header:
-                                                         _("Driver Name"),
-                                                         // A table column header:
-                                                         _("Associated Scanners")
-                                                       ),
-                                                 overview_table,
-                                                 nil,
-                                                 nil,
-                                                 `HBox( `PushButton( `id( `test_button ),
-                                                                     // Label of a PushButton to test a scanner:
-                                                                     _("&Test")
-                                                                   ),
-                                                        `PushButton( `id( `network_scanning_button ),
-                                                                     // Label of a PushButton to go to the network scanning dialog.
-                                                                     // Do not confuse "scanning via network" (i.e. use a remote scanner via another host in the network)
-                                                                     // with "scanning the network" (i.e. scan the network for other hosts or services).
-                                                                     _("Scanning via &Network...")
-                                                                   )
-                                                      ),
-                                                 nil
-                                               );
-  contents = Wizard_hw::SpacingAround( contents, 1.5, 1.5, 1.0, 1.0 );
-  Wizard::SetContentsButtons( caption,
-                              contents,
-                              HELPS["overview"]:"",
-                              Label::BackButton(),
-                              Label::FinishButton()
-                            );
+{ // Caption of the OverviewDialog
+  // (the same as the caption of the matching help text)
+  string caption = _("Scanner Configuration");
+
+  WizardHW::CreateHWDialog( caption,
+                            HELPS["overview"]:"",
+                            [ // Header for a column of the overview table
+                              // where scanners and associated drivers are listed:
+                              _("Driver"),
+                              // Header for a column of the overview table
+                              // where scanners and associated drivers are listed:
+                              _("Scanner")
+                            ],
+                            [ [ `restart_detection,
+                                // Label of a button to restart autodetection of scanners:
+                                _("&Restart Detection")
+                              ],
+                              [ `test,
+                                // Label of a button to test a scanner:
+                                _("&Test")
+                              ],
+                              [ `network_scanning,
+                                // Label of a button to go to the network scanning dialog.
+                                // Do not confuse "scanning via network"
+                                // (i.e. use a remote scanner via another host in the network)
+                                // with "scanning the network"
+                                // (i.e. scan the network for other hosts or services):
+                                _("Scanning via &Network...")
+                              ]
+                            ]
+                          );
+
+  Wizard::SetNextButton( `next, Label::FinishButton() );
+
+  WizardHW::SetContents( Scanner::OverviewContents() );
+
   any ret = nil;
   while(true)
-  { ret = UI::UserInput();
+  { // UI::UserInput returns the label of the button which was cklicked:
+    ret = UI::UserInput();
     /* back or abort */
     if( ret == `abort
         || ret == `cancel
       )
     { if( ! ReallyAbort() ) continue;
-      break;
-    }
-    /* add */
-    if( ret == `add_button )
-    { // Unselect a previously selected autodetected scanner
-      // to have it no longer preselected in the select model dialog:
-      Scanner::selected_autodetected_scanners_index = -1;
-      ret = `add;
-      break;
-    }
-    /* edit */
-    if( ret == `edit_button )
-    { // Unselect a previously selected autodetected scanner
-      // to have it no longer preselected in the select model dialog:
-      Scanner::selected_autodetected_scanners_index = -1;
-      ret = `edit;
-      break;
-    }
-    /* delete */
-    if( ret == `delete_button )
-    { string backend_name = (string)UI::QueryWidget( `id(`table), `CurrentItem );
-      y2milestone( "Selected backend to be deleted (i.e. deactivated) is: %1", backend_name );
-      if( nil == backend_name
-          || "" == backend_name )
-      { Popup::AnyMessage( // Header of a Popup::AnyMessage when no driver was selected:
-                           _("Nothing Selected"),
-                           // Body of a Popup::AnyMessage when no driver was selected:
-                           _("Select an entry.")
-                         );
-        continue;
-      }
-      if( ! Popup::YesNo( sformat( // Question of a Popup::YesNo where %1 will be replaced by the driver name:
-                                   _("Deactivate %1?"), backend_name ) ) )
-      { continue;
-      }
-      Wizard::DisableBackButton();
-      Wizard::DisableAbortButton();
-      Wizard::DisableNextButton();
-      if( ! Scanner::DeactivateBackend( backend_name, -1, true ) )
-      { Popup::Error( // Message of a Popup::Error where %1 will be replaced by the driver (backend) name.
-                      // Only a simple message because before the function Scanner::DeactivateBackend
-                      // was called and this function would have shown more specific messages.
-                      sformat( _("Failed to deactivate %1."), backend_name ) );
-        Wizard::EnableBackButton();
-        Wizard::EnableAbortButton();
-        Wizard::EnableNextButton();
-        continue;
-      }
-      Wizard::EnableBackButton();
-      Wizard::EnableAbortButton();
-      Wizard::EnableNextButton();
-      ret = `overview;
-      break;
-    }
-    /* test */
-    if( ret == `test_button )
-    { string backend_name = (string)UI::QueryWidget( `id(`table), `CurrentItem );
-      y2milestone( "Selected backend to be tested is: %1", backend_name );
-      if( nil == backend_name
-          || "" == backend_name )
-      { Popup::AnyMessage( // Header of a Popup::AnyMessage when no backend was selected:
-                           _("Nothing Selected"),
-                           // Body of a Popup::AnyMessage when no backend was selected:
-                           _("Select an entry.")
-                         );
-        continue;
-      }
-      if( ! Scanner::TestBackend( backend_name ) )
-      { Popup::Error( // Message of a Popup::Error where %1 will be replaced by the driver (backend) name.
-                      // Only a simple message because before the function Scanner::TestBackend
-                      // was called and this function would have shown more specific messages.
-                      sformat( _("Failed to test %1."), backend_name ) );
-        continue;
-      }
-      ret = `overview;
-      break;
-    }
-    /* network scanning */
-    if( ret == `network_scanning_button )
-    { ret = `network_scanning;
       break;
     }
     /* next or back */
@@ -280,9 +132,322 @@ any OverviewDialog()
       )
     { break;
     }
+    /* add */
+    if( ret == `add )
+    { // Unselect a previously selected autodetected scanner
+      // to have it no longer preselected in the select model dialog:
+      Scanner::selected_autodetected_scanners_index = -1;
+      // Unselect a previously selected model in the database
+      // to have it no longer preselected in the select model dialog:
+      Scanner::selected_model_database_index = -1;
+      // Exit this dialog and run the AddSequence() via the sequencer in wizards.ycp:
+      break;
+    }
+    /* edit */
+    if( ret == `edit )
+    { // Get what was selected:
+      string selected_item_id = WizardHW::SelectedItem();
+      y2milestone( "selected_item_idelected in OverviewDialog: %1", selected_item_id );
+      if( selected_item_id == "" )
+      { Popup::AnyMessage( // Header of a Popup::AnyMessage when nothing was selected:
+                           _("Nothing Selected"),
+                           // Body of a Popup::AnyMessage when nothing was selected:
+                           _("Select an entry.")
+                         );
+        continue;
+      }
+      // The selected_item_id can be one of the following (see the OverviewContents function):
+      // "autodetected_scanner:[0-9]*" where [0-9]* is the autodetected_scanners_index
+      // (i.e. the index in the autodetected_scanners list to which the selected item matches)
+      // "active_scanner:[0-9]*" where [0-9]* is the active_scanners_index
+      // (i.e. the index in the active_scanners list to which the selected item matches)
+      // "active_backend:[0-9]*" where [0-9]* is the active_backends_index
+      // (i.e. the index in the active_backends list to which the selected item matches)
+      // "nothing" which is used as fallback only if none of the above was set
+      // (i.e. if neither a scanner was autodetected nor an active scanner nor an active backend exists)
+      if( issubstring( selected_item_id, "autodetected_scanner:" ) )
+      { // Configure a selected autodetected scanner:
+        Scanner::selected_autodetected_scanners_index = tointeger( filterchars( selected_item_id, "0123456789" ) );
+        y2milestone( "Selected autodetected scanners index in OverviewDialog is: %1", Scanner::selected_autodetected_scanners_index );
+        if( Scanner::selected_autodetected_scanners_index < 0 )
+        { ret = `add;
+        }
+        else
+        { // Unselect a previously selected model in the database
+          // to have it no longer preselected in the select model dialog
+          // when the user has selected a not yet configured autodetected scanner:
+          Scanner::selected_model_database_index = -1;
+          ret = `configure;
+        }
+        // Exit this dialog and run the AddSequence() via the sequencer in wizards.ycp:
+        break;
+      }
+      if( issubstring( selected_item_id, "active_scanner:" ) )
+      { // Edit a selected active scanner:
+        // Unselect a previously selected autodetected scanner
+        // to have it no longer preselected in the select model dialog
+        // but keep a possibly previously selected model in the database
+        // because this model was normally added, configured, or edited before
+        // (in particular if there is only one scanner connected):
+        Scanner::selected_autodetected_scanners_index = -1;
+        // Exit this dialog and run the AddSequence() via the sequencer in wizards.ycp:
+        ret = `edit;
+        break;
+      }
+      if( issubstring( selected_item_id, "active_backend:" ) )
+      { // A selected active backend cannot be edited.
+        // A selected active backend can only be deleted.
+        Popup::AnyMessage( // Header of a Popup::AnyMessage when an active driver
+                           // without a matching active scanner was selected
+                           // and then the user clicked the [Edit] button.
+                           // Translate 'Edit' to the exact label of the [Edit] button.
+                           _("Edit not possible"),
+                           // Body of a Popup::AnyMessage when an active driver
+                           // without a matching active scanner was selected
+                           // and then the user clicked the [Edit] button:
+                           // Translate 'delete' to the exact label of the [Delete] button.
+                           _("It is only possible to delete a driver without a matching scanner.")
+                         );
+        continue;
+      }
+      if( "nothing" == selected_item_id )
+      { Popup::AnyMessage( // Header of a Popup::AnyMessage when there is only the fallback entry
+                           // when there is neither a detected scanner nor an active scanner or driver
+                           // and then the user clicked the [Edit] button.
+                           // Translate 'Edit' to the exact label of the [Edit] button.
+                           _("Edit not possible"),
+                           // Body of a Popup::AnyMessage when there is only the fallback entry
+                           // when there is neither a detected scanner nor an active scanner or driver
+                           // and then the user clicked the [Edit] button.
+                           // Translate 'add' to the exact label of the [Add] button.
+                           _("It is only possible to add a scanner.")
+                         );
+        continue;
+// Alternatively:
+//        // Do the same as if the user had clicked the [Add] button:
+//        // Unselect a previously selected autodetected scanner
+//        // to have it no longer preselected in the select model dialog:
+//        Scanner::selected_autodetected_scanners_index = -1;
+//        // Unselect a previously selected model in the database
+//        // to have it no longer preselected in the select model dialog:
+//        Scanner::selected_model_database_index = -1;
+//        // Exit this dialog and run the AddSequence() via the sequencer in wizards.ycp:
+//        ret = `add;
+//        break;
+      }
+      y2milestone( "selected_item_id is none of 'autodetected_scanner:...' 'active_scanner:...' 'active_backend:...' 'nothing'");
+      continue;
+    }
+    /* delete */
+    if( ret == `delete )
+    { // Get what was selected:
+      string selected_item_id = WizardHW::SelectedItem();
+      y2milestone( "Selected item id in OverviewDialog: %1", selected_item_id );
+      if( selected_item_id == "" )
+      { Popup::AnyMessage( // Header of a Popup::AnyMessage when nothing was selected:
+                           _("Nothing Selected"),
+                           // Body of a Popup::AnyMessage when nothing was selected:
+                           _("Select an entry.")
+                         );
+        continue;
+      }
+      // The selected_item_id can be one of the following (see the OverviewContents function):
+      // "autodetected_scanner:[0-9]*" where [0-9]* is the autodetected_scanners_index
+      // (i.e. the index in the autodetected_scanners list to which the selected item matches)
+      // "active_scanner:[0-9]*" where [0-9]* is the active_scanners_index
+      // (i.e. the index in the active_scanners list to which the selected item matches)
+      // "active_backend:[0-9]*" where [0-9]* is the active_backends_index
+      // (i.e. the index in the active_backends list to which the selected item matches)
+      // "nothing" which is used as fallback only if none of the above was set
+      // (i.e. if neither a scanner was autodetected nor an active scanner nor an active backend exists)
+      if( issubstring( selected_item_id, "autodetected_scanner:" ) )
+      { // A selected autodetected scanner (which is not yet configured) cannot be deleted.
+        // A selected autodetected scanner can be edited.
+        Popup::AnyMessage( // Header of a Popup::AnyMessage when an autodetected scanner
+                           // which is not yet configured was selected
+                           // and then the user clicked the [Delete] button.
+                           // Translate 'Delete' to the exact label of the [Delete] button.
+                           _("Delete not possible"),
+                           // Body of a Popup::AnyMessage when an autodetected scanner
+                           // which is not yet configured was selected
+                           // and then the user clicked the [Delete] button:
+                           // Translate 'edit' to the exact label of the [Edit] button.
+                           _("It is only possible to edit a detected scanner.")
+                         );
+        continue;
+      }
+      if( "nothing" == selected_item_id )
+      { Popup::AnyMessage( // Header of a Popup::AnyMessage when there is only the fallback entry
+                           // when there is neither a detected scanner nor an active scanner or driver
+                           // and then the user clicked the [Delete] button.
+                           // Translate 'Delete' to the exact label of the [Delete] button.
+                           _("Delete not possible"),
+                           // Body of a Popup::AnyMessage when there is only the fallback entry
+                           // when there is neither a detected scanner nor an active scanner or driver
+                           // and then the user clicked the [Delete] button.
+                           // Translate 'add' to the exact label of the [Add] button.
+                           _("It is only possible to add a scanner.")
+                         );
+        continue;
+      }
+      // The selected_item_id is either "active_scanner:..." or "active_backend:...":
+      string backend_name = "";
+      if( issubstring( selected_item_id, "active_scanner:" ) )
+      { // Delete a selected active scanner:
+        integer active_scanners_index = tointeger( filterchars( selected_item_id, "0123456789" ) );
+        backend_name = Scanner::active_scanners[active_scanners_index,"backend"]:"";
+      }
+      if( issubstring( selected_item_id, "active_backend:" ) )
+      { // Delete a selected active backend (without a matching active scanner):
+        integer active_backends_index = tointeger( filterchars( selected_item_id, "0123456789" ) );
+        backend_name = Scanner::active_backends[active_backends_index]:"";
+      }
+      y2milestone( "Selected backend to be deleted (i.e. deactivated) is: %1", backend_name );
+      if( "" == backend_name )
+      { Popup::AnyMessage( // Header of a Popup::AnyMessage when nothing was selected:
+                           _("Nothing Selected"),
+                           // Body of a Popup::AnyMessage when nothing was selected:
+                           _("Select an entry.")
+                         );
+        continue;
+      }
+      if( ! Popup::YesNo( sformat( // Question of a Popup::YesNo
+                                   // where %1 will be replaced by the driver name:
+                                   _("Deactivate %1?"), backend_name ) ) )
+      { continue;
+      }
+      Wizard::DisableBackButton();
+      Wizard::DisableAbortButton();
+      Wizard::DisableNextButton();
+      if( ! Scanner::DeactivateBackend( backend_name, -1, true ) )
+      { Popup::Error( // Message of a Popup::Error
+                      // where %1 will be replaced by the driver (backend) name.
+                      // Only a simple message because before the function Scanner::DeactivateBackend
+                      // was called and this function would have shown more specific messages.
+                      sformat( _("Failed to deactivate %1."), backend_name ) );
+      }
+      Wizard::EnableBackButton();
+      Wizard::EnableAbortButton();
+      Wizard::EnableNextButton();
+      // Exit this dialog and run it again via the sequencer in wizards.ycp
+      // to get it updated after the delete via calling OverviewContents():
+      ret = `delete;
+      break;
+    }
+    /* test */
+    if( ret == `test )
+    { // Get what was selected:
+      string selected_item_id = WizardHW::SelectedItem();
+      y2milestone( "Selected item id in OverviewDialog: %1", selected_item_id );
+      if( selected_item_id == "" )
+      { Popup::AnyMessage( // Header of a Popup::AnyMessage when nothing was selected:
+                           _("Nothing Selected"),
+                           // Body of a Popup::AnyMessage when nothing was selected:
+                           _("Select an entry.")
+                         );
+        continue;
+      }
+      // The selected_item_id can be one of the following (see the OverviewContents function):
+      // "autodetected_scanner:[0-9]*" where [0-9]* is the autodetected_scanners_index
+      // (i.e. the index in the autodetected_scanners list to which the selected item matches)
+      // "active_scanner:[0-9]*" where [0-9]* is the active_scanners_index
+      // (i.e. the index in the active_scanners list to which the selected item matches)
+      // "active_backend:[0-9]*" where [0-9]* is the active_backends_index
+      // (i.e. the index in the active_backends list to which the selected item matches)
+      // "nothing" which is used as fallback only if none of the above was set
+      // (i.e. if neither a scanner was autodetected nor an active scanner nor an active backend exists)
+      if( issubstring( selected_item_id, "autodetected_scanner:" ) )
+      { // A selected autodetected scanner (which is not yet configured) cannot be tested.
+        // A selected autodetected scanner can be edited.
+        Popup::AnyMessage( // Header of a Popup::AnyMessage when an autodetected scanner
+                           // which is not yet configured was selected
+                           // and then the user clicked the [Test] button.
+                           // Translate 'Test' to the exact label of the [Test] button.
+                           _("Test not possible"),
+                           // Body of a Popup::AnyMessage when an autodetected scanner
+                           // which is not yet configured was selected
+                           // and then the user clicked the [Test] button:
+                           // Translate 'edit' to the exact label of the [Edit] button.
+                           _("It is only possible to edit a detected scanner.")
+                         );
+        continue;
+      }
+      if( issubstring( selected_item_id, "active_backend:" ) )
+      { // A selected active backend without a matching active scanner cannot be tested.
+        // A selected active backend without a matching active scanner can only be deleted.
+        Popup::AnyMessage( // Header of a Popup::AnyMessage when an active driver
+                           // without a matching active scanner was selected
+                           // and then the user clicked the [Test] button.
+                           // Translate 'Test' to the exact label of the [Test] button.
+                           _("Test not possible"),
+                           // Body of a Popup::AnyMessage when an active driver
+                           // without a matching active scanner was selected
+                           // and then the user clicked the [Test] button:
+                           // Translate 'delete' to the exact label of the [Delete] button.
+                           _("It is only possible to delete a driver without a matching scanner.")
+                         );
+        continue;
+      }
+      if( "nothing" == selected_item_id )
+      { Popup::AnyMessage( // Header of a Popup::AnyMessage when there is only the fallback entry
+                           // when there is neither a detected scanner nor an active scanner or driver
+                           // and then the user clicked the [Test] button.
+                           // Translate 'Test' to the exact label of the [Test] button.
+                           _("Test not possible"),
+                           // Body of a Popup::AnyMessage when there is only the fallback entry
+                           // when there is neither a detected scanner nor an active scanner or driver
+                           // and then the user clicked the [Test] button.
+                           // Translate 'add' to the exact label of the [Add] button.
+                           _("It is only possible to add a scanner.")
+                         );
+        continue;
+      }
+      if( issubstring( selected_item_id, "active_scanner:" ) )
+      { // Test a selected active scanner:
+        integer active_scanners_index = tointeger( filterchars( selected_item_id, "0123456789" ) );
+        string backend_name = Scanner::active_scanners[active_scanners_index,"backend"]:"";
+        y2milestone( "Selected backend to be tested is: %1", backend_name );
+        if( nil == backend_name
+            || "" == backend_name )
+        { Popup::AnyMessage( // Header of a Popup::AnyMessage when nothing was selected:
+                             _("Nothing Selected"),
+                             // Body of a Popup::AnyMessage when nothing was selected:
+                             _("Select an entry.")
+                           );
+          continue;
+        }
+        if( ! Scanner::TestBackend( backend_name ) )
+        { Popup::Error( // Message of a Popup::Error where %1 will be replaced by the driver (backend) name.
+                        // Only a simple message because before the function Scanner::TestBackend
+                        // was called and this function would have shown more specific messages.
+                        sformat( _("Failed to test %1."), backend_name ) );
+        }
+      }
+      // Exit this dialog and run it again via the sequencer in wizards.ycp
+      // to get it updated after the test via calling OverviewContents().
+      // Even if normally nothing in the dialog content should have changed
+      // because of a test, it might have happened that for example
+      // during the test somehow the USB or SCSI system had crashed
+      // and then the scanner would be no longer an active scanner.
+      ret = `test;
+      break;
+    }
+    /* network scanning */
+    if( ret == `network_scanning )
+    { // Exit this dialog and run the ConfigureNetworkScanningDialog via the sequencer in wizards.ycp:
+      break;
+    }
+    /* restart the whole autodetection */
+    if( ret == `restart_detection )
+    { // Scanner::RestartDetection results true in any case, see the function comment.
+      Scanner::RestartDetection();
+      // Exit this dialog and run it again via the sequencer in wizards.ycp:
+      break;
+    }
     y2milestone( "Ignoring unexpected returncode in OverviewDialog: %1", ret );
     continue;
   }
+  y2milestone( "OverviewDialog returns: %1", ret );
   return ret;
 }
 

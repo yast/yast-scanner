@@ -44,8 +44,7 @@ any AddSequence()
  */
 any MainSequence()
 { map aliases =
-  $[ "summary": ``( SummaryDialog() ),
-     "overview": ``( OverviewDialog() ),
+  $[ "overview": ``( OverviewDialog() ),
      "network": ``( ConfigureNetworkScanningDialog() ),
      "configure": [ ``( AddSequence() ),
                      true
@@ -58,23 +57,19 @@ any MainSequence()
              ]
    ];
   map sequence =
-  $[ "ws_start": "summary",
-     "summary": $[ `abort: `abort,
-                   `next: `next,
-                   `overview: "overview",
-                   `configure: "configure",
-                   `other: "configure",
-                   `restart_detection: "summary"
-                 ],
+  $[ "ws_start": "overview",
      "overview": $[ `abort: `abort,
                     `next: `next,
                     `add: "add",
+                    `configure: "configure",
                     `edit: "edit",
-                    `overview: "overview",
+                    `delete: "overview",
+                    `test: "overview",
+                    `restart_detection: "overview",
                     `network_scanning: "network"
                   ],
      "configure": $[ `abort: `abort,
-                     `next: "summary"
+                     `next: "overview"
                    ],
      "network": $[ `abort: `abort,
                    `next: "overview"

@@ -31,47 +31,47 @@ _("<p>
 Please wait...
 </p>"),
 
-"summary" :
-// Summary dialog help 1/7:
+"overview" :
+// Overview dialog help 1/7:
 _("<p>
 <b><big>Scanner Configuration</big></b><br>
 Set up or change the scanner configuration and show the already active scanners.
 </p>") +
-// Summary dialog help 2/7:
+// Overview dialog help 2/7:
 _("<p>
 To set up a new scanner, choose the scanner from the list of
-detected scanners and press <b>Configure</b>.
-If your scanner has not been detected, use <b>Other</b> for a manual configuration.
+detected scanners and press <b>Edit</b>.
+If your scanner has not been detected, use <b>Add</b> for a manual configuration.
 </p>") +
-// Summary dialog help 3/7:
+// Overview dialog help 3/7:
 // Do not change or translate "HP", it is a manufacturer name.
 // Do not change or translate "OfficeJet", it is a model name.
 // Do not change or translate "PSC", it is a model (Printer Scanner Copier) name.
 // Do not change or translate "/sbin/lsusb", it is a command name.
 _("<p>
 A normal USB scanner should be detected automatically.
-If it was not detected, it may work to proceed with <b>Other</b>.
+If it was not detected, it may work to proceed with <b>Add</b>.
 In particular, HP all-in-one devices, such as OfficeJets and PSCs,
 are not detected, but can be configured this way.
 If you have difficulties configuring your scanner here,
 check whether it appears in the output of <tt>/sbin/lsusb</tt>.
 If it is not listed there, the USB system cannot communicate with the scanner.
 </p>") +
-// Summary dialog help 4/7:
+// Overview dialog help 4/7:
 // Do not change or translate "lsscsi", it is a command name.
 _("<p>
 SCSI scanners are normally detected.
-If difficulties arise proceeding with <b>Other</b>,
+If difficulties arise proceeding with <b>Add</b>,
 check whether your scanner is shown by the command <tt>lsscsi</tt>.
 If not, the SCSI system cannot communicate with the scanner.
 Verify that an appropriate kernel module for the SCSI host adapter has been loaded.
 </p>") +
-// Summary dialog help 5/7:
+// Overview dialog help 5/7:
 _("<p>
 Parallel port scanners cannot be configured with this tool.
 These devices must be configured manually.
 </p>") +
-// Summary dialog help 6/7:
+// Overview dialog help 6/7:
 // Do not confuse a "network scanner" (i.e. a scanner which is directly accessible in the network)
 // with a "network scanner" (i.e. a program which scans the network for other hosts or services)
 // or with a "remote scanner" (i.e. a scanner which is connected to another host in the network).
@@ -84,39 +84,18 @@ A network scanner is a scanner that has a network interface
 so it is directly accessible in the network.
 In contrast, scanning via network means accessing a remote scanner via another host in the network.
 </p>") +
-// Summary dialog help 7/7:
+// Overview dialog help 7/7:
 // Do not confuse "scanning via network" (i.e. use a remote scanner via another host in the network)
 // with "scanning the network" (i.e. scan the network for other hosts or services).
+// It is not possible to modify or remove an active scanner directly.
+// It is only possible to modify or remove a driver and this way
+// all scanners which are associated with this driver are modified or removed.
 _("<p>
-<b>Configuration Summary:</b>
-The configuration summary shows the active scanners.
-If you press <b>Change</b>, an additional dialog opens
-in which to edit the configuration, test active scanners, or set up scanning via network.
-</p>"),
-
-"overview" :
-// Overview dialog help 1/3:
-// Do not confuse "scanning via network" (i.e. use a remote scanner via another host in the network)
-// with "scanning the network" (i.e. scan the network for other hosts or services).
-_("<p>
-<b><big>Scanner Overview</big></b><br>
 The table lists the configured drivers with their associated scanners.
-From this overview, you can modify, test, and remove these configurations.
-You can also add a new scanner or configure scanning via network.
-</p>") +
-// Overview dialog help 2/3:
-_("<p>
-To modify, remove, or test a scanner, first select the desired scanner.
-Press <b>Edit</b> to modify the configuration.
-Press <b>Delete</b> to remove the configuration.
-Press <b>Test</b> to test the scanner and its configuration.
-</p>") +
-// Overview dialog help 3/3:
-// Do not confuse "scanning via network" (i.e. use a remote scanner via another host in the network)
-// with "scanning the network" (i.e. scan the network for other hosts or services).
-_("<p>
-To add a new scanner, press <b>Add</b>.
-To configure scanning over a network, use <b>Scanning via Network</b>.
+Press <b>Edit</b> to modify a driver.
+Press <b>Delete</b> to remove a driver.
+If you press <b>Advanced</b>, you can
+restart the detection, test active scanners, or set up scanning via network.
 </p>"),
 
 "select_model" :
