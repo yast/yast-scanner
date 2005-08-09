@@ -112,6 +112,7 @@ any ScannerSequence()
                ]
     ];
   Wizard::CreateDialog();
+  Wizard::SetDesktopIcon("scanner");
   any ret = Sequencer::Run( aliases, sequence );
   UI::CloseDialog();
   return ret;
@@ -133,6 +134,7 @@ any ScannerAutoSequence()
                               Label::BackButton(),
                               Label::NextButton()
                             );
+  Wizard::SetDesktopIcon("scanner");
   any ret = MainSequence();
   UI::CloseDialog();
   return ret;

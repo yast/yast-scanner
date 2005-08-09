@@ -16,7 +16,7 @@ X-SuSE-YaST-Geometry=
 X-SuSE-YaST-SortKey=
 X-SuSE-YaST-AutoInstResource=
 
-Icon=scanner
+Icon=yast-scanner
 Exec=/sbin/yast2 scanner 
 
 Name=Scanner
