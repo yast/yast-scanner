@@ -94,7 +94,7 @@ _("<p>
 The table lists the configured drivers with their associated scanners.
 Press <b>Edit</b> to modify a driver.
 Press <b>Delete</b> to remove a driver.
-If you press <b>Advanced</b>, you can
+If you press <b>Other</b>, you can
 restart the detection, test active scanners, or set up scanning via network.
 </p>"),
 
