@@ -82,8 +82,9 @@ Network scanners cannot be configured with this tool.
 These devices must be configured manually.
 A network scanner is a scanner that has a network interface
 so it is directly accessible in the network.
-In contrast, scanning via network means accessing a remote scanner via another host in the network.
-</p>") +
+In contrast, scanning via network means accessing a remote scanner connected to another host in the network.
+</p>
+") +
 // Overview dialog help 7/7:
 // Do not confuse "scanning via network" (i.e. use a remote scanner via another host in the network)
 // with "scanning the network" (i.e. scan the network for other hosts or services).

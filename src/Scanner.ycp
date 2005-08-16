@@ -895,7 +895,7 @@ global list< map< string, any > > OverviewContents()
                  list< string > table_descr = [ // A prefix for the first column of a table
                                                 // where autodetected scanners are listed in the second column
                                                 // to denote those scanners which are not configured yet:
-                                                _("Not configured:"),
+                                                _("Not Configured:"),
                                                 model_string
                                               ];
                  map <string, any> overview_content = $[ "id": id,
@@ -1001,7 +1001,7 @@ global list< map< string, any > > OverviewContents()
                                    // when neither a scanner was autodetected
                                    // nor an active scanner was found
                                    // nor an active driver was found:
-                                   _("Neither a scanner was detected nor an active scanner or driver exists.")
+                                   _("No scanner was detected and no active scanner or driver exists.")
                                  ];
     overview_contents = [ $[ "id": "nothing",
                              "rich_descr": "",
@@ -1079,7 +1079,7 @@ global list ModelItems( string filter_string )
                { if( "unsupported" == status )
                  { if( "unsupported" == backend )
                    { // Scanner model list status entry for unsupported models
-                     status_string = _( "This scanner is not supported." );
+                     status_string = _("This scanner is not supported.");
                    }
                    else
                    { status_string = sformat( // Scanner model list status entry for models
