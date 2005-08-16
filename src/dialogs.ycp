@@ -201,7 +201,7 @@ any OverviewDialog()
                            // without a matching active scanner was selected
                            // and then the user clicked the [Edit] button.
                            // Translate 'Edit' to the exact label of the [Edit] button.
-                           _("Edit not possible"),
+                           _("Edit Not Possible"),
                            // Body of a Popup::AnyMessage when an active driver
                            // without a matching active scanner was selected
                            // and then the user clicked the [Edit] button:
@@ -215,7 +215,7 @@ any OverviewDialog()
                            // when there is neither a detected scanner nor an active scanner or driver
                            // and then the user clicked the [Edit] button.
                            // Translate 'Edit' to the exact label of the [Edit] button.
-                           _("Edit not possible"),
+                           _("Edit Not Possible"),
                            // Body of a Popup::AnyMessage when there is only the fallback entry
                            // when there is neither a detected scanner nor an active scanner or driver
                            // and then the user clicked the [Edit] button.
@@ -267,7 +267,7 @@ any OverviewDialog()
                            // which is not yet configured was selected
                            // and then the user clicked the [Delete] button.
                            // Translate 'Delete' to the exact label of the [Delete] button.
-                           _("Delete not possible"),
+                           _("Delete Not Possible"),
                            // Body of a Popup::AnyMessage when an autodetected scanner
                            // which is not yet configured was selected
                            // and then the user clicked the [Delete] button:
@@ -281,7 +281,7 @@ any OverviewDialog()
                            // when there is neither a detected scanner nor an active scanner or driver
                            // and then the user clicked the [Delete] button.
                            // Translate 'Delete' to the exact label of the [Delete] button.
-                           _("Delete not possible"),
+                           _("Delete Not Possible"),
                            // Body of a Popup::AnyMessage when there is only the fallback entry
                            // when there is neither a detected scanner nor an active scanner or driver
                            // and then the user clicked the [Delete] button.
@@ -363,7 +363,7 @@ any OverviewDialog()
                            // which is not yet configured was selected
                            // and then the user clicked the [Test] button.
                            // Translate 'Test' to the exact label of the [Test] button.
-                           _("Test not possible"),
+                           _("Test Not Possible"),
                            // Body of a Popup::AnyMessage when an autodetected scanner
                            // which is not yet configured was selected
                            // and then the user clicked the [Test] button:
@@ -379,7 +379,7 @@ any OverviewDialog()
                            // without a matching active scanner was selected
                            // and then the user clicked the [Test] button.
                            // Translate 'Test' to the exact label of the [Test] button.
-                           _("Test not possible"),
+                           _("Test Not Possible"),
                            // Body of a Popup::AnyMessage when an active driver
                            // without a matching active scanner was selected
                            // and then the user clicked the [Test] button:
@@ -393,7 +393,7 @@ any OverviewDialog()
                            // when there is neither a detected scanner nor an active scanner or driver
                            // and then the user clicked the [Test] button.
                            // Translate 'Test' to the exact label of the [Test] button.
-                           _("Test not possible"),
+                           _("Test Not Possible"),
                            // Body of a Popup::AnyMessage when there is only the fallback entry
                            // when there is neither a detected scanner nor an active scanner or driver
                            // and then the user clicked the [Test] button.
