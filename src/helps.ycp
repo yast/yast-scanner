@@ -47,14 +47,14 @@ If your scanner has not been detected, use <b>Add</b> for a manual configuration
 // Do not change or translate "HP", it is a manufacturer name.
 // Do not change or translate "OfficeJet", it is a model name.
 // Do not change or translate "PSC", it is a model (Printer Scanner Copier) name.
-// Do not change or translate "/sbin/lsusb", it is a command name.
+// Do not change or translate "/usr/sbin/lsusb", it is a command name.
 _("<p>
 A normal USB scanner should be detected automatically.
 If it was not detected, it may work to proceed with <b>Add</b>.
 In particular, HP all-in-one devices, such as OfficeJets and PSCs,
 are not detected, but can be configured this way.
 If you have difficulties configuring your scanner here,
-check whether it appears in the output of <tt>/sbin/lsusb</tt>.
+check whether it appears in the output of <tt>/usr/sbin/lsusb</tt>.
 If it is not listed there, the USB system cannot communicate with the scanner.
 </p>") +
 // Overview dialog help 4/7:
