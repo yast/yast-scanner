@@ -880,18 +880,23 @@ global list< map< string, any > > OverviewContents()
                { string id = id_prefix + tostring( autodetected_scanners_index );
                  string rich_descr = "";
                  string model_string = "";
-                 if( "" != manufacturer )
+                 // Avoid that the manufacturer name is shown duplicated
+                 // when the autodetected manufacturer name
+                 // is also a part of the autodetected model name.
+                 // E.g.: "EPSON" "Epson Perfection 123"
+                 // Use a simple case insensitive substring test and ignore false positives
+                 // (e.g.: "HP" "High Performance Scanner HPS 1234")
+                 // because it is sufficient to show only the model name
+                 // because different manufacturers use different model names.
+                 if( "" != manufacturer
+                     && ! issubstring( tolower( model ), tolower( manufacturer ) )
+                   )
                  { model_string = manufacturer + " ";
                  }
                  if( "" != model )
                  { model_string = model_string + model + " ";
                  }
-                 if( "" != model_string )
-                 { model_string = model_string + description;
-                 }
-                 else
-                 { model_string = description;
-                 }
+                 model_string = model_string + description;
                  list< string > table_descr = [ // A prefix for the first column of a table
                                                 // where autodetected scanners are listed in the second column
                                                 // to denote those scanners which are not configured yet:
@@ -925,6 +930,17 @@ global list< map< string, any > > OverviewContents()
              string manufacturer = active_scanner["manufacturer"]:_("Unknown manufacturer");
              // Fallback model name if the real model name is missing:
              string model = active_scanner["model"]:_("Unknown model");
+             // Avoid that the manufacturer name is shown duplicated
+             // when the autodetected manufacturer name
+             // is also a part of the autodetected model name.
+             // E.g.: "EPSON" "Epson Perfection 123"
+             // Use a simple case insensitive substring test and ignore false positives
+             // (e.g.: "HP" "High Performance Scanner HPS 1234")
+             // because it is sufficient to show only the model name
+             // because different manufacturers use different model names.
+             if( issubstring( tolower( model ), tolower( manufacturer ) ) )
+             { manufacturer = "";
+             }
              // The last entry in the active_scanners list is an empty map.
              // Skip at least this last entry:
              if( "" != backend )

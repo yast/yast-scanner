@@ -17,11 +17,16 @@ then /etc/init.d/hplip stop
 fi
 
 # Setup ptal USB devices:
-MAXIMUM_WAIT="120"
+MAXIMUM_WAIT="60"
 # 'ptal-init setup-usb' exits with non-zero exit code when it is running in the background.
-# Therefore a simple time bomb is started before it:
+# Therefore a simple time bomb background process is started before it.
+# This time bomb background process process is normally killed at the end.
+# As a signal is processed not until a "sleep" has finished,
+# it is crucial not to do simply "sleep $MAXIMUM_WAIT"
+# but to do "for i in $( seq $MAXIMUM_WAIT ) ; do sleep 1 ; done"
+# because otherwise it would wait in any case until "sleep $MAXIMUM_WAIT" has finished.
 if [ -x /usr/sbin/ptal-init ]
-then ( sleep $MAXIMUM_WAIT ; killall -9 -v -q ptal-init ) &
+then ( for i in $( seq $MAXIMUM_WAIT ) ; do sleep 1 ; done ; killall -9 -v -q ptal-init ) &
      timebombPID=$!
      ptal-init setup-usb &>/dev/null || { echo "failed: ptal-init setup-usb" 1>&2 ; exit 2 ; }
 else echo "cannot execute /usr/sbin/ptal-init" 1>&2
