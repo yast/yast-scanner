@@ -1,4 +1,12 @@
 -------------------------------------------------------------------
+Thu Aug 18 15:50:50 CEST 2005 - jsmeix@suse.de
+
+- V 2.12.14
+- Avoid to show duplicate manufacturer name when it is also a part
+  of the model name like in "EPSON Epson Perfection 123".
+- Fix killing of the time bomb in setup_ptal_scanner_service.
+
+-------------------------------------------------------------------
 Wed Aug 17 12:00:16 CEST 2005 - jsmeix@suse.de
 
 - V 2.12.13
