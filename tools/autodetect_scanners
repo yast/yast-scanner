@@ -42,7 +42,7 @@ cat ${TMP_DATA}.raw | egrep '^found SCSI |^found USB ' | sort -u | sed -e 's/^fo
 # Output header:
 if [ "$OUTPUT_FORMAT" = "YCP" ]
 then echo "[" 
-else echo "CONNECTION|DEVICE|MANUFACTURER|MODEL|DESCRIPTION"
+else echo "CONNECTION|DEVICE|MANUFACTURER|USB_VENDOR_ID|MODEL|USB_PRODUCT_ID|DESCRIPTION"
 fi
 
 # Output scanner entries:
@@ -52,13 +52,17 @@ do echo $DESCRIPTION | grep -q '^USB ' && CONNECTION="USB" || CONNECTION="SCSI"
    DEVICE=$( echo $DESCRIPTION | sed -e 's/.* at \(.*\)/\1/' )
    MANUFACTURER=""
    MODEL=""
+   USB_VENDOR_ID=""
+   USB_PRODUCT_ID=""
    if [ "$CONNECTION" = "USB" ]
    then MODEL=$( echo $DESCRIPTION | tr '[]' '||' | cut -d '|' -s -f 4 )
         [ -n "$MODEL" ] && MANUFACTURER=$( echo $DESCRIPTION | tr '[]' '||' | cut -d '|' -s -f 2 )
+        USB_VENDOR_ID=$( echo $DESCRIPTION | sed -n -e 's/^.*vendor=\(0x[0-9A-Fa-f][0-9A-Fa-f]*\).*$/\1/p' )
+        USB_PRODUCT_ID=$( echo $DESCRIPTION | sed -n -e 's/^.*product=\(0x[0-9A-Fa-f][0-9A-Fa-f]*\).*$/\1/p' )
    fi
    if [ "$OUTPUT_FORMAT" = "YCP" ]
-   then echo -e "  \$[ \"connection\":\"$CONNECTION\",\n     \"device\":\"$DEVICE\",\n     \"manufacturer\":\"$MANUFACTURER\",\n     \"model\":\"$MODEL\",\n     \"description\":\"$DESCRIPTION\"\n  ],"
-   else echo "$CONNECTION|$DEVICE|$MANUFACTURER|$MODEL|$DESCRIPTION"
+   then echo -e "  \$[ \"connection\":\"$CONNECTION\",\n     \"device\":\"$DEVICE\",\n     \"manufacturer\":\"$MANUFACTURER\",\n     \"usb_vendor_id\":\"$USB_VENDOR_ID\",\n     \"model\":\"$MODEL\",\n     \"usb_product_id\":\"$USB_PRODUCT_ID\",\n     \"description\":\"$DESCRIPTION\"  ],"
+   else echo "$CONNECTION|$DEVICE|$MANUFACTURER|$USB_VENDOR_ID|$MODEL|$USB_PRODUCT_ID|$DESCRIPTION"
    fi
 done
 
