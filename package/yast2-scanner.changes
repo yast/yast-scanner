@@ -1,4 +1,12 @@
 -------------------------------------------------------------------
+Thu Aug 25 09:59:16 CEST 2005 - jsmeix@suse.de
+
+- V 2.12.15
+- Change the method how USB scanner access is set up for resmgr
+  from a generic method (using a fixed entry) to a model-specific
+  method using USB vendor and product IDs (bug 100695).
+
+-------------------------------------------------------------------
 Thu Aug 18 15:50:50 CEST 2005 - jsmeix@suse.de
 
 - V 2.12.14
