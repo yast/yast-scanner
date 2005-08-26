@@ -431,101 +431,90 @@ boolean AutodetectScanners()
 }
 
 /**
- * Search the active_scanners list for possible USB scanners (":libusb:" in SANE device)
- * and if at least one possible USB scanner was found,
- * then search the autodetected_scanner list for a matching autodetected scanner
- * and use the autodetected usb_vendor_id and usb_product_id
- * to create the file /etc/resmgr.conf.d/50-scanner.conf
- * with the following example content:
+ * Search the autodetected_scanners list for USB scanners
+ * and if at least one USB scanner was found,
+ * then create the file /etc/resmgr.conf.d/50-scanner.conf
+ * with an entry for each autodetected USB scanner like
  * -----------------------------------------------------------------------------------
- * # Grant access to USB scanners:
  * add usb:vendor=0x1234,product=0x5678 scanner
  * add usb:vendor=0x1a2b,product=0x3c4d scanner
  * -----------------------------------------------------------------------------------
  * and (re)-start and enable the service "resmgr"
  * otherwise remove the file /etc/resmgr.conf.d/50-scanner.conf
  * and (re)-start the service "resmgr".
+ * Ignore whether or not an autodetected USB scanner appears in the active_scanners list
+ * (i.e. simply grant access to all autodetected USB scanners)
+ * because on x86_64 "scanimage -L" cannot find scanners using the 32-bit epkowa backend
+ * (from the proprietary binary-only 32-bit-only "iscan" package for Epson scanners)
+ * so that in this case the scanner cannot appear in the active_scanners list
+ * but "sane-find-scanner" finds (almost all) Epson USB scanners
+ * so that the scanner is in the autodetected_scanners list.
  * @return true on success
  */
 boolean SetUsbScannerAccessPermissions()
-{ boolean active_usb_scanner = false;
-  boolean active_usb_scanner_with_missing_id = false;
-  foreach( map< string, string > active_scanner,
-           active_scanners,
-           { string sane_device = active_scanner["sane_device"]:"";
-             if( issubstring( sane_device, ":libusb:" ) )
-             { // An active USB scanner was found.
-               y2milestone( "An active USB scanner was found: Setting USB Scanner Access Permissions in /etc/resmgr.conf.d/50-scanner.conf anew." );
-               if( ! active_usb_scanner )
+{ string resmgr_scanner_config_file = "/etc/resmgr.conf.d/50-scanner.conf";
+  boolean autodetected_usb_scanner = false;
+  boolean autodetected_usb_scanner_with_missing_ids = false;
+  foreach( map< string, string > autodetected_scanner,
+           autodetected_scanners,
+           { if( "USB" == autodetected_scanner["connection"]:"unknown" )
+             { // There is an autodetected USB scanner.
+               if( ! autodetected_usb_scanner )
                { // Clear /etc/resmgr.conf.d/50-scanner.conf and write the header comment
-                 // if and only if the first active USB scanner is found
-                 // (i.e. when an active USB scanner is found but active_usb_scanner is still false):
-                 if( ExecuteBashCommand( "echo '# Use /usr/sbin/lsusb to create entries like:' >/etc/resmgr.conf.d/50-scanner.conf" )
-                     && ExecuteBashCommand( "echo '# add usb:vendor=0x1a2b,product=0x3c4d scanner' >>/etc/resmgr.conf.d/50-scanner.conf" )
-                     && ExecuteBashCommand( "echo '# to grant access to USB scanners:' >>/etc/resmgr.conf.d/50-scanner.conf" )
+                 // if and only for the first autodetected USB scanner
+                 // (i.e. when autodetected_usb_scanner is still false):
+                 y2milestone( "There is an autodetected USB scanner: Setting USB Scanner Access Permissions in %1 anew.", resmgr_scanner_config_file );
+                 if( ExecuteBashCommand( "echo '# Use /usr/sbin/lsusb to create entries like:' >" + resmgr_scanner_config_file )
+                     && ExecuteBashCommand( "echo '# add usb:vendor=0x1a2b,product=0x3c4d scanner' >>" + resmgr_scanner_config_file )
+                     && ExecuteBashCommand( "echo '# to grant access to USB scanners:' >>" + resmgr_scanner_config_file )
                    )
-                 { y2milestone( "Created /etc/resmgr.conf.d/50-scanner.conf" );
+                 { y2milestone( "(Re)-created %1", resmgr_scanner_config_file );
                  }
                  else
-                 { y2milestone( "Failed to create /etc/resmgr.conf.d/50-scanner.conf" );
+                 { y2milestone( "Failed to (re)-create %1", resmgr_scanner_config_file );
                    return false;
                  }
                }
-               active_usb_scanner = true;
-               // Search the matching autodetected scanner and
-               // determine its autodetected usb_vendor_id and usb_product_id
-               // and write a matching resmgr entry into /etc/resmgr.conf.d/50-scanner.conf:
-               foreach( map< string, string > autodetected_scanner,
-                        autodetected_scanners,
-                        { if( issubstring( sane_device, autodetected_scanner["device"]:"unknown" ) )
-                          { // The matching autodetected scanner is found because for example
-                            // "backend:libusb:123:456" contains the substring "libusb:123:456"
-                            string usb_vendor_id = autodetected_scanner["usb_vendor_id"]:"";
-                            string usb_product_id = autodetected_scanner["usb_product_id"]:"";
-                            string description = autodetected_scanner["description"]:"no description";
-                            string resmgr_entry = "";
-                            if ( "" == usb_vendor_id )
-                            { active_usb_scanner_with_missing_id = true;
-                              y2milestone( "No USB vendor ID for '%1'", description );
-                            }
-                            else
-                            { resmgr_entry = "add usb:vendor=" + usb_vendor_id;
-                            }
-                            if ( "" == usb_product_id )
-                            { active_usb_scanner_with_missing_id = true;
-                              y2milestone( "No usb_product_id for '%1'", description );
-                              if( "" != resmgr_entry )
-                              { // If there was an usb_vendor_id but no usb_product_id,
-                                // the resmgr_entry is "add usb:vendor=0x1a2b scanner":
-                                resmgr_entry = resmgr_entry + " scanner";
-                              }
-                            }
-                            else
-                            { if( "" != resmgr_entry )
-                              { resmgr_entry = resmgr_entry + ",product=" + usb_product_id + " scanner";
-                              }
-                            }
-                            if( "" != resmgr_entry )
-                            { if( ! ExecuteBashCommand( "echo '" + resmgr_entry + "' >>/etc/resmgr.conf.d/50-scanner.conf" ) )
-                              { y2milestone( "Failed to write '%1' into /etc/resmgr.conf.d/50-scanner.conf", resmgr_entry );
-                                return false;
-                              }
-                              else
-                              { y2milestone( "Wrote '%1' into /etc/resmgr.conf.d/50-scanner.conf", resmgr_entry );
-                              }
-                            }
-                            else
-                            { y2milestone( "No entry written into /etc/resmgr.conf.d/50-scanner.conf for '%1'", description );
-                            }
-                          }
-                        }
-                      );
-
+               autodetected_usb_scanner = true;
+               string usb_vendor_id = autodetected_scanner["usb_vendor_id"]:"";
+               string usb_product_id = autodetected_scanner["usb_product_id"]:"";
+               string description = autodetected_scanner["description"]:"no description";
+               if( "" == usb_vendor_id
+                   && "" == usb_product_id )
+               { autodetected_usb_scanner_with_missing_ids = true;
+                 y2milestone( "Neither USB vendor ID nor product ID for '%1'. Therefore no entry in %2", description, resmgr_scanner_config_file );
+               }
+               else
+               { string resmgr_entry = "add usb:";
+                 if( "" != usb_vendor_id
+                     && "" != usb_product_id )
+                 { // Normal case: USB vendor ID and USB product ID exist:
+                   resmgr_entry = resmgr_entry + "vendor=" + usb_vendor_id + ",product=" + usb_product_id;
+                 }
+                 if( "" != usb_vendor_id
+                     && "" == usb_product_id )
+                 { // Only USB vendor ID exists but the USB product ID is missing:
+                   resmgr_entry = resmgr_entry + "vendor=" + usb_vendor_id;
+                 }
+                 if( "" == usb_vendor_id
+                     && "" != usb_product_id )
+                 { // Only USB product ID exists but the USB vendor ID is missing:
+                   resmgr_entry = resmgr_entry + "product=" + usb_product_id;
+                 }
+                 resmgr_entry = resmgr_entry + " scanner";
+                 if( ! ExecuteBashCommand( "echo '" + resmgr_entry + "' >>" + resmgr_scanner_config_file ) )
+                 { y2milestone( "Failed to write '%1' into %2", resmgr_entry, resmgr_scanner_config_file );
+                   return false;
+                 }
+                 else
+                 { y2milestone( "Wrote '%1' into %2", resmgr_entry, resmgr_scanner_config_file );
+                 }
+               }
              }
            }
          );
-  if( active_usb_scanner )
-  { // If there is an active USB scanner,
+  if( autodetected_usb_scanner )
+  { // If there is an autodetected USB scanner,
     // /etc/resmgr.conf.d/50-scanner.conf was (re)-created in any case
     // so that resmgr must be (re)-started and enabled:
     if( ! Service::Restart( "resmgr" ) )
@@ -537,17 +526,17 @@ boolean SetUsbScannerAccessPermissions()
       return false;
     }
     y2milestone( "Service resmgr (re)-started and enabled." );
-    if( active_usb_scanner_with_missing_id )
+    if( autodetected_usb_scanner_with_missing_ids )
     { return false;
     }
     return true;
   }
   else
-  { if( ! ExecuteBashCommand( "rm -f /etc/resmgr.conf.d/50-scanner.conf" ) )
-    { y2milestone( "Failed to remove /etc/resmgr.conf.d/50-scanner.conf" );
+  { if( ! ExecuteBashCommand( "rm -f " + resmgr_scanner_config_file ) )
+    { y2milestone( "Failed to remove %1", resmgr_scanner_config_file );
       return false;
     }
-    y2milestone( "Removed /etc/resmgr.conf.d/50-scanner.conf (using 'rm -f')." );
+    y2milestone( "Removed %1 (using 'rm -f').", resmgr_scanner_config_file );
     if( ! Service::Restart( "resmgr" ) )
     { y2milestone( "Service::Restart('resmgr') failed." );
       return false;
