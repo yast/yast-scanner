@@ -1,4 +1,14 @@
 -------------------------------------------------------------------
+Fri Aug 26 10:52:53 CEST 2005 - jsmeix@suse.de
+
+- V 2.12.16
+- Simplified how USB scanner access is set up for resmgr:
+  Ignore whether or not an autodetected USB scanner can be
+  recognized also as active scanner.
+  I.e. simply grant access to all autodetected USB scanners
+  (comment dated 2005-08-26 03:00 MST in bug 100695).
+
+-------------------------------------------------------------------
 Thu Aug 25 09:59:16 CEST 2005 - jsmeix@suse.de
 
 - V 2.12.15
