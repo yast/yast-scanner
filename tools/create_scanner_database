@@ -61,6 +61,7 @@ fi
 
 # Process the optional EPSON AVASYS (formerly EPSON KOWA) Image Scan external description file:
 # The proprietary binary-only i386-only package iscan cannot be installed by default.
+# The package iscan-free is not installed by default.
 PACKAGE="iscan"
 DESCRIPTION_FILE="/usr/share/sane/descriptions-external/epkowa.desc"
 if [ -r "$DESCRIPTION_FILE" ]
@@ -110,6 +111,12 @@ Output()
   then [ -z "$FIRMWARE" ] && FIRMWARE='""'
        [ -z "$INTERFACE" ] && INTERFACE='""'
        [ -z "$COMMENT" ] && COMMENT='""'
+       if [ "$PACKAGE" = '"iscan"' -o "$PACKAGE" = '"iscan-free"' ]
+       then if echo "$COMMENT" | grep -q 'requires a DFSG non-free module'
+            then PACKAGE='"iscan"'
+            else PACKAGE='"iscan-free"'
+            fi
+       fi
        if [ "$OUTPUT_FORMAT" = "YCP" ]
        then echo -e "  \$[ \"package\":$PACKAGE,\n     \"backend\":$BACKEND,\n     \"manufacturer\":$MANUFACTURER,\n     \"model\":$MODEL,\n     \"firmware\":$FIRMWARE,\n     \"interface\":$INTERFACE,\n     \"status\":$STATUS,\n     \"comment\":$COMMENT\n  ],"
        else echo "$PACKAGE|$BACKEND|$MANUFACTURER|$MODEL|$FIRMWARE|$INTERFACE|$STATUS|$COMMENT" | tr -d '"'
