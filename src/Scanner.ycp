@@ -22,6 +22,7 @@ import "Popup";
 import "Package";
 import "Label";
 import "Service";
+import "SuSEFirewall";
 
 /**
  * Something was committed to the system?
@@ -150,6 +151,24 @@ global list< map< string, string > > autodetected_scanners = [];
  *  ]
  */
 global map< string, string > network_scanning_config = $[];
+
+/**
+ * Firewall network scanning configuration:
+ * Determined at runtime via Scanner::DetermineNetworkScanningConfig()
+ * which calls SuSEFirewall functions to fill the map @ref firewall_config
+ * except "ui_allow_from_int" and "ui_deny_from_ext" which are the user settings in the dialog.
+ * The entries are such that "true" is the default, reasonable and intended setting.
+ * @struct firewall_config
+ * $[ "suse_firewall_used":"true if the Suse Firewall and no other firewall is used",
+ *    "firewall_active":"true if the Suse Firewall is actually running",
+ *    "no_no_firewall_for_int":"true if the Suse Firewall does not potect the INT zone",
+ *    "allowed_from_int":"true if saned access (sane-port 6566) is allowed from INT zone",
+ *    "ui_allow_from_int":"true if the user has set in the dialog to allow access from INT zone",
+ *    "denied_from_ext":"true if saned access (sane-port 6566) is denied from EXT zone",
+ *    "ui_deny_from_ext":"true if the user has set in the dialog to deny access from EXT zone"
+ *  ]
+ */
+global map< string, boolean > firewall_config = $[];
 
 /**
  * Environment values:
@@ -723,7 +742,7 @@ global boolean Read()
   actual_environment["hp-officeJet_version"] = InstalledPackageVersion( "hp-officeJet" );
   actual_environment["iscan_version"] = InstalledPackageVersion( "iscan" );
   actual_environment["iscan-free_version"] = InstalledPackageVersion( "iscan-free" );
-  y2milestone( "Version of sane, hplip, hp-officeJet, iscan, iscan-free: %1 %2 %3 %4 %5",
+  y2milestone( "Version of sane, hplip, hp-officeJet, iscan, iscan-free: %1, %2, %3, %4, %5",
                actual_environment["sane_version"]:"failed",
                actual_environment["hplip_version"]:"failed",
                actual_environment["hp-officeJet_version"]:"failed",
@@ -2097,7 +2116,9 @@ global boolean TestBackend( string backend_name )
  * Determine the network scanning config by calling a bash script
  * which calls "grep ... /etc/sane.d/net.conf" and "grep ... /etc/sane.d/saned.conf"
  * and processes its output and stores the results as YCP map in a temporary file
- * and then read the temporary file (SCR::Read) to get the YCP map
+ * and then read the temporary file (SCR::Read) to get the YCP map.
+ * Additionally call SuSEFirewall functions to determine the firewall settings
+ * regarding remote access to the saned (service "sane-port" 6566/tcp,6566/udp).
  * @return true on success
  */
 global boolean DetermineNetworkScanningConfig()
@@ -2136,13 +2157,92 @@ global boolean DetermineNetworkScanningConfig()
     return false;
   }
   y2milestone( "Network scanning config: %1", network_scanning_config );
+  // Determine the firewall settings regarding remote access to the saned:
+  // Return successfully regardless of the result of this steps
+  // because the mandatory network scanning config was successfully determined.
+  if( ! SuSEFirewall::Read() )
+  { // If firewall_config is the empty map, the user
+    // cannot change a firewall setting and in SetupNetworkScanningConfig()
+    // noting will be committed.
+    y2milestone( "SuSEFirewall::Read failed." );
+    firewall_config = $[];
+    return true;
+  }
+  // SuSEFirewall::Read shows a progress.
+  // Sleep one second to let the user notice that the progress has finished:
+  sleep( 1000 );
+  // Preset the firewall_config map with the
+  // defaults after a default system installation
+  // to have a reasonable fallback if the actual values regarding
+  // firewall access permissions for the saned cannot be determined:
+  firewall_config = $[ "suse_firewall_used":true,
+                       "firewall_active":true,
+                       "no_firewall_for_int":true,
+                       "allowed_from_int":true,
+                       "ui_allow_from_int":true,
+                       "denied_from_ext":true,
+                       "ui_deny_from_ext":true
+                     ];
+  // Determine whether the Suse Firewall is used:
+  if( SuSEFirewall::IsOtherFirewallRunning() )
+  { // If not the Suse Firewall is used, the dialogs will not show
+    // any firewall settings and therefore the user cannot change them.
+    firewall_config["suse_firewall_used"] = false;
+    y2milestone( "Not the Suse Firewall is used, i.e. another firewall is running." );
+    return true;
+  }
+  // Determine whether the Suse Firewall is active:
+  if( ! SuSEFirewall::IsStarted()
+      || ! SuSEFirewall::GetStartService()
+    )
+  { // If the Suse Firewall is not active, the dialogs will not show
+    // any firewall settings because it is useless and confusing
+    // to let the user change firewall settings regarding saned
+    // when the user had decided to have no firewall currently running
+    // or if the firewall would not be started in SuSEFirewall::Write()
+    firewall_config["firewall_active"] = false;
+    y2milestone( "The Suse Firewall is not active or would not be started in SuSEFirewall::Write." );
+    return true;
+  }
+  // Determine the actual settings regarding firewall access permissions for saned
+  // and preset the user interface settings with the actual settings:
+  if( SuSEFirewall::GetProtectFromInternalZone() )
+  { firewall_config["no_firewall_for_int"] = false;
+  }
+  else
+  { firewall_config["no_firewall_for_int"] = true;
+  }
+  if( SuSEFirewall::HaveService( "sane-port", "TCP", "INT" )
+      && SuSEFirewall::HaveService( "sane-port", "UDP", "INT" )
+    )
+  { firewall_config["allowed_from_int"] = true;
+    firewall_config["ui_allow_from_int"] = true;
+  }
+  else
+  { firewall_config["allowed_from_int"] = false;
+    firewall_config["ui_allow_from_int"] = false;
+  }
+  if( SuSEFirewall::HaveService( "sane-port", "TCP", "EXT" )
+      && SuSEFirewall::HaveService( "sane-port", "UDP", "EXT" )
+    )
+  { firewall_config["denied_from_ext"] = false;
+    firewall_config["ui_deny_from_ext"] = false;
+  }
+  else
+  { firewall_config["denied_from_ext"] = true;
+    firewall_config["ui_deny_from_ext"] = true;
+  }
+  y2milestone( "Firewall network scanning config: %1", firewall_config );
   return true;
 }
 
 /**
- * Setup the network scanning config by calling a bash script which writes into
+ * Setup the network scanning config by calling a bash script which
+ * activates or deactivates the "net" backend and which writes into
  * /etc/sane.d/net.conf, /etc/sane.d/saned.conf, and /etc/xinetd.d/sane-port
- * and reloads or starts the xinetd dependig on whether it is running or not
+ * and reloads or starts the xinetd dependig on whether it is running or not.
+ * Additionally call SuSEFirewall functions to commit changed firewall settings
+ * regarding remote access to the saned (service "sane-port" 6566/tcp,6566/udp).
  * @return true on success
  */
 global boolean SetupNetworkScanningConfig()
@@ -2166,9 +2266,91 @@ global boolean SetupNetworkScanningConfig()
                  );
     return false;
   }
+  // If the Suse Firewall is used and
+  // if the Suse Firewall is active and
+  // if firewall settings have been changed by the user,
+  // then set and commit the new firewall settings.
+  // Use safe fallback values  - i.e. in case of doubt don't do anything:
+  if( firewall_config["suse_firewall_used"]:false
+      && firewall_config["firewall_active"]:false
+      && ( firewall_config["ui_allow_from_int"]:true != firewall_config["allowed_from_int"]:true
+           || firewall_config["ui_deny_from_ext"]:true != firewall_config["denied_from_ext"]:true
+         )
+    )
+  { // Set new firewall settings in SuSEFirewall:
+    y2milestone( "Set and commit new firewall network scanning config: %1", firewall_config );
+    // Set new firewall settings regarding saned access allow or deny from INT zone:
+    if( firewall_config["ui_allow_from_int"]:true )
+    { // User has set in dialog to allow saned access from the internal zone:
+      if( ! SuSEFirewall::AddService( "sane-port", "TCP", "INT" )
+          || ! SuSEFirewall::AddService( "sane-port", "UDP", "INT" )
+        )
+      { y2milestone( "Error: SuSEFirewall::AddService(sane-port,TCP+UDP,INT) failed." );
+        Report::Error( // Message of a Report::Error.
+                       // Only a simple message because this error does not happen on a normal system
+                       // (i.e. a system which is not totally broken or totally messed up).
+                       // Do not confuse this error with the case when no firewall stuff is to be set up.
+                       // The latter results no error.
+                       _("Failed to allow saned access from internal zone in firewall.")
+                     );
+        return false;
+      }
+      y2milestone( "Success: SuSEFirewall::AddService(sane-port,TCP+UDP,INT" );
+    }
+    else
+    { // User has set in dialog to deny saned access from the internal zone:
+      if( ! SuSEFirewall::RemoveService( "sane-port", "TCP", "INT" )
+          || ! SuSEFirewall::RemoveService( "sane-port", "UDP", "INT" )
+        )
+      { y2milestone( "Error: SuSEFirewall::RemoveService(sane-port,TCP+UDP,INT) failed." );
+        Report::Error( // Message of a Report::Error.
+                       // Only a simple message because this error does not happen on a normal system
+                       // (i.e. a system which is not totally broken or totally messed up).
+                       // Do not confuse this error with the case when no firewall stuff is to be set up.
+                       // The latter results no error.
+                       _("Failed to deny saned access from internal zone in firewall.")
+                     );
+        return false;
+      }
+      y2milestone( "Success: SuSEFirewall::RemoveService(sane-port,TCP+UDP,INT)" );
+    }
+    // Set new firewall settings regarding saned access deny from EXT zone:
+    if( firewall_config["ui_deny_from_ext"]:true )
+    { // User has set in dialog to deny saned access from the external zone:
+      if( ! SuSEFirewall::RemoveService( "sane-port", "TCP", "EXT" )
+          || ! SuSEFirewall::RemoveService( "sane-port", "UDP", "EXT" )
+        )
+      { y2milestone( "Error: SuSEFirewall::AddService(sane-port,TCP+UDP,EXT) failed." );
+        Report::Error( // Message of a Report::Error.
+                       // Only a simple message because this error does not happen on a normal system
+                       // (i.e. a system which is not totally broken or totally messed up).
+                       // Do not confuse this error with the case when no firewall stuff is to be set up.
+                       // The latter results no error.
+                       _("Failed to deny saned access from external zone in firewall.")
+                     );
+        return false;
+      }
+      y2milestone( "Success: SuSEFirewall::RemoveService(sane-port,TCP+UDP,EXT" );
+    }
+    // Commit the new firewall settings:
+    if( ! SuSEFirewall::Write() )
+    { y2milestone( "Error: SuSEFirewall::Write failed to commit firewall settings regarding scanning via network." );
+      Report::Error( // Message of a Report::Error.
+                     // Only a simple message because this error does not happen on a normal system
+                     // (i.e. a system which is not totally broken or totally messed up).
+                     // Do not confuse this error with the case when no firewall stuff is to be set up.
+                     // The latter results no error.
+                     _("Failed to write firewall settings regarding scanning via network.")
+                   );
+      return false;
+    }
+    // SuSEFirewall::Write shows a progress.
+    // Sleep one second to let the user notice that the progress has finished:
+    sleep( 1000 );
+  }
   // Determine active scanners and active backends anew.
   // Return successfully regardless of the result of this steps
-  // because the backend was successfully deactivated.
+  // because scanning via network was successfully set up.
   if( ! DetermineActiveScanners() )
   { active_scanners = [];
   }
