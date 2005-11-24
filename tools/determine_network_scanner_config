@@ -17,10 +17,15 @@ OUTPUT_FORMAT="$1"
 NET_BACKEND_CONFIG_FILE="/etc/sane.d/net.conf"
 SANED_CONFIG_FILE="/etc/sane.d/saned.conf"
 
+# Function to extract entries from a SANE config file:
+Extract()
+{ egrep -v '^#|^[[:space:]]*$' $1 | tr -d '[:blank:]' | sort -u | tr -s '\n' ',' 
+}
+
 # Get and output the hosts in $NET_BACKEND_CONFIG_FILE
 if [ -r $NET_BACKEND_CONFIG_FILE ]
 then [ "$OUTPUT_FORMAT" = "YCP" ] && echo -n "\$[ \"net_backend_hosts\":\"" || echo -n "Hosts in $NET_BACKEND_CONFIG_FILE: "
-     grep -v '^#' $NET_BACKEND_CONFIG_FILE | tr -s '\n' ',' | tr -d '[:space:]' | sed -e 's/,$//'
+     Extract $NET_BACKEND_CONFIG_FILE
      [ "$OUTPUT_FORMAT" = "YCP" ] && echo "\"," || echo
 else 
     echo "Cannot read $NET_BACKEND_CONFIG_FILE" 1>&2
@@ -30,7 +35,7 @@ fi
 # Get and output the hosts or subnets in $SANED_CONFIG_FILE
 if [ -r $SANED_CONFIG_FILE ]
 then [ "$OUTPUT_FORMAT" = "YCP" ] && echo -n "   \"saned_hosts\":\"" || echo -n "Hosts or subnets in $SANED_CONFIG_FILE: "
-     grep -v '^#' $SANED_CONFIG_FILE | tr -s '\n' ',' | tr -d '[:space:]' | sed -e 's/,$//'
+     Extract $SANED_CONFIG_FILE
      [ "$OUTPUT_FORMAT" = "YCP" ] && echo -e "\"\n]" || echo
 else 
     echo "Cannot read $SANED_CONFIG_FILE" 1>&2

@@ -487,7 +487,7 @@ any SelectModelDialog()
            );
   }
   term contents = `VBox( `HBox( `TextEntry( `id(`filter_input),
-                                            // Header of a TextEntry user input field:
+                                            // Header of a TextEntry user input field to enter a search string:
                                             _("S&earch String"),
                                             filter_string
                                           ),
@@ -499,8 +499,8 @@ any SelectModelDialog()
                                              // but if the Enter key was linked to 'Next' or 'Back',
                                              // the user would get the wrong action.
                                              `opt(`default),
-                                             // Label of a PushButton to apply a search string to a list:
-                                             _("&Apply")
+                                             // Label of a PushButton to search a list for a search string:
+                                             _("&Search")
                                            )
                               ),
                          `ReplacePoint( `id(`model_selection_replace_point),
@@ -688,33 +688,164 @@ any ConfigureBackendDialog()
 any ConfigureNetworkScanningDialog()
 { // Determine the network scanning config
   // but don't care if this fails because then empty strings are used as secure fallback
-  // and empty strings will disable network scanning (i.e. the net backend and the saned):
+  // and empty strings will disable scanning via network (i.e. the net backend and the saned):
   Scanner::DetermineNetworkScanningConfig();
   string net_backend_hosts = Scanner::network_scanning_config["net_backend_hosts"]:"";
   string saned_hosts = Scanner::network_scanning_config["saned_hosts"]:"";
+  // Dialog contents regarding firewall settings:
+  // Predefine it for the case when not the Suse Firewall is used:
+  term firewall_contents = `Label( // User information when not the Suse Firewall is used.
+                                   _("No SUSE Firewall but other kind of firewall is used.")
+                                 );
+  // Predefine the contents for the current Suse Firewall status
+  // according to what the usual defalts are (e.g. after the installation):
+  term firewall_active_content = `Label( // User information when the Suse Firewall is used and active.
+                                         _("Firewall is active.")
+                                       );
+  term no_firewall_for_int_content = `Label( // User information when the Suse Firewall does not potect the INT zone.
+                                             // Be careful when you change or translate "internal", and "zone"
+                                             // to keep the relationship to the matching term in the YaST firewall
+                                             // setup module where also "internal zone" is used.
+                                             _("No firewall protection for internal network zone.")
+                                           );
+  term allowed_from_int_content = `Label( // User information when saned access is allowed from the INT zone.
+                                          // Do not change or translate "saned", it is a program (sane daemon) name.
+                                          // Be careful when you change or translate "internal", and "zone"
+                                          // to keep the relationship to the matching term in the YaST firewall
+                                          // setup module where also "internal zone" is used.
+                                          _("saned access allowed from internal network zone.")
+                                        );
+  term denied_from_ext_content = `Label( // User information when saned access is denied from the EXT zone.
+                                         // Do not change or translate "saned", it is a program (sane daemon) name.
+                                         // Be careful when you change or translate "external", and "zone"
+                                         // to keep the relationship to the matching term in the YaST firewall
+                                         // setup module where also "external zone" is used.
+                                         _("saned access denied from external network zone.")
+                                       );
+  // Label of a CheckBox:
+  // Do not change or translate "saned", it is a program (sane daemon) name.
+  // Be careful when you change or translate "internal", and "zone"
+  // to keep the relationship to the matching term in the YaST firewall
+  // setup module where also "internal zone" is used.
+  string ui_allow_from_int_checkbox_label = _("Allow saned access from &internal network zone");
+  // Label of a CheckBox:
+  // Do not change or translate "saned", it is a program (sane daemon) name.
+  // Be careful when you change or translate "external", and "zone"
+  // to keep the relationship to the matching term in the YaST firewall
+  // setup module where also "external zone" is used.
+  string ui_deny_from_ext_checkbox_label = _("Deny saned access from &external network zone");
+  // Determine and set the actual contents regarding firewall settings:
+  if( Scanner::firewall_config["suse_firewall_used"]:false )
+  { // The Suse Firewall is used:
+    if( Scanner::firewall_config["firewall_active"]:false )
+    { // The Suse Firewall is active:
+      if( ! Scanner::firewall_config["no_firewall_for_int"]:true )
+      { no_firewall_for_int_content = `Label( // User information when the Suse Firewall potects the INT zone.
+                                              // Be careful when you change or translate "internal", and "zone"
+                                              // to keep the relationship to the matching term in the YaST firewall
+                                              // setup module where also "internal zone" is used.
+                                              _("Firewall protection enabled for internal network zone.")
+                                            );
+      }
+      if( ! Scanner::firewall_config["allowed_from_int"]:true )
+      { allowed_from_int_content = `Label( // User information when saned access is denied from the INT zone.
+                                           // Do not change or translate "saned", it is a program (sane daemon) name.
+                                           // Be careful when you change or translate "internal", and "zone"
+                                           // to keep the relationship to the matching term in the YaST firewall
+                                           // setup module where also "internal zone" is used.
+                                           _("saned access denied from internal network zone.")
+                                         );
+      }
+      if( ! Scanner::firewall_config["denied_from_ext"]:true )
+      { denied_from_ext_content = `Label( // User information when saned access is allowed from the EXT zone.
+                                          // Do not change or translate "saned", it is a program (sane daemon) name.
+                                          // Be careful when you change or translate "external", and "zone"
+                                          // to keep the relationship to the matching term in the YaST firewall
+                                          // setup module where also "external zone" is used.
+                                          _("saned access allowed from external network zone.")
+                                        );
+      }
+      firewall_contents = `VBox( `Frame( // Label of a Frame for the current firewall status.
+                                         _("Current Firewall Status"),
+                                         `VBox( `Left( firewall_active_content ),
+                                                `Left( no_firewall_for_int_content ),
+                                                `Left( allowed_from_int_content ),
+                                                `Left( denied_from_ext_content )
+                                              )
+                                       ),
+                                 `Frame( // Label of a Frame for the firewall settings for scanning via network.
+                                         _("Firewall Settings"),
+                                         `ReplacePoint( `id(`firewall_settings_replace_point),
+                                                        `VBox( `Left( `CheckBox( `id( `ui_allow_from_int_checkbox ),
+                                                                                 ui_allow_from_int_checkbox_label,
+                                                                                 Scanner::firewall_config["ui_allow_from_it"]:true
+                                                                               )
+                                                                    ),
+                                                               `Left( `CheckBox( `id( `ui_deny_from_ext_checkbox ),
+                                                                                      ui_deny_from_ext_checkbox_label,
+                                                                                      Scanner::firewall_config["ui_deny_from_ext"]:true
+                                                                               )
+                                                                    )
+                                                             )
+                                                      )
+                                       )
+                               );
+    }
+    else
+    { // The Suse Firewall is used but it is not active:
+      firewall_contents = `Label( // User information when the Suse Firewall is not active.
+                                     _("Firewall not running or would not be started.")
+                                 );
+    }
+  }
   // Caption of the ConfigureNetworkScanningDialog:
   string caption = _("Set Up Scanning via Network");
-  term contents = `VBox( `ReplacePoint( `id(`saned_hosts_input_replace_point),
-                                        `TextEntry( `id(`saned_hosts_input),
-                                                    // Header of a TextEntry user input field.
-                                                    // Do not change or translate "saned", it is a program (sane daemon) name.
-                                                    _("&Permitted Clients for saned"),
-                                                    saned_hosts
-                                                  )
-                                      ),
-                         `ReplacePoint( `id(`net_backend_hosts_input_replace_point),
-                                        `TextEntry( `id(`net_backend_hosts_input),
-                                                    // Header of a TextEntry user input field.
-                                                    // Do not change or translate "net", it is a metadriver name.
-                                                    // Do not simply use "driver" because net is no normal driver but a metadriver.
-                                                    _("&Servers Used for the net Metadriver"),
-                                                    net_backend_hosts
-                                                  )
-                                      ),
-                         `PushButton( `id(`propose_config),
-                                      // Label of a PushButton to propose a configuration:
-                                      _("&Propose")
-                                    )
+  // Header of a TextEntry user input field.
+  // Do not change or translate "saned", it is a program (sane daemon) name.
+  string saned_hosts_input_label = _("Permitted &Clients for saned");
+  // Header of a TextEntry user input field.
+  // Do not change or translate "net", it is a metadriver name.
+  // Do not simply use "driver" because net is no normal driver but a metadriver.
+  string net_backend_hosts_input_label = _("&Servers Used for the net Metadriver");
+  // All contenst of the scanning via network dialog:
+  term contents = `VBox( `VStretch(),
+                         `Frame( // Label of a Frame for the server settings for scanning via network.
+                                 _("Server Settings"),
+                                 `VBox( `ReplacePoint( `id(`saned_hosts_input_replace_point),
+                                                       `TextEntry( `id(`saned_hosts_input),
+                                                                   saned_hosts_input_label,
+                                                                   saned_hosts
+                                                                 )
+                                                     ),
+                                        firewall_contents
+                                      )
+                               ),
+                         `VStretch(),
+                         `Frame( // Label of a Frame for the client settings for scanning via network.
+                                 _("Client Settings"),
+                                 `ReplacePoint( `id(`net_backend_hosts_input_replace_point),
+                                                `TextEntry( `id(`net_backend_hosts_input),
+                                                            net_backend_hosts_input_label,
+                                                            net_backend_hosts
+                                                          )
+                                              )
+                               ),
+                         `VStretch(),
+                         `Frame( // Label of a Frame for predefined configurations.
+                                 _("Predefined Configurations"),
+                                 `VBox( `Left( `PushButton( `id(`local_host_config),
+                                                            // Label of a PushButton for a predefined configuration:
+                                                            _("&Local Host Configuration")
+                                                          )
+                                             ),
+                                        `Left( `PushButton( `id(`disable_scanning_via_network),
+                                                            // Label of a PushButton to disable scanning via network:
+                                                            _("&Disable Scanning via Network")
+                                                          )
+                                             )
+                                      )
+                               ),
+                         `VStretch()
                        );
   Wizard::SetContentsButtons( caption,
                               contents,
@@ -731,30 +862,95 @@ any ConfigureNetworkScanningDialog()
     { if( ! ReallyAbort() ) continue;
       break;
     }
-    /* propose a configuration */
-    if( ret == `propose_config )
+    /* local host configuration */
+    if( ret == `local_host_config )
     { UI::ReplaceWidget( `id(`saned_hosts_input_replace_point),
                          `TextEntry( `id(`saned_hosts_input),
-                                     // Header of a TextEntry user input field.
-                                     // Do not change or translate "saned", it is a program (sane daemon) name.
-                                     _("&Permitted Clients for saned"),
-                                     "localhost,127.0.0.0/8"
+                                     saned_hosts_input_label,
+                                     "localhost,127.0.0.0/8,"
                                    )
                        );
       UI::ReplaceWidget( `id(`net_backend_hosts_input_replace_point),
                          `TextEntry( `id(`net_backend_hosts_input),
-                                     // Header of a TextEntry user input field.
-                                     // Do not change or translate "net", it is a metadriver name.
-                                     // Do not simply use "driver" because net is no normal driver but a metadriver.
-                                     _("&Servers Used for the net Metadriver"),
-                                     "localhost"
+                                     net_backend_hosts_input_label,
+                                     "localhost,"
                                    )
                        );
+    }
+    /* disable scanning via network */
+    if( ret == `disable_scanning_via_network )
+    { UI::ReplaceWidget( `id(`saned_hosts_input_replace_point),
+                         `TextEntry( `id(`saned_hosts_input),
+                                     saned_hosts_input_label,
+                                     ""
+                                   )
+                       );
+      UI::ReplaceWidget( `id(`net_backend_hosts_input_replace_point),
+                         `TextEntry( `id(`net_backend_hosts_input),
+                                     net_backend_hosts_input_label,
+                                     ""
+                                   )
+                       );
+    }
+    /* set reasonable firewall settings for the predefined configurations */
+    if( ret == `local_host_config
+        || ret == `disable_scanning_via_network
+      )
+    { if( Scanner::firewall_config["suse_firewall_used"]:false
+          && Scanner::firewall_config["firewall_active"]:false
+        )
+      { // The Suse Firewall is used and it is active:
+        UI::ReplaceWidget( `id(`firewall_settings_replace_point),
+                           `VBox( `Left( `CheckBox( `id( `ui_allow_from_int_checkbox ),
+                                                    ui_allow_from_int_checkbox_label,
+                                                    true
+                                                  )
+                                       ),
+                                  `Left( `CheckBox( `id( `ui_deny_from_ext_checkbox ),
+                                                         ui_deny_from_ext_checkbox_label,
+                                                         true
+                                                  )
+                                       )
+                                )
+                         );
+      }
       continue;
     }
     /* set up the configuration */
     if( ret == `next )
-    { Scanner::network_scanning_config["net_backend_hosts"] = (string)UI::QueryWidget( `id(`net_backend_hosts_input), `Value );
+    { Scanner::firewall_config["ui_allow_from_int"] = (boolean)UI::QueryWidget( `id(`ui_allow_from_int_checkbox), `Value );
+      Scanner::firewall_config["ui_deny_from_ext"] = (boolean)UI::QueryWidget( `id(`ui_deny_from_ext_checkbox), `Value );
+      if( ! Scanner::firewall_config["ui_deny_from_ext"]:true )
+      { // User has set in dialog not to deny saned access from the external zone:
+        Popup::Notify ( // Message of a Popup::Notify.
+                        // Only a simple message because everything is perfectly o.k.
+                        // but the user should get a notification.
+                        // See the help text of the "Scanning via Network" dialog
+                        // why it doesn't make sense and is insecure to allow saned access
+                        // from the external network zone.
+                        // Do not change or translate "saned", it is a program (sane daemon) name.
+                        // Be careful when you change or translate "external", and "zone"
+                        // to keep the relationship to the matching term in the YaST firewall
+                        // setup module where also "external zone" is used.
+                        _("saned access from external zone cannot be allowed because it does not make sense and is insecure.")
+                      );
+        continue;
+      }
+      if( Scanner::firewall_config["no_firewall_for_int"]:true
+          && ! Scanner::firewall_config["ui_allow_from_int"]:true
+        )
+      { // Suse Firewall does not potect the INT zone
+        // but user has set in dialog to deny saned access from the internal zone:
+        Popup::Notify ( // Message of a Popup::Notify.
+                        // Do not change or translate "saned", it is a program (sane daemon) name.
+                        // Be careful when you change or translate "internal", and "zone"
+                        // to keep the relationship to the matching term in the YaST firewall
+                        // setup module where also "internal zone" is used.
+                        _("saned access from internal zone cannot be denied because firewall potection is disabled for this zone.")
+                      );
+        continue;
+      }
+      Scanner::network_scanning_config["net_backend_hosts"] = (string)UI::QueryWidget( `id(`net_backend_hosts_input), `Value );
       Scanner::network_scanning_config["saned_hosts"] = (string)UI::QueryWidget( `id(`saned_hosts_input), `Value );
       Wizard::DisableBackButton();
       Wizard::DisableAbortButton();

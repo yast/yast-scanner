@@ -82,9 +82,9 @@ Network scanners cannot be configured with this tool.
 These devices must be configured manually.
 A network scanner is a scanner that has a network interface
 so it is directly accessible in the network.
-In contrast, scanning via network means accessing a remote scanner connected to another host in the network.
-</p>
-") +
+In contrast, scanning via network means accessing a remote scanner
+connected to another host in the network.
+</p>") +
 // Overview dialog help 7/7:
 // Do not confuse "scanning via network" (i.e. use a remote scanner via another host in the network)
 // with "scanning the network" (i.e. scan the network for other hosts or services).
@@ -191,39 +191,55 @@ either ptal or hplip must be used to access all HP all-in-one devices.
 </p>"),
 
 "configure_network_scanning" :
-// ConfigureNetworkScanning dialog help 1/5:
+// ConfigureNetworkScanning dialog help 1/4:
 // Do not confuse "scanning via network" (i.e. use a remote scanner via another host in the network)
 // with "scanning the network" (i.e. scan the network for other hosts or services).
 _("<p>
 <b><big>Scanning via Network</big></b><br>
-Enter the appropriate information or use <b>Propose</b>
-and press <b>Next</b> to set up scanning via network.
+Enter the appropriate information and press <b>Next</b>
+to set up scanning via network.
 </p>") +
-// ConfigureNetworkScanning dialog help 2/5:
+// ConfigureNetworkScanning dialog help 2/4:
 // Do not change or translate "saned", it is a program (sane daemon) name.
 // Do not change or translate "CIDR", it is a (sub)-network notation name.
 // Do not change or translate "192.168.1.0/24", it is an intentionally selected actually working example.
+// Be careful when you change or translate "external", "internal", and "zone"
+// to keep the relationship to the matching terms in the YaST firewall setup module
+// where also "external zone", and "internal zone" is used.
+// Keep the information that external access is useless and insecure (see "man saned").
 _("<p>
+<b><big>Server Settings</big></b><br>
 If you have locally connected scanners and want to make them accessible via network,
 set up the saned network scanning daemon so that your host becomes a server.
 In <b>Permitted Clients</b>, enter which client hosts are permitted to access saned on your server.
 Enter a comma-separated list of client hosts (hostnames or IP addresses)
 or subnets (CIDR notation such as 192.168.1.0/24).
 If no client hosts are permitted, saned is not activated.
+The default <b>Firewall Settings</b> during system installation
+protect your host from external access.
+This is not a problem for using scanners in an internal network
+(i.e. when the network interface belongs to the internal network zone)
+unless you have firewall protection enabled even for the internal zone.
+In this case, you must allow access from the internal zone.
+Allow access from an external network does not make sense
+because scanning documents requires physical scanner access.
+Therefore access from the external zone can only be denied
+if it was accidentally allowed by insecure firewall settings.
 </p>") +
-// ConfigureNetworkScanning dialog help 3/5:
+// ConfigureNetworkScanning dialog help 3/4:
 // Do not change or translate "net", it is a metadriver name.
 // Do not simply use "driver" because net is no normal driver but a metadriver.
 // Do not change or translate "saned", it is a program (sane daemon) name.
 _("<p>
+<b><big>Client Settings</big></b><br>
 If you want to access scanners connected to other hosts (servers) in the network,
 set up the net metadriver to access them via the daemon running on the servers.
-saned on the servers must permit the access.
+saned and firewall on the servers must permit the access.
 In <b>Servers Used</b>, enter which servers should be used.
 Enter a comma-separated list of servers (server names or IP addresses).
 If no servers are entered, net is not activated.
 </p>") +
-// ConfigureNetworkScanning dialog help 4/5:
+// ConfigureNetworkScanning dialog help 4/4:
 // Do not change or translate "saned", it is a program (sane daemon) name.
 // Do not change or translate "net", it is a metadriver name.
 // Do not simply use "driver" because net is no normal driver but a metadriver.
@@ -236,18 +252,6 @@ In this case, the server and client are the same machine (localhost).
 Some scanners, such as parallel port scanners, require root privileges.
 When you enter <tt>localhost</tt> for both the server and the client,
 you can access such a scanner even as a normal user on your local host.
-</p>") +
-// ConfigureNetworkScanning dialog help 5/5:
-// Do not change or translate "saned", it is a program (sane daemon) name.
-// Do not change or translate "6566", it is the fixed port number for the saned.
-_("<p>
-<b><big>Firewall Settings</big></b><br>
-The default firewall settings during system installation protect your host from remote access.
-This is not a problem for scanning unless you create a server to provide a scanner
-to other hosts in the network.
-In this case, you must allow remote access for the intended client hosts.
-Because saned is accessible via port 6566,
-the firewall must be configured to allow access for the clients.
 </p>")
 
 ];
