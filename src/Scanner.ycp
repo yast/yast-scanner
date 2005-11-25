@@ -2213,7 +2213,7 @@ global boolean DetermineNetworkScanningConfig()
   { firewall_config["no_firewall_for_int"] = true;
   }
   if( SuSEFirewall::HaveService( "sane-port", "TCP", "INT" )
-      && SuSEFirewall::HaveService( "sane-port", "UDP", "INT" )
+      || SuSEFirewall::HaveService( "sane-port", "UDP", "INT" )
     )
   { firewall_config["allowed_from_int"] = true;
     firewall_config["ui_allow_from_int"] = true;
@@ -2223,7 +2223,7 @@ global boolean DetermineNetworkScanningConfig()
     firewall_config["ui_allow_from_int"] = false;
   }
   if( SuSEFirewall::HaveService( "sane-port", "TCP", "EXT" )
-      && SuSEFirewall::HaveService( "sane-port", "UDP", "EXT" )
+      || SuSEFirewall::HaveService( "sane-port", "UDP", "EXT" )
     )
   { firewall_config["denied_from_ext"] = false;
     firewall_config["ui_deny_from_ext"] = false;
