@@ -775,19 +775,17 @@ any ConfigureNetworkScanningDialog()
                                        ),
                                  `Frame( // Label of a Frame for the firewall settings for scanning via network.
                                          _("Firewall Settings"),
-                                         `ReplacePoint( `id(`firewall_settings_replace_point),
-                                                        `VBox( `Left( `CheckBox( `id( `ui_allow_from_int_checkbox ),
-                                                                                 ui_allow_from_int_checkbox_label,
-                                                                                 Scanner::firewall_config["ui_allow_from_it"]:true
-                                                                               )
-                                                                    ),
-                                                               `Left( `CheckBox( `id( `ui_deny_from_ext_checkbox ),
-                                                                                      ui_deny_from_ext_checkbox_label,
-                                                                                      Scanner::firewall_config["ui_deny_from_ext"]:true
-                                                                               )
-                                                                    )
-                                                             )
-                                                      )
+                                         `VBox( `Left( `CheckBox( `id(`ui_allow_from_int_checkbox),
+                                                                  ui_allow_from_int_checkbox_label,
+                                                                  Scanner::firewall_config["ui_allow_from_int"]:true
+                                                                )
+                                                     ),
+                                                `Left( `CheckBox( `id(`ui_deny_from_ext_checkbox),
+                                                                  ui_deny_from_ext_checkbox_label,
+                                                                  Scanner::firewall_config["ui_deny_from_ext"]:true
+                                                                )
+                                                     )
+                                              )
                                        )
                                );
     }
@@ -811,24 +809,20 @@ any ConfigureNetworkScanningDialog()
   term contents = `VBox( `VStretch(),
                          `Frame( // Label of a Frame for the server settings for scanning via network.
                                  _("Server Settings"),
-                                 `VBox( `ReplacePoint( `id(`saned_hosts_input_replace_point),
-                                                       `TextEntry( `id(`saned_hosts_input),
-                                                                   saned_hosts_input_label,
-                                                                   saned_hosts
-                                                                 )
-                                                     ),
+                                 `VBox( `TextEntry( `id(`saned_hosts_input),
+                                                    saned_hosts_input_label,
+                                                    saned_hosts
+                                                  ),
                                         firewall_contents
                                       )
                                ),
                          `VStretch(),
                          `Frame( // Label of a Frame for the client settings for scanning via network.
                                  _("Client Settings"),
-                                 `ReplacePoint( `id(`net_backend_hosts_input_replace_point),
-                                                `TextEntry( `id(`net_backend_hosts_input),
-                                                            net_backend_hosts_input_label,
-                                                            net_backend_hosts
-                                                          )
-                                              )
+                                 `TextEntry( `id(`net_backend_hosts_input),
+                                             net_backend_hosts_input_label,
+                                             net_backend_hosts
+                                           )
                                ),
                          `VStretch(),
                          `Frame( // Label of a Frame for predefined configurations.
@@ -864,94 +858,134 @@ any ConfigureNetworkScanningDialog()
     }
     /* local host configuration */
     if( ret == `local_host_config )
-    { UI::ReplaceWidget( `id(`saned_hosts_input_replace_point),
-                         `TextEntry( `id(`saned_hosts_input),
-                                     saned_hosts_input_label,
-                                     "localhost,127.0.0.0/8,"
-                                   )
+    { UI::ChangeWidget( `id(`saned_hosts_input),
+                        `Value,
+                        "localhost,127.0.0.0/8,"
                        );
-      UI::ReplaceWidget( `id(`net_backend_hosts_input_replace_point),
-                         `TextEntry( `id(`net_backend_hosts_input),
-                                     net_backend_hosts_input_label,
-                                     "localhost,"
-                                   )
+      UI::ChangeWidget( `id(`net_backend_hosts_input),
+                        `Value,
+                        "localhost,"
                        );
+      // Only when the Suse Firewall is used and when it is active
+      // the checkboxes for the firewall settings exist:
+      if( Scanner::firewall_config["suse_firewall_used"]:false
+          && Scanner::firewall_config["firewall_active"]:false
+        )
+      { // Set reasonable vaules of the checkboxes for the firewall settings:
+        UI::ChangeWidget( `id(`ui_deny_from_ext_checkbox),
+                          `Value,
+                          true
+                         );
+        UI::ChangeWidget( `id(`ui_allow_from_int_checkbox),
+                          `Value,
+                          true
+                         );
+      }
+      continue;
     }
     /* disable scanning via network */
     if( ret == `disable_scanning_via_network )
-    { UI::ReplaceWidget( `id(`saned_hosts_input_replace_point),
-                         `TextEntry( `id(`saned_hosts_input),
-                                     saned_hosts_input_label,
-                                     ""
-                                   )
+    { UI::ChangeWidget( `id(`saned_hosts_input),
+                        `Value,
+                        ""
                        );
-      UI::ReplaceWidget( `id(`net_backend_hosts_input_replace_point),
-                         `TextEntry( `id(`net_backend_hosts_input),
-                                     net_backend_hosts_input_label,
-                                     ""
-                                   )
+      UI::ChangeWidget( `id(`net_backend_hosts_input),
+                        `Value,
+                        ""
                        );
-    }
-    /* set reasonable firewall settings for the predefined configurations */
-    if( ret == `local_host_config
-        || ret == `disable_scanning_via_network
-      )
-    { if( Scanner::firewall_config["suse_firewall_used"]:false
+      // Only when the Suse Firewall is used and when it is active
+      // the checkboxes for the firewall settings exist:
+      if( Scanner::firewall_config["suse_firewall_used"]:false
           && Scanner::firewall_config["firewall_active"]:false
         )
-      { // The Suse Firewall is used and it is active:
-        UI::ReplaceWidget( `id(`firewall_settings_replace_point),
-                           `VBox( `Left( `CheckBox( `id( `ui_allow_from_int_checkbox ),
-                                                    ui_allow_from_int_checkbox_label,
-                                                    true
-                                                  )
-                                       ),
-                                  `Left( `CheckBox( `id( `ui_deny_from_ext_checkbox ),
-                                                         ui_deny_from_ext_checkbox_label,
-                                                         true
-                                                  )
-                                       )
-                                )
+      { // Set reasonable vaules of the checkboxes for the firewall settings:
+        UI::ChangeWidget( `id(`ui_deny_from_ext_checkbox),
+                          `Value,
+                          true
                          );
+        if( Scanner::firewall_config["no_firewall_for_int"]:false )
+        { // Suse Firewall does not potect the INT zone
+          // therefore saned access from the internal zone is allowed
+          // in any case regardless if scanning via network is disabled:
+          UI::ChangeWidget( `id(`ui_allow_from_int_checkbox),
+                            `Value,
+                            true
+                           );
+        }
+        else
+        { // Suse Firewall potects the INT zone
+          // therefore saned access from the internal zone should be denied
+          // to get scanning via network 100% disabled:
+          UI::ChangeWidget( `id(`ui_allow_from_int_checkbox),
+                            `Value,
+                            false
+                           );
+        }
       }
       continue;
     }
     /* set up the configuration */
     if( ret == `next )
-    { Scanner::firewall_config["ui_allow_from_int"] = (boolean)UI::QueryWidget( `id(`ui_allow_from_int_checkbox), `Value );
-      Scanner::firewall_config["ui_deny_from_ext"] = (boolean)UI::QueryWidget( `id(`ui_deny_from_ext_checkbox), `Value );
-      if( ! Scanner::firewall_config["ui_deny_from_ext"]:true )
-      { // User has set in dialog not to deny saned access from the external zone:
-        Popup::Notify ( // Message of a Popup::Notify.
-                        // Only a simple message because everything is perfectly o.k.
-                        // but the user should get a notification.
-                        // See the help text of the "Scanning via Network" dialog
-                        // why it doesn't make sense and is insecure to allow saned access
-                        // from the external network zone.
-                        // Do not change or translate "saned", it is a program (sane daemon) name.
-                        // Be careful when you change or translate "external", and "zone"
-                        // to keep the relationship to the matching term in the YaST firewall
-                        // setup module where also "external zone" is used.
-                        _("saned access from external zone cannot be allowed because it does not make sense and is insecure.")
-                      );
-        continue;
-      }
-      if( Scanner::firewall_config["no_firewall_for_int"]:true
-          && ! Scanner::firewall_config["ui_allow_from_int"]:true
+    { // Only when the Suse Firewall is used and when it is active
+      // the checkbox for the firewall settings exist:
+      if( Scanner::firewall_config["suse_firewall_used"]:false
+          && Scanner::firewall_config["firewall_active"]:false
         )
-      { // Suse Firewall does not potect the INT zone
-        // but user has set in dialog to deny saned access from the internal zone:
-        Popup::Notify ( // Message of a Popup::Notify.
-                        // Do not change or translate "saned", it is a program (sane daemon) name.
-                        // Be careful when you change or translate "internal", and "zone"
-                        // to keep the relationship to the matching term in the YaST firewall
-                        // setup module where also "internal zone" is used.
-                        _("saned access from internal zone cannot be denied because firewall potection is disabled for this zone.")
-                      );
-        continue;
+      { // Get the vaules of the checkboxes for the firewall settings:
+        Scanner::firewall_config["ui_allow_from_int"] = (boolean)UI::QueryWidget( `id(`ui_allow_from_int_checkbox),
+                                                                                  `Value
+                                                                                );
+        Scanner::firewall_config["ui_deny_from_ext"] = (boolean)UI::QueryWidget( `id(`ui_deny_from_ext_checkbox),
+                                                                                 `Value
+                                                                               );
+        // Test whether the vaules of the checkboxes for the firewall settings make sense:
+        if( Scanner::firewall_config["denied_from_ext"]:true
+            && ! Scanner::firewall_config["ui_deny_from_ext"]:true
+          )
+        { // saned access is denied from the EXT zone but user has set in dialog
+          // not to deny saned access from the external zone:
+          Popup::Notify ( // Message of a Popup::Notify.
+                          // The help text of the "Scanning via Network" dialog explains
+                          // why it doesn't make sense and is insecure to allow saned access
+                          // from the external network zone.
+                          // Do not change or translate "saned", it is a program (sane daemon) name.
+                          // Be careful when you change or translate "external", and "zone"
+                          // to keep the relationship to the matching term in the YaST firewall
+                          // setup module where also "external zone" is used.
+                          _("saned access from external zone cannot be allowed (see the help text).")
+                        );
+          UI::ChangeWidget( `id(`ui_deny_from_ext_checkbox),
+                            `Value,
+                            true
+                           );
+          continue;
+        }
+        if( Scanner::firewall_config["no_firewall_for_int"]:false
+            && ! Scanner::firewall_config["ui_allow_from_int"]:true
+          )
+        { // Suse Firewall does not potect the INT zone
+          // but user has set in dialog to deny saned access from the internal zone:
+          Popup::Notify ( // Message of a Popup::Notify.
+                          // Do not change or translate "saned", it is a program (sane daemon) name.
+                          // Be careful when you change or translate "internal", and "zone"
+                          // to keep the relationship to the matching term in the YaST firewall
+                          // setup module where also "internal zone" is used.
+                          _("saned access from internal zone cannot be denied when firewall does not potect this zone.")
+                        );
+          UI::ChangeWidget( `id(`ui_allow_from_int_checkbox),
+                            `Value,
+                            true
+                           );
+          continue;
+        }
       }
-      Scanner::network_scanning_config["net_backend_hosts"] = (string)UI::QueryWidget( `id(`net_backend_hosts_input), `Value );
-      Scanner::network_scanning_config["saned_hosts"] = (string)UI::QueryWidget( `id(`saned_hosts_input), `Value );
+      // Get the mandatory vaules to set up scanning via network:
+      Scanner::network_scanning_config["net_backend_hosts"] = (string)UI::QueryWidget( `id(`net_backend_hosts_input),
+                                                                                       `Value
+                                                                                     );
+      Scanner::network_scanning_config["saned_hosts"] = (string)UI::QueryWidget( `id(`saned_hosts_input),
+                                                                                 `Value
+                                                                               );
       Wizard::DisableBackButton();
       Wizard::DisableAbortButton();
       Wizard::DisableNextButton();
