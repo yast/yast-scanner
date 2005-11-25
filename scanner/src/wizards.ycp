@@ -1,0 +1,146 @@
+/**
+ * File:	include/scanner/wizards.ycp
+ * Package:	Configuration of scanner
+ * Summary:	Wizards definitions
+ * Authors:	Johannes Meixner <jsmeix@suse.de>
+ *
+ * $Id$
+ */
+
+{
+
+textdomain "scanner";
+
+import "Sequencer";
+import "Wizard";
+import "Label";
+
+include "scanner/dialogs.ycp";
+
+/**
+ * Add a configuration of scanner
+ * @return sequence result
+ */
+any AddSequence()
+{ map aliases =
+  $[ "config1": ``( SelectModelDialog() ),
+     "config2": ``( ConfigureBackendDialog() )
+   ];
+  map sequence =
+  $[ "ws_start": "config1",
+     "config1": $[ `abort: `abort,
+                   `next: "config2"
+                 ],
+     "config2": $[ `abort: `abort,
+                   `next: `next
+                 ]
+   ];
+  return Sequencer::Run( aliases, sequence );
+}
+
+/**
+ * Main workflow of the scanner configuration
+ * @return sequence result
+ */
+any MainSequence()
+{ map aliases =
+  $[ "overview": ``( OverviewDialog() ),
+     "network": ``( ConfigureNetworkScanningDialog() ),
+     "configure": [ ``( AddSequence() ),
+                     true
+                  ],
+     "add": [ ``( AddSequence() ),
+              true
+            ],
+     "edit": [ ``( AddSequence() ),
+               true
+             ]
+   ];
+  map sequence =
+  $[ "ws_start": "overview",
+     "overview": $[ `abort: `abort,
+                    `next: `next,
+                    `add: "add",
+                    `configure: "configure",
+                    `edit: "edit",
+                    `delete: "overview",
+                    `test: "overview",
+                    `restart_detection: "overview",
+                    `network_scanning: "network"
+                  ],
+     "configure": $[ `abort: `abort,
+                     `next: "overview"
+                   ],
+     "network": $[ `abort: `abort,
+                   `next: "overview"
+                 ],
+     "add": $[ `abort: `abort,
+               `next: "overview"
+             ],
+     "edit": $[ `abort: `abort,
+                `next: "overview"
+             ]
+   ];
+  any ret = Sequencer::Run( aliases, sequence );
+  return ret;
+}
+
+/**
+ * Whole configuration of scanner
+ * @return sequence result
+ */
+any ScannerSequence()
+{ map aliases =
+  $[ "read": [ ``( ReadDialog() ),
+               true
+             ],
+     "main": ``( MainSequence() ),
+     "write": [ ``( WriteDialog() ),
+                true
+              ]
+   ];
+  map sequence =
+  $[ "ws_start": "read",
+     "read": $[ `abort: `abort,
+                `next: "main"
+              ],
+     "main": $[ `abort: `abort,
+                `next: "write"
+              ],
+     "write": $[ `abort: `abort,
+                 `next: `next
+               ]
+    ];
+  Wizard::CreateDialog();
+  Wizard::SetDesktopIcon("scanner");
+  any ret = Sequencer::Run( aliases, sequence );
+  UI::CloseDialog();
+  return ret;
+}
+
+/**
+ * Whole configuration of scanner but without reading and writing.
+ * For use with autoinstallation.
+ * @return sequence result
+ */
+any ScannerAutoSequence()
+{ string caption = _("Scanner Configuration");
+  // Label of the dialog for ScannerAutoSequence:
+  term contents = `Label( _("Initializing...") );
+  Wizard::CreateDialog();
+  Wizard::SetContentsButtons( caption,
+                              contents,
+                              "",
+                              Label::BackButton(),
+                              Label::NextButton()
+                            );
+  Wizard::SetDesktopIcon("scanner");
+  any ret = MainSequence();
+  UI::CloseDialog();
+  return ret;
+}
+
+/* EOF */
+
+}
+

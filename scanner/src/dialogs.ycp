@@ -1,0 +1,981 @@
+/**
+ * File:        include/scanner/dialogs.ycp
+ * Package:     Configuration of scanner
+ * Summary:     Dialogs definitions
+ * Authors:     Johannes Meixner <jsmeix@suse.de>
+ *
+ * $Id$
+ * $Id$
+ */
+
+{
+
+textdomain "scanner";
+
+import "Label";
+import "Popup";
+import "Wizard";
+import "Arch";
+import "Scanner";
+import "WizardHW";
+
+include "scanner/helps.ycp";
+
+/**
+ * Ask for user confirmation if necessary before aborting.
+ * At present full transaction semantics (with roll-back) is not implemented.
+ * What is implemented is that it does not leave the system in an inconsistent state.
+ * It does one setup completely or not at all (i.e. all or nothing semantics regarding one setup.)
+ * "One setup" means the smallest amount of setup actions
+ * which lead from one consistent state to another consistent state.
+ * "Consistent state" is meant from the user's point of view
+ * (i.e. set up one SANE backend completely or set up the saned completely)
+ * and not from a low-level (e.g. filesystem or kernel) point of view.
+ * If the user does malicious stuff (e.g. killing YaST)
+ * or if the user ignores warning messages then it is possible (and it is accepted)
+ * that the user can force to set up even an inconsistent state
+ * (e.g. activate a backend but don't activate a required service).
+ * At present all what is needed for one setup is committed to the system instantly.
+ * For example:
+ * Install additional packages (like hp-officeJet),
+ * then set up and start special required services (like ptal),
+ * then activate the backend in /etc/sane/dll.conf
+ * finally determine which scanners have become actually active
+ * (see the ActivateBackend and DeactivateBackend functions).
+ * It is necessary to commit instantly to be able to test a scanner
+ * and to show a true feedback to the user which scanners are actually active.
+ * @return true if nothing was committed or if user confirms to abort
+ */
+boolean ReallyAbort()
+{ // As roll-back is not implemented 'Popup::ReallyAbort(true)' doesn't make sense.
+  // Scanner::Modified() returns true if something was committed to the system.
+  return !Scanner::Modified() || Popup::ReallyAbort(false);
+}
+
+/**
+ * Read settings dialog
+ * @return `abort if aborted and `next otherwise
+ */
+symbol ReadDialog()
+{ Wizard::RestoreHelp(HELPS["read"]:"");
+  boolean ret = Scanner::Read();
+  return ret ? `next : `abort;
+}
+
+/**
+ * Write settings dialog
+ * @return `abort if aborted and `next otherwise
+ */
+symbol WriteDialog()
+{ Wizard::RestoreHelp(HELPS["write"]:"");
+  boolean ret = Scanner::Write();
+  return ret ? `next : `abort;
+}
+
+/**
+ * Overview dialog
+ * does what the two dialogs SummaryDialog() and OverviewDialog() did before:
+ * A dialog showing the detected scanners and allowing to configure them.
+ * @return any The value of the resulting UserInput.
+ */
+any OverviewDialog()
+{ // Caption of the OverviewDialog
+  // (the same as the caption of the matching help text)
+  string caption = _("Scanner Configuration");
+
+  WizardHW::CreateHWDialog( caption,
+                            HELPS["overview"]:"",
+                            [ // Header for a column of the overview table
+                              // where scanners and associated drivers are listed:
+                              _("Driver"),
+                              // Header for a column of the overview table
+                              // where scanners and associated drivers are listed:
+                              _("Scanner")
+                            ],
+                            [ [ `restart_detection,
+                                // Label of a button to restart autodetection of scanners:
+                                _("&Restart Detection")
+                              ],
+                              [ `test,
+                                // Label of a button to test a scanner:
+                                _("&Test")
+                              ],
+                              [ `network_scanning,
+                                // Label of a button to go to the network scanning dialog.
+                                // Do not confuse "scanning via network"
+                                // (i.e. use a remote scanner via another host in the network)
+                                // with "scanning the network"
+                                // (i.e. scan the network for other hosts or services):
+                                _("Scanning via &Network...")
+                              ]
+                            ]
+                          );
+
+  Wizard::SetNextButton( `next, Label::FinishButton() );
+
+  WizardHW::SetContents( Scanner::OverviewContents() );
+
+  any ret = nil;
+  while(true)
+  { // UI::UserInput returns the label of the button which was cklicked:
+    ret = UI::UserInput();
+    /* back or abort */
+    if( ret == `abort
+        || ret == `cancel
+      )
+    { if( ! ReallyAbort() ) continue;
+      break;
+    }
+    /* next or back */
+    if( ret == `next
+        || ret == `back
+      )
+    { break;
+    }
+    /* add */
+    if( ret == `add )
+    { // Unselect a previously selected autodetected scanner
+      // to have it no longer preselected in the select model dialog:
+      Scanner::selected_autodetected_scanners_index = -1;
+      // Unselect a previously selected model in the database
+      // to have it no longer preselected in the select model dialog:
+      Scanner::selected_model_database_index = -1;
+      // Exit this dialog and run the AddSequence() via the sequencer in wizards.ycp:
+      break;
+    }
+    /* edit */
+    if( ret == `edit )
+    { // Get what was selected:
+      string selected_item_id = WizardHW::SelectedItem();
+      y2milestone( "selected_item_idelected in OverviewDialog: %1", selected_item_id );
+      if( selected_item_id == "" )
+      { Popup::AnyMessage( // Header of a Popup::AnyMessage when nothing was selected:
+                           _("Nothing Selected"),
+                           // Body of a Popup::AnyMessage when nothing was selected:
+                           _("Select an entry.")
+                         );
+        continue;
+      }
+      // The selected_item_id can be one of the following (see the OverviewContents function):
+      // "autodetected_scanner:[0-9]*" where [0-9]* is the autodetected_scanners_index
+      // (i.e. the index in the autodetected_scanners list to which the selected item matches)
+      // "active_scanner:[0-9]*" where [0-9]* is the active_scanners_index
+      // (i.e. the index in the active_scanners list to which the selected item matches)
+      // "active_backend:[0-9]*" where [0-9]* is the active_backends_index
+      // (i.e. the index in the active_backends list to which the selected item matches)
+      // "nothing" which is used as fallback only if none of the above was set
+      // (i.e. if neither a scanner was autodetected nor an active scanner nor an active backend exists)
+      if( issubstring( selected_item_id, "autodetected_scanner:" ) )
+      { // Configure a selected autodetected scanner:
+        Scanner::selected_autodetected_scanners_index = tointeger( filterchars( selected_item_id, "0123456789" ) );
+        y2milestone( "Selected autodetected scanners index in OverviewDialog is: %1", Scanner::selected_autodetected_scanners_index );
+        if( Scanner::selected_autodetected_scanners_index < 0 )
+        { ret = `add;
+        }
+        else
+        { // Unselect a previously selected model in the database
+          // to have it no longer preselected in the select model dialog
+          // when the user has selected a not yet configured autodetected scanner:
+          Scanner::selected_model_database_index = -1;
+          ret = `configure;
+        }
+        // Exit this dialog and run the AddSequence() via the sequencer in wizards.ycp:
+        break;
+      }
+      if( issubstring( selected_item_id, "active_scanner:" ) )
+      { // Edit a selected active scanner:
+        // Unselect a previously selected autodetected scanner
+        // to have it no longer preselected in the select model dialog
+        // but keep a possibly previously selected model in the database
+        // because this model was normally added, configured, or edited before
+        // (in particular if there is only one scanner connected):
+        Scanner::selected_autodetected_scanners_index = -1;
+        // Exit this dialog and run the AddSequence() via the sequencer in wizards.ycp:
+        ret = `edit;
+        break;
+      }
+      if( issubstring( selected_item_id, "active_backend:" ) )
+      { // A selected active backend cannot be edited.
+        // A selected active backend can only be deleted.
+        Popup::AnyMessage( // Header of a Popup::AnyMessage when an active driver
+                           // without a matching active scanner was selected
+                           // and then the user clicked the [Edit] button.
+                           // Translate 'Edit' to the exact label of the [Edit] button.
+                           _("Edit Not Possible"),
+                           // Body of a Popup::AnyMessage when an active driver
+                           // without a matching active scanner was selected
+                           // and then the user clicked the [Edit] button:
+                           // Translate 'delete' to the exact label of the [Delete] button.
+                           _("It is only possible to delete a driver without a matching scanner.")
+                         );
+        continue;
+      }
+      if( "nothing" == selected_item_id )
+      { Popup::AnyMessage( // Header of a Popup::AnyMessage when there is only the fallback entry
+                           // when there is neither a detected scanner nor an active scanner or driver
+                           // and then the user clicked the [Edit] button.
+                           // Translate 'Edit' to the exact label of the [Edit] button.
+                           _("Edit Not Possible"),
+                           // Body of a Popup::AnyMessage when there is only the fallback entry
+                           // when there is neither a detected scanner nor an active scanner or driver
+                           // and then the user clicked the [Edit] button.
+                           // Translate 'add' to the exact label of the [Add] button.
+                           _("It is only possible to add a scanner.")
+                         );
+        continue;
+// Alternatively:
+//        // Do the same as if the user had clicked the [Add] button:
+//        // Unselect a previously selected autodetected scanner
+//        // to have it no longer preselected in the select model dialog:
+//        Scanner::selected_autodetected_scanners_index = -1;
+//        // Unselect a previously selected model in the database
+//        // to have it no longer preselected in the select model dialog:
+//        Scanner::selected_model_database_index = -1;
+//        // Exit this dialog and run the AddSequence() via the sequencer in wizards.ycp:
+//        ret = `add;
+//        break;
+      }
+      y2milestone( "selected_item_id is none of 'autodetected_scanner:...' 'active_scanner:...' 'active_backend:...' 'nothing'");
+      continue;
+    }
+    /* delete */
+    if( ret == `delete )
+    { // Get what was selected:
+      string selected_item_id = WizardHW::SelectedItem();
+      y2milestone( "Selected item id in OverviewDialog: %1", selected_item_id );
+      if( selected_item_id == "" )
+      { Popup::AnyMessage( // Header of a Popup::AnyMessage when nothing was selected:
+                           _("Nothing Selected"),
+                           // Body of a Popup::AnyMessage when nothing was selected:
+                           _("Select an entry.")
+                         );
+        continue;
+      }
+      // The selected_item_id can be one of the following (see the OverviewContents function):
+      // "autodetected_scanner:[0-9]*" where [0-9]* is the autodetected_scanners_index
+      // (i.e. the index in the autodetected_scanners list to which the selected item matches)
+      // "active_scanner:[0-9]*" where [0-9]* is the active_scanners_index
+      // (i.e. the index in the active_scanners list to which the selected item matches)
+      // "active_backend:[0-9]*" where [0-9]* is the active_backends_index
+      // (i.e. the index in the active_backends list to which the selected item matches)
+      // "nothing" which is used as fallback only if none of the above was set
+      // (i.e. if neither a scanner was autodetected nor an active scanner nor an active backend exists)
+      if( issubstring( selected_item_id, "autodetected_scanner:" ) )
+      { // A selected autodetected scanner (which is not yet configured) cannot be deleted.
+        // A selected autodetected scanner can be edited.
+        Popup::AnyMessage( // Header of a Popup::AnyMessage when an autodetected scanner
+                           // which is not yet configured was selected
+                           // and then the user clicked the [Delete] button.
+                           // Translate 'Delete' to the exact label of the [Delete] button.
+                           _("Delete Not Possible"),
+                           // Body of a Popup::AnyMessage when an autodetected scanner
+                           // which is not yet configured was selected
+                           // and then the user clicked the [Delete] button:
+                           // Translate 'edit' to the exact label of the [Edit] button.
+                           _("It is only possible to edit a detected scanner.")
+                         );
+        continue;
+      }
+      if( "nothing" == selected_item_id )
+      { Popup::AnyMessage( // Header of a Popup::AnyMessage when there is only the fallback entry
+                           // when there is neither a detected scanner nor an active scanner or driver
+                           // and then the user clicked the [Delete] button.
+                           // Translate 'Delete' to the exact label of the [Delete] button.
+                           _("Delete Not Possible"),
+                           // Body of a Popup::AnyMessage when there is only the fallback entry
+                           // when there is neither a detected scanner nor an active scanner or driver
+                           // and then the user clicked the [Delete] button.
+                           // Translate 'add' to the exact label of the [Add] button.
+                           _("It is only possible to add a scanner.")
+                         );
+        continue;
+      }
+      // The selected_item_id is either "active_scanner:..." or "active_backend:...":
+      string backend_name = "";
+      if( issubstring( selected_item_id, "active_scanner:" ) )
+      { // Delete a selected active scanner:
+        integer active_scanners_index = tointeger( filterchars( selected_item_id, "0123456789" ) );
+        backend_name = Scanner::active_scanners[active_scanners_index,"backend"]:"";
+      }
+      if( issubstring( selected_item_id, "active_backend:" ) )
+      { // Delete a selected active backend (without a matching active scanner):
+        integer active_backends_index = tointeger( filterchars( selected_item_id, "0123456789" ) );
+        backend_name = Scanner::active_backends[active_backends_index]:"";
+      }
+      y2milestone( "Selected backend to be deleted (i.e. deactivated) is: %1", backend_name );
+      if( "" == backend_name )
+      { Popup::AnyMessage( // Header of a Popup::AnyMessage when nothing was selected:
+                           _("Nothing Selected"),
+                           // Body of a Popup::AnyMessage when nothing was selected:
+                           _("Select an entry.")
+                         );
+        continue;
+      }
+      if( ! Popup::YesNo( sformat( // Question of a Popup::YesNo
+                                   // where %1 will be replaced by the driver name:
+                                   _("Deactivate %1?"), backend_name ) ) )
+      { continue;
+      }
+      Wizard::DisableBackButton();
+      Wizard::DisableAbortButton();
+      Wizard::DisableNextButton();
+      if( ! Scanner::DeactivateBackend( backend_name, -1, true ) )
+      { Popup::Error( // Message of a Popup::Error
+                      // where %1 will be replaced by the driver (backend) name.
+                      // Only a simple message because before the function Scanner::DeactivateBackend
+                      // was called and this function would have shown more specific messages.
+                      sformat( _("Failed to deactivate %1."), backend_name ) );
+      }
+      Wizard::EnableBackButton();
+      Wizard::EnableAbortButton();
+      Wizard::EnableNextButton();
+      // Exit this dialog and run it again via the sequencer in wizards.ycp
+      // to get it updated after the delete via calling OverviewContents():
+      ret = `delete;
+      break;
+    }
+    /* test */
+    if( ret == `test )
+    { // Get what was selected:
+      string selected_item_id = WizardHW::SelectedItem();
+      y2milestone( "Selected item id in OverviewDialog: %1", selected_item_id );
+      if( selected_item_id == "" )
+      { Popup::AnyMessage( // Header of a Popup::AnyMessage when nothing was selected:
+                           _("Nothing Selected"),
+                           // Body of a Popup::AnyMessage when nothing was selected:
+                           _("Select an entry.")
+                         );
+        continue;
+      }
+      // The selected_item_id can be one of the following (see the OverviewContents function):
+      // "autodetected_scanner:[0-9]*" where [0-9]* is the autodetected_scanners_index
+      // (i.e. the index in the autodetected_scanners list to which the selected item matches)
+      // "active_scanner:[0-9]*" where [0-9]* is the active_scanners_index
+      // (i.e. the index in the active_scanners list to which the selected item matches)
+      // "active_backend:[0-9]*" where [0-9]* is the active_backends_index
+      // (i.e. the index in the active_backends list to which the selected item matches)
+      // "nothing" which is used as fallback only if none of the above was set
+      // (i.e. if neither a scanner was autodetected nor an active scanner nor an active backend exists)
+      if( issubstring( selected_item_id, "autodetected_scanner:" ) )
+      { // A selected autodetected scanner (which is not yet configured) cannot be tested.
+        // A selected autodetected scanner can be edited.
+        Popup::AnyMessage( // Header of a Popup::AnyMessage when an autodetected scanner
+                           // which is not yet configured was selected
+                           // and then the user clicked the [Test] button.
+                           // Translate 'Test' to the exact label of the [Test] button.
+                           _("Test Not Possible"),
+                           // Body of a Popup::AnyMessage when an autodetected scanner
+                           // which is not yet configured was selected
+                           // and then the user clicked the [Test] button:
+                           // Translate 'edit' to the exact label of the [Edit] button.
+                           _("It is only possible to edit a detected scanner.")
+                         );
+        continue;
+      }
+      if( issubstring( selected_item_id, "active_backend:" ) )
+      { // A selected active backend without a matching active scanner cannot be tested.
+        // A selected active backend without a matching active scanner can only be deleted.
+        Popup::AnyMessage( // Header of a Popup::AnyMessage when an active driver
+                           // without a matching active scanner was selected
+                           // and then the user clicked the [Test] button.
+                           // Translate 'Test' to the exact label of the [Test] button.
+                           _("Test Not Possible"),
+                           // Body of a Popup::AnyMessage when an active driver
+                           // without a matching active scanner was selected
+                           // and then the user clicked the [Test] button:
+                           // Translate 'delete' to the exact label of the [Delete] button.
+                           _("It is only possible to delete a driver without a matching scanner.")
+                         );
+        continue;
+      }
+      if( "nothing" == selected_item_id )
+      { Popup::AnyMessage( // Header of a Popup::AnyMessage when there is only the fallback entry
+                           // when there is neither a detected scanner nor an active scanner or driver
+                           // and then the user clicked the [Test] button.
+                           // Translate 'Test' to the exact label of the [Test] button.
+                           _("Test Not Possible"),
+                           // Body of a Popup::AnyMessage when there is only the fallback entry
+                           // when there is neither a detected scanner nor an active scanner or driver
+                           // and then the user clicked the [Test] button.
+                           // Translate 'add' to the exact label of the [Add] button.
+                           _("It is only possible to add a scanner.")
+                         );
+        continue;
+      }
+      if( issubstring( selected_item_id, "active_scanner:" ) )
+      { // Test a selected active scanner:
+        integer active_scanners_index = tointeger( filterchars( selected_item_id, "0123456789" ) );
+        string backend_name = Scanner::active_scanners[active_scanners_index,"backend"]:"";
+        y2milestone( "Selected backend to be tested is: %1", backend_name );
+        if( nil == backend_name
+            || "" == backend_name )
+        { Popup::AnyMessage( // Header of a Popup::AnyMessage when nothing was selected:
+                             _("Nothing Selected"),
+                             // Body of a Popup::AnyMessage when nothing was selected:
+                             _("Select an entry.")
+                           );
+          continue;
+        }
+        if( ! Scanner::TestBackend( backend_name ) )
+        { Popup::Error( // Message of a Popup::Error where %1 will be replaced by the driver (backend) name.
+                        // Only a simple message because before the function Scanner::TestBackend
+                        // was called and this function would have shown more specific messages.
+                        sformat( _("Failed to test %1."), backend_name ) );
+        }
+      }
+      // Exit this dialog and run it again via the sequencer in wizards.ycp
+      // to get it updated after the test via calling OverviewContents().
+      // Even if normally nothing in the dialog content should have changed
+      // because of a test, it might have happened that for example
+      // during the test somehow the USB or SCSI system had crashed
+      // and then the scanner would be no longer an active scanner.
+      ret = `test;
+      break;
+    }
+    /* network scanning */
+    if( ret == `network_scanning )
+    { // Exit this dialog and run the ConfigureNetworkScanningDialog via the sequencer in wizards.ycp:
+      break;
+    }
+    /* restart the whole autodetection */
+    if( ret == `restart_detection )
+    { // Scanner::RestartDetection results true in any case, see the function comment.
+      Scanner::RestartDetection();
+      // Exit this dialog and run it again via the sequencer in wizards.ycp:
+      break;
+    }
+    y2milestone( "Ignoring unexpected returncode in OverviewDialog: %1", ret );
+    continue;
+  }
+  y2milestone( "OverviewDialog returns: %1", ret );
+  return ret;
+}
+
+/**
+ * Select model dialog
+ * @return dialog result
+ */
+any SelectModelDialog()
+{ // Caption of the SelectModelDialog:
+  string caption = _("Scanner Model Selection");
+  // If there is an autodetected scanner selected
+  // then preset the filter_string with the autodetected manufacturer
+  // if the autodetected manufacturer exists in the database
+  // to avoid an empty model selection list.
+  // If there is no autodetected manufacturer or if its value is the empty string
+  // or if the autodetected manufacturer does not exist in the database
+  // then the empty filter_string results no filtering at all:
+  string filter_string = "";
+  if( Scanner::selected_autodetected_scanners_index >= 0 )
+  { string autodetected_manufacturer = Scanner::autodetected_scanners[Scanner::selected_autodetected_scanners_index,"manufacturer"]:"";
+    // Unify known ambiguous autodetected manufacturer names:
+    if( "hp" == tolower( autodetected_manufacturer ) )
+    { autodetected_manufacturer = "Hewlett-Packard";
+    }
+    // Preset the filter_string only if the autodetected manufacturer exists in the database.
+    // The leading "^" avoids to find entries which do not really belong to this manufacturer
+    // (e.g. when the manufacturer name is mentioned only in a comment of another model)
+    // because the actual manufacturer name is the first part of the model string.
+    // The trailing ".*" is only to have a user-friendly preset regular expression
+    // so that it works when the user simply appends more stuff (e.g. a part of the model name):
+    foreach( string database_manufacturer,
+             Scanner::database_manufacturers,
+             { if( tolower( database_manufacturer ) == tolower( autodetected_manufacturer ) )
+               { filter_string = "^" + autodetected_manufacturer + ".*";
+               }
+             }
+           );
+  }
+  term contents = `VBox( `HBox( `TextEntry( `id(`filter_input),
+                                            // Header of a TextEntry user input field to enter a search string:
+                                            _("S&earch String"),
+                                            filter_string
+                                          ),
+                                `PushButton( `id(`apply_filter),
+                                             // This button must be the default
+                                             // (it is activated when the user pressed the Enter key)
+                                             // because when the user has clicked into TextEntry to enter something
+                                             // it is normal to finish entering by pressing the Enter key
+                                             // but if the Enter key was linked to 'Next' or 'Back',
+                                             // the user would get the wrong action.
+                                             `opt(`default),
+                                             // Label of a PushButton to search a list for a search string:
+                                             _("&Search")
+                                           )
+                              ),
+                         `ReplacePoint( `id(`model_selection_replace_point),
+                                        `SelectionBox( `id(`model_selection),
+                                                       // Header of a SelectionBox with a list of models:
+                                                       _("&Scanner Model and Driver"),
+                                                       Scanner::ModelItems( filter_string )
+                                                     )
+                                      )
+                       );
+  Wizard::SetContentsButtons( caption,
+                              contents,
+                              HELPS["select_model"]:"",
+                              Label::BackButton(),
+                              Label::NextButton()
+                            );
+  any ret = nil;
+  while(true)
+  { ret = UI::UserInput();
+    if( ret == `abort
+        || ret == `cancel
+      )
+    { if( ! ReallyAbort() ) continue;
+      break;
+    }
+    if ( ret == `back )
+    { break;
+    }
+    /* apply a filter to the model list */
+    if( ret == `apply_filter )
+    { filter_string = (string)UI::QueryWidget( `id(`filter_input), `Value );
+      UI::ReplaceWidget( `id(`model_selection_replace_point),
+                         `SelectionBox( `id(`model_selection),
+                                        // Header of a SelectionBox with a list of models:
+                                        _("&Scanner Model and Driver"),
+                                        Scanner::ModelItems( filter_string )
+                                      )
+                       );
+      continue;
+    }
+    /* select a scanner */
+    if( ret == `next )
+    { Scanner::selected_model_database_index = (integer)UI::QueryWidget( `id(`model_selection), `CurrentItem );
+      if( nil == Scanner::selected_model_database_index )
+      { Popup::AnyMessage( // Header of a Popup::AnyMessage when no model was selected:
+                           _("Nothing Selected"),
+                           // Body of a Popup::AnyMessage when no model was selected:
+                           _("Select an entry.")
+                         );
+        continue;
+      }
+      // Compare how the ModelItems function builds the matching status_strings by using the same logic:
+      if( "unsupported" == Scanner::database[Scanner::selected_model_database_index,"status"]:"unknown" )
+      { string backend = Scanner::database[Scanner::selected_model_database_index,"backend"]:"unknown";
+        if( "unsupported" == backend )
+        { Popup::AnyMessage( // Header of a Popup::AnyMessage when an unsupported model was selected:
+                             _("Unsupported Model"),
+                             // Body of a Popup::AnyMessage when an unsupported model was selected:
+                             _("This model is not supported.\nAsk the manufacturer for a Linux driver.")
+                           );
+        }
+        else
+        { Popup::AnyMessage( sformat( // Header of a Popup::AnyMessage when a model was selected
+                                      // which is listed as "unsupported" for a particular driver:
+                                      // %1 will be replaced by the backend (scanner driver) name
+                                      _("Model Not Supported by the Driver %1"),
+                                      backend
+                                    ),
+                             // Body of a Popup::AnyMessage when a model was selected
+                             // which is listed as "unsupported" for a particular driver:
+                             _("Check if another driver supports it,\nselect a compatible model,\nor ask the manufacturer for a Linux driver.")
+                           );
+        }
+        continue;
+      }
+      // The epkowa backend (package iscan) is only available for i386-compatible architectures.
+      // It would be possible to test for non-i386-compatible architecture in the ModelItems function
+      // and suppress the epkowa backend entries in the model list but intentionally this is not done.
+      // All available known model information is always shown to the user.
+      // There is never known information secretly hidden from the user.
+      // If something is not supported in a special case, an additional information message is shown.
+      // Otherwise a user on a non-i386-compatible architecture would not understand
+      // when others (who use i386) tell him that "model XYZ is listed and works perfectly"
+      // until after a long discusssion they find out that it depends on the architecture.
+      if( "epkowa" == Scanner::database[Scanner::selected_model_database_index,"backend"]:"unknown" )
+      { if( !Arch::i386() )
+        { if( !Arch::x86_64() )
+          { Popup::AnyMessage( // Header of a Popup::AnyMessage when the epkowa backend was selected
+                               // on a non-i386-compatible architecture (i.e. neither i386 nor x86_64).
+                               _("Unsupported Driver"),
+                               // Body of a Popup::AnyMessage when the epkowa backend was selected
+                               // on a non-i386-compatible architecture (i.e. neither i386 nor x86_64).
+                               // Do not change or translate "epkowa", it is a driver name.
+                               // Do not change or translate "iscan", it is a package name.
+                               // Do not change or translate "i386", it is an architecture name.
+                               _("The epkowa driver (package iscan) is only available for i386-compatible architectures.")
+                             );
+            continue;
+          }
+          else
+          { Popup::AnyMessage( // Header of a Popup::AnyMessage when the epkowa backend was selected on x86_64:
+                               _("Possibly Problematic Driver"),
+                               // Body of a Popup::AnyMessage when the epkowa backend was selected on x86_64.
+                               // Do not change or translate "epkowa", it is a driver name.
+                               _("The epkowa driver may cause problems on 64-bit architectures.\nSee our support database for details.")
+                             );
+          }
+        }
+      }
+      break;
+    }
+    y2milestone( "Ignoring unexpected returncode in SelectModelDialog: %1", ret );
+    continue;
+  }
+  return ret;
+}
+
+/**
+ * Configure backend dialog
+ * @return dialog result
+ */
+any ConfigureBackendDialog()
+{ // Caption of the ConfigureBackendDialog:
+  string caption = _("Scanner and Driver Setup");
+  y2milestone( "Selected model is: %1", Scanner::database[Scanner::selected_model_database_index]:$[] );
+  string backend_name = Scanner::database[Scanner::selected_model_database_index,"backend"]:"unknown";
+  // The content here is only a dummy.
+  // The real content is what the "Progress:..." shows in ActivateBackend().
+  term contents = `Label( "" );
+  Wizard::SetContentsButtons( caption,
+                              contents,
+                              HELPS["configure_backend"]:"",
+                              Label::BackButton(),
+                              Label::NextButton()
+                            );
+  Wizard::DisableBackButton();
+  Wizard::DisableAbortButton();
+  Wizard::DisableNextButton();
+  if( ! Scanner::ActivateBackend( "", Scanner::selected_model_database_index, true ) )
+  { Popup::Error( sformat( // Message of a Popup::Error where %1 will be replaced by the driver (backend) name.
+                           // Only a simple message because before the function Scanner::ActivateBackend
+                           // was called and this function would have shown more specific messages.
+                           _("Failed to activate %1."), backend_name ) );
+  }
+  Wizard::EnableBackButton();
+  Wizard::EnableAbortButton();
+  Wizard::EnableNextButton();
+  any ret = nil;
+  while(true)
+  { ret = UI::UserInput();
+    /* abort or cancel */
+    if( ret == `abort
+        || ret == `cancel )
+    { if( ! ReallyAbort() ) continue;
+      break;
+    }
+    if( ret == `back )
+    { Wizard::DisableBackButton();
+      Wizard::DisableAbortButton();
+      Wizard::DisableNextButton();
+      if( ! Scanner::DeactivateBackend( "", Scanner::selected_model_database_index, false ) )
+      { Popup::Error( sformat( // Message of a Popup::Error where %1 will be replaced by the driver (backend) name.
+                               // Only a simple message because before the function Scanner::DeactivateBackend
+                               // was called and this function would have shown more specific messages.
+                               _("Failed to deactivate %1."), backend_name ) );
+      }
+      Wizard::EnableBackButton();
+      Wizard::EnableAbortButton();
+      Wizard::EnableNextButton();
+      break;
+    }
+    if( ret == `next )
+    { break;
+    }
+    y2milestone( "Ignoring unexpected returncode in ConfigureBackendDialog: %1", ret );
+    continue;
+  }
+  return ret;
+}
+
+/**
+ * Network scanning dialog
+ * @return dialog result
+ */
+any ConfigureNetworkScanningDialog()
+{ // Determine the network scanning config
+  // but don't care if this fails because then empty strings are used as secure fallback
+  // and empty strings will disable scanning via network (i.e. the net backend and the saned):
+  Scanner::DetermineNetworkScanningConfig();
+  string net_backend_hosts = Scanner::network_scanning_config["net_backend_hosts"]:"";
+  string saned_hosts = Scanner::network_scanning_config["saned_hosts"]:"";
+  // Dialog contents regarding firewall settings:
+  // Predefine it for the case when not the Suse Firewall is used:
+  term firewall_contents = `Label( // User information when not the Suse Firewall is used.
+                                   _("No SUSE Firewall but other kind of firewall is used.")
+                                 );
+  // Predefine the contents for the current Suse Firewall status
+  // according to what the usual defalts are (e.g. after the installation):
+  term firewall_active_content = `Label( // User information when the Suse Firewall is used and active.
+                                         _("Firewall is active.")
+                                       );
+  term no_firewall_for_int_content = `Label( // User information when the Suse Firewall does not potect the INT zone.
+                                             // Be careful when you change or translate "internal", and "zone"
+                                             // to keep the relationship to the matching term in the YaST firewall
+                                             // setup module where also "internal zone" is used.
+                                             _("No firewall protection for internal network zone.")
+                                           );
+  term allowed_from_int_content = `Label( // User information when saned access is allowed from the INT zone.
+                                          // Do not change or translate "saned", it is a program (sane daemon) name.
+                                          // Be careful when you change or translate "internal", and "zone"
+                                          // to keep the relationship to the matching term in the YaST firewall
+                                          // setup module where also "internal zone" is used.
+                                          _("saned access allowed from internal network zone.")
+                                        );
+  term denied_from_ext_content = `Label( // User information when saned access is denied from the EXT zone.
+                                         // Do not change or translate "saned", it is a program (sane daemon) name.
+                                         // Be careful when you change or translate "external", and "zone"
+                                         // to keep the relationship to the matching term in the YaST firewall
+                                         // setup module where also "external zone" is used.
+                                         _("saned access denied from external network zone.")
+                                       );
+  // Label of a CheckBox:
+  // Do not change or translate "saned", it is a program (sane daemon) name.
+  // Be careful when you change or translate "internal", and "zone"
+  // to keep the relationship to the matching term in the YaST firewall
+  // setup module where also "internal zone" is used.
+  string ui_allow_from_int_checkbox_label = _("Allow saned access from &internal network zone");
+  // Label of a CheckBox:
+  // Do not change or translate "saned", it is a program (sane daemon) name.
+  // Be careful when you change or translate "external", and "zone"
+  // to keep the relationship to the matching term in the YaST firewall
+  // setup module where also "external zone" is used.
+  string ui_deny_from_ext_checkbox_label = _("Deny saned access from &external network zone");
+  // Determine and set the actual contents regarding firewall settings:
+  if( Scanner::firewall_config["suse_firewall_used"]:false )
+  { // The Suse Firewall is used:
+    if( Scanner::firewall_config["firewall_active"]:false )
+    { // The Suse Firewall is active:
+      if( ! Scanner::firewall_config["no_firewall_for_int"]:true )
+      { no_firewall_for_int_content = `Label( // User information when the Suse Firewall potects the INT zone.
+                                              // Be careful when you change or translate "internal", and "zone"
+                                              // to keep the relationship to the matching term in the YaST firewall
+                                              // setup module where also "internal zone" is used.
+                                              _("Firewall protection enabled for internal network zone.")
+                                            );
+      }
+      if( ! Scanner::firewall_config["allowed_from_int"]:true )
+      { allowed_from_int_content = `Label( // User information when saned access is denied from the INT zone.
+                                           // Do not change or translate "saned", it is a program (sane daemon) name.
+                                           // Be careful when you change or translate "internal", and "zone"
+                                           // to keep the relationship to the matching term in the YaST firewall
+                                           // setup module where also "internal zone" is used.
+                                           _("saned access denied from internal network zone.")
+                                         );
+      }
+      if( ! Scanner::firewall_config["denied_from_ext"]:true )
+      { denied_from_ext_content = `Label( // User information when saned access is allowed from the EXT zone.
+                                          // Do not change or translate "saned", it is a program (sane daemon) name.
+                                          // Be careful when you change or translate "external", and "zone"
+                                          // to keep the relationship to the matching term in the YaST firewall
+                                          // setup module where also "external zone" is used.
+                                          _("saned access allowed from external network zone.")
+                                        );
+      }
+      firewall_contents = `VBox( `Frame( // Label of a Frame for the current firewall status.
+                                         _("Current Firewall Status"),
+                                         `VBox( `Left( firewall_active_content ),
+                                                `Left( no_firewall_for_int_content ),
+                                                `Left( allowed_from_int_content ),
+                                                `Left( denied_from_ext_content )
+                                              )
+                                       ),
+                                 `Frame( // Label of a Frame for the firewall settings for scanning via network.
+                                         _("Firewall Settings"),
+                                         `ReplacePoint( `id(`firewall_settings_replace_point),
+                                                        `VBox( `Left( `CheckBox( `id( `ui_allow_from_int_checkbox ),
+                                                                                 ui_allow_from_int_checkbox_label,
+                                                                                 Scanner::firewall_config["ui_allow_from_it"]:true
+                                                                               )
+                                                                    ),
+                                                               `Left( `CheckBox( `id( `ui_deny_from_ext_checkbox ),
+                                                                                      ui_deny_from_ext_checkbox_label,
+                                                                                      Scanner::firewall_config["ui_deny_from_ext"]:true
+                                                                               )
+                                                                    )
+                                                             )
+                                                      )
+                                       )
+                               );
+    }
+    else
+    { // The Suse Firewall is used but it is not active:
+      firewall_contents = `Label( // User information when the Suse Firewall is not active.
+                                     _("Firewall not running or would not be started.")
+                                 );
+    }
+  }
+  // Caption of the ConfigureNetworkScanningDialog:
+  string caption = _("Set Up Scanning via Network");
+  // Header of a TextEntry user input field.
+  // Do not change or translate "saned", it is a program (sane daemon) name.
+  string saned_hosts_input_label = _("Permitted &Clients for saned");
+  // Header of a TextEntry user input field.
+  // Do not change or translate "net", it is a metadriver name.
+  // Do not simply use "driver" because net is no normal driver but a metadriver.
+  string net_backend_hosts_input_label = _("&Servers Used for the net Metadriver");
+  // All contenst of the scanning via network dialog:
+  term contents = `VBox( `VStretch(),
+                         `Frame( // Label of a Frame for the server settings for scanning via network.
+                                 _("Server Settings"),
+                                 `VBox( `ReplacePoint( `id(`saned_hosts_input_replace_point),
+                                                       `TextEntry( `id(`saned_hosts_input),
+                                                                   saned_hosts_input_label,
+                                                                   saned_hosts
+                                                                 )
+                                                     ),
+                                        firewall_contents
+                                      )
+                               ),
+                         `VStretch(),
+                         `Frame( // Label of a Frame for the client settings for scanning via network.
+                                 _("Client Settings"),
+                                 `ReplacePoint( `id(`net_backend_hosts_input_replace_point),
+                                                `TextEntry( `id(`net_backend_hosts_input),
+                                                            net_backend_hosts_input_label,
+                                                            net_backend_hosts
+                                                          )
+                                              )
+                               ),
+                         `VStretch(),
+                         `Frame( // Label of a Frame for predefined configurations.
+                                 _("Predefined Configurations"),
+                                 `VBox( `Left( `PushButton( `id(`local_host_config),
+                                                            // Label of a PushButton for a predefined configuration:
+                                                            _("&Local Host Configuration")
+                                                          )
+                                             ),
+                                        `Left( `PushButton( `id(`disable_scanning_via_network),
+                                                            // Label of a PushButton to disable scanning via network:
+                                                            _("&Disable Scanning via Network")
+                                                          )
+                                             )
+                                      )
+                               ),
+                         `VStretch()
+                       );
+  Wizard::SetContentsButtons( caption,
+                              contents,
+                              HELPS["configure_network_scanning"]:"",
+                              Label::BackButton(),
+                              Label::NextButton()
+                            );
+  any ret = nil;
+  while(true)
+  { ret = UI::UserInput();
+    /* abort or cancel */
+    if( ret == `abort
+        || ret == `cancel )
+    { if( ! ReallyAbort() ) continue;
+      break;
+    }
+    /* local host configuration */
+    if( ret == `local_host_config )
+    { UI::ReplaceWidget( `id(`saned_hosts_input_replace_point),
+                         `TextEntry( `id(`saned_hosts_input),
+                                     saned_hosts_input_label,
+                                     "localhost,127.0.0.0/8,"
+                                   )
+                       );
+      UI::ReplaceWidget( `id(`net_backend_hosts_input_replace_point),
+                         `TextEntry( `id(`net_backend_hosts_input),
+                                     net_backend_hosts_input_label,
+                                     "localhost,"
+                                   )
+                       );
+    }
+    /* disable scanning via network */
+    if( ret == `disable_scanning_via_network )
+    { UI::ReplaceWidget( `id(`saned_hosts_input_replace_point),
+                         `TextEntry( `id(`saned_hosts_input),
+                                     saned_hosts_input_label,
+                                     ""
+                                   )
+                       );
+      UI::ReplaceWidget( `id(`net_backend_hosts_input_replace_point),
+                         `TextEntry( `id(`net_backend_hosts_input),
+                                     net_backend_hosts_input_label,
+                                     ""
+                                   )
+                       );
+    }
+    /* set reasonable firewall settings for the predefined configurations */
+    if( ret == `local_host_config
+        || ret == `disable_scanning_via_network
+      )
+    { if( Scanner::firewall_config["suse_firewall_used"]:false
+          && Scanner::firewall_config["firewall_active"]:false
+        )
+      { // The Suse Firewall is used and it is active:
+        UI::ReplaceWidget( `id(`firewall_settings_replace_point),
+                           `VBox( `Left( `CheckBox( `id( `ui_allow_from_int_checkbox ),
+                                                    ui_allow_from_int_checkbox_label,
+                                                    true
+                                                  )
+                                       ),
+                                  `Left( `CheckBox( `id( `ui_deny_from_ext_checkbox ),
+                                                         ui_deny_from_ext_checkbox_label,
+                                                         true
+                                                  )
+                                       )
+                                )
+                         );
+      }
+      continue;
+    }
+    /* set up the configuration */
+    if( ret == `next )
+    { Scanner::firewall_config["ui_allow_from_int"] = (boolean)UI::QueryWidget( `id(`ui_allow_from_int_checkbox), `Value );
+      Scanner::firewall_config["ui_deny_from_ext"] = (boolean)UI::QueryWidget( `id(`ui_deny_from_ext_checkbox), `Value );
+      if( ! Scanner::firewall_config["ui_deny_from_ext"]:true )
+      { // User has set in dialog not to deny saned access from the external zone:
+        Popup::Notify ( // Message of a Popup::Notify.
+                        // Only a simple message because everything is perfectly o.k.
+                        // but the user should get a notification.
+                        // See the help text of the "Scanning via Network" dialog
+                        // why it doesn't make sense and is insecure to allow saned access
+                        // from the external network zone.
+                        // Do not change or translate "saned", it is a program (sane daemon) name.
+                        // Be careful when you change or translate "external", and "zone"
+                        // to keep the relationship to the matching term in the YaST firewall
+                        // setup module where also "external zone" is used.
+                        _("saned access from external zone cannot be allowed because it does not make sense and is insecure.")
+                      );
+        continue;
+      }
+      if( Scanner::firewall_config["no_firewall_for_int"]:true
+          && ! Scanner::firewall_config["ui_allow_from_int"]:true
+        )
+      { // Suse Firewall does not potect the INT zone
+        // but user has set in dialog to deny saned access from the internal zone:
+        Popup::Notify ( // Message of a Popup::Notify.
+                        // Do not change or translate "saned", it is a program (sane daemon) name.
+                        // Be careful when you change or translate "internal", and "zone"
+                        // to keep the relationship to the matching term in the YaST firewall
+                        // setup module where also "internal zone" is used.
+                        _("saned access from internal zone cannot be denied because firewall potection is disabled for this zone.")
+                      );
+        continue;
+      }
+      Scanner::network_scanning_config["net_backend_hosts"] = (string)UI::QueryWidget( `id(`net_backend_hosts_input), `Value );
+      Scanner::network_scanning_config["saned_hosts"] = (string)UI::QueryWidget( `id(`saned_hosts_input), `Value );
+      Wizard::DisableBackButton();
+      Wizard::DisableAbortButton();
+      Wizard::DisableNextButton();
+      if( ! Scanner::SetupNetworkScanningConfig() )
+      { Wizard::EnableBackButton();
+        Wizard::EnableAbortButton();
+        Wizard::EnableNextButton();
+        continue;
+      }
+      Wizard::EnableBackButton();
+      Wizard::EnableAbortButton();
+      Wizard::EnableNextButton();
+      break;
+    }
+    if( ret == `back )
+    { break;
+    }
+    y2milestone( "Ignoring unexpected returncode in ConfigureBackendDialog: %1", ret );
+    continue;
+  }
+  return ret;
+}
+
+/* EOF */
+
+}
+

@@ -1,0 +1,28 @@
+#! /bin/bash
+#
+# Johannes Meixner <jsmeix@suse.de>, 2004, 2005
+
+#set -x
+
+export PATH="/sbin:/usr/sbin:/usr/bin:/bin"
+export LC_ALL="POSIX"
+export LANG="POSIX"
+umask 022
+
+# The hplip service and the ptal service exclude each other.
+# Disable the ptal service if it exists:
+if [ -x /etc/init.d/ptal ]
+then /etc/init.d/ptal stop
+     insserv -r ptal
+fi
+
+# Setup the hplip service:
+if [ -x /etc/init.d/hplip ] 
+then insserv hplip || { echo "failed: insserv hplip" 1>&2 ; exit 2 ; }
+     /etc/init.d/hplip restart || { echo "failed: /etc/init.d/hplip restart" 1>&2 ; exit 3 ; }
+else echo "cannot execute /etc/init.d/hplip" 1>&2
+     exit 1
+fi
+
+exit 0
+

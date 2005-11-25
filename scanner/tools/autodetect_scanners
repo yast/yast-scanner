@@ -1,0 +1,77 @@
+#! /bin/bash
+#
+# Johannes Meixner <jsmeix@suse.de>, 2004, 2005
+
+#set -x
+
+export PATH="/sbin:/usr/sbin:/usr/bin:/bin"
+export LC_ALL="POSIX"
+export LANG="POSIX"
+umask 022
+
+MY_NAME=${0##*/}
+OUTPUT_FORMAT="$1"
+[ -z "$OUTPUT_FORMAT" ] && OUTPUT_FORMAT="ASCII"
+[ "$OUTPUT_FORMAT" != "ASCII" -a "$OUTPUT_FORMAT" != "YCP" ] && { echo -en "\nUsage:\n$MY_NAME {ASCII|YCP}\n" 1>&2 ; exit 1 ; }
+
+# Input:
+
+# Create a temporary file:
+TMP_DATA=$(mktemp -u /tmp/$MY_NAME.XXXXXX)
+
+# Get the raw data
+MAXIMUM_WAIT="10"
+if [ -x /usr/bin/sane-find-scanner ]
+then sane-find-scanner -q >${TMP_DATA}.raw &
+     sanefindscannerPID=$!
+     for i in $( seq $MAXIMUM_WAIT )
+     do ps hp $sanefindscannerPID | grep -q sane-find-scanner || break
+        sleep 1
+     done
+     if ps hp $sanefindscannerPID | grep -q sane-find-scanner
+     then kill -9 $sanefindscannerPID &>/dev/null
+     fi
+else 
+    echo "Cannot execute /usr/bin/sane-find-scanner" 1>&2
+    exit 2
+fi
+cat ${TMP_DATA}.raw | egrep '^found SCSI |^found USB ' | sort -u | sed -e 's/^found //' | tr \" \' >$TMP_DATA && rm ${TMP_DATA}.raw
+
+# Output:
+
+# Output header:
+if [ "$OUTPUT_FORMAT" = "YCP" ]
+then echo "[" 
+else echo "CONNECTION|DEVICE|MANUFACTURER|USB_VENDOR_ID|MODEL|USB_PRODUCT_ID|DESCRIPTION"
+fi
+
+# Output scanner entries:
+exec <$TMP_DATA
+while read DESCRIPTION
+do echo $DESCRIPTION | grep -q '^USB ' && CONNECTION="USB" || CONNECTION="SCSI"
+   DEVICE=$( echo $DESCRIPTION | sed -e 's/.* at \(.*\)/\1/' )
+   MANUFACTURER=""
+   MODEL=""
+   USB_VENDOR_ID=""
+   USB_PRODUCT_ID=""
+   if [ "$CONNECTION" = "USB" ]
+   then MODEL=$( echo $DESCRIPTION | tr '[]' '||' | cut -d '|' -s -f 4 )
+        [ -n "$MODEL" ] && MANUFACTURER=$( echo $DESCRIPTION | tr '[]' '||' | cut -d '|' -s -f 2 )
+        USB_VENDOR_ID=$( echo $DESCRIPTION | sed -n -e 's/^.*vendor=\(0x[0-9A-Fa-f][0-9A-Fa-f]*\).*$/\1/p' )
+        USB_PRODUCT_ID=$( echo $DESCRIPTION | sed -n -e 's/^.*product=\(0x[0-9A-Fa-f][0-9A-Fa-f]*\).*$/\1/p' )
+   fi
+   if [ "$OUTPUT_FORMAT" = "YCP" ]
+   then echo -e "  \$[ \"connection\":\"$CONNECTION\",\n     \"device\":\"$DEVICE\",\n     \"manufacturer\":\"$MANUFACTURER\",\n     \"usb_vendor_id\":\"$USB_VENDOR_ID\",\n     \"model\":\"$MODEL\",\n     \"usb_product_id\":\"$USB_PRODUCT_ID\",\n     \"description\":\"$DESCRIPTION\"  ],"
+   else echo "$CONNECTION|$DEVICE|$MANUFACTURER|$USB_VENDOR_ID|$MODEL|$USB_PRODUCT_ID|$DESCRIPTION"
+   fi
+done
+
+# Output a footer for YCP
+if [ "$OUTPUT_FORMAT" = "YCP" ]
+then echo -e "  \$[]\n]"
+fi
+
+# Remove the temporary file
+rm $TMP_DATA
+exit 0
+

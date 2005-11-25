@@ -1,0 +1,260 @@
+/**
+ * File:	include/scanner/helps.ycp
+ * Package:	Configuration of scanner
+ * Summary:	Help texts of all the dialogs
+ * Authors:	Johannes Meixner <jsmeix@suse.de>
+ *
+ * $Id$
+ */
+
+{
+
+textdomain "scanner";
+
+/**
+ * All helps are here
+ */
+map HELPS =
+$[
+
+"read" :
+// Read dialog help 1/1:
+_("<p>
+<b><big>Initializing Scanner Configuration</big></b><br>
+Please wait...
+</p>"),
+
+"write" :
+// Write dialog help 1/1:
+_("<p>
+<b><big>Saving Scanner Configuration</big></b><br>
+Please wait...
+</p>"),
+
+"overview" :
+// Overview dialog help 1/7:
+_("<p>
+<b><big>Scanner Configuration</big></b><br>
+Set up or change the scanner configuration and show the already active scanners.
+</p>") +
+// Overview dialog help 2/7:
+_("<p>
+To set up a new scanner, choose the scanner from the list of
+detected scanners and press <b>Edit</b>.
+If your scanner has not been detected, use <b>Add</b> for a manual configuration.
+</p>") +
+// Overview dialog help 3/7:
+// Do not change or translate "HP", it is a manufacturer name.
+// Do not change or translate "OfficeJet", it is a model name.
+// Do not change or translate "PSC", it is a model (Printer Scanner Copier) name.
+// Do not change or translate "/usr/sbin/lsusb", it is a command name.
+_("<p>
+A normal USB scanner should be detected automatically.
+If it was not detected, it may work to proceed with <b>Add</b>.
+In particular, HP all-in-one devices, such as OfficeJets and PSCs,
+are not detected, but can be configured this way.
+If you have difficulties configuring your scanner here,
+check whether it appears in the output of <tt>/usr/sbin/lsusb</tt>.
+If it is not listed there, the USB system cannot communicate with the scanner.
+</p>") +
+// Overview dialog help 4/7:
+// Do not change or translate "lsscsi", it is a command name.
+_("<p>
+SCSI scanners are normally detected.
+If difficulties arise proceeding with <b>Add</b>,
+check whether your scanner is shown by the command <tt>lsscsi</tt>.
+If not, the SCSI system cannot communicate with the scanner.
+Verify that an appropriate kernel module for the SCSI host adapter has been loaded.
+</p>") +
+// Overview dialog help 5/7:
+_("<p>
+Parallel port scanners cannot be configured with this tool.
+These devices must be configured manually.
+</p>") +
+// Overview dialog help 6/7:
+// Do not confuse a "network scanner" (i.e. a scanner which is directly accessible in the network)
+// with a "network scanner" (i.e. a program which scans the network for other hosts or services)
+// or with a "remote scanner" (i.e. a scanner which is connected to another host in the network).
+// Do not confuse "scanning via network" (i.e. use a remote scanner via another host in the network)
+// with "scanning the network" (i.e. scan the network for other hosts or services).
+_("<p>
+Network scanners cannot be configured with this tool.
+These devices must be configured manually.
+A network scanner is a scanner that has a network interface
+so it is directly accessible in the network.
+In contrast, scanning via network means accessing a remote scanner
+connected to another host in the network.
+</p>") +
+// Overview dialog help 7/7:
+// Do not confuse "scanning via network" (i.e. use a remote scanner via another host in the network)
+// with "scanning the network" (i.e. scan the network for other hosts or services).
+// It is not possible to modify or remove an active scanner directly.
+// It is only possible to modify or remove a driver and this way
+// all scanners which are associated with this driver are modified or removed.
+_("<p>
+The table lists the configured drivers with their associated scanners.
+Press <b>Edit</b> to modify a driver.
+Press <b>Delete</b> to remove a driver.
+If you press <b>Other</b>, you can
+restart the detection, test active scanners, or set up scanning via network.
+</p>"),
+
+"select_model" :
+// SelectModel dialog help 1/5:
+// Do not change or translate "SANE", it is a project name.
+_("<p>
+<b><big>Scanner Model Selection</big></b><br>
+All known scanner models, both supported and unsupported, are listed here.
+Read all information carefully before selecting a model and pressing <b>Next</b>.
+The information is based on data of the SANE project at
+<tt>http://www.sane-project.org/</tt>.
+</p>") +
+// SelectModel dialog help 2/5:
+_("<p>
+A model is supported if there is at least one appropriate scanner driver available.
+Most scanner drivers are provided by the sane package.
+The support status varies from minimal to complete.
+</p>") +
+// SelectModel dialog help 3/5:
+_("<p>
+Even if a model has no driver available, the manufacturer might have a driver.
+Therefore, you should ask the scanner manufacturer for a driver for an unsupported scanner.
+</p>") +
+// SelectModel dialog help 4/5:
+// Add the following sentence to translations:
+// Such comments are only available in English.
+_("<p>
+When additional comments are available, they are shown in square brackets.
+</p>") +
+// SelectModel dialog help 4/5:
+// Do not change or translate "^Epson.*", "^Epson.*perfection", "^Epson.*1200":
+// These are intentionally selected actually working examples.
+_("<p>
+Use the <b>Search String</b> to find an appropriate entry quickly.
+To find some text anywhere in the table, enter it in the field.
+A more complicated search using a case-insensitive regular expression is also possible.
+If the scanner was detected and the manufacturer name is available in this list,
+the search string is preset with the manufacturer name, such as <tt>^Epson.*</tt>.
+To refine the search results, append model-specific details to the search string.
+For example, append a word that is part of the model name as in <tt>^Epson.*perfection</tt>
+or append some digits that are part of the model name as in <tt>^Epson.*1200</tt>.
+</p>"),
+
+"configure_backend" :
+// ConfigureBackend dialog help 1/4:
+_("<p>
+<b><big>Scanner and Driver Setup</big></b><br>
+The driver is activated and the associated scanners are probed.
+This may take a few seconds, so you must wait until you can press <b>Next</b>.
+If you press <b>Back</b>, the driver is deactivated.
+</p>") +
+// ConfigureBackend dialog help 2/4:
+// Do not change or translate "iscan", it is a package name.
+// Do not change or translate "i386", it is an architecture name.
+_("<p>
+<b><big>Additional Packages</big></b><br>
+If the package that provides the driver is not yet installed,
+an appropriate dialog is shown to install the package.
+Such packages may not be available for all architectures
+(for example, the iscan package is only available for i386 architectures).
+</p>") +
+// ConfigureBackend dialog help 3/4:
+_("<p>
+<b><big>Firmware Upload</big></b><br>
+Some models require a firmware upload.
+In this case, an appropriate explanatory text is shown.
+</p>") +
+// ConfigureBackend dialog help 4/4:
+// Do not change or translate "HP", it is a manufacturer name.
+// Do not change or translate "HPOJ", it is a project name.
+// Do not change or translate "hp-officeJet", it is a package name.
+// Do not change or translate "PTAL", it is a subsystem name.
+// Do not change or translate "ptal", it is a service name.
+// Do not change or translate "HPLIP", it is a project name.
+// Do not change or translate "hplip", it is a package name.
+// Do not change or translate "hplip", it is a service name.
+// Note that the "all" is crucial in
+// "either ptal or hplip must be used to access all HP all-in-one devices".
+_("<p>
+<b><big>HP All-in-One Devices</big></b><br>
+HP all-in-one devices require a special setup.
+In this case, an appropriate dialog is shown.
+There are two software packages that provide support for HP all-in-one devices:
+the old HPOJ software (package hp-officeJet),
+which provides the PTAL system (with the ptal service) to access HP all-in-one devices,
+and the new HPLIP software (package hplip),
+which provides the hplip service to access HP all-in-one devices.
+Both software packages can be installed at the same time
+but the services cannot be run together.
+Because a running service is required to access the device,
+either ptal or hplip must be used to access all HP all-in-one devices.
+</p>"),
+
+"configure_network_scanning" :
+// ConfigureNetworkScanning dialog help 1/4:
+// Do not confuse "scanning via network" (i.e. use a remote scanner via another host in the network)
+// with "scanning the network" (i.e. scan the network for other hosts or services).
+_("<p>
+<b><big>Scanning via Network</big></b><br>
+Enter the appropriate information and press <b>Next</b>
+to set up scanning via network.
+</p>") +
+// ConfigureNetworkScanning dialog help 2/4:
+// Do not change or translate "saned", it is a program (sane daemon) name.
+// Do not change or translate "CIDR", it is a (sub)-network notation name.
+// Do not change or translate "192.168.1.0/24", it is an intentionally selected actually working example.
+// Be careful when you change or translate "external", "internal", and "zone"
+// to keep the relationship to the matching terms in the YaST firewall setup module
+// where also "external zone", and "internal zone" is used.
+// Keep the information that external access is useless and insecure (see "man saned").
+_("<p>
+<b><big>Server Settings</big></b><br>
+If you have locally connected scanners and want to make them accessible via network,
+set up the saned network scanning daemon so that your host becomes a server.
+In <b>Permitted Clients</b>, enter which client hosts are permitted to access saned on your server.
+Enter a comma-separated list of client hosts (hostnames or IP addresses)
+or subnets (CIDR notation such as 192.168.1.0/24).
+If no client hosts are permitted, saned is not activated.
+The default <b>Firewall Settings</b> during system installation
+protect your host from external access.
+This is not a problem for using scanners in an internal network
+(i.e. when the network interface belongs to the internal network zone)
+unless you have firewall protection enabled even for the internal zone.
+In this case, you must allow access from the internal zone.
+Allow access from an external network does not make sense
+because scanning documents requires physical scanner access.
+Therefore access from the external zone can only be denied
+if it was accidentally allowed by insecure firewall settings.
+</p>") +
+// ConfigureNetworkScanning dialog help 3/4:
+// Do not change or translate "net", it is a metadriver name.
+// Do not simply use "driver" because net is no normal driver but a metadriver.
+// Do not change or translate "saned", it is a program (sane daemon) name.
+_("<p>
+<b><big>Client Settings</big></b><br>
+If you want to access scanners connected to other hosts (servers) in the network,
+set up the net metadriver to access them via the daemon running on the servers.
+saned and firewall on the servers must permit the access.
+In <b>Servers Used</b>, enter which servers should be used.
+Enter a comma-separated list of servers (server names or IP addresses).
+If no servers are entered, net is not activated.
+</p>") +
+// ConfigureNetworkScanning dialog help 4/4:
+// Do not change or translate "saned", it is a program (sane daemon) name.
+// Do not change or translate "net", it is a metadriver name.
+// Do not simply use "driver" because net is no normal driver but a metadriver.
+// Do not change or translate "localhost", it is a fixed hostname for the local host.
+_("<p>
+<b><big>Local Host Configuration</big></b><br>
+By using the loopback network, saned and the net metadriver
+can be used even on your local host.
+In this case, the server and client are the same machine (localhost).
+Some scanners, such as parallel port scanners, require root privileges.
+When you enter <tt>localhost</tt> for both the server and the client,
+you can access such a scanner even as a normal user on your local host.
+</p>")
+
+];
+
+/* EOF */
+}
