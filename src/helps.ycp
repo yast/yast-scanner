@@ -203,6 +203,8 @@ to set up scanning via network.
 // Do not change or translate "saned", it is a program (sane daemon) name.
 // Do not change or translate "CIDR", it is a (sub)-network notation name.
 // Do not change or translate "192.168.1.0/24", it is an intentionally selected actually working example.
+// Do not change or translate "xinetd", it is a program (daemon) name.
+// Do not change or translate "sane-port", it is a port name (see /etc/services).
 // Be careful when you change or translate "external", "internal", and "zone"
 // to keep the relationship to the matching terms in the YaST firewall setup module
 // where also "external zone", and "internal zone" is used.
@@ -215,12 +217,14 @@ In <b>Permitted Clients</b>, enter which client hosts are permitted to access sa
 Enter a comma-separated list of client hosts (hostnames or IP addresses)
 or subnets (CIDR notation such as 192.168.1.0/24).
 If no client hosts are permitted, saned is not activated.
+If saned is activated, xinetd is also activated and set up for saned.
+Clients contact saned via the sane-port (TCP port 6566)
+but scanning data is transferred via an additional random port.
 The default <b>Firewall Settings</b> during system installation
 protect your host from external access.
 This is not a problem for using scanners in an internal network
 (i.e. when the network interface belongs to the internal network zone)
-unless you have firewall protection enabled even for the internal zone.
-In this case, you must allow access from the internal zone.
+unless you have firewall protection enabled for the internal zone.
 Allow access from an external network does not make sense
 because scanning documents requires physical scanner access.
 Therefore access from the external zone can only be denied
