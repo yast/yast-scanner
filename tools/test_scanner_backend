@@ -1,0 +1,35 @@
+#! /bin/bash
+#
+# Johannes Meixner <jsmeix@suse.de>, 2004, 2005
+
+#set -x
+
+export PATH="/sbin:/usr/sbin:/usr/bin:/bin"
+export LC_ALL="POSIX"
+export LANG="POSIX"
+umask 022
+
+MY_NAME=${0##*/}
+BACKEND="$1"
+[ -z "$BACKEND" ] && { echo -en "\nUsage:\n$MY_NAME backend\n" 1>&2 ; exit 1 ; }
+
+MAXIMUM_WAIT="30"
+if [ -x /usr/bin/scanimage ]
+then scanimage -d $BACKEND -T &
+     scanimagePID=$!
+     for i in $( seq $MAXIMUM_WAIT )
+     do ps $scanimagePID &>/dev/null || break
+        sleep 1
+     done
+     if ps $scanimagePID &>/dev/null
+     then kill -9 $scanimagePID &>/dev/null
+          echo "Aborted scanimage after $MAXIMUM_WAIT seconds timeout." 1>&2
+          exit 3
+     fi
+else 
+    echo "Cannot execute /usr/bin/scanimage" 1>&2
+    exit 2
+fi
+
+exit 0
+

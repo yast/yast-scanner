@@ -25,10 +25,10 @@ if [ -x /usr/bin/scanimage ]
 then scanimage -f '%d,%v,%m;' >${TMP_DATA}.raw &
      scanimagePID=$!
      for i in $( seq $MAXIMUM_WAIT )
-     do ps hp $scanimagePID | grep -q scanimage || break
+     do ps $scanimagePID &>/dev/null || break
         sleep 1
      done
-     if ps hp $scanimagePID | grep -q scanimage
+     if ps $scanimagePID &>/dev/null
      then kill -9 $scanimagePID &>/dev/null
      fi
 else 
