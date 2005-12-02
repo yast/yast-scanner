@@ -156,7 +156,7 @@ global map< string, string > network_scanning_config = $[];
  * Firewall network scanning configuration:
  * Determined at runtime via Scanner::DetermineNetworkScanningConfig()
  * which calls SuSEFirewall functions to fill the map @ref firewall_config
- * except "ui_allow_from_int" and "ui_deny_from_ext" which are the user settings in the dialog.
+ * except "ui_no_firewall_for_int" and "ui_deny_from_ext" which are the user settings in the dialog.
  * The entries are such that "true" is the default, reasonable and intended setting.
  * @struct firewall_config
  * $[ "suse_firewall_used":"true if Suse Firewall and no other firewall is used",

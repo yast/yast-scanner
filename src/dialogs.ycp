@@ -810,7 +810,10 @@ any ConfigureNetworkScanningDialog()
                          `Frame( // Label of a Frame for predefined configurations.
                                  _("Predefined Configurations"),
                                  `VBox( `Left( `PushButton( `id(`local_host_config),
-                                                            // Label of a PushButton for a predefined configuration:
+                                                            // Label of a PushButton for a predefined configuration.
+                                                            // Be careful when you change or translate "local host configuration"
+                                                            // because this term is used also in the help text
+                                                            // and in a message of a Popup::ContinueCancel
                                                             _("&Local Host Configuration")
                                                           )
                                              ),
@@ -890,7 +893,14 @@ any ConfigureNetworkScanningDialog()
     }
     /* set up the configuration */
     if( ret == `next )
-    { // Only when the Suse Firewall is used and when it is active
+    { // Get the mandatory vaules to set up scanning via network:
+      Scanner::network_scanning_config["net_backend_hosts"] = (string)UI::QueryWidget( `id(`net_backend_hosts_input),
+                                                                                       `Value
+                                                                                     );
+      Scanner::network_scanning_config["saned_hosts"] = (string)UI::QueryWidget( `id(`saned_hosts_input),
+                                                                                 `Value
+                                                                               );
+      // Only when the Suse Firewall is used and when it is active
       // the checkbox for the firewall settings exist:
       if( Scanner::firewall_config["suse_firewall_used"]:false
           && Scanner::firewall_config["firewall_active"]:false
@@ -928,17 +938,32 @@ any ConfigureNetworkScanningDialog()
         { // User has set in dialog to potect the internal zone:
           if( Scanner::firewall_config["no_firewall_for_int"]:false )
           { // Suse Firewall does not potect the INT zone:
-            Popup::Notify ( // Message of a Popup::Notify.
-                            // The help text of the "Scanning via Network" dialog explains
-                            // why scanning via network does not work with firewall protection for internal zone.
-                            // Do not confuse "scanning via network" (i.e. use a remote scanner
-                            // via another host in the network) with "scanning the network"
-                            // (i.e. scan the network for other hosts or services).
-                            // Be careful when you change or translate "internal", and "zone"
-                            // to keep the relationship to the matching term in the YaST firewall
-                            // setup module where also "internal zone" is used.
-                            _("Scanning via network does not work with firewall protection for internal zone.")
-                          );
+            if( Scanner::network_scanning_config["saned_hosts"]:"" != "" )
+            { // There are actually clients which should be able to access saned:
+              Popup::Notify ( // Message of a Popup::Notify.
+                              // The help text of the "Scanning via Network" dialog explains
+                              // why scanning via network does not work with firewall protection for internal zone.
+                              // Do not confuse "scanning via network" (i.e. use a remote scanner
+                              // via another host in the network) with "scanning the network"
+                              // (i.e. scan the network for other hosts or services).
+                              // Be careful when you change or translate "internal", and "zone"
+                              // to keep the relationship to the matching term in the YaST firewall
+                              // setup module where also "internal zone" is used.
+                              _("Scanning via network does not work with firewall protection for internal zone.")
+                            );
+            }
+            else
+            { // There are no clients which should be able to access saned:
+              Popup::Notify ( // Message of a Popup::Notify.
+                              // It is not possible to enable firewall protection for internal zone
+                              // in the YaST scanner configuration module when it was disabled
+                              // because all other services may be no longer accessible too.
+                              // Be careful when you change or translate "internal", and "zone"
+                              // to keep the relationship to the matching term in the YaST firewall
+                              // setup module where also "internal zone" is used.
+                              _("Use the YaST firewall module to enable firewall protection for internal zone.")
+                            );
+            }
             UI::ChangeWidget( `id(`ui_no_firewall_for_int_checkbox),
                               `Value,
                               true
@@ -947,28 +972,24 @@ any ConfigureNetworkScanningDialog()
           }
           else
           { // Suse Firewall potects the INT zone:
-            if( ! Popup::ContinueCancel( // Message of a Popup::ContinueCancel.
-                                         // Be careful when you change or translate "local host configuration"
-                                         // because this term is used also in the help text and as a label
-                                         // of a PushButton for a predefined configuration.
-                                         // Be careful when you change or translate "internal", and "zone"
-                                         // to keep the relationship to the matching term in the YaST firewall
-                                         // setup module where also "internal zone" is used.
-                                         _("Only a local host configuration works with firewall protection for internal zone.")
-                                       )
-              )
-            { continue;
+            if( Scanner::network_scanning_config["saned_hosts"]:"" != "" )
+            { // There are actually clients which should be able to access saned:
+              if( ! Popup::ContinueCancel( // Message of a Popup::ContinueCancel.
+                                           // Be careful when you change or translate "local host configuration"
+                                           // because this term is used also in the help text and as a label
+                                           // of a PushButton for a predefined configuration.
+                                           // Be careful when you change or translate "internal", and "zone"
+                                           // to keep the relationship to the matching term in the YaST firewall
+                                           // setup module where also "internal zone" is used.
+                                           _("Only a local host configuration works with firewall protection for internal zone.")
+                                         )
+                )
+              { continue;
+              }
             }
           }
         }
       }
-      // Get the mandatory vaules to set up scanning via network:
-      Scanner::network_scanning_config["net_backend_hosts"] = (string)UI::QueryWidget( `id(`net_backend_hosts_input),
-                                                                                       `Value
-                                                                                     );
-      Scanner::network_scanning_config["saned_hosts"] = (string)UI::QueryWidget( `id(`saned_hosts_input),
-                                                                                 `Value
-                                                                               );
       Wizard::DisableBackButton();
       Wizard::DisableAbortButton();
       Wizard::DisableNextButton();
