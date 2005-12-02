@@ -244,6 +244,9 @@ Enter a comma-separated list of servers (server names or IP addresses).
 If no servers are entered, net is not activated.
 </p>") +
 // ConfigureNetworkScanning dialog help 4/4:
+// Be careful when you change or translate "local host configuration"
+// because this term is used also in a message of a Popup::ContinueCancel
+// and as label of a PushButton for a predefined configuration.
 // Do not change or translate "saned", it is a program (sane daemon) name.
 // Do not change or translate "net", it is a metadriver name.
 // Do not simply use "driver" because net is no normal driver but a metadriver.
