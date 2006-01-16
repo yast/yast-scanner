@@ -1,0 +1,69 @@
+#! /bin/bash
+#
+# Johannes Meixner <jsmeix@suse.de>, 2004, 2005
+
+#set -x
+
+export PATH="/sbin:/usr/sbin:/usr/bin:/bin"
+export LC_ALL="POSIX"
+export LANG="POSIX"
+umask 022
+
+MY_NAME=${0##*/}
+OUTPUT_FORMAT="$1"
+[ -z "$OUTPUT_FORMAT" ] && OUTPUT_FORMAT="ASCII"
+[ "$OUTPUT_FORMAT" != "ASCII" -a "$OUTPUT_FORMAT" != "YCP" ] && { echo -en "\nUsage:\n$MY_NAME {ASCII|YCP}\n" 1>&2 ; exit 1 ; }
+
+# Input:
+
+# Create a temporary file:
+TMP_DATA=$(mktemp -u /tmp/$MY_NAME.XXXXXX)
+
+# Get the raw data
+MAXIMUM_WAIT="30"
+if [ -x /usr/bin/scanimage ]
+then scanimage -f '%d,%v,%m;' >${TMP_DATA}.raw &
+     scanimagePID=$!
+     for i in $( seq $MAXIMUM_WAIT )
+     do ps $scanimagePID &>/dev/null || break
+        sleep 1
+     done
+     if ps $scanimagePID &>/dev/null
+     then kill -9 $scanimagePID &>/dev/null
+     fi
+else 
+    echo "Cannot execute /usr/bin/scanimage" 1>&2
+    exit 2
+fi
+tr ';' '\n' <${TMP_DATA}.raw | sort -u >$TMP_DATA && rm ${TMP_DATA}.raw
+
+# Output:
+
+# Output header:
+if [ "$OUTPUT_FORMAT" = "YCP" ]
+then echo "[" 
+else echo "BACKEND|SANE_DEVICE|MANUFACTURER|MODEL"
+fi
+
+# Output scanner entries:
+exec <$TMP_DATA
+while read LINE
+do BACKEND=$( echo $LINE | grep -o '^[^:]*' )
+   SANE_DEVICE=$( echo $LINE | cut -d ',' -s -f 1 )
+   MANUFACTURER=$( echo $LINE | cut -d ',' -s -f 2 )
+   MODEL=$( echo $LINE | cut -d ',' -s -f 3 )
+   if [ "$OUTPUT_FORMAT" = "YCP" ]
+   then echo -e "  \$[ \"backend\":\"$BACKEND\",\n     \"sane_device\":\"$SANE_DEVICE\",\n     \"manufacturer\":\"$MANUFACTURER\",\n     \"model\":\"$MODEL\"\n  ],"
+   else echo "$BACKEND|$SANE_DEVICE|$MANUFACTURER|$MODEL"
+   fi
+done
+
+# Output a footer for YCP
+if [ "$OUTPUT_FORMAT" = "YCP" ]
+then echo -e "  \$[]\n]"
+fi
+
+# Remove the temporary file
+rm $TMP_DATA
+exit 0
+

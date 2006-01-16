@@ -1,0 +1,23 @@
+#! /bin/bash
+#
+# Johannes Meixner <jsmeix@suse.de>, 2004, 2005
+
+#set -x
+export PATH="/sbin:/usr/sbin:/usr/bin:/bin"
+export LC_ALL="POSIX"
+export LANG="POSIX"
+
+MY_NAME=${0##*/}
+BACKEND="$1"
+[ -z "$BACKEND" ] && { echo -en "\nUsage:\n$MY_NAME backend\n" 1>&2 ; exit 1 ; }
+
+DLL_CONF="/etc/sane.d/dll.conf"
+[ -r $DLL_CONF ] || { echo "Cannot read $DLL_CONF" 1>&2 ; exit 2 ; }
+[ -w $DLL_CONF ] || { echo "Cannot write $DLL_CONF" 1>&2 ; exit 3 ; }
+
+grep -q "^[[:space:]]*#*[[:space:]]*$BACKEND[[:space:]]*\$" $DLL_CONF || { echo "$BACKEND not found in $DLL_CONF" 1>&2 ; exit 4 ; }
+
+sed -i -e "s/^$BACKEND\$/#$BACKEND/" $DLL_CONF || { echo "Failed to deactivate $BACKEND in $DLL_CONF" 1>&2 ; exit 5 ; }
+
+exit 0
+

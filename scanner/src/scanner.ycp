@@ -1,0 +1,78 @@
+/**
+ * File:	clients/scanner.ycp
+ * Package:	Configuration of scanner
+ * Summary:	Main file
+ * Authors:	Johannes Meixner <jsmeix@suse.de>
+ *
+ * $Id$
+ *
+ * Main file for scanner configuration. Uses all other files.
+ */
+
+{
+
+/***
+ * <h3>Configuration of scanner</h3>
+ */
+
+textdomain "scanner";
+
+/* The main () */
+y2milestone ("----------------------------------------");
+y2milestone ("Scanner module started");
+
+import "Progress";
+import "Report";
+import "Summary";
+import "CommandLine";
+import "Scanner";
+
+include "scanner/wizards.ycp";
+
+map command_line_description =
+$[ "id" : "scanner",
+   // Text for the command_line_description:
+   "help" : _("Scanner Configuration"),
+   "guihandler" : ScannerSequence,
+   "initialize" : Scanner::Read,
+   "finish" : Scanner::Write,
+   "actions" : $[],
+   "options" : $[],
+   "mappings" : $[]
+];
+
+/* is this propose mode or not? */
+boolean propose_mode = false;
+list args = WFM::Args();
+if( size(args) > 0 )
+{ if( is(WFM::Args(0),string) && WFM::Args(0) == "propose" )
+  { y2milestone("Using propose mode");
+    propose_mode = true;
+  }
+}
+
+/* main ui function */
+any ret = nil;
+
+if( propose_mode )
+{ y2milestone("Calling ScannerAutoSequence()");
+  ret = ScannerAutoSequence();
+  y2milestone("Return value of ScannerAutoSequence() is: %1", ret);
+}
+else
+{ y2milestone("Calling CommandLine::Run(%1)", command_line_description );
+  ret = CommandLine::Run(command_line_description);
+  y2milestone("Return value of CommandLine::Run(%1) is: %2", command_line_description, ret);
+}
+
+/* Finish */
+y2milestone("Finishing scanner module");
+y2milestone("Return value will be: %1", ret);
+y2milestone("----------------------------------------");
+
+return ret;
+
+/* EOF */
+
+}
+
