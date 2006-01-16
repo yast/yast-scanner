@@ -521,23 +521,24 @@ boolean AutodetectScanners()
 boolean SetUsbScannerAccessPermissions()
 { // First of all the multi-line strings because such strings cannot be indented:
   string content = "<?xml version=\"1.0\" encoding=\"ISO-8859-1\"?>
-<!-- Use /usr/sbin/lsusb to create entries like:
+<deviceinfo version=\"0.2\">
+  <device>
+
+<!-- To grant access to USB scanners create entries like:
     <match key=\"info.category\" string=\"usbraw\">
-      <match key=\"@info.parent:usb.vendor_id\" int=\"0x1a2b\">
-        <match key=\"@info.parent:usb.product_id\" int=\"0x3c4d\">
+      <match key=\"@info.parent:usb_device.vendor_id\" int=\"0x1a2b\">
+        <match key=\"@info.parent:usb_device.product_id\" int=\"0x3c4d\">
           <merge key=\"resmgr.class\" type=\"string\">scanner</merge>
         </match>
       </match>
     </match>
-to grant access to USB scanners -->
-
-<deviceinfo version=\"0.2\">
-  <device>
+\"1a2b\" and \"3c4d\" stand for the USB device IDs
+as displayed by the command /usr/sbin/lsusb -->
 ";
   string content_entry = "
     <match key=\"info.category\" string=\"usbraw\">
-      <match key=\"@info.parent:usb.vendor_id\" int=\"%1\">
-        <match key=\"@info.parent:usb.product_id\" int=\"%2\">
+      <match key=\"@info.parent:usb_device.vendor_id\" int=\"%1\">
+        <match key=\"@info.parent:usb_device.product_id\" int=\"%2\">
           <merge key=\"resmgr.class\" type=\"string\">scanner</merge>
         </match>
       </match>
