@@ -1,4 +1,12 @@
 -------------------------------------------------------------------
+Mon Jan 16 12:17:56 CET 2006 - jsmeix@suse.de
+
+- V 2.13.5
+- Changed SetUsbScannerAccessPermissions() to write
+  /etc/hal/fdi/policy/10osvendor/80-scanner.fdi
+  (see Suse Bugzilla #142859).
+
+-------------------------------------------------------------------
 Fri Dec  2 09:51:37 CET 2005 - jsmeix@suse.de
 
 - V 2.13.4
