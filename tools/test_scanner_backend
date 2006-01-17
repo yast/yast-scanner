@@ -14,16 +14,24 @@ BACKEND="$1"
 [ -z "$BACKEND" ] && { echo -en "\nUsage:\n$MY_NAME backend\n" 1>&2 ; exit 1 ; }
 
 MAXIMUM_WAIT="30"
+# The exit code of "scanimage -d $BACKEND -T" is needed as exit code of this script.
+# Therefore this command must run in the foreground.
+# Therefore a simple time bomb background process is started before it.
+# This time bomb background process process is normally killed at the end.
+# As a signal is processed not until a "sleep" has finished,
+# it is crucial not to do simply "sleep $MAXIMUM_WAIT"
+# but to do "for i in $( seq $MAXIMUM_WAIT ) ; do sleep 1 ; done"
+# otherwise it would wait in any case until "sleep $MAXIMUM_WAIT" has finished.
 if [ -x /usr/bin/scanimage ]
-then scanimage -d $BACKEND -T &
-     scanimagePID=$!
-     for i in $( seq $MAXIMUM_WAIT )
-     do ps $scanimagePID &>/dev/null || break
-        sleep 1
-     done
-     if ps $scanimagePID &>/dev/null
-     then kill -9 $scanimagePID &>/dev/null
-          echo "Aborted scanimage after $MAXIMUM_WAIT seconds timeout." 1>&2
+then ( for i in $( seq $MAXIMUM_WAIT ) ; do sleep 1 ; done ; killall -9 scanimage &>/dev/null ) &
+     timebombPID=$!
+     scanimage -d $BACKEND -T
+     scanimageEXIT=$?
+     # If the timebomb is still running, scanimage has finished
+     # and killing the timebomb will be successful.
+     if kill -9 $timebombPID &>/dev/null
+     then exit $scanimageEXIT
+     else echo -e "\nAborted scanimage after $MAXIMUM_WAIT seconds timeout." 1>&2
           exit 3
      fi
 else 

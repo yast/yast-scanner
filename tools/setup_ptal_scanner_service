@@ -24,22 +24,26 @@ MAXIMUM_WAIT="60"
 # As a signal is processed not until a "sleep" has finished,
 # it is crucial not to do simply "sleep $MAXIMUM_WAIT"
 # but to do "for i in $( seq $MAXIMUM_WAIT ) ; do sleep 1 ; done"
-# because otherwise it would wait in any case until "sleep $MAXIMUM_WAIT" has finished.
+# otherwise it would wait in any case until "sleep $MAXIMUM_WAIT" has finished.
 if [ -x /usr/sbin/ptal-init ]
-then ( for i in $( seq $MAXIMUM_WAIT ) ; do sleep 1 ; done ; killall -9 -v -q ptal-init ) &
+then ( for i in $( seq $MAXIMUM_WAIT ) ; do sleep 1 ; done ; killall -9 ptal-init &>/dev/null ) &
      timebombPID=$!
      ptal-init setup-usb &>/dev/null || { echo "failed: ptal-init setup-usb" 1>&2 ; exit 2 ; }
+     # If the timebomb is still running, ptal-init has finished
+     # and killing the timebomb will be successful.
+     if kill -9 $timebombPID &>/dev/null
+     then # Setup the ptal service:
+          if [ -x /etc/init.d/ptal ]
+          then insserv ptal || { echo "failed: insserv ptal" 1>&2 ; exit 4 ; }
+               /etc/init.d/ptal restart || { echo "failed: /etc/init.d/ptal restart" 1>&2 ; exit 5 ; }
+          else echo "cannot execute /etc/init.d/ptal" 1>&2
+               exit 3
+          fi
+     else echo -e "\nAborted ptal-init after $MAXIMUM_WAIT seconds timeout." 1>&2
+          exit 6
+     fi
 else echo "cannot execute /usr/sbin/ptal-init" 1>&2
      exit 1
-fi
-kill -9 $timebombPID
-
-# Setup the ptal service:
-if [ -x /etc/init.d/ptal ] 
-then insserv ptal || { echo "failed: insserv ptal" 1>&2 ; exit 4 ; }
-     /etc/init.d/ptal restart || { echo "failed: /etc/init.d/ptal restart" 1>&2 ; exit 5 ; }
-else echo "cannot execute /etc/init.d/ptal" 1>&2
-     exit 3
 fi
 
 exit 0

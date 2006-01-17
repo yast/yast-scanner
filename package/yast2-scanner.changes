@@ -1,4 +1,12 @@
 -------------------------------------------------------------------
+Tue Jan 17 15:21:06 CET 2006 - jsmeix@suse.de
+
+- V 2.13.6
+- Fixed test_scanner_backend and setup_ptal_scanner_service.
+- Changed SetUsbScannerAccessPermissions() to write at least
+  the comment how to create entries in .../80-scanner.fdi
+
+-------------------------------------------------------------------
 Mon Jan 16 12:17:56 CET 2006 - jsmeix@suse.de
 
 - V 2.13.5

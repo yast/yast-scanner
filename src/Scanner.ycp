@@ -550,14 +550,12 @@ as displayed by the command /usr/sbin/lsusb -->
 ";
   string resmgr_scanner_config_dir = "/etc/hal/fdi/policy/10osvendor";
   string resmgr_scanner_config_file = resmgr_scanner_config_dir + "/80-scanner.fdi";
-  boolean autodetected_usb_scanner = false;
   boolean autodetected_usb_scanner_with_missing_ids = false;
   SCR::Execute( .target.mkdir, resmgr_scanner_config_dir );
   foreach( map< string, string > autodetected_scanner,
            autodetected_scanners,
            { if( "USB" == autodetected_scanner["connection"]:"unknown" )
              { // There is an autodetected USB scanner.
-               autodetected_usb_scanner = true;
                string usb_vendor_id = autodetected_scanner["usb_vendor_id"]:"";
                string usb_product_id = autodetected_scanner["usb_product_id"]:"";
                string description = autodetected_scanner["description"]:"no description";
@@ -578,34 +576,18 @@ as displayed by the command /usr/sbin/lsusb -->
              }
            }
          );
-  if( ! autodetected_usb_scanner )
-  { // There is no autodetected USB scanner.
-    // Therefore /etc/hal/fdi/policy/10osvendor/80-scanner.fdi must be removed:
-    if( (boolean)SCR::Execute( .target.remove, resmgr_scanner_config_file ) )
-    { y2milestone( "No autodetected USB scanner. Removed %1", resmgr_scanner_config_file );
-      return true;
-    }
-    else
-    { y2milestone( "Failed to remove %1", resmgr_scanner_config_file );
-      // Displayed in error dialog of ActivateBackend function:
-      bash_result["stderr"] = sformat( // Displayed in an error dialog (%1 is a filename):
-                                       _("can't remove file %1"),
-                                       resmgr_scanner_config_file
-                                     );
-      return false;
-    }
-  }
-  // There is an autodetected USB scanner.
-  // Therefore /etc/hal/fdi/policy/10osvendor/80-scanner.fdi must be (re)-created.
-  // Even if there is no content_entry for any autodetected USB scanner
-  // (i.e. USB vendor or product ID is missing for all autodetected USB scanners),
-  // the content_footer must be added to have all XML tags closed.
+  // Regardless whether or not there is an autodetected USB scanner,
+  // /etc/hal/fdi/policy/10osvendor/80-scanner.fdi will be (re)-created.
+  // If there is no content_entry (i.e. there is no autodetected USB scanner
+  // or USB vendor or product ID is missing for all autodetected USB scanners),
+  // the content_footer is added to have all XML tags closed and then at least
+  // the comment how to create entries is available for the user:
   content = content + content_footer;
   if( ! (boolean)SCR::Write( .target.string, resmgr_scanner_config_file, content ) )
   { y2milestone( "Failed to (re)-create %1", resmgr_scanner_config_file );
     // Displayed in error dialog of ActivateBackend function:
     bash_result["stderr"] = sformat( // Displayed in an error dialog (%1 is a filename):
-                                     _("can't write file %1"),
+                                     _("Cannot write file %1."),
                                      resmgr_scanner_config_file
                                    );
     return false;
@@ -616,7 +598,7 @@ as displayed by the command /usr/sbin/lsusb -->
     // so that there is no normal user access for this scanner.
     // Displayed in error dialog of ActivateBackend function:
     bash_result["stderr"] = sformat( // Displayed in an error dialog (%1 is a filename):
-                                     _("can't add USB vendor and product ID to %1"),
+                                     _("Cannot add scanner to %1 (USB vendor or product ID missing)."),
                                      resmgr_scanner_config_file
                                    );
     return false;
@@ -970,7 +952,7 @@ global boolean RestartDetection()
 global list< map< string, any > > OverviewContents()
 { list< map< string, any > > overview_contents = [];
   // The id_prefix can be one of the following:
-  // "autodetected_scanner:", "active_scanner:", ""active_backend:", "nothing".
+  // "autodetected_scanner:", "active_scanner:", "active_backend:", "nothing".
   // An index number will be appended to the id_prefix except when it is "nothing"
   // which results an unique id for each overview_content entry.
   // Therefore the id can be one of the following:
