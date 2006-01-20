@@ -50,7 +50,8 @@ If your scanner has not been detected, use <b>Add</b> for a manual configuration
 // Do not change or translate "/usr/sbin/lsusb", it is a command name.
 _("<p>
 A normal USB scanner should be detected automatically.
-If it was not detected, try <b>Other</b> and <b>Restart Detection</b>.
+If it was not detected or if there are unexpected results,
+try <b>Other</b> and <b>Restart Detection</b>.
 It may also work to proceed with <b>Add</b>.
 In particular, HP all-in-one devices, such as OfficeJets and PSCs,
 are not detected, but can be configured this way.

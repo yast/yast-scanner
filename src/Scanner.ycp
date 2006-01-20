@@ -551,6 +551,8 @@ as displayed by the command /usr/sbin/lsusb -->
   string resmgr_scanner_config_dir = "/etc/hal/fdi/policy/10osvendor";
   string resmgr_scanner_config_file = resmgr_scanner_config_dir + "/80-scanner.fdi";
   boolean autodetected_usb_scanner_with_missing_ids = false;
+  string usb_vendor_and_product_id = "";
+  list< string > usb_vendor_and_product_ids = [];
   SCR::Execute( .target.mkdir, resmgr_scanner_config_dir );
   foreach( map< string, string > autodetected_scanner,
            autodetected_scanners,
@@ -571,7 +573,14 @@ as displayed by the command /usr/sbin/lsusb -->
                }
                else
                { // USB vendor ID and USB product ID exist:
-                 content = content + sformat( content_entry, usb_vendor_id, usb_product_id );
+                 usb_vendor_and_product_id = usb_vendor_id + usb_product_id;
+                 // Avoid duplicate entries in the content (e.g. when several same models are connected):
+                 if( ! contains( usb_vendor_and_product_ids, usb_vendor_and_product_id ) )
+                 { // The USB vendor product ID was not yet added to the content
+                   // i.e. the current scanner is not a second or third same model:
+                   content = content + sformat( content_entry, usb_vendor_id, usb_product_id );
+                   usb_vendor_and_product_ids = add( usb_vendor_and_product_ids, usb_vendor_and_product_id );
+                 }
                }
              }
            }
@@ -581,12 +590,14 @@ as displayed by the command /usr/sbin/lsusb -->
   // If there is no content_entry (i.e. there is no autodetected USB scanner
   // or USB vendor or product ID is missing for all autodetected USB scanners),
   // the content_footer is added to have all XML tags closed and then at least
-  // the comment how to create entries is available for the user:
+  // the comment how to create entries manually is available for the user:
   content = content + content_footer;
   if( ! (boolean)SCR::Write( .target.string, resmgr_scanner_config_file, content ) )
   { y2milestone( "Failed to (re)-create %1", resmgr_scanner_config_file );
     // Displayed in error dialog of ActivateBackend function:
-    bash_result["stderr"] = sformat( // Displayed in an error dialog (%1 is a filename):
+    bash_result["stderr"] = sformat( // Displayed in an error dialog (%1 is a filename).
+                                     // Only a simple message because this error does not happen on a normal system
+                                     // (i.e. a system which is not totally broken or totally messed up).
                                      _("Cannot write file %1."),
                                      resmgr_scanner_config_file
                                    );
@@ -597,7 +608,8 @@ as displayed by the command /usr/sbin/lsusb -->
   { // There is at least one autodetected USB scanner with no USB vendor or product ID
     // so that there is no normal user access for this scanner.
     // Displayed in error dialog of ActivateBackend function:
-    bash_result["stderr"] = sformat( // Displayed in an error dialog (%1 is a filename):
+    bash_result["stderr"] = sformat( // Displayed in an error dialog (%1 is a filename).
+                                     // Only a simple message because this error does not happen on a normal system.
                                      _("Cannot add scanner to %1 (USB vendor or product ID missing)."),
                                      resmgr_scanner_config_file
                                    );
@@ -1113,10 +1125,9 @@ global list< map< string, any > > OverviewContents()
                  string rich_descr = "";
                  list< string > table_descr = [ active_backend,
                                                 // A suffix for the second column of a table
-                                                // where active scanner drivers are listed
-                                                // in the first column to denote those drivers
-                                                // for which there is no matching active scanner:
-                                                _("No active scanner for this driver.")
+                                                // where active scanner drivers are listed in the first column
+                                                // to denote those drivers for which there is no matching active scanner:
+                                                _("No scanner recognized by this driver.")
                                               ];
                  map <string, any> overview_content = $[ "id": id,
                                                          "rich_descr": rich_descr,
