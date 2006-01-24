@@ -695,37 +695,37 @@ any ConfigureNetworkScanningDialog()
   // Dialog contents regarding firewall settings:
   // Predefine it for the case when not the Suse Firewall is used:
   term firewall_contents = `Label( // User information when not the Suse Firewall is used.
-                                   _("No SUSE Firewall but other kind of firewall is used.")
+                                   _("No SUSE Firewall, but another kind of firewall is used")
                                  );
   // Predefine the contents for the current Suse Firewall status
   // according to what the usual defalts are (e.g. after the installation):
   term firewall_active_content = `Label( // User information when the Suse Firewall is used and active.
-                                         _("Firewall is active.")
+                                         _("Firewall is active")
                                        );
   term no_firewall_for_int_content = `Label( // User information when the Suse Firewall does not potect the INT zone.
                                              // Be careful when you change or translate "internal", and "zone"
                                              // to keep the relationship to the matching term in the YaST firewall
                                              // setup module where also "internal zone" is used.
-                                             _("No firewall protection for internal network zone.")
+                                             _("No firewall protection for the internal network zone")
                                            );
   term denied_from_ext_content = `Label( // User information when saned access is denied from the EXT zone.
                                          // Do not change or translate "saned", it is a program (sane daemon) name.
                                          // Be careful when you change or translate "external", and "zone"
                                          // to keep the relationship to the matching term in the YaST firewall
                                          // setup module where also "external zone" is used.
-                                         _("saned access denied from external network zone.")
+                                         _("saned access denied from the external network zone")
                                        );
   // Label of a CheckBox:
   // Be careful when you change or translate "internal", and "zone"
   // to keep the relationship to the matching term in the YaST firewall
   // setup module where also "internal zone" is used.
-  string ui_no_firewall_for_int_checkbox_label = _("No firewall protection for &internal network zone");
+  string ui_no_firewall_for_int_checkbox_label = _("No Firewall Protection for the &Internal Network Zone");
   // Label of a CheckBox:
   // Do not change or translate "saned", it is a program (sane daemon) name.
   // Be careful when you change or translate "external", and "zone"
   // to keep the relationship to the matching term in the YaST firewall
   // setup module where also "external zone" is used.
-  string ui_deny_from_ext_checkbox_label = _("Deny saned access from &external network zone");
+  string ui_deny_from_ext_checkbox_label = _("Deny saned Access from the &External Network Zone");
   // Determine and set the actual contents regarding firewall settings:
   if( Scanner::firewall_config["suse_firewall_used"]:false )
   { // The Suse Firewall is used:
@@ -926,7 +926,7 @@ any ConfigureNetworkScanningDialog()
                           // Be careful when you change or translate "external", and "zone"
                           // to keep the relationship to the matching term in the YaST firewall
                           // setup module where also "external zone" is used.
-                          _("saned access from external zone cannot be allowed.")
+                          _("saned access from the external zone cannot be allowed.")
                         );
           UI::ChangeWidget( `id(`ui_deny_from_ext_checkbox),
                             `Value,
@@ -949,7 +949,7 @@ any ConfigureNetworkScanningDialog()
                               // Be careful when you change or translate "internal", and "zone"
                               // to keep the relationship to the matching term in the YaST firewall
                               // setup module where also "internal zone" is used.
-                              _("Scanning via network does not work with firewall protection for internal zone.")
+                              _("Scanning via network does not work with firewall protection for the internal zone.")
                             );
             }
             else
@@ -961,7 +961,7 @@ any ConfigureNetworkScanningDialog()
                               // Be careful when you change or translate "internal", and "zone"
                               // to keep the relationship to the matching term in the YaST firewall
                               // setup module where also "internal zone" is used.
-                              _("Use the YaST firewall module to enable firewall protection for internal zone.")
+                              _("Use the YaST firewall module to enable firewall protection for the internal zone.")
                             );
             }
             UI::ChangeWidget( `id(`ui_no_firewall_for_int_checkbox),
@@ -981,7 +981,7 @@ any ConfigureNetworkScanningDialog()
                                            // Be careful when you change or translate "internal", and "zone"
                                            // to keep the relationship to the matching term in the YaST firewall
                                            // setup module where also "internal zone" is used.
-                                           _("Only a local host configuration works with firewall protection for internal zone.")
+                                           _("Only a local host configuration works with firewall protection for the internal zone.")
                                          )
                 )
               { continue;
