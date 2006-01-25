@@ -20,7 +20,7 @@ OUTPUT_FORMAT="$1"
 TMP_DATA=$(mktemp -u /tmp/$MY_NAME.XXXXXX)
 
 # Get the raw data
-MAXIMUM_WAIT="30"
+MAXIMUM_WAIT="60"
 if [ -x /usr/bin/scanimage ]
 then scanimage -f '%d,%v,%m;' >${TMP_DATA}.raw &
      scanimagePID=$!
