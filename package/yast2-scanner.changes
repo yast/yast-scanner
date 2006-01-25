@@ -1,4 +1,13 @@
 -------------------------------------------------------------------
+Wed Jan 25 12:15:16 CET 2006 - jsmeix@suse.de
+
+- V 2.13.9
+- Increased MAXIMUM_WAIT in determine_active_scanners and
+  in test_scanner_backend to 60 seconds because otherwise it is
+  early aborted for some scanners which need firmware upload
+  or which need a long time to warm up the lamp.
+
+-------------------------------------------------------------------
 Tue Jan 24 15:38:32 CET 2006 - jsmeix@suse.de
 
 - V 2.13.8

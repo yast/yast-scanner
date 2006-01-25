@@ -13,7 +13,7 @@ MY_NAME=${0##*/}
 BACKEND="$1"
 [ -z "$BACKEND" ] && { echo -en "\nUsage:\n$MY_NAME backend\n" 1>&2 ; exit 1 ; }
 
-MAXIMUM_WAIT="30"
+MAXIMUM_WAIT="60"
 # The exit code of "scanimage -d $BACKEND -T" is needed as exit code of this script.
 # Therefore this command must run in the foreground.
 # Therefore a simple time bomb background process is started before it.
