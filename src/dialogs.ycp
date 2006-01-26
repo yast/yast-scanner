@@ -777,7 +777,7 @@ any ConfigureNetworkScanningDialog()
     else
     { // The Suse Firewall is used but it is not active:
       firewall_contents = `Label( // User information when the Suse Firewall is not active.
-                                     _("Firewall is not or should not be running.")
+                                     _("Firewall is not or should not be running")
                                  );
     }
   }
