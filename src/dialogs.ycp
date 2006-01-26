@@ -576,7 +576,11 @@ any SelectModelDialog()
         }
         continue;
       }
-      // The epkowa backend (package iscan) is only available for i386-compatible architectures.
+      // The epkowa backend in the package iscan is only available for i386-compatible architectures.
+      // The epkowa backend in the package iscan-free is available for all architectures.
+      // Some scanners require additionally proprietary libraries which are only in iscan.
+      // For those scanners there is in the database "backend"="epkowa" and "package"="iscan".
+      // The scanners which work with iscan-free have "backend"="epkowa" and "package"="iscan-free".
       // It would be possible to test for non-i386-compatible architecture in the ModelItems function
       // and suppress the epkowa backend entries in the model list but intentionally this is not done.
       // All available known model information is always shown to the user.
@@ -585,30 +589,29 @@ any SelectModelDialog()
       // Otherwise a user on a non-i386-compatible architecture would not understand
       // when others (who use i386) tell him that "model XYZ is listed and works perfectly"
       // until after a long discusssion they find out that it depends on the architecture.
-      if( "epkowa" == Scanner::database[Scanner::selected_model_database_index,"backend"]:"unknown" )
-      { if( !Arch::i386() )
-        { if( !Arch::x86_64() )
-          { Popup::AnyMessage( // Header of a Popup::AnyMessage when the epkowa backend was selected
-                               // on a non-i386-compatible architecture (i.e. neither i386 nor x86_64).
-                               _("Unsupported Driver"),
-                               // Body of a Popup::AnyMessage when the epkowa backend was selected
-                               // on a non-i386-compatible architecture (i.e. neither i386 nor x86_64).
-                               // Do not change or translate "epkowa", it is a driver name.
-                               // Do not change or translate "iscan", it is a package name.
-                               // Do not change or translate "i386", it is an architecture name.
-                               _("The epkowa driver (package iscan) is only available for i386-compatible architectures.")
-                             );
-            continue;
-          }
-          else
-          { Popup::AnyMessage( // Header of a Popup::AnyMessage when the epkowa backend was selected on x86_64:
-                               _("Possibly Problematic Driver"),
-                               // Body of a Popup::AnyMessage when the epkowa backend was selected on x86_64.
-                               // Do not change or translate "epkowa", it is a driver name.
-                               _("The epkowa driver may cause problems on 64-bit architectures.\nSee our support database for details.")
-                             );
-          }
+      if( "epkowa" == Scanner::database[Scanner::selected_model_database_index,"backend"]:"unknown"
+          && "iscan" == Scanner::database[Scanner::selected_model_database_index,"package"]:"unknown"
+          && ! Arch::i386()
+        )
+      { if( ! Arch::x86_64() )
+        { Popup::AnyMessage( // Header of a Popup::AnyMessage when the epkowa backend was selected
+                             // on a non-i386-compatible architecture (i.e. neither i386 nor x86_64).
+                             _("Unsupported Driver"),
+                             // Body of a Popup::AnyMessage when the epkowa backend was selected
+                             // on a non-i386-compatible architecture (i.e. neither i386 nor x86_64).
+                             // Do not change or translate "epkowa", it is a driver name.
+                             // Do not change or translate "iscan", it is a package name.
+                             // Do not change or translate "i386", it is an architecture name.
+                             _("The epkowa driver (package iscan) is only available for i386-compatible architectures.")
+                           );
+          continue;
         }
+        Popup::AnyMessage( // Header of a Popup::AnyMessage when the epkowa backend was selected on x86_64:
+                           _("Possibly Problematic Driver"),
+                           // Body of a Popup::AnyMessage when the epkowa backend was selected on x86_64.
+                           // Do not change or translate "epkowa", it is a driver name.
+                           _("The epkowa driver may cause problems on 64-bit architectures.\nSee our support database for details.")
+                         );
       }
       break;
     }
@@ -774,7 +777,7 @@ any ConfigureNetworkScanningDialog()
     else
     { // The Suse Firewall is used but it is not active:
       firewall_contents = `Label( // User information when the Suse Firewall is not active.
-                                     _("Firewall not running or would not be started.")
+                                     _("Firewall is not or should not be running.")
                                  );
     }
   }
