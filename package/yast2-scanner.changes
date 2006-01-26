@@ -1,4 +1,16 @@
 -------------------------------------------------------------------
+Thu Jan 26 16:04:44 CET 2006 - jsmeix@suse.de
+
+- V 2.13.10
+- Show "Possibly Problematic Driver" warning for the "epkowa"
+  backend on x86_64 platforms only when it is used from the
+  32-bit-only binary-only "iscan" package but not when it is
+  used from the natively built "iscan-free" package.
+- Changed "Firewall not running or would not be started." text
+  to "Firewall is not or should not be running."
+  (see Suse Bugzilla #145522).
+
+-------------------------------------------------------------------
 Wed Jan 25 12:15:16 CET 2006 - jsmeix@suse.de
 
 - V 2.13.9
