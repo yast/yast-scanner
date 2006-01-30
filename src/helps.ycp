@@ -220,7 +220,7 @@ Enter a comma-separated list of client hosts (hostnames or IP addresses)
 or subnets (CIDR notation such as 192.168.1.0/24).
 If no client hosts are permitted, saned is not activated.
 If saned is activated, xinetd is also activated and set up for saned.
-Clients contact saned via the sane port (TCP port 6566)
+Clients contact saned via the sane-port (TCP port 6566)
 but scanning data is transferred via an additional random port.
 The default <b>Firewall Settings</b> during system installation
 protect your host from external access.

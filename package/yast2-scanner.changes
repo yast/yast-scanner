@@ -1,4 +1,10 @@
 -------------------------------------------------------------------
+Mon Jan 30 11:20:54 CET 2006 - jsmeix@suse.de
+
+- V 2.13.11
+- Cleaned up code and user dialog for SUSE Firewall settings.
+
+-------------------------------------------------------------------
 Thu Jan 26 16:04:44 CET 2006 - jsmeix@suse.de
 
 - V 2.13.10
