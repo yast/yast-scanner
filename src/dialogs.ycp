@@ -700,57 +700,95 @@ any ConfigureNetworkScanningDialog()
   term firewall_contents = `Label( // User information when not the Suse Firewall is used.
                                    _("No SUSE Firewall, but another kind of firewall is used")
                                  );
-  // Predefine the contents for the current Suse Firewall status
-  // according to what the usual defalts are (e.g. after the installation):
-  term firewall_active_content = `Label( // User information when the Suse Firewall is used and active.
-                                         _("Firewall is active")
-                                       );
-  term no_firewall_for_int_content = `Label( // User information when the Suse Firewall does not potect the INT zone.
-                                             // Be careful when you change or translate "internal", and "zone"
-                                             // to keep the relationship to the matching term in the YaST firewall
-                                             // setup module where also "internal zone" is used.
-                                             _("No firewall protection for the internal network zone")
-                                           );
-  term denied_from_ext_content = `Label( // User information when saned access is denied from the EXT zone.
-                                         // Do not change or translate "saned", it is a program (sane daemon) name.
-                                         // Be careful when you change or translate "external", and "zone"
-                                         // to keep the relationship to the matching term in the YaST firewall
-                                         // setup module where also "external zone" is used.
-                                         _("saned access denied from the external network zone")
-                                       );
-  // Label of a CheckBox:
-  // Be careful when you change or translate "internal", and "zone"
-  // to keep the relationship to the matching term in the YaST firewall
-  // setup module where also "internal zone" is used.
-  string ui_no_firewall_for_int_checkbox_label = _("No Firewall Protection for the &Internal Network Zone");
-  // Label of a CheckBox:
-  // Do not change or translate "saned", it is a program (sane daemon) name.
-  // Be careful when you change or translate "external", and "zone"
-  // to keep the relationship to the matching term in the YaST firewall
-  // setup module where also "external zone" is used.
-  string ui_deny_from_ext_checkbox_label = _("Deny saned Access from the &External Network Zone");
-  // Determine and set the actual contents regarding firewall settings:
   if( Scanner::firewall_config["suse_firewall_used"]:false )
   { // The Suse Firewall is used:
-    if( Scanner::firewall_config["firewall_active"]:false )
-    { // The Suse Firewall is active:
+    if( ! Scanner::firewall_config["firewall_active"]:true )
+    { // The Suse Firewall is used but it is not active:
+      firewall_contents = `Label( // User information when the Suse Firewall is not active.
+                                  _("Firewall is not or should not be running")
+                                 );
+    }
+    else
+    { // The Suse Firewall is used and it is active:
+      // Predefine the contents for the current Suse Firewall status
+      // according to what the usual defaults are (e.g. after the installation):
+      term firewall_active_content = `Label( // User information when the Suse Firewall is used and active.
+                                             _("Firewall is active")
+                                           );
+      term no_firewall_for_int_content = `Label( // User information when the Suse Firewall does not potect the INT zone.
+                                                 // Be careful when you change or translate "internal", and "zone"
+                                                 // to keep the relationship to the matching term in the YaST firewall
+                                                 // setup module where also "internal zone" is used.
+                                                 _("No firewall protection for the internal network zone")
+                                               );
+      term denied_from_ext_content = `Label( // User information when saned access is denied from the EXT zone.
+                                             // Do not change or translate "saned", it is a program (sane daemon) name.
+                                             // Be careful when you change or translate "external", and "zone"
+                                             // to keep the relationship to the matching term in the YaST firewall
+                                             // setup module where also "external zone" is used.
+                                             _("saned access denied from the external network zone")
+                                           );
+      // Label of a CheckBox:
+      // Be careful when you change or translate "internal", and "zone"
+      // to keep the relationship to the matching term in the YaST firewall
+      // setup module where also "internal zone" is used.
+      string ui_no_firewall_for_int_checkbox_label = _("No Firewall Protection for the &Internal Network Zone");
+      // Label of a CheckBox:
+      // Do not change or translate "saned", it is a program (sane daemon) name.
+      // Be careful when you change or translate "external", and "zone"
+      // to keep the relationship to the matching term in the YaST firewall
+      // setup module where also "external zone" is used.
+      string ui_deny_from_ext_checkbox_label = _("Deny saned Access from the &External Network Zone");
+      // Predefine the CheckBoxes according to what the usual defaults are (e.g. after the installation).
+      // The defaults are: No protection for internal zone but protection from external zone.
+      // Those defaults are o.k. for scanning via internal network and should not be changed.
+      // Therefore the CheckBoxes are disabled:
+      term ui_no_firewall_for_int_checkbox_content = `CheckBox( `id(`ui_no_firewall_for_int_checkbox),
+                                                                `opt(`disabled),
+                                                                ui_no_firewall_for_int_checkbox_label,
+                                                                true
+                                                              );
+      term ui_deny_from_ext_checkbox_content = `CheckBox( `id(`ui_deny_from_ext_checkbox),
+                                                          `opt(`disabled),
+                                                          ui_deny_from_ext_checkbox_label,
+                                                          true
+                                                        );
+      // Determine and set the actual contents regarding firewall settings:
       if( ! Scanner::firewall_config["no_firewall_for_int"]:true )
-      { no_firewall_for_int_content = `Label( // User information when the Suse Firewall potects the INT zone.
+      { // There is protection for internal zone:
+        no_firewall_for_int_content = `Label( // User information when the Suse Firewall potects the INT zone.
                                               // Be careful when you change or translate "internal", and "zone"
                                               // to keep the relationship to the matching term in the YaST firewall
                                               // setup module where also "internal zone" is used.
-                                              _("Firewall protection enabled for internal network zone.")
+                                              _("Firewall protection enabled for the internal network zone")
                                             );
+        // When firewall protection is enabled for internal network zone
+        // have an active CheckBox to disable it but don't have it checked by default
+        // to be on the safe side because the user must intentionally disable the
+        // firewall protection for internal zone:
+        ui_no_firewall_for_int_checkbox_content = `CheckBox( `id(`ui_no_firewall_for_int_checkbox),
+                                                             ui_no_firewall_for_int_checkbox_label,
+                                                             false
+                                                           );
       }
       if( ! Scanner::firewall_config["denied_from_ext"]:true )
-      { denied_from_ext_content = `Label( // User information when saned access is allowed from the EXT zone.
+      { // There is no protection from external zone:
+        denied_from_ext_content = `Label( // User information when saned access is allowed from the EXT zone.
                                           // Do not change or translate "saned", it is a program (sane daemon) name.
                                           // Be careful when you change or translate "external", and "zone"
                                           // to keep the relationship to the matching term in the YaST firewall
                                           // setup module where also "external zone" is used.
-                                          _("saned access allowed from external network zone.")
+                                          _("saned access allowed from the external network zone")
                                         );
+        // When firewall protection is disabled for external zone
+        // have an active CheckBox to enable it and have it checked by default
+        // to be on the safe side because saned access from external is insecure:
+        ui_deny_from_ext_checkbox_content = `CheckBox( `id(`ui_deny_from_ext_checkbox),
+                                                       ui_deny_from_ext_checkbox_label,
+                                                       true
+                                                     );
       }
+      // Assemble the parts of the firewall_contents:
       firewall_contents = `VBox( `Frame( // Label of a Frame for the current firewall status.
                                          _("Current Firewall Status"),
                                          `VBox( `Left( firewall_active_content ),
@@ -760,25 +798,11 @@ any ConfigureNetworkScanningDialog()
                                        ),
                                  `Frame( // Label of a Frame for the firewall settings for scanning via network.
                                          _("Firewall Settings"),
-                                         `VBox( `Left( `CheckBox( `id(`ui_no_firewall_for_int_checkbox),
-                                                                  ui_no_firewall_for_int_checkbox_label,
-                                                                  Scanner::firewall_config["ui_no_firewall_for_int"]:true
-                                                                )
-                                                     ),
-                                                `Left( `CheckBox( `id(`ui_deny_from_ext_checkbox),
-                                                                  ui_deny_from_ext_checkbox_label,
-                                                                  Scanner::firewall_config["ui_deny_from_ext"]:true
-                                                                )
-                                                     )
+                                         `VBox( `Left( ui_no_firewall_for_int_checkbox_content ),
+                                                `Left( ui_deny_from_ext_checkbox_content )
                                               )
                                        )
                                );
-    }
-    else
-    { // The Suse Firewall is used but it is not active:
-      firewall_contents = `Label( // User information when the Suse Firewall is not active.
-                                     _("Firewall is not or should not be running")
-                                 );
     }
   }
   // Caption of the ConfigureNetworkScanningDialog:
@@ -790,6 +814,12 @@ any ConfigureNetworkScanningDialog()
   // Do not change or translate "net", it is a metadriver name.
   // Do not simply use "driver" because net is no normal driver but a metadriver.
   string net_backend_hosts_input_label = _("&Servers Used for the net Metadriver");
+  // Predefibed values for the so called "local host configuration":
+  // The trailing ',' is intentional:
+  // It results a nice linefed at the end of the config file and
+  // the user can simply append something without the need to add a ',' as seperator:
+  string saned_hosts_input_local_host_config_value = "127.0.0.0/8,";
+  string net_backend_hosts_input_local_host_config_value = "localhost,";
   // All contenst of the scanning via network dialog:
   term contents = `VBox( `VStretch(),
                          `Frame( // Label of a Frame for the server settings for scanning via network.
@@ -852,23 +882,12 @@ any ConfigureNetworkScanningDialog()
     if( ret == `local_host_config )
     { UI::ChangeWidget( `id(`saned_hosts_input),
                         `Value,
-                        "localhost,127.0.0.0/8,"
+                        saned_hosts_input_local_host_config_value
                        );
       UI::ChangeWidget( `id(`net_backend_hosts_input),
                         `Value,
-                        "localhost,"
+                        net_backend_hosts_input_local_host_config_value
                        );
-      // Only when the Suse Firewall is used and when it is active
-      // the checkboxes for the firewall settings exist:
-      if( Scanner::firewall_config["suse_firewall_used"]:false
-          && Scanner::firewall_config["firewall_active"]:false
-        )
-      { // Set reasonable vaule of the checkbox for the external firewall settings:
-        UI::ChangeWidget( `id(`ui_deny_from_ext_checkbox),
-                          `Value,
-                          true
-                         );
-      }
       continue;
     }
     /* disable scanning via network */
@@ -881,17 +900,6 @@ any ConfigureNetworkScanningDialog()
                         `Value,
                         ""
                        );
-      // Only when the Suse Firewall is used and when it is active
-      // the checkboxes for the firewall settings exist:
-      if( Scanner::firewall_config["suse_firewall_used"]:false
-          && Scanner::firewall_config["firewall_active"]:false
-        )
-      { // Set reasonable vaule of the checkbox for the external firewall settings:
-        UI::ChangeWidget( `id(`ui_deny_from_ext_checkbox),
-                          `Value,
-                          true
-                         );
-      }
       continue;
     }
     /* set up the configuration */
@@ -916,79 +924,48 @@ any ConfigureNetworkScanningDialog()
                                                                                  `Value
                                                                                );
         // Test whether the vaules of the checkboxes for the firewall settings make sense:
-        if( Scanner::firewall_config["denied_from_ext"]:true
-            && ! Scanner::firewall_config["ui_deny_from_ext"]:true
-          )
-        { // saned access is denied from the EXT zone but user has set in dialog
-          // not to deny saned access from the external zone:
-          Popup::Notify ( // Message of a Popup::Notify.
-                          // The help text of the "Scanning via Network" dialog explains
-                          // why it doesn't make sense and is insecure to allow saned access
-                          // from the external network zone.
-                          // Do not change or translate "saned", it is a program (sane daemon) name.
-                          // Be careful when you change or translate "external", and "zone"
-                          // to keep the relationship to the matching term in the YaST firewall
-                          // setup module where also "external zone" is used.
-                          _("saned access from the external zone cannot be allowed.")
-                        );
-          UI::ChangeWidget( `id(`ui_deny_from_ext_checkbox),
-                            `Value,
-                            true
-                           );
-          continue;
-        }
-        if( ! Scanner::firewall_config["ui_no_firewall_for_int"]:true )
-        { // User has set in dialog to potect the internal zone:
-          if( Scanner::firewall_config["no_firewall_for_int"]:false )
-          { // Suse Firewall does not potect the INT zone:
-            if( Scanner::network_scanning_config["saned_hosts"]:"" != "" )
-            { // There are actually clients which should be able to access saned:
-              Popup::Notify ( // Message of a Popup::Notify.
-                              // The help text of the "Scanning via Network" dialog explains
-                              // why scanning via network does not work with firewall protection for internal zone.
-                              // Do not confuse "scanning via network" (i.e. use a remote scanner
-                              // via another host in the network) with "scanning the network"
-                              // (i.e. scan the network for other hosts or services).
-                              // Be careful when you change or translate "internal", and "zone"
-                              // to keep the relationship to the matching term in the YaST firewall
-                              // setup module where also "internal zone" is used.
-                              _("Scanning via network does not work with firewall protection for the internal zone.")
-                            );
-            }
-            else
-            { // There are no clients which should be able to access saned:
-              Popup::Notify ( // Message of a Popup::Notify.
-                              // It is not possible to enable firewall protection for internal zone
-                              // in the YaST scanner configuration module when it was disabled
-                              // because all other services may be no longer accessible too.
-                              // Be careful when you change or translate "internal", and "zone"
-                              // to keep the relationship to the matching term in the YaST firewall
-                              // setup module where also "internal zone" is used.
-                              _("Use the YaST firewall module to enable firewall protection for the internal zone.")
-                            );
-            }
-            UI::ChangeWidget( `id(`ui_no_firewall_for_int_checkbox),
+        if( ! Scanner::firewall_config["ui_deny_from_ext"]:true )
+        { // User has set in dialog to allow saned access from the external zone.
+          // This is only possible when saned access from the external zone is allowed in firewall
+          // because otherwise the CheckBox is disabled:
+          if( Scanner::network_scanning_config["saned_hosts"]:"" != "" )
+          { // There are clients which should be able to access saned,
+            // therefore saned will be started and then it must be protected from external zone:
+            Popup::Notify ( // Message of a Popup::Notify.
+                            // The help text of the "Scanning via Network" dialog explains
+                            // why it doesn't make sense and is insecure to allow saned access
+                            // from the external network zone.
+                            // Do not change or translate "saned", it is a program (sane daemon) name.
+                            // Be careful when you change or translate "external", and "zone"
+                            // to keep the relationship to the matching term in the YaST firewall
+                            // setup module where also "external zone" is used.
+                            _("saned access from the external zone cannot be allowed.")
+                          );
+            UI::ChangeWidget( `id(`ui_deny_from_ext_checkbox),
                               `Value,
                               true
                              );
             continue;
           }
-          else
-          { // Suse Firewall potects the INT zone:
-            if( Scanner::network_scanning_config["saned_hosts"]:"" != "" )
-            { // There are actually clients which should be able to access saned:
-              if( ! Popup::ContinueCancel( // Message of a Popup::ContinueCancel.
-                                           // Be careful when you change or translate "local host configuration"
-                                           // because this term is used also in the help text and as a label
-                                           // of a PushButton for a predefined configuration.
-                                           // Be careful when you change or translate "internal", and "zone"
-                                           // to keep the relationship to the matching term in the YaST firewall
-                                           // setup module where also "internal zone" is used.
-                                           _("Only a local host configuration works with firewall protection for the internal zone.")
-                                         )
-                )
-              { continue;
-              }
+        }
+        if( ! Scanner::firewall_config["ui_no_firewall_for_int"]:true )
+        { // User has set in dialog to potect the internal zone.
+          // This is only possible when firewall protection is enabled for internal zone
+          // because otherwise the CheckBox is disabled:
+          if( Scanner::network_scanning_config["saned_hosts"]:"" != ""
+              && Scanner::network_scanning_config["saned_hosts"]:"" != saned_hosts_input_local_host_config_value )
+          { // There are non-localnet clients which should be able to access saned:
+            if( ! Popup::ContinueCancel( // Message of a Popup::ContinueCancel.
+                                         // Be careful when you change or translate "local host configuration"
+                                         // because this term is used also in the help text and as a label
+                                         // of a PushButton for a predefined configuration.
+                                         // Be careful when you change or translate "internal", and "zone"
+                                         // to keep the relationship to the matching term in the YaST firewall
+                                         // setup module where also "internal zone" is used.
+                                         _("Only a local host configuration works with firewall protection for the internal zone.")
+                                       )
+              )
+            { continue;
             }
           }
         }
