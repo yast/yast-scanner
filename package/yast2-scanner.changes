@@ -1,4 +1,15 @@
 -------------------------------------------------------------------
+Mon Feb 20 10:13:07 CET 2006 - jsmeix@suse.de
+
+- V 2.13.12
+- In yast2-scanner.spec.in replaced
+  BuildRequires: yast2-devel-packages
+  with
+  BuildRequires: docbook-xsl-stylesheets doxygen libxslt
+                 perl-XML-Writer sgml-skel update-desktop-files
+                 yast2 yast2-devtools yast2-testsuite
+
+-------------------------------------------------------------------
 Mon Jan 30 11:20:54 CET 2006 - jsmeix@suse.de
 
 - V 2.13.11
