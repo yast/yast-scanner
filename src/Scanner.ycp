@@ -548,9 +548,29 @@ as displayed by the command /usr/sbin/lsusb -->
   </device>
 </deviceinfo>
 ";
+  string usb_scanner_replug_message =
+  // Body of a Popup::AnyMessage;
+  // To make a new configured USB scanner accessible for normal users
+  // the whole udev -> HAL -> resmgr machinery must be triggered
+  // so that in the end resmgr allows access for normal users.
+  // Normally during booting or when a scanner is new plugged into the USB
+  // udev gets an event and then udev triggers hald which processes the 80-scanner.fdi file
+  // so that hald triggers resmgr which allows normal user access for the USB device node.
+  // But for an already plugged in scanner this chain does not work.
+  // It is not possible to trigger HAL to processes the 80-scanner.fdi file on demand.
+  // Furthermore even "echo 1 >/sys/complicated/path/uevent" does not trigger udev.
+  // Therefore the only reliable way is a user information to re-plug the scanner.
+  // Do not change or translate "udev", it is a subsystem name.
+  // Do not change or translate "HAL", it is a subsystem name.
+  // Do not change or translate "resmgr", it is a subsystem name.
+_("Unplug the scanner from the USB and re-plug it to trigger various subsystems
+so that normal users get permitted to access the scanner without a reboot.
+During booting the subsystems udev, HAL, and resmgr do it automatically.
+");
   string resmgr_scanner_config_dir = "/etc/hal/fdi/policy/10osvendor";
   string resmgr_scanner_config_file = resmgr_scanner_config_dir + "/80-scanner.fdi";
   boolean autodetected_usb_scanner_with_missing_ids = false;
+  boolean autodetected_usb_scanner_with_ids = false;
   string usb_vendor_and_product_id = "";
   list< string > usb_vendor_and_product_ids = [];
   SCR::Execute( .target.mkdir, resmgr_scanner_config_dir );
@@ -573,6 +593,7 @@ as displayed by the command /usr/sbin/lsusb -->
                }
                else
                { // USB vendor ID and USB product ID exist:
+                 autodetected_usb_scanner_with_ids = true;
                  usb_vendor_and_product_id = usb_vendor_id + usb_product_id;
                  // Avoid duplicate entries in the content (e.g. when several same models are connected):
                  if( ! contains( usb_vendor_and_product_ids, usb_vendor_and_product_id ) )
@@ -604,6 +625,13 @@ as displayed by the command /usr/sbin/lsusb -->
     return false;
   }
   y2milestone( "(Re)-created %1", resmgr_scanner_config_file );
+  if( autodetected_usb_scanner_with_ids )
+  { // Show the user information only when there is really an entry in the 80-scanner.fdi file:
+    Popup::AnyMessage( // Header of a Popup::AnyMessage:
+                       _("Unplug and Re-plug USB Scanner"),
+                       usb_scanner_replug_message
+                     );
+  }
   if( autodetected_usb_scanner_with_missing_ids )
   { // There is at least one autodetected USB scanner with no USB vendor or product ID
     // so that there is no normal user access for this scanner.

@@ -1,4 +1,12 @@
 -------------------------------------------------------------------
+Mon Feb 27 16:36:26 CET 2006 - jsmeix@suse.de
+
+- V 2.13.13
+- Add a uers information to re-plug an USB scanner to trigger
+  the udev -> HAL -> resmgr chain to allow normal user access
+  (see Suse Bugzilla #153705).
+
+-------------------------------------------------------------------
 Mon Feb 20 10:13:07 CET 2006 - jsmeix@suse.de
 
 - V 2.13.12
