@@ -496,7 +496,16 @@ boolean AutodetectScanners()
 /**
  * Search the autodetected_scanners list for USB scanners
  * and if at least one USB scanner was found,
- * then create the file /etc/hal/fdi/policy/10osvendor/80-scanner.fdi
+ * then do the following:
+ * 1.
+ * Notify resmgr to grant access for locally logged in users via the command:
+ * /sbin/resmgr add /dev/bus/usb/<bus-number>/<device-number> scanner usb
+ * This would grant resmgr access as long as the system runs
+ * and as long as the scanner is not unplugged from the USB and re-plugged
+ * without the need to reboot or to unplug the scanner from the USB
+ * and re-plug it again which would trigger the udev -> HAL -> resmgr machinery.
+ * 2.
+ * Create the file /etc/hal/fdi/policy/10osvendor/80-scanner.fdi
  * with an entry for each autodetected USB scanner like
  * -----------------------------------------------------------------------------------
  * <match key="info.category" string="usbraw">
@@ -507,7 +516,12 @@ boolean AutodetectScanners()
  *   </match>
  * </match>
  * -----------------------------------------------------------------------------------
- * otherwise remove the file /etc/hal/fdi/policy/10osvendor/80-scanner.fdi
+ * Regardless whether or not there is an autodetected USB scanner,
+ * /etc/hal/fdi/policy/10osvendor/80-scanner.fdi will be (re)-created.
+ * If there is no autodetected USB scanner or USB vendor or product ID is missing
+ * for all autodetected USB scanners, at least the header, a comment, and the footer
+ * is written to have all XML tags there so that at least the comment
+ * how to create entries manually is available for the user.
  * Ignore whether or not an autodetected USB scanner appears in the active_scanners list
  * (i.e. simply grant access to all autodetected USB scanners)
  * because on x86_64 "scanimage -L" cannot find scanners using the 32-bit epkowa backend
@@ -548,36 +562,41 @@ as displayed by the command /usr/sbin/lsusb -->
   </device>
 </deviceinfo>
 ";
-  string usb_scanner_replug_message =
-  // Body of a Popup::AnyMessage;
-  // To make a new configured USB scanner accessible for normal users
-  // the whole udev -> HAL -> resmgr machinery must be triggered
-  // so that in the end resmgr allows access for normal users.
-  // Normally during booting or when a scanner is new plugged into the USB
-  // udev gets an event and then udev triggers hald which processes the 80-scanner.fdi file
-  // so that hald triggers resmgr which allows normal user access for the USB device node.
-  // But for an already plugged in scanner this chain does not work.
-  // It is not possible to trigger HAL to processes the 80-scanner.fdi file on demand.
-  // Furthermore even "echo 1 >/sys/complicated/path/uevent" does not trigger udev.
-  // Therefore the only reliable way is a user information to re-plug the scanner.
-  // Do not change or translate "udev", it is a subsystem name.
-  // Do not change or translate "HAL", it is a subsystem name.
-  // Do not change or translate "resmgr", it is a subsystem name.
-_("Unplug the scanner from the USB and re-plug it to trigger various subsystems
-so that normal users get permitted to access the scanner without a reboot.
-During booting the subsystems udev, HAL, and resmgr do it automatically.
-");
   string resmgr_scanner_config_dir = "/etc/hal/fdi/policy/10osvendor";
   string resmgr_scanner_config_file = resmgr_scanner_config_dir + "/80-scanner.fdi";
   boolean autodetected_usb_scanner_with_missing_ids = false;
-  boolean autodetected_usb_scanner_with_ids = false;
   string usb_vendor_and_product_id = "";
   list< string > usb_vendor_and_product_ids = [];
   SCR::Execute( .target.mkdir, resmgr_scanner_config_dir );
   foreach( map< string, string > autodetected_scanner,
            autodetected_scanners,
            { if( "USB" == autodetected_scanner["connection"]:"unknown" )
-             { // There is an autodetected USB scanner.
+             { // This autodetected scanner is a USB scanner.
+               // Notify resmgr to grant access for locally logged in users.
+               // This would grant resmgr access as long as the system runs
+               // and as long as the scanner is not unplugged from the USB and re-plugged
+               // without the need to reboot or to unplug the scanner from the USB
+               // and re-plug it again which would trigger the udev -> HAL -> resmgr machinery.
+               list< string > device_parts = splitstring( autodetected_scanner["device"]:"libusb:000:000", ":" );
+               string usb_bus_number = device_parts[1]:"000";
+               string usb_device_number = device_parts[2]:"000";
+               if( "000" != usb_bus_number
+                   && "000" != usb_device_number
+                 )
+               { // Don't show a user information if the following command fails
+                 // because if the user has stopped resmgr, he should know what he does
+                 // and if resmgr fails to add it, I don't know what I should tell the user
+                 // except a very long explanation how all the stuff works:
+                 ExecuteBashCommand( "/sbin/resmgr add /dev/bus/usb/"
+                                     + usb_bus_number
+                                     + "/"
+                                     + usb_device_number
+                                     + " scanner usb"
+                                   );
+               }
+               // Set up the stuff for HAL so that also after a reboot
+               // or when the user unplugs the scanner from the USB and re-plugs it again
+               // the udev -> HAL -> resmgr machinery will grant the same kind of access:
                string usb_vendor_id = autodetected_scanner["usb_vendor_id"]:"";
                string usb_product_id = autodetected_scanner["usb_product_id"]:"";
                string description = autodetected_scanner["description"]:"no description";
@@ -593,7 +612,6 @@ During booting the subsystems udev, HAL, and resmgr do it automatically.
                }
                else
                { // USB vendor ID and USB product ID exist:
-                 autodetected_usb_scanner_with_ids = true;
                  usb_vendor_and_product_id = usb_vendor_id + usb_product_id;
                  // Avoid duplicate entries in the content (e.g. when several same models are connected):
                  if( ! contains( usb_vendor_and_product_ids, usb_vendor_and_product_id ) )
@@ -625,13 +643,6 @@ During booting the subsystems udev, HAL, and resmgr do it automatically.
     return false;
   }
   y2milestone( "(Re)-created %1", resmgr_scanner_config_file );
-  if( autodetected_usb_scanner_with_ids )
-  { // Show the user information only when there is really an entry in the 80-scanner.fdi file:
-    Popup::AnyMessage( // Header of a Popup::AnyMessage:
-                       _("Unplug and Re-plug USB Scanner"),
-                       usb_scanner_replug_message
-                     );
-  }
   if( autodetected_usb_scanner_with_missing_ids )
   { // There is at least one autodetected USB scanner with no USB vendor or product ID
     // so that there is no normal user access for this scanner.
@@ -1014,7 +1025,7 @@ global list< map< string, any > > OverviewContents()
            autodetected_scanners,
            { // Set the autodetected_scanners_index to the index number
              // of the actual autodetected_scanner in autodetected_scanners:
-             autodetected_scanners_index = autodetected_scanners_index +1;
+             autodetected_scanners_index = autodetected_scanners_index + 1;
              // Use local variables to have shorter variable names:
              string manufacturer = autodetected_scanner["manufacturer"]:"";
              string model = autodetected_scanner["model"]:"";
@@ -1079,7 +1090,7 @@ global list< map< string, any > > OverviewContents()
            active_scanners,
            { // Set the active_scanners_index to the index number
              // of the actual active_scanner in active_scanners:
-             active_scanners_index = active_scanners_index +1;
+             active_scanners_index = active_scanners_index + 1;
              // Use local variables to have shorter variable names:
              string backend = active_scanner["backend"]:"";
              // Fallback device name if the real device name is missing:
@@ -1134,7 +1145,7 @@ global list< map< string, any > > OverviewContents()
            active_backends,
            { // Set the active_backends_index to the index number
              // of the actual active_backend in active_backends:
-             active_backends_index = active_backends_index +1;
+             active_backends_index = active_backends_index + 1;
              // The last entry in the active_backends list is an empty string.
              // Skip this last entry:
              if( "" != active_backend )
