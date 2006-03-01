@@ -1,4 +1,12 @@
 -------------------------------------------------------------------
+Wed Mar  1 15:46:59 CET 2006 - jsmeix@suse.de
+
+- V 2.13.14
+- Removed the user information to re-plug an USB scanner
+  which was added in V 2.13.13, instead added a resmgr call
+  to allow normal user access (see Suse Bugzilla #153705).
+
+-------------------------------------------------------------------
 Mon Feb 27 16:36:26 CET 2006 - jsmeix@suse.de
 
 - V 2.13.13
