@@ -217,14 +217,14 @@ If you have locally connected scanners and want to make them accessible via the 
 set up the saned network scanning daemon so that your host becomes a server.
 In <b>Permitted Clients</b>, enter which client hosts are permitted to access saned on your server.
 Enter a comma-separated list of client hosts (hostnames or IP addresses)
-or subnets (CIDR notation such as 192.168.1.0/24).
+or subnets (CIDR notation, such as 192.168.1.0/24).
 If no client hosts are permitted, saned is not activated.
 If saned is activated, xinetd is also activated and set up for saned.
 Clients contact saned via the sane-port (TCP port 6566)
 but scanning data is transferred via an additional random port.
 The default <b>Firewall Settings</b> during system installation
 protect your host from external access.
-This is not a problem for using scanners in an internal network
+This is not a problem when using scanners in an internal network
 (when the network interface belongs to the internal network zone)
 unless you have firewall protection enabled for the internal zone.
 Allowing access from an external network does not make sense

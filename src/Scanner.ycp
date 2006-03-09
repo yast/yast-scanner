@@ -1166,7 +1166,7 @@ global list< map< string, any > > OverviewContents()
                                                 // A suffix for the second column of a table
                                                 // where active scanner drivers are listed in the first column
                                                 // to denote those drivers for which there is no matching active scanner:
-                                                _("No scanner recognized by this driver.")
+                                                _("No scanner recognized by this driver")
                                               ];
                  map <string, any> overview_content = $[ "id": id,
                                                          "rich_descr": rich_descr,
