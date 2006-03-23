@@ -1,4 +1,11 @@
 -------------------------------------------------------------------
+Thu Mar 23 15:38:06 CET 2006 - jsmeix@suse.de
+
+- V 2.13.16
+- Added Confirm::MustBeRoot() to the initial ReadDialog()
+  which asks a non-root user for confirmation to continue.
+
+-------------------------------------------------------------------
 Thu Mar  9 14:07:57 CET 2006 - jsmeix@suse.de
 
 - V 2.13.15

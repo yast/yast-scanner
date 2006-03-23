@@ -18,6 +18,7 @@ import "Wizard";
 import "Arch";
 import "Scanner";
 import "WizardHW";
+import "Confirm";
 
 include "scanner/helps.ycp";
 
@@ -57,7 +58,11 @@ boolean ReallyAbort()
  * @return `abort if aborted and `next otherwise
  */
 symbol ReadDialog()
-{ Wizard::RestoreHelp(HELPS["read"]:"");
+{ // Confirm::MustBeRoot() returns 'true' when the current user is root.
+  // Otherwise the user is asked for confirmation whether he want's to continue
+  // despite the fact that the module might not work correctly
+  if( ! Confirm::MustBeRoot() ) return `abort;
+  Wizard::RestoreHelp( HELPS["read"]:"" );
   boolean ret = Scanner::Read();
   return ret ? `next : `abort;
 }
