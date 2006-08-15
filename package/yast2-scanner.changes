@@ -1,4 +1,16 @@
 -------------------------------------------------------------------
+Tue Aug 15 11:40:28 CEST 2006 - jsmeix@suse.de
+
+- V 2.14.0
+- Increased MAXIMUM_WAIT in test_scanner_backend to 120 seconds
+  because otherwise it is early aborted for some scanners
+  which need a long time to warm up the lamp.
+- Test also for "hpfax" in DependantPrintQueueExists() function
+  (see Suse Bugzilla #184824).
+- Fixed SetScsiScannerAccessPermissions(): First enable sane-dev
+  then (re)start it.
+
+-------------------------------------------------------------------
 Thu Mar 23 15:38:06 CET 2006 - jsmeix@suse.de
 
 - V 2.13.16
