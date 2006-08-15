@@ -679,12 +679,12 @@ boolean SetScsiScannerAccessPermissions()
            }
          );
   if( active_scsi_scanner )
-  { if( ! Service::Restart( "sane-dev" ) )
-    { y2milestone( "Service::Restart('sane-dev') failed." );
+  { if( ! Service::Enable( "sane-dev" ) )
+    { y2milestone( "Service::Enable('sane-dev') failed." );
       return false;
     }
-    if( ! Service::Enable( "sane-dev" ) )
-    { y2milestone( "Service::Enable('sane-dev') failed." );
+    if( ! Service::Restart( "sane-dev" ) )
+    { y2milestone( "Service::Restart('sane-dev') failed." );
       return false;
     }
     y2milestone( "Service sane-dev (re)-started and enabled." );
@@ -722,11 +722,14 @@ boolean SetScsiScannerAccessPermissions()
  * @return true if a dependant CUPS print queue exists for the backends hpaio or hpoj
  */
 boolean DependantPrintQueueExists( string backend_name )
-{ // Example of a "/usr/bin/lpstat -v" output when the hp CUPS backend is used:
-  //   device for Queue1: hp:/usb/HP_LaserJet_1220?device=/dev/usb/lp0
-  // Example of a "/usr/bin/lpstat -v" output when the ptal CUPS backend is used:
-  //   device for Queue2: ptal:/mlc:par:HP_LaserJet_1220
-  //   device for Queue3: ptal:/mlc:usb:HP_LaserJet_1220
+{ // Examples of a "/usr/bin/lpstat -v" output when the hp CUPS backend is used:
+  //   device for Queue1: hp:/usb/DeskJet_990C?serial=MX09R1T14QLH
+  //   device for Queue2: hp:/net/Officejet_7200_series?ip=10.10.100.100
+  // Example of a "/usr/bin/lpstat -v" output when the hpfax CUPS backend is used:
+  //   device for Queue3: hpfax:/net/Officejet_7200_series?ip=10.10.100.100
+  // Examples of a "/usr/bin/lpstat -v" output when the ptal CUPS backend is used:
+  //   device for Queue4: ptal:/mlc:par:HP_LaserJet_1220
+  //   device for Queue5: ptal:/mlc:usb:HP_LaserJet_1220
   // If /usr/bin/lpstat (from the package cups-client) is not installed
   // or if it is not from CUPS (e.g. from LPRng or from a third-party printing system)
   // and doesn't support the -v parameter or results a different output
@@ -736,7 +739,7 @@ boolean DependantPrintQueueExists( string backend_name )
   // Note that therefore it is not detected when the hplip service or the ptal service
   // is required by a print queue for LPRng or for a third-party printing system.
   if( "hpaio" == backend_name )
-  { return ExecuteBashCommand( "/usr/bin/lpstat -v | /bin/grep -q ': hp:/'" );
+  { return ExecuteBashCommand( "/usr/bin/lpstat -v | /bin/egrep -q ': hp:/|: hpfax:/'" );
   }
   if( "hpoj" == backend_name )
   { return ExecuteBashCommand( "/usr/bin/lpstat -v | /bin/grep -q ': ptal:/'" );
