@@ -1,4 +1,23 @@
 -------------------------------------------------------------------
+Thu Aug 17 16:02:35 CEST 2006 - jsmeix@suse.de
+
+- V 2.14.1
+- Improved the automated pre-selection of an autodetected scanner
+  in the list of all available scanner models.
+  For USB scanners the "usbid" entries in the desciption files
+  are used if available. This results often an unique match
+  so that the matching model can be pre-selected in the list.
+  For SCSI scanners the first word of the model description
+  is used as autodetected manufacturer name to show by default
+  only those SCSI scanners of the list of all available models
+  where the autodetected manufacturer name is found in the list.
+  Added a "Show Complete List" button so that the user can
+  easily access all available models if the automated
+  pre-selection may result too few models. 
+- Fixed that empty-looking error messages (e.g. only a linefeed)
+  are shown to the user.
+
+-------------------------------------------------------------------
 Tue Aug 15 11:40:28 CEST 2006 - jsmeix@suse.de
 
 - V 2.14.0

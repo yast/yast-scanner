@@ -73,6 +73,7 @@ global boolean Abort()
  *    "model":"The model name of the scanner (required)",
  *    "firmware":"Whether or not firmware upload is required (value is 'required' or the empty string)",
  *    "interface":"None or one or more scanner interfaces (may be the empty string)",
+ *    "usbid":"USBvendorID:USBproductID" e.g. "0x0a1b:0x2c3d" (may be the empty string)",
  *    "status":"The support status: basic/complete/good/minimal/unsupported/untested (required)",
  *    "comment":"An optional comment (may be the empty string)"
  *  ]
@@ -256,6 +257,25 @@ boolean ExecuteBashCommand( string bash_commandline )
     return false;
   }
   return true;
+}
+
+/**
+ * Test whether an error message is meaningful (i.e. when it contains at least one letter character).
+ * If yes, add a preceding "The error message is:" otherwise return the empty string.
+ * @param error_message string of the error message
+ * @return string of a meaningful error message with preceding "The error message is:" or "" otherwise
+ */
+string OnlyMeaningfulErrorMessage( string error_message )
+{ if ( "" !=  filterchars( tolower( error_message ), "abcdefghijklmnopqrstuvwxyz" ) )
+  { return sformat( // Only a simple message because it is only used
+                    // to add a preceding "The error message is:" comment
+                    // to display an error message where
+                    // %1 will be replaced by the actual error message:
+                    _("The error message is:\n\n%1"),
+                    error_message
+                  );
+  }
+  return "";
 }
 
 /**
@@ -1214,6 +1234,7 @@ global list ModelItems( string filter_string )
   // and try to preselect a model according to a selected autodetected scanner:
   integer database_index = -1;
   string model_string = "";
+  string interface_and_usbid_string = "";
   string status_string = "";
   // Scanner model list firmware entry for models which require a firmware upload:
   string firmware_string = _("Firmware upload required.");
@@ -1228,6 +1249,8 @@ global list ModelItems( string filter_string )
              string backend = database_entry["backend"]:"unknown";
              string package = database_entry["package"]:"unknown";
              string status = database_entry["status"]:"unknown";
+             string interface = database_entry["interface"]:"";
+             string usbid = database_entry["usbid"]:"";
              string comment = database_entry["comment"]:"";
              string firmware = database_entry["firmware"]:"unknown";
              // Build the model_string:
@@ -1237,7 +1260,45 @@ global list ModelItems( string filter_string )
                  && package != "unknown"
                  && status != "unknown"
                )
-             { // Enclose a comment in brackets to seperate it from the rest of the model_string
+             { // Build the interface_and_usbid_string:
+               // Enclose it in parenthesis to seperate it from the rest of the model_string
+               // because the interface_and_usbid_string is untranslatable stuff like
+               // the acronyms "SCSI" and/or "USB or the hexadecimal numbers of the USB-ID:
+               if( issubstring( tolower( interface ), "scsi" ) )
+               { // The scanner has SCSI:
+                 if( usbid != "" )
+                 { // The scanner has SCSI and a USB-ID is known:
+                   interface_and_usbid_string = "(SCSI, USB-ID " + usbid + ")";
+                 }
+                 else
+                 { // The scanner has SCSI but no USB-ID is known:
+                   if( issubstring( tolower( interface ), "usb" ) )
+                   { // The scanner has SCSI and USB:
+                     interface_and_usbid_string = "(SCSI, USB)";
+                   }
+                   else
+                   { // The scanner has SCSI but no USB:
+                     interface_and_usbid_string = "(SCSI)";
+                   }
+                 }
+               }
+               else
+               { // The scanner has no SCSI:
+                 if( usbid != "" )
+                 { // The scanner has USB because a USB-ID is known:
+                   interface_and_usbid_string = "(USB-ID " + usbid + ")";
+                 }
+                 else
+                 { // No USB-ID is known:
+                   if( issubstring( tolower( interface ), "usb" ) )
+                   { // The scanner has USB:
+                     interface_and_usbid_string = "(USB)";
+                   }
+                   // The scanner has neither SCSI nor USB:
+                   // The empty string was preset abive for interface_and_usbid_string.
+                 }
+               }
+               // Enclose a comment in brackets to seperate it from the rest of the model_string
                // because the comment is untranslatable English text from the *desc files:
                if( "" != comment )
                { comment = "[" + comment + "]";
@@ -1336,92 +1397,55 @@ global list ModelItems( string filter_string )
                }
                if( "required" == firmware )
                { // The model_string for supported models which require a firmware upload:
-                 model_string = sformat( "%1 %2 : %3 %4 %5",
+                 model_string = sformat( "%1 %2 : %3 %4 %5 %6",
                                          manufacturer,
                                          model,
                                          firmware_string,
                                          status_string,
+                                         interface_and_usbid_string,
                                          comment
                                        );
                }
                else
                { // The model_string for all other supported and unsupported models:
-                 model_string = sformat( "%1 %2 : %3 %4",
+                 model_string = sformat( "%1 %2 : %3 %4 %5",
                                          manufacturer,
                                          model,
                                          status_string,
+                                         interface_and_usbid_string,
                                          comment
                                        );
                }
-               // If there is an autodetected scanner selected then try to determine
-               // whether the model in the database matches to the selected autodetected scanner
+               // If there is an autodetected USB scanner selected,
+               // test whether an USB-ID in the database matches to the selected autodetected scanner
                // and if exactly one model in the database matches then preselect it.
                // If no model matches then leave the selected_model_database_index unchanged
                // to preselect an already selected model in the database again.
                // This happens for example when going 'back' to the model selection screen.
                if( selected_autodetected_scanners_index >= 0 )
-               { string autodetected_manufacturer = autodetected_scanners[selected_autodetected_scanners_index,"manufacturer"]:"";
-                 string autodetected_model = autodetected_scanners[selected_autodetected_scanners_index,"model"]:"";
-                 if( autodetected_manufacturer == manufacturer
-                     && autodetected_model == model )
-                 { // Best case: Manufacturer and model match exactly.
-                   // To test for uniqueness the whole database must be processed again
+               { string autodetected_usbid = autodetected_scanners[selected_autodetected_scanners_index,"usb_vendor_id"]:""
+                                             + ":"
+                                             + autodetected_scanners[selected_autodetected_scanners_index,"usb_product_id"]:"";
+                 // There is no false match when one or both USB-IDs are missing
+                 // because autodetected_usbid is not the empty string but at least ":"
+                 // and usbid is either a complete "0x0a1b:0x2c3d" USB-ID or the empty string:
+                 if( autodetected_usbid == usbid )
+                 { // To test for uniqueness the whole database must be processed again
                    // because for the actual model entry in the database the decission must be made now
                    // whether or not to preselect it:
                    integer matching_models_count = 0;
                    foreach( map< string, string > database_test_entry,
                             database,
-                            { string test_manufacturer = database_test_entry["manufacturer"]:"qq";
-                              string test_model = database_test_entry["model"]:"qq";
-                              if( autodetected_manufacturer == test_manufacturer
-                                  && autodetected_model == test_model )
+                            { string test_usbid = database_test_entry["usbid"]:"";
+                              if( autodetected_usbid == test_usbid )
                               { matching_models_count = matching_models_count + 1;
                               }
                             }
                           );
                    if( 1 == matching_models_count )
-                   { y2milestone( "Autodetected '%1' '%2' matches exactly to database entry.",
-                                  autodetected_manufacturer,
-                                  autodetected_model);
+                   { y2milestone( "Autodetected USB-ID '%1' matches to exactly one database entry.",
+                                  autodetected_usbid);
                      selected_model_database_index = database_index;
-                   }
-                 }
-                 else
-                 { // Normal case: Manufacturer and model don't match exactly.
-                   // Do a reasonable guess based only on unified model strings
-                   // but to be safe preselect only if the guess result is unique.
-                   // Note that the '+' character must be included in the allowed characters
-                   // because there are for example those models in the database:
-                   //   'gt-10000' and 'gt-10000+' both using backend epkowa
-                   //   'imagery 4800 sp' using backend mustek but 'imagery 4800 sp+' using backend teco3
-                   //   'opticpro u16b' and 'opticpro u16b+' both using backend gt68xx
-                   //   'scanexpress 1200 cp' and 'scanexpress 1200 cp+' both using backend mustek_pp
-                   // At least 'imagery 4800 sp' versus 'imagery 4800 sp+' shows that '+' is significant.
-                   string allowed_chars = "abcdefghijklmnopqrstuvwxyz0123456789+";
-                   string unified_autodetected_model = filterchars( tolower( autodetected_model ), allowed_chars );
-                   string unified_model = filterchars( tolower( model ), allowed_chars );
-                   if( unified_autodetected_model == unified_model )
-                   { // To test for uniqueness the whole database must be processed again
-                     // because for the actual model entry in the database the decission must be made now
-                     // whether or not to preselect it:
-                     integer matching_models_count = 0;
-                     foreach( map< string, string > database_test_entry,
-                              database,
-                              { string unified_test_model = filterchars( tolower( database_test_entry["model"]:"qq" ), allowed_chars );
-                                if( unified_autodetected_model == unified_test_model )
-                                { matching_models_count = matching_models_count + 1;
-                                }
-                              }
-                            );
-                     if( 1 == matching_models_count )
-                     { y2milestone( "Autodetected '%1' '%2' matches with unified model name '%3' to database entry '%4' '%5'",
-                                    autodetected_manufacturer,
-                                    autodetected_model,
-                                    unified_autodetected_model,
-                                    manufacturer,
-                                    model);
-                       selected_model_database_index = database_index;
-                     }
                    }
                  }
                }
@@ -1698,14 +1722,13 @@ Alternatively proceed and change the printer configuration to use the ptal servi
       // No conflicting print queue was found or
       // a conflicting print queue was found but the user forced to proceed:
       if( ! ExecuteBashCommand( setup_hplip_scanner_service_commandline ) )
-      { Report::Error( sformat( // Message of a Report::Error where %1 will be replaced by the actual error message
-                                // which is usually only available in English.
+      { Report::Error( sformat( // Message of a Report::Error where %1 can be replaced by an error message
+                                // if such an error message exists.
                                 // Only a simple message because this error does not happen on a normal system
                                 // (i.e. a system which is not totally broken or totally messed up).
                                 // Do not change or translate "hplip", it is a service name.
-                                _("Failed to set up the hplip service.\nThe error message is:\n\n%1"),
-                                // Fallback error message if the real error message is missing:
-                                bash_result["stderr"]:_("(no message available)")
+                                _("Failed to set up the hplip service.\n%1"),
+                                OnlyMeaningfulErrorMessage( bash_result["stderr"]:"" )
                               )
                      );
         Progress::Title( // Last progress step progress bar title when the Progress was aborted:
@@ -1756,14 +1779,13 @@ Alternatively proceed and change the printer configuration to use the ptal servi
       // No conflicting print queue was found or
       // a conflicting print queue was found but the user forced to proceed:
       if( ! ExecuteBashCommand( setup_ptal_scanner_service_commandline ) )
-      { Report::Error( sformat( // Message of a Report::Error where %1 will be replaced by the actual error message
-                                // which is usually only available in English.
+      { Report::Error( sformat( // Message of a Report::Error where %1 can be replaced by an error message
+                                // if such an error message exists.
                                 // Only a simple message because this error does not happen on a normal system
                                 // (i.e. a system which is not totally broken or totally messed up).
                                 // Do not change or translate "PTAL", it is a subsystem name.
-                                _("Failed to set up the PTAL system.\nThe error message is:\n\n%1"),
-                                // Fallback error message if the real error message is missing:
-                                bash_result["stderr"]:_("(no message available)")
+                                _("Failed to set up the PTAL system.\n%1"),
+                                OnlyMeaningfulErrorMessage( bash_result["stderr"]:"" )
                               )
                      );
         Progress::Title( // Last progress step progress bar title when the Progress was aborted:
@@ -1800,13 +1822,11 @@ Alternatively proceed and change the printer configuration to use the ptal servi
         && user_confirmation
       )
     { Report::Warning( sformat( // Message of a Report::Warning when setting USB scanner access permissions failed
-                                // where %1 will be replaced by the actual error message
-                                // which is usually only available in English.
+                                // where %1 can be replaced by an error message if such an error message exists.
                                 // Only a simple message because this error does not happen on a normal system
                                 // (i.e. a system which is not totally broken or totally messed up).
-                                _("Failed to set USB scanner access permissions.\nThe error message is:\n\n%1"),
-                                // Fallback error message if the real error message is missing:
-                                bash_result["stderr"]:_("(no message available)")
+                                _("Failed to set USB scanner access permissions.\n%1"),
+                                OnlyMeaningfulErrorMessage( bash_result["stderr"]:"" )
                               )
                      );
     }
@@ -1814,13 +1834,11 @@ Alternatively proceed and change the printer configuration to use the ptal servi
         && user_confirmation
       )
     { Report::Warning( sformat( // Message of a Report::Warning when setting SCSI scanner access permissions failed
-                                // where %1 will be replaced by the actual error message
-                                // which is usually only available in English.
+                                // where %1 can be replaced by an error message if such an error message exists.
                                 // Only a simple message because this error does not happen on a normal system
                                 // (i.e. a system which is not totally broken or totally messed up).
-                                _("Failed to set SCSI scanner access permissions.\nThe error message is:\n\n%1"),
-                                // Fallback error message if the real error message is missing:
-                                bash_result["stderr"]:_("(no message available)")
+                                _("Failed to set SCSI scanner access permissions.\n%1"),
+                                OnlyMeaningfulErrorMessage( bash_result["stderr"]:"" )
                               )
                      );
     }
@@ -2029,13 +2047,11 @@ global boolean DeactivateBackend( string backend_name, integer database_index, b
         && user_confirmation
       )
     { Report::Warning( sformat( // Message of a Report::Warning when setting USB scanner access permissions failed
-                                // where %1 will be replaced by the actual error message
-                                // which is usually only available in English.
+                                // where %1 can be replaced by an error message if such an error message exists.
                                 // Only a simple message because this error does not happen on a normal system
                                 // (i.e. a system which is not totally broken or totally messed up).
-                                _("Failed to set USB scanner access permissions.\nThe error message is:\n\n%1"),
-                                // Fallback error message if the real error message is missing:
-                                bash_result["stderr"]:_("(no message available)")
+                                _("Failed to set USB scanner access permissions.\n%1"),
+                                OnlyMeaningfulErrorMessage( bash_result["stderr"]:"" )
                               )
                      );
     }
@@ -2043,13 +2059,11 @@ global boolean DeactivateBackend( string backend_name, integer database_index, b
         && user_confirmation
       )
     { Report::Warning( sformat( // Message of a Report::Warning when re-setting SCSI scanner access permissions failed
-                                // where %1 will be replaced by the actual error message
-                                // which is usually only available in English.
+                                // where %1 can be replaced by an error message if such an error message exists.
                                 // Only a simple message because this error does not happen on a normal system
                                 // (i.e. a system which is not totally broken or totally messed up).
-                                _("Failed to reset SCSI scanner access permissions.\nThe error message is:\n\n%1"),
-                                // Fallback error message if the real error message is missing:
-                                bash_result["stderr"]:_("(no message available)")
+                                _("Failed to reset SCSI scanner access permissions.\n%1"),
+                                OnlyMeaningfulErrorMessage( bash_result["stderr"]:"" )
                               )
                      );
     }

@@ -23,7 +23,7 @@ cat /dev/null >$TMP_DATA
 # Function to extract entries from a description file with SANE syntax.
 # Quoted quotation marks '\"' (happens in comments) are replaced by ' ':
 Extract()
-{ cat $1 | sed -e 's/\\"/ /g' | egrep -o '^[[:space:]]*:backend[[:space:]]*"[^"]*"|^[[:space:]]*:mfg[[:space:]]*"[^"]*"|^[[:space:]]*:model[[:space:]]*"[^"]*"|^[[:space:]]*:firmware[[:space:]]*"[^"]*"|^[[:space:]]*:interface[[:space:]]*"[^"]*"|^[[:space:]]*:status[[:space:]]*:[a-z]*|^[[:space:]]*:comment[[:space:]]*"[^"]*"'
+{ cat $1 | sed -e 's/\\"/ /g' | egrep -o '^[[:space:]]*:backend[[:space:]]*"[^"]*"|^[[:space:]]*:mfg[[:space:]]*"[^"]*"|^[[:space:]]*:model[[:space:]]*"[^"]*"|^[[:space:]]*:firmware[[:space:]]*"[^"]*"|^[[:space:]]*:interface[[:space:]]*"[^"]*"|^[[:space:]]*:usbid[[:space:]]*"0x[0-9A-Fa-f]*"[[:space:]]*"0x[0-9A-Fa-f]*"|^[[:space:]]*:status[[:space:]]*:[a-z]*|^[[:space:]]*:comment[[:space:]]*"[^"]*"'
 }
 
 # Process the SANE description files:
@@ -83,8 +83,12 @@ sed -i -e 's/[[:space:]][[:space:]]*/ /g' $TMP_DATA
 # Remove leading and trailing spaces:
 sed -i -e 's/^[[:space:]]*//' \
        -e 's/[[:space:]]*$//' \
-       -e 's/"[[:space:]]*/"/' \
+       -e 's/"[[:space:]]*/"/g' \
        -e 's/[[:space:]]*"$/"/' $TMP_DATA
+
+# Convert the usbid values from '"vendor-id""product-id"' to '"vendor-id:product-id"'
+# (note that '" "' was changed to '""' in the step before):
+sed -i -e '/^:usbid/s/""/:/' $TMP_DATA
 
 # Convert the status value to the usual string format:
 sed -i -e 's/^:status :\(.*\)/:status "\1"/' $TMP_DATA
@@ -102,7 +106,7 @@ sed -i -e 's/see link/see http:\/\/www.sane-project.org/g' \
 # Output header:
 if [ "$OUTPUT_FORMAT" = "YCP" ]
 then echo "[" 
-else echo "PACKAGE|BACKEND|MANUFACTURER|MODEL|FIRMWARE|INTERFACE|STATUS|COMMENT"
+else echo "PACKAGE|BACKEND|MANUFACTURER|MODEL|FIRMWARE|INTERFACE|USBID|STATUS|COMMENT"
 fi
 
 # Function to output one scanner entry:
@@ -110,16 +114,17 @@ Output()
 { if [ -n "$PACKAGE" -a -n "$BACKEND" -a -n "$MANUFACTURER" -a -n "$MODEL" -a -n "$STATUS" ]
   then [ -z "$FIRMWARE" ] && FIRMWARE='""'
        [ -z "$INTERFACE" ] && INTERFACE='""'
+       [ -z "$USBID" ] && USBID='""'
        [ -z "$COMMENT" ] && COMMENT='""'
        if [ "$PACKAGE" = '"iscan"' -o "$PACKAGE" = '"iscan-free"' ]
-       then if echo "$COMMENT" | grep -q 'requires a DFSG non-free module'
+       then if echo "$COMMENT" | egrep -q 'requires a DFSG non-free module|requires DFSG non-free'
             then PACKAGE='"iscan"'
             else PACKAGE='"iscan-free"'
             fi
        fi
        if [ "$OUTPUT_FORMAT" = "YCP" ]
-       then echo -e "  \$[ \"package\":$PACKAGE,\n     \"backend\":$BACKEND,\n     \"manufacturer\":$MANUFACTURER,\n     \"model\":$MODEL,\n     \"firmware\":$FIRMWARE,\n     \"interface\":$INTERFACE,\n     \"status\":$STATUS,\n     \"comment\":$COMMENT\n  ],"
-       else echo "$PACKAGE|$BACKEND|$MANUFACTURER|$MODEL|$FIRMWARE|$INTERFACE|$STATUS|$COMMENT" | tr -d '"'
+       then echo -e "  \$[ \"package\":$PACKAGE,\n     \"backend\":$BACKEND,\n     \"manufacturer\":$MANUFACTURER,\n     \"model\":$MODEL,\n     \"firmware\":$FIRMWARE,\n     \"interface\":$INTERFACE,\n     \"usbid\":$USBID,\n     \"status\":$STATUS,\n     \"comment\":$COMMENT\n  ],"
+       else echo "$PACKAGE|$BACKEND|$MANUFACTURER|$MODEL|$FIRMWARE|$INTERFACE|$USBID|$STATUS|$COMMENT" | tr -d '"'
        fi
   fi
 }
@@ -141,6 +146,7 @@ do expr "$VALUE" : '"[^"]*"$' &>/dev/null || { echo "Ignoring $VALUE because it 
                   MODEL=""
                   FIRMWARE=""
                   INTERFACE=""
+                  USBID=""
                   STATUS=""
                   COMMENT="" ;;
         :backend) Output
@@ -149,6 +155,7 @@ do expr "$VALUE" : '"[^"]*"$' &>/dev/null || { echo "Ignoring $VALUE because it 
                   MODEL=""
                   FIRMWARE=""
                   INTERFACE=""
+                  USBID=""
                   STATUS=""
                   COMMENT="" ;;
         :mfg) Output
@@ -156,16 +163,19 @@ do expr "$VALUE" : '"[^"]*"$' &>/dev/null || { echo "Ignoring $VALUE because it 
               MODEL=""
               FIRMWARE=""
               INTERFACE=""
+              USBID=""
               STATUS=""
               COMMENT="" ;;
         :model) Output
                 MODEL="$VALUE"
                 FIRMWARE=""
                 INTERFACE=""
+                USBID=""
                 STATUS=""
                 COMMENT="" ;;
         :firmware) FIRMWARE="$VALUE" ;;
         :interface) INTERFACE="$VALUE" ;;
+        :usbid) USBID=$( echo "$VALUE" | tr '[:upper:]' '[:lower:]' ) ;;
         :status) STATUS="$VALUE" ;;
         :comment) COMMENT="$VALUE" ;;
         *) echo "Ignoring key $KEY" 1>&2 ;;
