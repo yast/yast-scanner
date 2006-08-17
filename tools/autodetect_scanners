@@ -35,6 +35,7 @@ else
     echo "Cannot execute /usr/bin/sane-find-scanner" 1>&2
     exit 2
 fi
+# Only USB and SCSI scanners are taken into account:
 cat ${TMP_DATA}.raw | egrep '^found SCSI |^found USB ' | sort -u | sed -e 's/^found //' | tr \" \' >$TMP_DATA && rm ${TMP_DATA}.raw
 
 # Output:
@@ -57,11 +58,21 @@ do echo $DESCRIPTION | grep -q '^USB ' && CONNECTION="USB" || CONNECTION="SCSI"
    if [ "$CONNECTION" = "USB" ]
    then MODEL=$( echo $DESCRIPTION | tr '[]' '||' | cut -d '|' -s -f 4 )
         [ -n "$MODEL" ] && MANUFACTURER=$( echo $DESCRIPTION | tr '[]' '||' | cut -d '|' -s -f 2 )
-        USB_VENDOR_ID=$( echo $DESCRIPTION | sed -n -e 's/^.*vendor=\(0x[0-9A-Fa-f][0-9A-Fa-f]*\).*$/\1/p' )
-        USB_PRODUCT_ID=$( echo $DESCRIPTION | sed -n -e 's/^.*product=\(0x[0-9A-Fa-f][0-9A-Fa-f]*\).*$/\1/p' )
+        USB_VENDOR_ID=$( echo $DESCRIPTION | sed -n -e 's/^.*vendor=\(0x[0-9A-Fa-f][0-9A-Fa-f]*\).*$/\1/p' | tr '[:upper:]' '[:lower:]' )
+        USB_PRODUCT_ID=$( echo $DESCRIPTION | sed -n -e 's/^.*product=\(0x[0-9A-Fa-f][0-9A-Fa-f]*\).*$/\1/p' | tr '[:upper:]' '[:lower:]' )
+   else # For SCSI: Simply use the first word as manufacturer name.
+        # This is a keep-it-simple attempt because a few SCSI scanners
+        # may report a two-word manufacturer name on the SCSI bus
+        # (e.g. something like "Across Technologies" or "Linotype Hell").
+        # Note that " was changed to ' when TMP_DATA was created above.
+        MANUFACTURER=$( echo $DESCRIPTION | cut -d \' -s -f 2 | cut -d ' ' -s -f1 )
+        # For HP set the name which is used in the SANE description files:
+        if [ "$MANUFACTURER" = "HP" -o "$MANUFACTURER" = "hp" ]
+        then MANUFACTURER="Hewlett-Packard"
+        fi
    fi
    if [ "$OUTPUT_FORMAT" = "YCP" ]
-   then echo -e "  \$[ \"connection\":\"$CONNECTION\",\n     \"device\":\"$DEVICE\",\n     \"manufacturer\":\"$MANUFACTURER\",\n     \"usb_vendor_id\":\"$USB_VENDOR_ID\",\n     \"model\":\"$MODEL\",\n     \"usb_product_id\":\"$USB_PRODUCT_ID\",\n     \"description\":\"$DESCRIPTION\"  ],"
+   then echo -e "  \$[ \"connection\":\"$CONNECTION\",\n     \"device\":\"$DEVICE\",\n     \"manufacturer\":\"$MANUFACTURER\",\n     \"usb_vendor_id\":\"$USB_VENDOR_ID\",\n     \"model\":\"$MODEL\",\n     \"usb_product_id\":\"$USB_PRODUCT_ID\",\n     \"description\":\"$DESCRIPTION\"\n  ],"
    else echo "$CONNECTION|$DEVICE|$MANUFACTURER|$USB_VENDOR_ID|$MODEL|$USB_PRODUCT_ID|$DESCRIPTION"
    fi
 done

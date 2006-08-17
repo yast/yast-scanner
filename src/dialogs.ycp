@@ -462,7 +462,7 @@ any OverviewDialog()
  */
 any SelectModelDialog()
 { // Caption of the SelectModelDialog:
-  string caption = _("Scanner Model Selection");
+  string caption = _("Scanner Model and Driver Selection");
   // If there is an autodetected scanner selected
   // then preset the filter_string with the autodetected manufacturer
   // if the autodetected manufacturer exists in the database
@@ -473,6 +473,7 @@ any SelectModelDialog()
   string filter_string = "";
   if( Scanner::selected_autodetected_scanners_index >= 0 )
   { string autodetected_manufacturer = Scanner::autodetected_scanners[Scanner::selected_autodetected_scanners_index,"manufacturer"]:"";
+    string autodetected_connection = Scanner::autodetected_scanners[Scanner::selected_autodetected_scanners_index,"connection"]:"";
     // Unify known ambiguous autodetected manufacturer names:
     if( "hp" == tolower( autodetected_manufacturer ) )
     { autodetected_manufacturer = "Hewlett-Packard";
@@ -490,6 +491,17 @@ any SelectModelDialog()
                }
              }
            );
+    // If it is an autodetected SCSI scanner, append "\(SCSI" to the filter_string
+    // (the filter_string may be the empty string if no manufacturer matched above)
+    // to suppress that tons of USB-only scanners are also shown to the user.
+    // The "(" is used to match only to the interface_and_usbid_string (see Scanner.ycp)
+    // to avoid that plain "SCSI" is found when it is only mentioned in a comment but actually
+    // no "SCSI" is specified as supported interface in the description file (e.g. see avision.desc).
+    // One "\" is needed to quote the "(" which has a special meaning in a regular expression and
+    // the leftmost "\" is needed to quote the next "\" which has a special meaning in YCP strings.
+    if( "SCSI" == autodetected_connection )
+    { filter_string = filter_string + "\\(SCSI";
+    }
   }
   term contents = `VBox( `HBox( `TextEntry( `id(`filter_input),
                                             // Header of a TextEntry user input field to enter a search string:
@@ -506,12 +518,17 @@ any SelectModelDialog()
                                              `opt(`default),
                                              // Label of a PushButton to search a list for a search string:
                                              _("&Search")
+                                           ),
+                                `PushButton( `id(`ignore_filter),
+                                             // Label of a PushButton to show all entries of a list:
+                                             _("Show Complete &List")
                                            )
+
                               ),
                          `ReplacePoint( `id(`model_selection_replace_point),
                                         `SelectionBox( `id(`model_selection),
                                                        // Header of a SelectionBox with a list of models:
-                                                       _("&Scanner Model and Driver"),
+                                                       _("Scanner &Models"),
                                                        Scanner::ModelItems( filter_string )
                                                      )
                                       )
@@ -540,8 +557,20 @@ any SelectModelDialog()
       UI::ReplaceWidget( `id(`model_selection_replace_point),
                          `SelectionBox( `id(`model_selection),
                                         // Header of a SelectionBox with a list of models:
-                                        _("&Scanner Model and Driver"),
+                                        _("Scanner &Models"),
                                         Scanner::ModelItems( filter_string )
+                                      )
+                       );
+      continue;
+    }
+    /* ignore the filter for the model list */
+    if( ret == `ignore_filter )
+    { filter_string = (string)UI::QueryWidget( `id(`filter_input), `Value );
+      UI::ReplaceWidget( `id(`model_selection_replace_point),
+                         `SelectionBox( `id(`model_selection),
+                                        // Header of a SelectionBox with the complete list of models:
+                                        _("All Scanner &Models"),
+                                        Scanner::ModelItems( "" )
                                       )
                        );
       continue;
