@@ -217,7 +217,6 @@ global integer selected_autodetected_scanners_index = -1;
 /*
  * Local variables:
  */
-map bash_result = $[];
 string environment_filename = "/var/lib/YaST2/stored_scanner_environment.ycp";
 string database_filename = "/var/lib/YaST2/scanner_database.ycp";
 string create_database_commandline = "/usr/lib/YaST2/bin/create_scanner_database YCP >" + database_filename;
@@ -235,6 +234,17 @@ string setup_hplip_scanner_service_commandline = "/usr/lib/YaST2/bin/setup_hplip
 string network_scanning_config_filename = "/var/lib/YaST2/network_scanning_config.ycp";
 string determine_network_scanning_config_commandline = "/usr/lib/YaST2/bin/determine_network_scanner_config YCP >" + network_scanning_config_filename;
 string setup_network_scanning_config_commandline = "/usr/lib/YaST2/bin/setup_network_scanner_config";
+// The result map is used as a simple common local store for whatever additional results
+// (in particular commandline exit code, stdout, stderr, and whatever messages)
+// so that the local functions in this module can be of	easy-to-use boolean type.
+// The following keys are used:
+// result["exit"]:<integer> for exit codes
+// result["stdout"]:<string> for stdout and whatever non-error-messages
+// result["stderr"]:<string> for stderr and whatever error-messages
+map result = $[ "exit":0,
+                "stdout":"",
+                "stderr":""
+              ];
 
 /*
  * Local functions:
@@ -249,11 +259,11 @@ string setup_network_scanning_config_commandline = "/usr/lib/YaST2/bin/setup_net
  */
 boolean ExecuteBashCommand( string bash_commandline )
 { y2milestone( "Executing bash commandline: %1", bash_commandline );
-  bash_result = (map)SCR::Execute( .target.bash_output, bash_commandline );
-  if( bash_result["exit"]:9999 != 0 )
-  { y2milestone( "'%1' exit code is: %2", bash_commandline, bash_result["exit"]:9999 );
-    y2milestone( "'%1' stdout is: %2", bash_commandline, bash_result["stdout"]:"" );
-    y2milestone( "'%1' stderr is: %2", bash_commandline, bash_result["stderr"]:"" );
+  result = (map)SCR::Execute( .target.bash_output, bash_commandline );
+  if( result["exit"]:9999 != 0 )
+  { y2milestone( "'%1' exit code is: %2", bash_commandline, result["exit"]:9999 );
+    y2milestone( "'%1' stdout is: %2", bash_commandline, result["stdout"]:"" );
+    y2milestone( "'%1' stderr is: %2", bash_commandline, result["stderr"]:"" );
     return false;
   }
   return true;
@@ -293,7 +303,7 @@ string InstalledPackageVersion( string package_name )
                             // (i.e. a system which is not totally broken or totally messed up).
                             _("Failed to determine the version of package %1."), package_name ) );
   }
-  return bash_result["stdout"]:"failed to determine";
+  return result["stdout"]:"failed to determine";
 }
 
 /**
@@ -654,12 +664,12 @@ as displayed by the command /usr/sbin/lsusb -->
   if( ! (boolean)SCR::Write( .target.string, resmgr_scanner_config_file, content ) )
   { y2milestone( "Failed to (re)-create %1", resmgr_scanner_config_file );
     // Displayed in error dialog of ActivateBackend function:
-    bash_result["stderr"] = sformat( // Displayed in an error dialog (%1 is a filename).
-                                     // Only a simple message because this error does not happen on a normal system
-                                     // (i.e. a system which is not totally broken or totally messed up).
-                                     _("Cannot write file %1."),
-                                     resmgr_scanner_config_file
-                                   );
+    result["stderr"] = sformat( // Displayed in an error dialog (%1 is a filename).
+                                // Only a simple message because this error does not happen on a normal system
+                                // (i.e. a system which is not totally broken or totally messed up).
+                                _("Cannot write file %1."),
+                                resmgr_scanner_config_file
+                              );
     return false;
   }
   y2milestone( "(Re)-created %1", resmgr_scanner_config_file );
@@ -667,11 +677,11 @@ as displayed by the command /usr/sbin/lsusb -->
   { // There is at least one autodetected USB scanner with no USB vendor or product ID
     // so that there is no normal user access for this scanner.
     // Displayed in error dialog of ActivateBackend function:
-    bash_result["stderr"] = sformat( // Displayed in an error dialog (%1 is a filename).
-                                     // Only a simple message because this error does not happen on a normal system.
-                                     _("Cannot add scanner to %1 (USB vendor or product ID missing)."),
-                                     resmgr_scanner_config_file
-                                   );
+    result["stderr"] = sformat( // Displayed in an error dialog (%1 is a filename).
+                                // Only a simple message because this error does not happen on a normal system.
+                                _("Cannot add scanner to %1 (USB vendor or product ID missing)."),
+                                resmgr_scanner_config_file
+                              );
     return false;
   }
   return true;
@@ -701,10 +711,12 @@ boolean SetScsiScannerAccessPermissions()
   if( active_scsi_scanner )
   { if( ! Service::Enable( "sane-dev" ) )
     { y2milestone( "Service::Enable('sane-dev') failed." );
+      result["stderr"] = Service::Error();
       return false;
     }
     if( ! Service::Restart( "sane-dev" ) )
     { y2milestone( "Service::Restart('sane-dev') failed." );
+      result["stderr"] = Service::Error();
       return false;
     }
     y2milestone( "Service sane-dev (re)-started and enabled." );
@@ -712,10 +724,12 @@ boolean SetScsiScannerAccessPermissions()
   else
   { if( ! Service::Stop( "sane-dev" ) )
     { y2milestone( "Service::Stop('sane-dev') failed." );
+      result["stderr"] = Service::Error();
       return false;
     }
     if( ! Service::Disable( "sane-dev" ) )
     { y2milestone( "Service::Disable('sane-dev') failed." );
+      result["stderr"] = Service::Error();
       return false;
     }
     y2milestone( "Service sane-dev stopped and disabled." );
@@ -1295,7 +1309,7 @@ global list ModelItems( string filter_string )
                      interface_and_usbid_string = "(USB)";
                    }
                    // The scanner has neither SCSI nor USB:
-                   // The empty string was preset abive for interface_and_usbid_string.
+                   // The empty string was preset above for interface_and_usbid_string.
                  }
                }
                // Enclose a comment in brackets to seperate it from the rest of the model_string
@@ -1728,7 +1742,7 @@ Alternatively proceed and change the printer configuration to use the ptal servi
                                 // (i.e. a system which is not totally broken or totally messed up).
                                 // Do not change or translate "hplip", it is a service name.
                                 _("Failed to set up the hplip service.\n%1"),
-                                OnlyMeaningfulErrorMessage( bash_result["stderr"]:"" )
+                                OnlyMeaningfulErrorMessage( result["stderr"]:"" )
                               )
                      );
         Progress::Title( // Last progress step progress bar title when the Progress was aborted:
@@ -1785,7 +1799,7 @@ Alternatively proceed and change the printer configuration to use the ptal servi
                                 // (i.e. a system which is not totally broken or totally messed up).
                                 // Do not change or translate "PTAL", it is a subsystem name.
                                 _("Failed to set up the PTAL system.\n%1"),
-                                OnlyMeaningfulErrorMessage( bash_result["stderr"]:"" )
+                                OnlyMeaningfulErrorMessage( result["stderr"]:"" )
                               )
                      );
         Progress::Title( // Last progress step progress bar title when the Progress was aborted:
@@ -1826,7 +1840,7 @@ Alternatively proceed and change the printer configuration to use the ptal servi
                                 // Only a simple message because this error does not happen on a normal system
                                 // (i.e. a system which is not totally broken or totally messed up).
                                 _("Failed to set USB scanner access permissions.\n%1"),
-                                OnlyMeaningfulErrorMessage( bash_result["stderr"]:"" )
+                                OnlyMeaningfulErrorMessage( result["stderr"]:"" )
                               )
                      );
     }
@@ -1838,7 +1852,7 @@ Alternatively proceed and change the printer configuration to use the ptal servi
                                 // Only a simple message because this error does not happen on a normal system
                                 // (i.e. a system which is not totally broken or totally messed up).
                                 _("Failed to set SCSI scanner access permissions.\n%1"),
-                                OnlyMeaningfulErrorMessage( bash_result["stderr"]:"" )
+                                OnlyMeaningfulErrorMessage( result["stderr"]:"" )
                               )
                      );
     }
@@ -2051,7 +2065,7 @@ global boolean DeactivateBackend( string backend_name, integer database_index, b
                                 // Only a simple message because this error does not happen on a normal system
                                 // (i.e. a system which is not totally broken or totally messed up).
                                 _("Failed to set USB scanner access permissions.\n%1"),
-                                OnlyMeaningfulErrorMessage( bash_result["stderr"]:"" )
+                                OnlyMeaningfulErrorMessage( result["stderr"]:"" )
                               )
                      );
     }
@@ -2063,7 +2077,7 @@ global boolean DeactivateBackend( string backend_name, integer database_index, b
                                 // Only a simple message because this error does not happen on a normal system
                                 // (i.e. a system which is not totally broken or totally messed up).
                                 _("Failed to reset SCSI scanner access permissions.\n%1"),
-                                OnlyMeaningfulErrorMessage( bash_result["stderr"]:"" )
+                                OnlyMeaningfulErrorMessage( result["stderr"]:"" )
                               )
                      );
     }
@@ -2159,7 +2173,7 @@ global boolean TestBackend( string backend_name )
                             _("Test with 'scanimage -d %1 -T' failed.\nThe results are:\n\n%2"),
                             sane_device,
                             // Fallback message if the real results are missing:
-                            bash_result["stderr"]:_("(no results available)")
+                            result["stderr"]:_("(no results available)")
                           )
                  );
     // If the test failed, do the whole autodetection anew.
@@ -2183,7 +2197,7 @@ global boolean TestBackend( string backend_name )
                              _("Test with 'scanimage -d %1 -T' succeeded.\nThe results are:\n\n%2"),
                              sane_device,
                              // Fallback message if the real results are missing:
-                             bash_result["stderr"]:_("(no results available)")
+                             result["stderr"]:_("(no results available)")
                            )
                   );
   return true;

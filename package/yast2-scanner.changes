@@ -1,4 +1,12 @@
 -------------------------------------------------------------------
+Fri Aug 18 14:45:47 CEST 2006 - jsmeix@suse.de
+
+- V 2.14.2
+- Improved the user information when errors happen in
+  SetScsiScannerAccessPermissions().
+- Changed a misleading map name: "bash_result"->"result"
+
+-------------------------------------------------------------------
 Thu Aug 17 16:02:35 CEST 2006 - jsmeix@suse.de
 
 - V 2.14.1
