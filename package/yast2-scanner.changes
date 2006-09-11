@@ -1,4 +1,12 @@
 -------------------------------------------------------------------
+Mon Sep 11 15:15:02 CEST 2006 - jsmeix@suse.de
+
+- V 2.14.3
+- Disable showing Progress from SuSEFirewall::Read call and
+  SuSEFirewall::Write call to follow "a YaST style"
+  (see Suse Bugzilla #202351).
+
+-------------------------------------------------------------------
 Fri Aug 18 14:45:47 CEST 2006 - jsmeix@suse.de
 
 - V 2.14.2
