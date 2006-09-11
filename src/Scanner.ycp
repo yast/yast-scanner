@@ -2251,17 +2251,21 @@ global boolean DetermineNetworkScanningConfig()
   // Determine the firewall settings regarding remote access to the saned:
   // Return successfully regardless of the result of this steps
   // because the mandatory network scanning config was successfully determined.
+  // SuSEFirewall::Read shows a Progress.
+  // Save previous Progress state and disable showing Progress:
+  boolean progress_previous_state = Progress::set( false );
   if( ! SuSEFirewall::Read() )
   { // If firewall_config is the empty map, the user
     // cannot change a firewall setting and in SetupNetworkScanningConfig()
     // noting will be committed.
     y2milestone( "SuSEFirewall::Read failed." );
     firewall_config = $[];
+    // Restore previous Progress state:
+    Progress::set( progress_previous_state );
     return true;
   }
-  // SuSEFirewall::Read shows a progress.
-  // Sleep one second to let the user notice that the progress has finished:
-  sleep( 1000 );
+  // Restore previous Progress state:
+  Progress::set( progress_previous_state );
   // Preset the firewall_config map with the
   // defaults after a default system installation
   // to have a reasonable fallback if the actual values regarding
@@ -2392,6 +2396,9 @@ global boolean SetupNetworkScanningConfig()
       y2milestone( "Success: SuSEFirewall::RemoveService(sane-port,TCP+UDP,EXT)" );
     }
     // Commit the new firewall settings:
+    // SuSEFirewall::Write shows a Progress.
+    // Save previous Progress state and disable showing Progress:
+    boolean progress_previous_state = Progress::set( false );
     if( ! SuSEFirewall::Write() )
     { y2milestone( "Error: SuSEFirewall::Write failed to commit firewall settings regarding scanning via network." );
       Report::Error( // Message of a Report::Error.
@@ -2401,11 +2408,12 @@ global boolean SetupNetworkScanningConfig()
                      // The latter results no error.
                      _("Failed to write firewall settings regarding scanning via network.")
                    );
+      // Restore previous Progress state:
+      Progress::set( progress_previous_state );
       return false;
     }
-    // SuSEFirewall::Write shows a progress.
-    // Sleep one second to let the user notice that the progress has finished:
-    sleep( 1000 );
+    // Restore previous Progress state:
+    Progress::set( progress_previous_state );
   }
   // Determine active scanners and active backends anew.
   // Return successfully regardless of the result of this steps
