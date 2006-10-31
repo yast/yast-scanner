@@ -1,6 +1,6 @@
 #! /bin/bash
 #
-# Johannes Meixner <jsmeix@suse.de>, 2004, 2005
+# Johannes Meixner <jsmeix@suse.de>, 2004, 2005, 2006
 
 #set -x
 
@@ -16,13 +16,14 @@ OUTPUT_FORMAT="$1"
 
 # Input:
 
-# Create a temporary file:
+# Create temporary file names:
 TMP_DATA=$(mktemp -u /tmp/$MY_NAME.XXXXXX)
+TMP_DATA_RAW=$(mktemp -u /tmp/$MY_NAME.XXXXXX)
 
 # Get the raw data
 MAXIMUM_WAIT="60"
 if [ -x /usr/bin/scanimage ]
-then scanimage -f '%d,%v,%m;' >${TMP_DATA}.raw &
+then scanimage -f '%d,%v,%m;' >$TMP_DATA_RAW &
      scanimagePID=$!
      for i in $( seq $MAXIMUM_WAIT )
      do ps $scanimagePID &>/dev/null || break
@@ -35,7 +36,7 @@ else
     echo "Cannot execute /usr/bin/scanimage" 1>&2
     exit 2
 fi
-tr ';' '\n' <${TMP_DATA}.raw | sort -u >$TMP_DATA && rm ${TMP_DATA}.raw
+tr ';' '\n' <$TMP_DATA_RAW | sort -u >$TMP_DATA
 
 # Output:
 
@@ -63,7 +64,7 @@ if [ "$OUTPUT_FORMAT" = "YCP" ]
 then echo -e "  \$[]\n]"
 fi
 
-# Remove the temporary file
-rm $TMP_DATA
+# Remove the temporary files:
+rm $TMP_DATA $TMP_DATA_RAW
 exit 0
 

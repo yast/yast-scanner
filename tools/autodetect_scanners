@@ -1,6 +1,6 @@
 #! /bin/bash
 #
-# Johannes Meixner <jsmeix@suse.de>, 2004, 2005
+# Johannes Meixner <jsmeix@suse.de>, 2004, 2005, 2006
 
 #set -x
 
@@ -16,13 +16,14 @@ OUTPUT_FORMAT="$1"
 
 # Input:
 
-# Create a temporary file:
+# Create temporary file names:
 TMP_DATA=$(mktemp -u /tmp/$MY_NAME.XXXXXX)
+TMP_DATA_RAW=$(mktemp -u /tmp/$MY_NAME.XXXXXX)
 
 # Get the raw data
 MAXIMUM_WAIT="10"
 if [ -x /usr/bin/sane-find-scanner ]
-then sane-find-scanner -q >${TMP_DATA}.raw &
+then sane-find-scanner -q >$TMP_DATA_RAW &
      sanefindscannerPID=$!
      for i in $( seq $MAXIMUM_WAIT )
      do ps hp $sanefindscannerPID | grep -q sane-find-scanner || break
@@ -31,12 +32,11 @@ then sane-find-scanner -q >${TMP_DATA}.raw &
      if ps hp $sanefindscannerPID | grep -q sane-find-scanner
      then kill -9 $sanefindscannerPID &>/dev/null
      fi
-else 
-    echo "Cannot execute /usr/bin/sane-find-scanner" 1>&2
-    exit 2
+else echo "Cannot execute /usr/bin/sane-find-scanner" 1>&2
+     exit 2
 fi
 # Only USB and SCSI scanners are taken into account:
-cat ${TMP_DATA}.raw | egrep '^found SCSI |^found USB ' | sort -u | sed -e 's/^found //' | tr \" \' >$TMP_DATA && rm ${TMP_DATA}.raw
+egrep '^found SCSI |^found USB ' <$TMP_DATA_RAW | sort -u | sed -e 's/^found //' | tr \" \' >$TMP_DATA
 
 # Output:
 
@@ -82,7 +82,7 @@ if [ "$OUTPUT_FORMAT" = "YCP" ]
 then echo -e "  \$[]\n]"
 fi
 
-# Remove the temporary file
-rm $TMP_DATA
+# Remove the temporary files
+rm $TMP_DATA $TMP_DATA_RAW
 exit 0
 

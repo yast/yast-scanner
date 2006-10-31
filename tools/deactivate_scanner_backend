@@ -1,6 +1,6 @@
 #! /bin/bash
 #
-# Johannes Meixner <jsmeix@suse.de>, 2004, 2005
+# Johannes Meixner <jsmeix@suse.de>, 2004, 2005, 2006
 
 #set -x
 export PATH="/sbin:/usr/sbin:/usr/bin:/bin"
