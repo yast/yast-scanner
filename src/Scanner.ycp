@@ -234,6 +234,7 @@ string setup_hplip_scanner_service_commandline = "/usr/lib/YaST2/bin/setup_hplip
 string network_scanning_config_filename = "/var/lib/YaST2/network_scanning_config.ycp";
 string determine_network_scanning_config_commandline = "/usr/lib/YaST2/bin/determine_network_scanner_config YCP >" + network_scanning_config_filename;
 string setup_network_scanning_config_commandline = "/usr/lib/YaST2/bin/setup_network_scanner_config";
+string test_and_set_scanner_access_permissions_commandline = "/usr/lib/YaST2/bin/test_and_set_scanner_access_permissions";
 // The result map is used as a simple common local store for whatever additional results
 // (in particular commandline exit code, stdout, stderr, and whatever messages)
 // so that the local functions in this module can be of	easy-to-use boolean type.
@@ -524,215 +525,26 @@ boolean AutodetectScanners()
 }
 
 /**
- * Search the autodetected_scanners list for USB scanners
- * and if at least one USB scanner was found,
- * then do the following:
- * 1.
- * Notify resmgr to grant access for locally logged in users via the command:
- * /sbin/resmgr add /dev/bus/usb/<bus-number>/<device-number> scanner usb
- * This would grant resmgr access as long as the system runs
- * and as long as the scanner is not unplugged from the USB and re-plugged
- * without the need to reboot or to unplug the scanner from the USB
- * and re-plug it again which would trigger the udev -> HAL -> resmgr machinery.
- * 2.
- * Create the file /etc/hal/fdi/policy/10osvendor/80-scanner.fdi
- * with an entry for each autodetected USB scanner like
- * -----------------------------------------------------------------------------------
- * <match key="info.category" string="usbraw">
- *   <match key="@info.parent:usb.vendor_id" int="0x1a2b">
- *     <match key="@info.parent:usb.product_id" int="0x3c4d">
- *       <merge key="resmgr.class" type="string">scanner</merge>
- *     </match>
- *   </match>
- * </match>
- * -----------------------------------------------------------------------------------
- * Regardless whether or not there is an autodetected USB scanner,
- * /etc/hal/fdi/policy/10osvendor/80-scanner.fdi will be (re)-created.
- * If there is no autodetected USB scanner or USB vendor or product ID is missing
- * for all autodetected USB scanners, at least the header, a comment, and the footer
- * is written to have all XML tags there so that at least the comment
- * how to create entries manually is available for the user.
- * Ignore whether or not an autodetected USB scanner appears in the active_scanners list
- * (i.e. simply grant access to all autodetected USB scanners)
- * because on x86_64 "scanimage -L" cannot find scanners using the 32-bit epkowa backend
- * when it comes from the proprietary 32-bit-only "iscan" package for Epson scanners
- * (but it would work if the 64-bit epkowa backend from iscan-free is used)
- * so that in this case the scanner cannot appear in the active_scanners list
- * but "sane-find-scanner" finds (almost all) Epson USB scanners
- * so that the scanner is in the autodetected_scanners list.
+ * Test and set scanner access permissions for USB scanners and SCSI scanners
+ * for resmgr via HAL by calling a bash script which does all the work.
  * @return true on success
  */
-boolean SetUsbScannerAccessPermissions()
-{ // First of all the multi-line strings because such strings cannot be indented:
-  string content = "<?xml version=\"1.0\" encoding=\"ISO-8859-1\"?>
-<deviceinfo version=\"0.2\">
-  <device>
-
-<!-- To grant access to USB scanners create entries like:
-    <match key=\"info.category\" string=\"usbraw\">
-      <match key=\"@info.parent:usb_device.vendor_id\" int=\"0x1a2b\">
-        <match key=\"@info.parent:usb_device.product_id\" int=\"0x3c4d\">
-          <merge key=\"resmgr.class\" type=\"string\">scanner</merge>
-        </match>
-      </match>
-    </match>
-\"1a2b\" and \"3c4d\" stand for the USB device IDs
-as displayed by the command /usr/sbin/lsusb -->
-";
-  string content_entry = "
-    <match key=\"info.category\" string=\"usbraw\">
-      <match key=\"@info.parent:usb_device.vendor_id\" int=\"%1\">
-        <match key=\"@info.parent:usb_device.product_id\" int=\"%2\">
-          <merge key=\"resmgr.class\" type=\"string\">scanner</merge>
-        </match>
-      </match>
-    </match>
-";
-  string content_footer = "
-  </device>
-</deviceinfo>
-";
-  string resmgr_scanner_config_dir = "/etc/hal/fdi/policy/10osvendor";
-  string resmgr_scanner_config_file = resmgr_scanner_config_dir + "/80-scanner.fdi";
-  boolean autodetected_usb_scanner_with_missing_ids = false;
-  string usb_vendor_and_product_id = "";
-  list< string > usb_vendor_and_product_ids = [];
-  SCR::Execute( .target.mkdir, resmgr_scanner_config_dir );
-  foreach( map< string, string > autodetected_scanner,
-           autodetected_scanners,
-           { if( "USB" == autodetected_scanner["connection"]:"unknown" )
-             { // This autodetected scanner is a USB scanner.
-               // Notify resmgr to grant access for locally logged in users.
-               // This would grant resmgr access as long as the system runs
-               // and as long as the scanner is not unplugged from the USB and re-plugged
-               // without the need to reboot or to unplug the scanner from the USB
-               // and re-plug it again which would trigger the udev -> HAL -> resmgr machinery.
-               list< string > device_parts = splitstring( autodetected_scanner["device"]:"libusb:000:000", ":" );
-               string usb_bus_number = device_parts[1]:"000";
-               string usb_device_number = device_parts[2]:"000";
-               if( "000" != usb_bus_number
-                   && "000" != usb_device_number
-                 )
-               { // Don't show a user information if the following command fails
-                 // because if the user has stopped resmgr, he should know what he does
-                 // and if resmgr fails to add it, I don't know what I should tell the user
-                 // except a very long explanation how all the stuff works:
-                 ExecuteBashCommand( "/sbin/resmgr add /dev/bus/usb/"
-                                     + usb_bus_number
-                                     + "/"
-                                     + usb_device_number
-                                     + " scanner usb"
-                                   );
-               }
-               // Set up the stuff for HAL so that also after a reboot
-               // or when the user unplugs the scanner from the USB and re-plugs it again
-               // the udev -> HAL -> resmgr machinery will grant the same kind of access:
-               string usb_vendor_id = autodetected_scanner["usb_vendor_id"]:"";
-               string usb_product_id = autodetected_scanner["usb_product_id"]:"";
-               string description = autodetected_scanner["description"]:"no description";
-               if( "" == usb_vendor_id
-                   || "" == usb_product_id
-                 )
-               { // No USB vendor ID or no USB product ID:
-                 autodetected_usb_scanner_with_missing_ids = true;
-                 y2milestone( "No USB vendor ID or no USB product ID for '%1'. Therefore no entry in %2",
-                              description,
-                              resmgr_scanner_config_file
-                            );
-               }
-               else
-               { // USB vendor ID and USB product ID exist:
-                 usb_vendor_and_product_id = usb_vendor_id + usb_product_id;
-                 // Avoid duplicate entries in the content (e.g. when several same models are connected):
-                 if( ! contains( usb_vendor_and_product_ids, usb_vendor_and_product_id ) )
-                 { // The USB vendor product ID was not yet added to the content
-                   // i.e. the current scanner is not a second or third same model:
-                   content = content + sformat( content_entry, usb_vendor_id, usb_product_id );
-                   usb_vendor_and_product_ids = add( usb_vendor_and_product_ids, usb_vendor_and_product_id );
-                 }
-               }
-             }
-           }
-         );
-  // Regardless whether or not there is an autodetected USB scanner,
-  // /etc/hal/fdi/policy/10osvendor/80-scanner.fdi will be (re)-created.
-  // If there is no content_entry (i.e. there is no autodetected USB scanner
-  // or USB vendor or product ID is missing for all autodetected USB scanners),
-  // the content_footer is added to have all XML tags closed and then at least
-  // the comment how to create entries manually is available for the user:
-  content = content + content_footer;
-  if( ! (boolean)SCR::Write( .target.string, resmgr_scanner_config_file, content ) )
-  { y2milestone( "Failed to (re)-create %1", resmgr_scanner_config_file );
-    // Displayed in error dialog of ActivateBackend function:
-    result["stderr"] = sformat( // Displayed in an error dialog (%1 is a filename).
-                                // Only a simple message because this error does not happen on a normal system
-                                // (i.e. a system which is not totally broken or totally messed up).
-                                _("Cannot write file %1."),
-                                resmgr_scanner_config_file
-                              );
-    return false;
-  }
-  y2milestone( "(Re)-created %1", resmgr_scanner_config_file );
-  if( autodetected_usb_scanner_with_missing_ids )
-  { // There is at least one autodetected USB scanner with no USB vendor or product ID
-    // so that there is no normal user access for this scanner.
-    // Displayed in error dialog of ActivateBackend function:
-    result["stderr"] = sformat( // Displayed in an error dialog (%1 is a filename).
-                                // Only a simple message because this error does not happen on a normal system.
-                                _("Cannot add scanner to %1 (USB vendor or product ID missing)."),
-                                resmgr_scanner_config_file
-                              );
-    return false;
-  }
-  return true;
-}
-
-/**
- * Search the active_scanners list for possible SCSI scanners (":/dev/" in SANE device)
- * and if at least one possible SCSI scanner was found,
- * then run /etc/init.d/sane-dev (using "restart" to be safe that outdated permissions are reset)
- *      and enable it for reboot ("insserv")
- * otherwise stop it and disable it for reboot ("insserv -r").
- * Note that it must search for ":/dev/" to find only SCSI scanners ("backend:/dev/sg...")
- * because for example the hpaio backend may have also "/dev/" in its device,
- * e.g.: "hpaio:/usb/HP_LaserJet_1220?device=/dev/usb/lp0",
- * this depends on the particular model (e.g. when it doesn't report a serial number).
- * @return true on success
- */
-boolean SetScsiScannerAccessPermissions()
-{ boolean active_scsi_scanner = false;
+boolean SetScannerAccessPermissions()
+{ // Build the command line parameter:
+  string sane_devices = "";
   foreach( map< string, string > active_scanner,
            active_scanners,
-           { if( issubstring( active_scanner["sane_device"]:"", ":/dev/" ) )
-             { active_scsi_scanner = true;
-             }
+           { sane_devices = sane_devices + active_scanner["sane_device"]:"unknown" + ";";
            }
          );
-  if( active_scsi_scanner )
-  { if( ! Service::Enable( "sane-dev" ) )
-    { y2milestone( "Service::Enable('sane-dev') failed." );
-      result["stderr"] = Service::Error();
-      return false;
-    }
-    if( ! Service::Restart( "sane-dev" ) )
-    { y2milestone( "Service::Restart('sane-dev') failed." );
-      result["stderr"] = Service::Error();
-      return false;
-    }
-    y2milestone( "Service sane-dev (re)-started and enabled." );
-  }
-  else
-  { if( ! Service::Stop( "sane-dev" ) )
-    { y2milestone( "Service::Stop('sane-dev') failed." );
-      result["stderr"] = Service::Error();
-      return false;
-    }
-    if( ! Service::Disable( "sane-dev" ) )
-    { y2milestone( "Service::Disable('sane-dev') failed." );
-      result["stderr"] = Service::Error();
-      return false;
-    }
-    y2milestone( "Service sane-dev stopped and disabled." );
+  // Execute the command line:
+  if( ! ExecuteBashCommand( test_and_set_scanner_access_permissions_commandline
+                            + " '"
+                            + sane_devices
+                            + "'"
+                          )
+    )
+  { return false;
   }
   return true;
 }
@@ -1561,12 +1373,17 @@ Instead use hpoj to set up the scanner.
 Alternatively proceed and change the printer configuration to use the hplip service.
 ");
   string hpoj_message =
-  // Message of a Popup::YesNo for scanners which should be set up with the hpoj driver
+  // Message of a Popup::ContinueCancel for scanners which should be set up with the hpoj driver
   // Do not change or translate "hpoj", it is a driver name.
   // Do not change or translate "PTAL", it is a subsystem name.
   // Do not change or translate "ptal", it is a service name.
   // Do not change or translate "hplip", it is a service name.
-_("The hpoj driver requires the PTAL system to be set up and running.
+_("The hpoj driver is outdated and no longer maintained.
+To use the up-to-date driver hpaio do not proceed, go back and select the driver hpaio.
+
+If the hpaio driver does not work for you and you must use the hpoj driver:
+
+The hpoj driver requires the PTAL system to be set up and running.
 In particular, the ptal service must be up and running.
 
 Before the ptal service can be started, the PTAL system must be initialized.
@@ -1760,20 +1577,15 @@ Alternatively proceed and change the printer configuration to use the ptal servi
   if( "hpoj" == backend_name
       && user_confirmation
     )
-  { if( ! Popup::YesNo( hpoj_message ) )
+  { if( ! Popup::ContinueCancel( hpoj_message ) )
     { // The user has decided not to initialize/activate/start the PTAL system:
-      // Don't abort (i.e. return false) in this case because it is no error
-      // when the user has decided not to initialize/activate/start the PTAL system
-      // because it may be already up and running or the user may want to set it up manually.
-      // Regardless of the state of the PTAL system the backend can be activated in /etc/sane.d/dll.conf
-      Report::Warning(
-                       // Message of a Report::Warning for scanners which should be set up with the hpoj backend.
-                       // Only a simple message because before there was a Popup::YesNo
-                       // which asked the user whether he wants to let YaST activate the ptal service
-                       // so that this message is shown if the user has explicitely rejected to do it.
-                       // Do not change or translate "ptal", it is a service name.
-                       _("If the ptal service is not running, the scanner cannot work.")
+      // Usually this is because of the hpoj_message which explains that hpoj is outdated
+      // and that the user should cancel and try hpaio instead.
+      y2milestone( "Set up hpoj SANE backend cancelled by user." );
+      Progress::Title( // Last progress step progress bar title when the Progress was aborted:
+                       _("Cancelled")
                      );
+      return false;
     }
     else
     { // The user has decided to initialize/activate/start the PTAL system:
@@ -1832,26 +1644,14 @@ Alternatively proceed and change the printer configuration to use the ptal servi
   }
   else
   { Progress::NextStage();
-    if( ! SetUsbScannerAccessPermissions()
+    if( ! SetScannerAccessPermissions()
         && user_confirmation
       )
-    { Report::Warning( sformat( // Message of a Report::Warning when setting USB scanner access permissions failed
+    { Report::Warning( sformat( // Message of a Report::Warning when setting scanner access permissions failed
                                 // where %1 can be replaced by an error message if such an error message exists.
                                 // Only a simple message because this error does not happen on a normal system
                                 // (i.e. a system which is not totally broken or totally messed up).
-                                _("Failed to set USB scanner access permissions.\n%1"),
-                                OnlyMeaningfulErrorMessage( result["stderr"]:"" )
-                              )
-                     );
-    }
-    if( ! SetScsiScannerAccessPermissions()
-        && user_confirmation
-      )
-    { Report::Warning( sformat( // Message of a Report::Warning when setting SCSI scanner access permissions failed
-                                // where %1 can be replaced by an error message if such an error message exists.
-                                // Only a simple message because this error does not happen on a normal system
-                                // (i.e. a system which is not totally broken or totally messed up).
-                                _("Failed to set SCSI scanner access permissions.\n%1"),
+                                _("Failed to set scanner access permissions.\n%1"),
                                 OnlyMeaningfulErrorMessage( result["stderr"]:"" )
                               )
                      );
@@ -2057,26 +1857,14 @@ global boolean DeactivateBackend( string backend_name, integer database_index, b
   { active_scanners = [];
   }
   else
-  { if( ! SetUsbScannerAccessPermissions()
+  { if( ! SetScannerAccessPermissions()
         && user_confirmation
       )
-    { Report::Warning( sformat( // Message of a Report::Warning when setting USB scanner access permissions failed
+    { Report::Warning( sformat( // Message of a Report::Warning when setting scanner access permissions failed
                                 // where %1 can be replaced by an error message if such an error message exists.
                                 // Only a simple message because this error does not happen on a normal system
                                 // (i.e. a system which is not totally broken or totally messed up).
-                                _("Failed to set USB scanner access permissions.\n%1"),
-                                OnlyMeaningfulErrorMessage( result["stderr"]:"" )
-                              )
-                     );
-    }
-    if( ! SetScsiScannerAccessPermissions()
-        && user_confirmation
-      )
-    { Report::Warning( sformat( // Message of a Report::Warning when re-setting SCSI scanner access permissions failed
-                                // where %1 can be replaced by an error message if such an error message exists.
-                                // Only a simple message because this error does not happen on a normal system
-                                // (i.e. a system which is not totally broken or totally messed up).
-                                _("Failed to reset SCSI scanner access permissions.\n%1"),
+                                _("Failed to set scanner access permissions.\n%1"),
                                 OnlyMeaningfulErrorMessage( result["stderr"]:"" )
                               )
                      );

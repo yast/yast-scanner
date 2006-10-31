@@ -1,4 +1,17 @@
 -------------------------------------------------------------------
+Tue Oct 31 15:14:14 CET 2006 - jsmeix@suse.de
+
+- V 2.14.4
+- Replaced complicated SetUsbScannerAccessPermissions()
+  and SetScsiScannerAccessPermissions() functions by a simpler
+  test_and_set_scanner_access_permissions script and call this
+  script from a simple SetScannerAccessPermissions() function
+  (for background info see Suse Bugzilla bug 160899).
+- Added user information regarding outdated hpoj driver.
+- Fixed possible tmp races in some scripts (only $TMP_DATA
+  was created using mktemp but not $TMP_DATA.raw).
+
+-------------------------------------------------------------------
 Mon Sep 11 15:15:02 CEST 2006 - jsmeix@suse.de
 
 - V 2.14.3
