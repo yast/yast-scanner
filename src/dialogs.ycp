@@ -152,7 +152,7 @@ any OverviewDialog()
     if( ret == `edit )
     { // Get what was selected:
       string selected_item_id = WizardHW::SelectedItem();
-      y2milestone( "selected_item_idelected in OverviewDialog: %1", selected_item_id );
+      y2milestone( "selected_item_id in OverviewDialog: %1", selected_item_id );
       if( selected_item_id == "" )
       { Popup::AnyMessage( // Header of a Popup::AnyMessage when nothing was selected:
                            _("Nothing Selected"),

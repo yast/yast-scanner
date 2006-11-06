@@ -100,15 +100,36 @@ do # Test for USB and SCSI scanners and ignore anything else:
    fi
    if echo $LINE | grep -q '^/dev/sg[0-9][0-9]*$'
    then # It is a SCSI scanner:
-        # Test if this scanner does not show up as "scanner" but as "processor":
-        if ! lsscsi -g | grep $LINE | grep -i 'scanner'
-        then # Write an entry to the local HAL file:
-             echo '    <match key="info.category" string="scsi_generic">' >>$HAL_LOCAL_FILE
-             echo '      <match key="@info.parent:scsi.type" string="processor">' >>$HAL_LOCAL_FILE
-             echo '        <append key="info.capabilities" type="strlist">scanner</append>' >>$HAL_LOCAL_FILE
-             echo '      </match>' >>$HAL_LOCAL_FILE
-             echo '    </match>' >>$HAL_LOCAL_FILE
-             echo '' >>$HAL_LOCAL_FILE
+        # Test if this scanner does not show up as "scanner".
+        # There are two know manufacturers where this happens: "HP" and "EPSON".
+        # Some (all?) of their SCSI scanners show up as as "processor"
+        # (because those devices do not support the SCSI scanner protocol
+        # but only some kind of generic SCSI protocol):
+        LSSCSI_LINE=$( lsscsi -g | grep $LINE )
+        if ! echo $LSSCSI_LINE | grep -q -i 'scanner'
+        then # Test for the particular manufacturer:
+             if echo $LSSCSI_LINE | grep -q -i 'HP'
+             then # Write a HP entry to the local HAL file:
+                  echo '    <match key="info.category" string="scsi_generic">' >>$HAL_LOCAL_FILE
+                  echo '      <match key="@info.parent:scsi.type" string="processor">' >>$HAL_LOCAL_FILE
+                  echo '        <match key="@info.parent:scsi.vendor" string="HP">' >>$HAL_LOCAL_FILE
+                  echo '          <append key="info.capabilities" type="strlist">scanner</append>' >>$HAL_LOCAL_FILE
+                  echo '        </match>' >>$HAL_LOCAL_FILE
+                  echo '      </match>' >>$HAL_LOCAL_FILE
+                  echo '    </match>' >>$HAL_LOCAL_FILE
+                  echo '' >>$HAL_LOCAL_FILE
+             fi
+             if echo $LSSCSI_LINE | grep -q -i 'EPSON'
+             then # Write an EPSON entry to the local HAL file:
+                  echo '    <match key="info.category" string="scsi_generic">' >>$HAL_LOCAL_FILE
+                  echo '      <match key="@info.parent:scsi.type" string="processor">' >>$HAL_LOCAL_FILE
+                  echo '        <match key="@info.parent:scsi.vendor" string="EPSON">' >>$HAL_LOCAL_FILE
+                  echo '          <append key="info.capabilities" type="strlist">scanner</append>' >>$HAL_LOCAL_FILE
+                  echo '        </match>' >>$HAL_LOCAL_FILE
+                  echo '      </match>' >>$HAL_LOCAL_FILE
+                  echo '    </match>' >>$HAL_LOCAL_FILE
+                  echo '' >>$HAL_LOCAL_FILE
+             fi
         fi
    fi
 done

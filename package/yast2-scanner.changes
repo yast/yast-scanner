@@ -1,4 +1,13 @@
 -------------------------------------------------------------------
+Mon Nov  6 15:22:51 CET 2006 - jsmeix@suse.de
+
+- V 2.14.5
+- Improved test_and_set_scanner_access_permissions to make
+  manufacturer specific entries for SCSI "processors".
+- Fixed when the info regarding outdated hpoj pops up (must be
+  before the hp-officeJet package may get installed).
+
+-------------------------------------------------------------------
 Tue Oct 31 15:14:14 CET 2006 - jsmeix@suse.de
 
 - V 2.14.4
