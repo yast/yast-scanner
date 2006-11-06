@@ -1372,18 +1372,20 @@ If the scanner is also supported by the hpoj driver, do not proceed.
 Instead use hpoj to set up the scanner.
 Alternatively proceed and change the printer configuration to use the hplip service.
 ");
-  string hpoj_message =
+  string hpoj_outdated_message =
   // Message of a Popup::ContinueCancel for scanners which should be set up with the hpoj driver
+  // Do not change or translate "hpoj", it is a driver name.
+  // Do not change or translate "hpaio", it is a driver name.
+_("The hpoj driver should still work but it is outdated and no longer maintained.
+To use the up-to-date driver hpaio, cancel now and go back and select the driver hpaio.
+");
+  string hpoj_message =
+  // Message of a Popup::YesNo for scanners which should be set up with the hpoj driver
   // Do not change or translate "hpoj", it is a driver name.
   // Do not change or translate "PTAL", it is a subsystem name.
   // Do not change or translate "ptal", it is a service name.
   // Do not change or translate "hplip", it is a service name.
-_("The hpoj driver is outdated and no longer maintained.
-To use the up-to-date driver hpaio do not proceed, go back and select the driver hpaio.
-
-If the hpaio driver does not work for you and you must use the hpoj driver:
-
-The hpoj driver requires the PTAL system to be set up and running.
+_("The hpoj driver requires the PTAL system to be set up and running.
 In particular, the ptal service must be up and running.
 
 Before the ptal service can be started, the PTAL system must be initialized.
@@ -1424,10 +1426,20 @@ Alternatively proceed and change the printer configuration to use the ptal servi
       return false;
     }
   }
+  // Tell the user about the outdated hpoj backend:
+  if( "hpoj" == backend_name
+      && user_confirmation
+    )
+  { if( ! Popup::ContinueCancel( hpoj_outdated_message ) )
+    { // The user has decided to cancel the set up of the outdated hpoj backend:
+      y2milestone( "Set up outdated hpoj backend cancelled by user." );
+      // Return true because actually nothing failed here:
+      return true;
+    }
+  }
   // To be safe assume that something will really be modified.
   // If there is in fact nothing modified, it doesn't harm if 'modified' is 'true':
   modified = true;
-
   // Define the progress stages:
   Progress::New( // Header of a Progress::New:
                  // %1 will be replaced by the backend name
@@ -1577,15 +1589,20 @@ Alternatively proceed and change the printer configuration to use the ptal servi
   if( "hpoj" == backend_name
       && user_confirmation
     )
-  { if( ! Popup::ContinueCancel( hpoj_message ) )
+  { if( ! Popup::YesNo( hpoj_message ) )
     { // The user has decided not to initialize/activate/start the PTAL system:
-      // Usually this is because of the hpoj_message which explains that hpoj is outdated
-      // and that the user should cancel and try hpaio instead.
-      y2milestone( "Set up hpoj SANE backend cancelled by user." );
-      Progress::Title( // Last progress step progress bar title when the Progress was aborted:
-                       _("Cancelled")
+      // Don't abort (i.e. return false) in this case because it is no error
+      // when the user has decided not to initialize/activate/start the PTAL system
+      // because it may be already up and running or the user may want to set it up manually.
+      // Regardless of the state of the PTAL system the backend can be activated in /etc/sane.d/dll.conf
+      Report::Warning(
+                       // Message of a Report::Warning for scanners which should be set up with the hpoj backend.
+                       // Only a simple message because before there was a Popup::YesNo
+                       // which asked the user whether he wants to let YaST activate the ptal service
+                       // so that this message is shown if the user has explicitely rejected to do it.
+                       // Do not change or translate "ptal", it is a service name.
+                       _("If the ptal service is not running, the scanner cannot work.")
                      );
-      return false;
     }
     else
     { // The user has decided to initialize/activate/start the PTAL system:
