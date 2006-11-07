@@ -628,10 +628,10 @@ any SelectModelDialog()
           && ! Arch::i386()
         )
       { if( ! Arch::x86_64() )
-        { Popup::AnyMessage( // Header of a Popup::AnyMessage when the epkowa backend was selected
+        { Popup::AnyMessage( // Header of a Popup::AnyMessage when the epkowa driver was selected
                              // on a non-i386-compatible architecture (i.e. neither i386 nor x86_64).
                              _("Unsupported Driver"),
-                             // Body of a Popup::AnyMessage when the epkowa backend was selected
+                             // Body of a Popup::AnyMessage when the epkowa driver was selected
                              // on a non-i386-compatible architecture (i.e. neither i386 nor x86_64).
                              // Do not change or translate "epkowa", it is a driver name.
                              // Do not change or translate "iscan", it is a package name.
@@ -640,13 +640,36 @@ any SelectModelDialog()
                            );
           continue;
         }
-        Popup::AnyMessage( // Header of a Popup::AnyMessage when the epkowa backend was selected on x86_64:
-                           _("Possibly Problematic Driver"),
-                           // Body of a Popup::AnyMessage when the epkowa backend was selected on x86_64.
-                           // Do not change or translate "epkowa", it is a driver name.
-                           _("The epkowa driver may cause problems on 64-bit architectures.\nSee our support database for details.")
-                         );
+        if( ! Popup::ContinueCancelHeadline( // Header of a Popup::ContinueCancelHeadline
+                                             // when the epkowa driver was selected on x86_64:
+                                             _("Possibly Problematic Driver"),
+                                             // Body of a Popup::ContinueCancelHeadline
+                                             // when the epkowa driver was selected on x86_64.
+                                             // Do not change or translate "epkowa", it is a driver name.
+                                             _("The epkowa driver may cause problems on 64-bit architectures.\nSee our support database for details.")
+                                           )
+          )
+        { // The user has decided to cancel the set up of the epkowa backend on x86_64:
+          continue;
+        }
       }
+      // Tell the user that the hpoj backend is outdated and no longer maintained:
+      if( "hpoj" == Scanner::database[Scanner::selected_model_database_index,"backend"]:"unknown" )
+      { if( ! Popup::ContinueCancelHeadline( // Header of a Popup::ContinueCancelHeadline
+                                             // when the outdated hpoj driver was selected:
+                                             _("Outdated Driver"),
+                                             // Body of a Popup::ContinueCancelHeadline
+                                             // when the outdated hpoj driver was selected.
+                                             // Do not change or translate "hpoj", it is a driver name.
+                                             // Do not change or translate "hpaio", it is a driver name.
+                                             _("The hpoj driver should work but it is no longer maintained.\nTry to use the up-to-date driver hpaio.")
+                                           )
+          )
+        { // The user has decided to cancel the set up of the outdated hpoj backend:
+          continue;
+        }
+      }
+      // Leve this dialog and do the "next" step according to the sequences in wizards.ycp:
       break;
     }
     y2milestone( "Ignoring unexpected returncode in SelectModelDialog: %1", ret );

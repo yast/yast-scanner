@@ -1,4 +1,16 @@
 -------------------------------------------------------------------
+Tue Nov  7 09:09:50 CET 2006 - jsmeix@suse.de
+
+- V 2.14.6
+- Improved when the the info regarding outdated hpoj pops up.
+  Moved it from the ActivateBackend function directly into the
+  SelectModelDialog which avoids that the user must go "Back"
+  to the SelectModelDialog to select the up-to-date hpaio driver.
+- Added a help text regarding the most often reported problem
+  regarding scanner setup (a driver is set up but no scanner
+  is recognized by the driver).
+
+-------------------------------------------------------------------
 Mon Nov  6 15:22:51 CET 2006 - jsmeix@suse.de
 
 - V 2.14.5
