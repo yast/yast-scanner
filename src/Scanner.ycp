@@ -1372,13 +1372,6 @@ If the scanner is also supported by the hpoj driver, do not proceed.
 Instead use hpoj to set up the scanner.
 Alternatively proceed and change the printer configuration to use the hplip service.
 ");
-  string hpoj_outdated_message =
-  // Message of a Popup::ContinueCancel for scanners which should be set up with the hpoj driver
-  // Do not change or translate "hpoj", it is a driver name.
-  // Do not change or translate "hpaio", it is a driver name.
-_("The hpoj driver should still work but it is outdated and no longer maintained.
-To use the up-to-date driver hpaio, cancel now and go back and select the driver hpaio.
-");
   string hpoj_message =
   // Message of a Popup::YesNo for scanners which should be set up with the hpoj driver
   // Do not change or translate "hpoj", it is a driver name.
@@ -1424,17 +1417,6 @@ Alternatively proceed and change the printer configuration to use the ptal servi
     if( "unknown" == backend_name )
     { y2milestone( "Error: Cannot activate backend: %1", backend_name );
       return false;
-    }
-  }
-  // Tell the user about the outdated hpoj backend:
-  if( "hpoj" == backend_name
-      && user_confirmation
-    )
-  { if( ! Popup::ContinueCancel( hpoj_outdated_message ) )
-    { // The user has decided to cancel the set up of the outdated hpoj backend:
-      y2milestone( "Set up outdated hpoj backend cancelled by user." );
-      // Return true because actually nothing failed here:
-      return true;
     }
   }
   // To be safe assume that something will really be modified.

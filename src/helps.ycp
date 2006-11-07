@@ -32,18 +32,18 @@ Please wait...
 </p>"),
 
 "overview" :
-// Overview dialog help 1/7:
+// Overview dialog help 1/8:
 _("<p>
 <b><big>Scanner Configuration</big></b><br>
 Set up or change the scanner configuration and show the already active scanners.
 </p>") +
-// Overview dialog help 2/7:
+// Overview dialog help 2/8:
 _("<p>
 To set up a new scanner, choose the scanner from the list of
 detected scanners and press <b>Edit</b>.
 If your scanner has not been detected, use <b>Add</b> for a manual configuration.
 </p>") +
-// Overview dialog help 3/7:
+// Overview dialog help 3/8:
 // Do not change or translate "HP", it is a manufacturer name.
 // Do not change or translate "OfficeJet", it is a model name.
 // Do not change or translate "PSC", it is a model (Printer Scanner Copier) name.
@@ -59,7 +59,7 @@ If you have difficulties configuring your scanner here,
 check whether it appears in the output of <tt>/usr/sbin/lsusb</tt>.
 If it is not listed there, the USB system cannot communicate with the scanner.
 </p>") +
-// Overview dialog help 4/7:
+// Overview dialog help 4/8:
 // Do not change or translate "lsscsi", it is a command name.
 _("<p>
 SCSI scanners are normally detected.
@@ -68,12 +68,12 @@ check whether your scanner is shown by the command <tt>lsscsi</tt>.
 If not, the SCSI system cannot communicate with the scanner.
 Verify that an appropriate kernel module for the SCSI host adapter has been loaded.
 </p>") +
-// Overview dialog help 5/7:
+// Overview dialog help 5/8:
 _("<p>
 Parallel port scanners cannot be configured with this tool.
 These devices must be configured manually.
 </p>") +
-// Overview dialog help 6/7:
+// Overview dialog help 6/8:
 // Do not confuse a "network scanner" (i.e. a scanner which is directly accessible in the network)
 // with a "network scanner" (i.e. a program which scans the network for other hosts or services)
 // or with a "remote scanner" (i.e. a scanner which is connected to another host in the network).
@@ -87,7 +87,7 @@ so it is directly accessible in the network.
 In contrast, scanning via network means accessing a remote scanner
 connected to another host in the network.
 </p>") +
-// Overview dialog help 7/7:
+// Overview dialog help 7/8:
 // Do not confuse "scanning via network" (i.e. use a remote scanner via another host in the network)
 // with "scanning the network" (i.e. scan the network for other hosts or services).
 // It is not possible to modify or remove an active scanner directly.
@@ -99,6 +99,27 @@ Press <b>Edit</b> to modify a driver.
 Press <b>Delete</b> to remove a driver.
 If you press <b>Other</b>, you can
 restart the detection, test active scanners, or set up scanning via network.
+</p>") +
+// Overview dialog help 8/8:
+// The most often problem which is reported by users regarding scanner setup is
+// when a driver was set up but then no scanner was recognized by this driver.
+// If the driver is the right one for the scanner, then in very most cases
+// the reason is a low-level (kernel related) device communication problem
+// (i.e. a low-level USB problem or a low-level SCSI problem).
+// Those problems cannot be fixed from within the YaST scanner setup module
+// but at least the user must be informed.
+// Be careful when you change or translate "No scanner recognized by this driver"
+// because exactly this text is shown here to the user in this case.
+// In particular keep the meaning of "recognize" because the driver actually runs
+// but the running driver fails to recognize the scanner.
+_("<p>
+If a driver is set up but no scanner is recognized by the driver, possible reasons are:
+The scanner is not connected or switched off,
+the driver is not the right one for the particular model
+(even small differences in model names or internal differences in
+the same model series may require different drivers),
+there are low-level (kernel related) device communication problems
+(e.g. a low-level USB problem or a low-level SCSI problem).
 </p>"),
 
 "select_model" :
