@@ -1067,7 +1067,7 @@ global list ModelItems( string filter_string )
   list< term > model_items = [];
   foreach( map< string, string > database_entry,
            database,
-           { // Set the database_index to the index number of the actual database_entry:
+           { // Set the database_index to the index number of the current database_entry:
              database_index = database_index + 1;
              // Use local variables to have shorter variable names:
              string manufacturer = database_entry["manufacturer"]:"unknown manufacturer";
@@ -1244,9 +1244,21 @@ global list ModelItems( string filter_string )
                }
                // If there is an autodetected USB scanner selected,
                // test whether an USB-ID in the database matches to the selected autodetected scanner
-               // and if exactly one model in the database matches then preselect it.
+               // and select it in the model_items list if it is at least "good" supported.
+               // This means if the support status is "complete" or "good"
+               // and there is no special setup for firmware upload required
+               // (automated firmware upload as e.g. "epkowa" does is "good").
+               // Do not select a model if it is less than "good" supported to avoid
+               // that the user clicks too fast [Next] without having at least a look
+               // what there was selected (e.g. ignoring any comment regarding the model).
+               // If more than one model in the database matches, select those model
+               // with the better support status (complete > good).
+               // It even the support status are the same, select those model with the driver
+               // which is considered better regarding how well the scanner is supported
+               // (e.g.: hpaio > any other driver in particular hpaio is better than outdated hpoj)
+               // regardless whether or not the driver is free software (epkowa > any other driver).
                // If no model matches then leave the selected_model_database_index unchanged
-               // to preselect an already selected model in the database again.
+               // to select an already selected model in the model_items list again.
                // This happens for example when going 'back' to the model selection screen.
                if( selected_autodetected_scanners_index >= 0 )
                { string autodetected_usbid = autodetected_scanners[selected_autodetected_scanners_index,"usb_vendor_id"]:""
@@ -1255,23 +1267,68 @@ global list ModelItems( string filter_string )
                  // There is no false match when one or both USB-IDs are missing
                  // because autodetected_usbid is not the empty string but at least ":"
                  // and usbid is either a complete "0x0a1b:0x2c3d" USB-ID or the empty string:
-                 if( autodetected_usbid == usbid )
-                 { // To test for uniqueness the whole database must be processed again
-                   // because for the actual model entry in the database the decission must be made now
-                   // whether or not to preselect it:
-                   integer matching_models_count = 0;
-                   foreach( map< string, string > database_test_entry,
-                            database,
-                            { string test_usbid = database_test_entry["usbid"]:"";
-                              if( autodetected_usbid == test_usbid )
-                              { matching_models_count = matching_models_count + 1;
-                              }
-                            }
-                          );
-                   if( 1 == matching_models_count )
-                   { y2milestone( "Autodetected USB-ID '%1' matches to exactly one database entry.",
-                                  autodetected_usbid);
+                 if( autodetected_usbid == usbid
+                     && firmware != "required"
+                     && ( status == "complete"
+                          || status == "good"
+                        )
+                   )
+                 { if( -1 == selected_model_database_index )
+                   { // There is no model selected.
+                     // Select the current model:
                      selected_model_database_index = database_index;
+                     y2milestone( "Preselected model: %1", model_string );
+                   }
+                   else
+                   { // There is already a model selected.
+                     // Test which has the better support status:
+                     string selected_status = database[selected_model_database_index,"status"]:"unknown";
+                     if( status != selected_status )
+                     { if( "complete" == status )
+                       { // Select the current model:
+                         selected_model_database_index = database_index;
+                         y2milestone( "Preselected other model: %1", model_string );
+                       }
+                     }
+                     else
+                     { // The support status are the same.
+                       // Test which has the better driver:
+                       string selected_backend = database[selected_model_database_index,"backend"]:"unknown";
+                       if( backend != selected_backend )
+                       { if( backend == "epkowa" )
+                         { // In case of same support status, the epkowa driver is considered to be better
+                           // than any other driver (in particular better than epson, plustek, or snapscan).
+                           // Select the current model:
+                           selected_model_database_index = database_index;
+                           y2milestone( "Preselected other model: %1", model_string );
+                         }
+                         else
+                         { if( backend == "hpaio" )
+                           { // In case of same support status, the hpaio driver is considered to be better
+                             // than any other driver (in particular better than the outdated hpoj).
+                             // Select the current model:
+                             selected_model_database_index = database_index;
+                             y2milestone( "Preselected other model: %1", model_string );
+                           }
+                         }
+                       }
+                       else
+                       { // The drivers are the same.
+                         if( backend == "epkowa" )
+                         { // Many models for the epkowa driver are available under two names.
+                           // One name is the "overseas version" of the Japanese name.
+                           // This is mentioned in the comment, e.g. the model "Perfection 1200U PHOTO" has
+                           // the comment "overseas version of the GT-7600UF, Perfection 1200U with TPU option bundled".
+                           // Prefer the "overseas version" entry because most users are "overseas"
+                           // and users in Japan find their model name in the comment:
+                           if( regexpmatch( tolower( comment ), tolower( "overseas version" ) ) )
+                           { // Select the current model:
+                             selected_model_database_index = database_index;
+                             y2milestone( "Preselected other model: %1", model_string );
+                           }
+                         }
+                       }
+                     }
                    }
                  }
                }
@@ -1280,35 +1337,47 @@ global list ModelItems( string filter_string )
                { // If the filter_string is not the empty string then
                  // test whether the model_string matches to the filter_string:
                  if( regexpmatch( tolower( model_string ), tolower( filter_string ) ) )
-                 { // If there was already a model selected before then preselect this model.
-                   // This happens for example when going 'back' to the model selection screen
-                   // or when a model in the database matches the selected autodetected scanner:
-                   if( selected_model_database_index == database_index )
-                   { model_items = add( model_items, `item( `id( database_index ), model_string, true ) );
-                   }
-                   else
-                   { model_items = add( model_items, `item( `id( database_index ), model_string ) );
-                   }
+                 { model_items = add( model_items, `item( `id( database_index ), model_string ) );
                  }
                }
                else
-               { // If there was already a model selected before then preselect this model.
-                 // This happens for example when going 'back' to the model selection screen
-                 // or when a model in the database matches the selected autodetected scanner:
-                 if( selected_model_database_index == database_index )
-                 { model_items = add( model_items, `item( `id( database_index ), model_string, true ) );
-                 }
-                 else
-                 { model_items = add( model_items, `item( `id( database_index ), model_string ) );
-                 }
+               { model_items = add( model_items, `item( `id( database_index ), model_string ) );
                }
              }
            }
          );
-  return sort( term a,
-               term b,
+  // Preselect the entry in the model_items list which matches
+  // to the current value of selected_model_database_index
+  // if such an entry exists in the model_items list (e.g. because of the
+  // filter_string there may be no such entry in the model_items list):
+  integer model_items_index = -1;
+  integer selected_model_items_index = -1;
+  term dummy = `id(0);
+  // Determine if such an entry exists:
+  foreach( term model_item,
+           model_items,
+           { // Set the model_items_index to the index number of the current model_item:
+             model_items_index = model_items_index + 1;
+             // Extract the database_index value from the model_item
+             // (model_item[0] is `id(database_index) and model_item[1] is the model_string):
+             database_index = tointeger( filterchars( tostring( model_item[0]:dummy ), "0123456789" ) );
+             if( selected_model_database_index == database_index )
+             { selected_model_items_index = model_items_index;
+             }
+           }
+         );
+  if( selected_model_items_index >= 0 )
+  { // Actually preselect the entry:
+    database_index = tointeger( filterchars( tostring( model_items[selected_model_items_index,0]:dummy ), "0123456789" ) );
+    model_string = model_items[selected_model_items_index,1]:"";
+    model_items[selected_model_items_index] = `item( `id( database_index ), model_string, true );
+  }
+  // Return a list which is sorted according to the model_string entries
+  // (model_item[0] is `id(database_index) and model_item[1] is the model_string):
+  return sort( term one_model_item,
+               term another_model_item,
                model_items,
-               { return a[1]:"" < b[1]:""; }
+               { return one_model_item[1]:"" < another_model_item[1]:""; }
              );
 }
 

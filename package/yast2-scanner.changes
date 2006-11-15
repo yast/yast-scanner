@@ -1,4 +1,10 @@
 -------------------------------------------------------------------
+Wed Nov 15 13:00:33 CET 2006 - jsmeix@suse.de
+
+- V 2.14.7
+- Improved how a model is preselected in the model_items list.
+
+-------------------------------------------------------------------
 Tue Nov  7 09:09:50 CET 2006 - jsmeix@suse.de
 
 - V 2.14.6
