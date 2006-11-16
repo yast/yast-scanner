@@ -1,4 +1,11 @@
 -------------------------------------------------------------------
+Thu Nov 16 11:47:01 CET 2006 - jsmeix@suse.de
+
+- V 2.14.8
+- Using better syntax for the model preselection code
+  (regarding access integer values in term types).
+
+-------------------------------------------------------------------
 Wed Nov 15 13:00:33 CET 2006 - jsmeix@suse.de
 
 - V 2.14.7
