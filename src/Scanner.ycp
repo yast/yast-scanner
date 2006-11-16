@@ -1244,12 +1244,15 @@ global list ModelItems( string filter_string )
                }
                // If there is an autodetected USB scanner selected,
                // test whether an USB-ID in the database matches to the selected autodetected scanner
-               // and select it in the model_items list if it is at least "good" supported.
-               // This means if the support status is "complete" or "good"
-               // and there is no special setup for firmware upload required
+               // and select it in the model_items list if it is at least "good supported"
+               // where "good supported" means that the support status is "complete" or "good"
+               // and there is no special (manual) setup for firmware upload required
                // (automated firmware upload as e.g. "epkowa" does is "good").
-               // Do not select a model if it is less than "good" supported to avoid
-               // that the user clicks too fast [Next] without having at least a look
+               // Do not select a model if it is less than "good supported" to avoid that
+               // there is another driver entry in the database which has no USB-ID
+               // but which provides much better support (e.g. the model entry with USB-ID
+               // provides minimal support but an entry without USB-ID provides good support)
+               // and to avoid that the user clicks too fast [Next] without having a look
                // what there was selected (e.g. ignoring any comment regarding the model).
                // If more than one model in the database matches, select those model
                // with the better support status (complete > good).
@@ -1277,7 +1280,7 @@ global list ModelItems( string filter_string )
                    { // There is no model selected.
                      // Select the current model:
                      selected_model_database_index = database_index;
-                     y2milestone( "Preselected model: %1", model_string );
+                     y2milestone( "Selected model: %1", model_string );
                    }
                    else
                    { // There is already a model selected.
@@ -1287,7 +1290,7 @@ global list ModelItems( string filter_string )
                      { if( "complete" == status )
                        { // Select the current model:
                          selected_model_database_index = database_index;
-                         y2milestone( "Preselected other model: %1", model_string );
+                         y2milestone( "Selected other model: %1", model_string );
                        }
                      }
                      else
@@ -1300,7 +1303,7 @@ global list ModelItems( string filter_string )
                            // than any other driver (in particular better than epson, plustek, or snapscan).
                            // Select the current model:
                            selected_model_database_index = database_index;
-                           y2milestone( "Preselected other model: %1", model_string );
+                           y2milestone( "Selected other model: %1", model_string );
                          }
                          else
                          { if( backend == "hpaio" )
@@ -1308,7 +1311,7 @@ global list ModelItems( string filter_string )
                              // than any other driver (in particular better than the outdated hpoj).
                              // Select the current model:
                              selected_model_database_index = database_index;
-                             y2milestone( "Preselected other model: %1", model_string );
+                             y2milestone( "Selected other model: %1", model_string );
                            }
                          }
                        }
@@ -1317,14 +1320,15 @@ global list ModelItems( string filter_string )
                          if( backend == "epkowa" )
                          { // Many models for the epkowa driver are available under two names.
                            // One name is the "overseas version" of the Japanese name.
-                           // This is mentioned in the comment, e.g. the model "Perfection 1200U PHOTO" has
-                           // the comment "overseas version of the GT-7600UF, Perfection 1200U with TPU option bundled".
+                           // This is mentioned in the comment, e.g. the "Perfection 1200U PHOTO" has the comment
+                           // "overseas version of the GT-7600UF, Perfection 1200U with TPU option bundled".
                            // Prefer the "overseas version" entry because most users are "overseas"
-                           // and users in Japan find their model name in the comment:
+                           // (from the Japanese point of view) and even users in Japan find their model name
+                           // in the comment (which is not true the other way round):
                            if( regexpmatch( tolower( comment ), tolower( "overseas version" ) ) )
                            { // Select the current model:
                              selected_model_database_index = database_index;
-                             y2milestone( "Preselected other model: %1", model_string );
+                             y2milestone( "Selected other model: %1", model_string );
                            }
                          }
                        }
@@ -1333,15 +1337,15 @@ global list ModelItems( string filter_string )
                  }
                }
                // Take the filter_string into account:
-               if( "" != filter_string )
+               if( "" == filter_string )
+               { model_items = add( model_items, `item( `id( database_index ), model_string ) );
+               }
+               else
                { // If the filter_string is not the empty string then
                  // test whether the model_string matches to the filter_string:
                  if( regexpmatch( tolower( model_string ), tolower( filter_string ) ) )
                  { model_items = add( model_items, `item( `id( database_index ), model_string ) );
                  }
-               }
-               else
-               { model_items = add( model_items, `item( `id( database_index ), model_string ) );
                }
              }
            }
@@ -1358,19 +1362,26 @@ global list ModelItems( string filter_string )
            model_items,
            { // Set the model_items_index to the index number of the current model_item:
              model_items_index = model_items_index + 1;
-             // Extract the database_index value from the model_item
-             // (model_item[0] is `id(database_index) and model_item[1] is the model_string):
-             database_index = tointeger( filterchars( tostring( model_item[0]:dummy ), "0123456789" ) );
-             if( selected_model_database_index == database_index )
+             // model_item[0] is the term `id(database_index) and id[0] is the database_index
+             // so that model_item[0,0] is the database_index:
+             if( selected_model_database_index == model_item[0,0]:-1 )
              { selected_model_items_index = model_items_index;
              }
            }
          );
   if( selected_model_items_index >= 0 )
-  { // Actually preselect the entry:
-    database_index = tointeger( filterchars( tostring( model_items[selected_model_items_index,0]:dummy ), "0123456789" ) );
+  { // Actually preselect the entry.
+    // model_items[selected_model_items_index] is a model_item and
+    // model_item[1] is the model_string and
+    // model_item[0,0] is the database_index (see the previous comment) so that
+    // model_items[selected_model_items_index,0,0] is the database_index:
+    database_index = model_items[selected_model_items_index,0,0]:-1;
     model_string = model_items[selected_model_items_index,1]:"";
     model_items[selected_model_items_index] = `item( `id( database_index ), model_string, true );
+    y2milestone( "Preselected model shown to the user: %1", model_string );
+  }
+  else
+  { y2milestone( "No preselected model shown to the user. The filter_string is: '%1'", filter_string );
   }
   // Return a list which is sorted according to the model_string entries
   // (model_item[0] is `id(database_index) and model_item[1] is the model_string):
