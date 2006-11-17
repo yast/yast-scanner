@@ -1120,8 +1120,10 @@ global list ModelItems( string filter_string )
                    { // The scanner has USB:
                      interface_and_usbid_string = "(USB)";
                    }
-                   // The scanner has neither SCSI nor USB:
-                   // The empty string was preset above for interface_and_usbid_string.
+                   else
+                   { // The scanner has neither SCSI nor USB:
+                     interface_and_usbid_string = "";
+                   }
                  }
                }
                // Enclose a comment in brackets to seperate it from the rest of the model_string
