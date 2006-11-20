@@ -866,7 +866,8 @@ global list< map< string, any > > OverviewContents()
   // (i.e. if neither a scanner was autodetected nor an active scanner nor an active backend exists)
   string id_prefix = "";
   // On top of the table list the autodetected but not yet configured scanners
-  // i.e. those scanners which are in autodetected_scanners but not in active_scanners:
+  // i.e. those scanners which are in autodetected_scanners but not in active_scanners
+  // except remote active scanners which are accessed via the "net" meta-backend:
   id_prefix = "autodetected_scanner:";
   // Process the autodetected_scanners list:
   integer autodetected_scanners_index = -1;
@@ -883,13 +884,15 @@ global list< map< string, any > > OverviewContents()
              // The last entry in the autodetected_scanners list is an empty map.
              // Skip at least this last entry:
              if( "" != description )
-             { // Test whether the autodetected_scanner is one of the active_scanners.
+             { // Test whether the autodetected_scanner is one of the active_scanners
+               // except remote active scanners which are accessed via the "net" meta-backend.
                // If yes, then there is no need to set it up again
                // and then don't show it in the list of detected_scanners:
                boolean show_as_detected_scanner = true;
                foreach( map< string, string > active_scanner,
                         active_scanners,
-                        { if( issubstring( active_scanner["sane_device"]:"unknown", device ) )
+                        { if( issubstring( active_scanner["sane_device"]:"unknown", device )
+                              && "net" != active_scanner["backend"]:"" )
                           { show_as_detected_scanner = false;
                           }
                         }
