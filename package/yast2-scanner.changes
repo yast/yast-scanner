@@ -1,4 +1,16 @@
 -------------------------------------------------------------------
+Mon Nov 20 11:21:55 CET 2006 - jsmeix@suse.de
+
+- V 2.14.10
+- Fixed OverviewDialog() regarding the 'net' meta-backend so that
+  click 'Edit' or 'Delete' launches the network scanning dialog
+  if the 'net' meta-backend is used.
+- Fixed OverviewContents() so that a (local) autodetected scanner
+  is show to the user even if its device (e.g. "libusb:001:002")
+  appears also in the device info of the 'net' meta-backend for a
+  remote scanner (e.g. "net:192.168.1.2:epson:libusb:001:002").
+
+-------------------------------------------------------------------
 Fri Nov 17 10:44:28 CET 2006 - jsmeix@suse.de
 
 - V 2.14.9

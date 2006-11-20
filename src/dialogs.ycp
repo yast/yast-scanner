@@ -195,13 +195,21 @@ any OverviewDialog()
         // because this model was normally added, configured, or edited before
         // (in particular if there is only one scanner connected):
         Scanner::selected_autodetected_scanners_index = -1;
+        // Test if the active scanner is a remote scanner
+        // (i.e. when it is accessed via the 'net' meta-backend):
+        integer active_scanners_index = tointeger( filterchars( selected_item_id, "0123456789" ) );
+        if( "net" == Scanner::active_scanners[active_scanners_index,"backend"]:"" )
+        { // Exit this dialog and run the ConfigureNetworkScanningDialog via the sequencer in wizards.ycp:
+          ret = `network_scanning;
+          break;
+        }
         // Exit this dialog and run the AddSequence() via the sequencer in wizards.ycp:
         ret = `edit;
         break;
       }
       if( issubstring( selected_item_id, "active_backend:" ) )
-      { // A selected active backend cannot be edited.
-        // A selected active backend can only be deleted.
+      { // A selected active backend (without a matching active scanner) cannot be edited.
+        // A selected active backend (without a matching active scanner) can only be deleted.
         Popup::AnyMessage( // Header of a Popup::AnyMessage when an active driver
                            // without a matching active scanner was selected
                            // and then the user clicked the [Edit] button.
@@ -301,11 +309,24 @@ any OverviewDialog()
       { // Delete a selected active scanner:
         integer active_scanners_index = tointeger( filterchars( selected_item_id, "0123456789" ) );
         backend_name = Scanner::active_scanners[active_scanners_index,"backend"]:"";
+        // Test if the active scanner is a remote scanner
+        // (i.e. when it is accessed via the 'net' meta-backend):
+        if( "net" == backend_name )
+        { // Exit this dialog and run the ConfigureNetworkScanningDialog via the sequencer in wizards.ycp:
+          ret = `network_scanning;
+          break;
+        }
       }
       if( issubstring( selected_item_id, "active_backend:" ) )
       { // Delete a selected active backend (without a matching active scanner):
         integer active_backends_index = tointeger( filterchars( selected_item_id, "0123456789" ) );
         backend_name = Scanner::active_backends[active_backends_index]:"";
+        // Test if the active backend is the 'net' meta-backend:
+        if( "net" == backend_name )
+        { // Exit this dialog and run the ConfigureNetworkScanningDialog via the sequencer in wizards.ycp:
+          ret = `network_scanning;
+          break;
+        }
       }
       y2milestone( "Selected backend to be deleted (i.e. deactivated) is: %1", backend_name );
       if( "" == backend_name )
