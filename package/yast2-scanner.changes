@@ -1,4 +1,13 @@
 -------------------------------------------------------------------
+Wed Nov 29 14:42:19 CET 2006 - jsmeix@suse.de
+
+- V 2.14.11
+- Fixed test_and_set_scanner_access_permissions to search only
+  in field 2 of the lsscsi output if it is SCSI type "scanner" and
+  to search only in field 3 if it is manufactuer "HP" or "EPSON"
+  (see Suse Bugzilla bug 223875).
+
+-------------------------------------------------------------------
 Mon Nov 20 11:21:55 CET 2006 - jsmeix@suse.de
 
 - V 2.14.10
