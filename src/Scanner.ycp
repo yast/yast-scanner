@@ -892,7 +892,8 @@ global list< map< string, any > > OverviewContents()
                foreach( map< string, string > active_scanner,
                         active_scanners,
                         { if( issubstring( active_scanner["sane_device"]:"unknown", device )
-                              && "net" != active_scanner["backend"]:"" )
+                              && "net" != active_scanner["backend"]:""
+                            )
                           { show_as_detected_scanner = false;
                           }
                         }
