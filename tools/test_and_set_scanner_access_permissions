@@ -106,9 +106,9 @@ do # Test for USB and SCSI scanners and ignore anything else:
         # (because those devices do not support the SCSI scanner protocol
         # but only some kind of generic SCSI protocol):
         LSSCSI_LINE=$( lsscsi -g | grep $LINE )
-        if ! echo $LSSCSI_LINE | grep -q -i 'scanner'
+        if ! echo $LSSCSI_LINE | tr -s ' ' | cut -d ' ' -f2 | grep -q -i 'scanner'
         then # Test for the particular manufacturer:
-             if echo $LSSCSI_LINE | grep -q -i 'HP'
+             if echo $LSSCSI_LINE | tr -s ' ' | cut -d ' ' -f3 | grep -q -i 'HP'
              then # Write a HP entry to the local HAL file:
                   echo '    <match key="info.category" string="scsi_generic">' >>$HAL_LOCAL_FILE
                   echo '      <match key="@info.parent:scsi.type" string="processor">' >>$HAL_LOCAL_FILE
@@ -119,7 +119,7 @@ do # Test for USB and SCSI scanners and ignore anything else:
                   echo '    </match>' >>$HAL_LOCAL_FILE
                   echo '' >>$HAL_LOCAL_FILE
              fi
-             if echo $LSSCSI_LINE | grep -q -i 'EPSON'
+             if echo $LSSCSI_LINE | tr -s ' ' | cut -d ' ' -f3 | grep -q -i 'EPSON'
              then # Write an EPSON entry to the local HAL file:
                   echo '    <match key="info.category" string="scsi_generic">' >>$HAL_LOCAL_FILE
                   echo '      <match key="@info.parent:scsi.type" string="processor">' >>$HAL_LOCAL_FILE
