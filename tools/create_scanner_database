@@ -28,7 +28,7 @@ Extract()
 
 # Process the SANE description files:
 # At least the SANE description files must exist:
-PACKAGE="sane"
+PACKAGE="sane-backends"
 DESCRIPTION_FILES="/usr/share/sane/descriptions/*.desc"
 rpm -q $PACKAGE &>/dev/null || { echo "Error: Required package $PACKAGE is not installed." 1>&2 ; exit 2 ; }
 ls $DESCRIPTION_FILES &>/dev/null || { echo "Error: Required SANE description files $DESCRIPTION_FILES not found." 1>&2 ; exit 3 ; }
@@ -43,16 +43,6 @@ done >>$TMP_DATA
 # The package hplip is installed by default.
 PACKAGE="hplip"
 DESCRIPTION_FILE="/usr/share/sane/descriptions-external/hpaio.desc"
-if [ -r "$DESCRIPTION_FILE" ]
-then echo ":package \"$PACKAGE\"" >>$TMP_DATA
-     Extract $DESCRIPTION_FILE >>$TMP_DATA
-else echo "Info: Cannot read $DESCRIPTION_FILE" 1>&2
-fi
-
-# Process the optional HPOJ external description file:
-# The package hp-officeJet is not installed by default.
-PACKAGE="hp-officeJet"
-DESCRIPTION_FILE="/usr/share/sane/descriptions-external/hpoj.desc"
 if [ -r "$DESCRIPTION_FILE" ]
 then echo ":package \"$PACKAGE\"" >>$TMP_DATA
      Extract $DESCRIPTION_FILE >>$TMP_DATA

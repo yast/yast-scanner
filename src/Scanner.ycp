@@ -61,13 +61,13 @@ global boolean Abort()
 
 /**
  * Scanner database:
- * When package version of sane/hp-officeJet/iscan/iscan-free changes
+ * When package version of sane-backends/hplip/hp-officeJet/iscan/iscan-free changes
  * the database is created anew in Scanner::Read() which calls the bash script
  * "/usr/lib/YaST2/bin/create_scanner_database YCP"
  * which outputs on stdout a YCP list of @ref scanner_model_map
  * where the last list entry is an emtpy map.
  * @struct scanner_model_map
- * $[ "package":"The package which provides the backend: sane/hplip/hp-officeJet/iscan/iscan-free (required)",
+ * $[ "package":"The package which provides the backend: sane-backends/hplip/hp-officeJet/iscan/iscan-free (required)",
  *    "backend":"The name of the backend (required)",
  *    "manufacturer":"The manufacturer name of the scanner (required)",
  *    "model":"The model name of the scanner (required)",
@@ -174,20 +174,20 @@ global map< string, boolean > firewall_config = $[];
  * Environment values:
  * It is a map of @ref environment_values
  * @struct environment_values
- * $[ "sane_version":"What 'rpm -q sane' returns (required)",
+ * $[ "sane-backends_version":"What 'rpm -q sane-backends' returns (required)",
  *    "hplip_version":"What 'rpm -q hplip' returns (required)",
  *    "hp-officeJet_version":"What 'rpm -q hp-officeJet' returns (required)",
  *    "iscan_version":"What 'rpm -q iscan' returns (required)"
  *    "iscan-free_version":"What 'rpm -q iscan-free' returns (required)"
  *  ]
  */
-global map< string, string > actual_environment = $[ "sane_version":"",
+global map< string, string > actual_environment = $[ "sane-backends_version":"",
                                                      "hplip_version":"",
                                                      "hp-officeJet_version":"",
                                                      "iscan_version":"",
                                                      "iscan-free_version":""
                                                    ];
-global map< string, string > stored_environment = $[ "sane_version":"",
+global map< string, string > stored_environment = $[ "sane-backends_version":"",
                                                      "hplip_version":"",
                                                      "hp-officeJet_version":"",
                                                      "iscan_version":"",
@@ -643,17 +643,17 @@ global boolean Read()
   if( Abort() ) return false;
   Progress::NextStage();
   // Make sure the package sane is installed (otherwise abort):
-  if( ! TestAndInstallPackage( "sane" ) )
+  if( ! TestAndInstallPackage( "sane-backends" ) )
   { return false;
   }
-  // Check installed package version of sane, hp-officeJet, iscan, iscan-free:
-  actual_environment["sane_version"] = InstalledPackageVersion( "sane" );
+  // Check installed package version of sane-backends, hp-officeJet, iscan, iscan-free:
+  actual_environment["sane-backends_version"] = InstalledPackageVersion( "sane-backends" );
   actual_environment["hplip_version"] = InstalledPackageVersion( "hplip" );
   actual_environment["hp-officeJet_version"] = InstalledPackageVersion( "hp-officeJet" );
   actual_environment["iscan_version"] = InstalledPackageVersion( "iscan" );
   actual_environment["iscan-free_version"] = InstalledPackageVersion( "iscan-free" );
-  y2milestone( "Version of sane, hplip, hp-officeJet, iscan, iscan-free: %1, %2, %3, %4, %5",
-               actual_environment["sane_version"]:"failed",
+  y2milestone( "Version of sane-backends, hplip, hp-officeJet, iscan, iscan-free: %1, %2, %3, %4, %5",
+               actual_environment["sane-backends_version"]:"failed",
                actual_environment["hplip_version"]:"failed",
                actual_environment["hp-officeJet_version"]:"failed",
                actual_environment["iscan_version"]:"failed",
@@ -664,7 +664,7 @@ global boolean Read()
   { stored_environment = (map< string, string >)SCR::Read( .target.ycp, environment_filename );
     if( stored_environment == nil )
     { y2milestone( "Warning: Failed to read the stored environment." );
-      stored_environment = $[ "sane_version":"failed to read",
+      stored_environment = $[ "sane-backends_version":"failed to read",
                               "hplip_version":"failed to read",
                               "hp-officeJet_version":"failed to read",
                               "iscan_version":"failed to read",
@@ -675,7 +675,7 @@ global boolean Read()
   // Progress 2. stage (Read or create the scanner database):
   if( Abort() ) return false;
   Progress::NextStage();
-  if( actual_environment["sane_version"]:"0" != stored_environment["sane_version"]:"1"
+  if( actual_environment["sane-backends_version"]:"0" != stored_environment["sane-backends_version"]:"1"
       || actual_environment["hplip_version"]:"0" != stored_environment["hplip_version"]:"1"
       || actual_environment["hp-officeJet_version"]:"0" != stored_environment["hp-officeJet_version"]:"1"
       || actual_environment["iscan_version"]:"0" != stored_environment["iscan_version"]:"1"
