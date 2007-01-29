@@ -1,4 +1,13 @@
 -------------------------------------------------------------------
+Mon Jan 29 14:42:47 CET 2007 - jsmeix@suse.de
+
+- V 2.15.0
+- Package 'sane' was renamed into 'sane-backends'.
+  Package 'hp-officeJet' was dropped.
+  Adapted it so that it works with 'sane-backends'
+  and dropped support for 'hp-officeJet'.
+
+-------------------------------------------------------------------
 Wed Nov 29 14:42:19 CET 2006 - jsmeix@suse.de
 
 - V 2.14.11

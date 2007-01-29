@@ -133,9 +133,10 @@ The information is based on data of the SANE project at
 <tt>http://www.sane-project.org/</tt>.
 </p>") +
 // SelectModel dialog help 2/5:
+// Do not change or translate "sane-backends", it is a package name.
 _("<p>
 A model is supported if there is at least one appropriate scanner driver available.
-Most scanner drivers are provided by the sane package.
+Most scanner drivers are provided by the sane-backends package.
 The support status varies from minimal to complete.
 </p>") +
 // SelectModel dialog help 3/5:
