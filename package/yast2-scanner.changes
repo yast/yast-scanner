@@ -1,4 +1,11 @@
 -------------------------------------------------------------------
+Tue Apr 17 14:33:29 CEST 2007 - jsmeix@suse.de
+
+- V 2.15.1
+- Added test for Package::Available == nil (when there is no
+  installation source available).
+
+-------------------------------------------------------------------
 Mon Jan 29 14:42:47 CET 2007 - jsmeix@suse.de
 
 - V 2.15.0
