@@ -1,9 +1,11 @@
 -------------------------------------------------------------------
-Wed Jun 13 15:01:23 CEST 2007 - jsmeix@suse.de
+Wed Jun 13 16:04:30 CEST 2007 - jsmeix@suse.de
 
 - V 2.15.2
 - Adapted test_and_set_scanner_access_permissions according to the
-  currently newest changes in HAL (see Suse Bugzilla bug 250659).
+  currently newest changes in HAL (see Suse Bugzilla bug 250659)
+  and added a test to make sure that the USB verdor and product IDs
+  do not contain only zeroes (see Suse Bugzilla bug 283132).
 - Adapted setup_hplip_scanner_service to be prepared for
   HPLIP version 2.x (but be backward compatible).
 
