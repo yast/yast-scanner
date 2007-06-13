@@ -85,17 +85,20 @@ do # Test for USB and SCSI scanners and ignore anything else:
         VENDOR_PRODUCT=$( lsusb -s $BUS_DEVICE | grep -o 'ID [0-9A-Fa-f]*:[0-9A-Fa-f]*' | cut -b 4- )
         VENDOR=$( echo $VENDOR_PRODUCT | cut -d ':' -s -f 1 )
         PRODUCT=$( echo $VENDOR_PRODUCT | cut -d ':' -s -f 2 )
-        # Test if this scanner is not already listed in the global HAL file:
-        if ! grep -i -A 1 "usb_device.vendor_id\" int=\"0x$VENDOR\"" $HAL_GLOBAL_FILE | grep -q -i "usb_device.product_id\" int=\"0x$PRODUCT\""
-        then # Write an entry to the local HAL file:
-             echo '    <match key="info.bus" string="usb_device">' >>$HAL_LOCAL_FILE
-             echo "      <match key=\"usb_device.vendor_id\" int=\"0x$VENDOR\">" >>$HAL_LOCAL_FILE
-             echo "        <match key=\"usb_device.product_id\" int=\"0x$PRODUCT\">" >>$HAL_LOCAL_FILE
-             echo '          <append key="info.capabilities" type="strlist">scanner</append>' >>$HAL_LOCAL_FILE
-             echo '        </match>' >>$HAL_LOCAL_FILE
-             echo '      </match>' >>$HAL_LOCAL_FILE
-             echo '    </match>' >>$HAL_LOCAL_FILE
-             echo '' >>$HAL_LOCAL_FILE
+        # Make sure that both VENDOR and PRODUCT do not contain only zeroes:
+        if echo $VENDOR | grep -q [1-9A-Fa-f] && echo $PRODUCT | grep -q [1-9A-Fa-f]
+        then # Test if this scanner is not already listed in the global HAL file:
+             if ! grep -i -A 1 "usb_device.vendor_id\" int=\"0x$VENDOR\"" $HAL_GLOBAL_FILE | grep -q -i "usb_device.product_id\" int=\"0x$PRODUCT\""
+             then # Write an entry to the local HAL file:
+                  echo '    <match key="info.bus" string="usb_device">' >>$HAL_LOCAL_FILE
+                  echo "      <match key=\"usb_device.vendor_id\" int=\"0x$VENDOR\">" >>$HAL_LOCAL_FILE
+                  echo "        <match key=\"usb_device.product_id\" int=\"0x$PRODUCT\">" >>$HAL_LOCAL_FILE
+                  echo '          <append key="info.capabilities" type="strlist">scanner</append>' >>$HAL_LOCAL_FILE
+                  echo '        </match>' >>$HAL_LOCAL_FILE
+                  echo '      </match>' >>$HAL_LOCAL_FILE
+                  echo '    </match>' >>$HAL_LOCAL_FILE
+                  echo '' >>$HAL_LOCAL_FILE
+             fi
         fi
    fi
    if echo $LINE | grep -q '^/dev/sg[0-9][0-9]*$'
