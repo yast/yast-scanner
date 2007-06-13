@@ -63,9 +63,9 @@ echo '<deviceinfo version="0.2">' >>$HAL_LOCAL_FILE
 echo '  <device>' >>$HAL_LOCAL_FILE
 echo '' >>$HAL_LOCAL_FILE
 echo '<!-- To grant access to USB scanners create entries like:' >>$HAL_LOCAL_FILE
-echo '    <match key="info.category" string="usbraw">' >>$HAL_LOCAL_FILE
-echo '      <match key="@info.parent:usb_device.vendor_id" int="0x1a2b">' >>$HAL_LOCAL_FILE
-echo '        <match key="@info.parent:usb_device.product_id" int="0x3c4d">' >>$HAL_LOCAL_FILE
+echo '    <match key="info.bus" string="usb_device">' >>$HAL_LOCAL_FILE
+echo '      <match key="usb_device.vendor_id" int="0x1a2b">' >>$HAL_LOCAL_FILE
+echo '        <match key="usb_device.product_id" int="0x3c4d">' >>$HAL_LOCAL_FILE
 echo '          <append key="info.capabilities" type="strlist">scanner</append>' >>$HAL_LOCAL_FILE
 echo '        </match>' >>$HAL_LOCAL_FILE
 echo '      </match>' >>$HAL_LOCAL_FILE
@@ -88,9 +88,9 @@ do # Test for USB and SCSI scanners and ignore anything else:
         # Test if this scanner is not already listed in the global HAL file:
         if ! grep -i -A 1 "usb_device.vendor_id\" int=\"0x$VENDOR\"" $HAL_GLOBAL_FILE | grep -q -i "usb_device.product_id\" int=\"0x$PRODUCT\""
         then # Write an entry to the local HAL file:
-             echo '    <match key="info.category" string="usbraw">' >>$HAL_LOCAL_FILE
-             echo "      <match key=\"@info.parent:usb_device.vendor_id\" int=\"0x$VENDOR\">" >>$HAL_LOCAL_FILE
-             echo "        <match key=\"@info.parent:usb_device.product_id\" int=\"0x$PRODUCT\">" >>$HAL_LOCAL_FILE
+             echo '    <match key="info.bus" string="usb_device">' >>$HAL_LOCAL_FILE
+             echo "      <match key=\"usb_device.vendor_id\" int=\"0x$VENDOR\">" >>$HAL_LOCAL_FILE
+             echo "        <match key=\"usb_device.product_id\" int=\"0x$PRODUCT\">" >>$HAL_LOCAL_FILE
              echo '          <append key="info.capabilities" type="strlist">scanner</append>' >>$HAL_LOCAL_FILE
              echo '        </match>' >>$HAL_LOCAL_FILE
              echo '      </match>' >>$HAL_LOCAL_FILE
