@@ -1,4 +1,11 @@
 -------------------------------------------------------------------
+Thu Jun 21 15:12:27 CEST 2007 - jsmeix@suse.de
+
+- V 2.15.3
+- Adapted test_and_set_scanner_access_permissions to be prepared
+  for HPLIP version 2.x.
+
+-------------------------------------------------------------------
 Wed Jun 13 16:04:30 CEST 2007 - jsmeix@suse.de
 
 - V 2.15.2
