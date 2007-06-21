@@ -43,16 +43,46 @@ else MAXIMUM_WAIT="60"
           exit 2
      fi
 fi
-# Split it into seperated lines, remove the SANE backend name, and remove duplicates
-# (duplicates happen when different SANE backends are active for the same scanner):
-tr ';' '\n' <$TMP_DATA_RAW | cut -d ':' -s -f 2- | sort -u >$TMP_DATA
+# Split it into seperated lines, remove the SANE backend name if it is a usual SANE backend,
+# substitute the 'hpaio:/usb/' backend name with ':hpaio:/usb/' to keep this backend name
+# because it is needed later to match the SANE device from the 'hp-makeuri -s' command,
+# and remove duplicates which happen when different backends are active for the same scanner:
+tr ';' '\n' <$TMP_DATA_RAW | sed -e 's/^hpaio:\/usb\//:hpaio:\/usb\//' | cut -d ':' -s -f 2- | sort -u >$TMP_DATA
 # TMP_DATA should contain lines with plain device infos for scanners like
 #   libusb:001:002
 #   libusb:004:005
+#   hpaio:/usb/HP_LaserJet_1220?serial=00XXXXXXXXXX
 #   /dev/sg0
 #   /dev/sg2
+# and random useless stuff e.g. when the net backend is used on localhost
+# or for network scanners via the 'hpaio:/net/...' backend like
+#   localhost:hpaio:/usb/HP_LaserJet_1220?serial=00XXXXXXXXXX
+#   localhost:plustek:libusb:001:005
+#   /net/Officejet_7200_series?ip=10.10.100.100
 # A detailed syntax check is not done here because it happens later,
 # see "Test for USB and SCSI scanners and ignore anything else" below.
+
+# For each 'hpaio:/usb/<model-string>' line output a matching 'libusb:<bus>:<device>' line:
+# List all HP USB devices, extract the bus and device number,
+# use 'hp-makeuri -s' to make the SANE device (ignore error messages on stderr
+# which happen for plain HP printers like 'error: Device does not support scan.'
+# or may happen for whatever else USB devices like 'error: Device not found'),
+# and if the SANE device from 'hp-makeuri -s' is found in TMP_DATA,
+# append a matching 'libusb:<bus>:<device>' line to TMP_DATA.
+# Duplicate 'libusb:<bus>:<device>' lines could happen regardless that
+# the BusDevice values are unique (because the lsusb output is unique)
+# because another backend might have already reported a HP USB scanner.
+# Skip this section if hp-makeuri cannot be executed for whatever reason.
+if [ -x /usr/bin/hp-makeuri ]
+then for BusDevice in $( lsusb -d 03f0: | cut -d ' ' -f 2,4 | tr ' :' ': ' )
+     do for URI in $( hp-makeuri -s $BusDevice 2>/dev/null)
+        do if grep -q "^$URI\$" $TMP_DATA
+           then grep -q "^libusb:$BusDevice\$" $TMP_DATA || echo libusb:$BusDevice >>$TMP_DATA
+           fi
+        done
+     done
+else echo "Cannot execute /usr/bin/hp-makeuri" 1>&2
+fi
 
 # Write header to HAL_LOCAL_FILE
 # and exit silently if this fails for whatever reason
