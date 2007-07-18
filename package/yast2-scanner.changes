@@ -1,4 +1,12 @@
 -------------------------------------------------------------------
+Wed Jul 18 12:02:31 CEST 2007 - jsmeix@suse.de
+
+- V 2.15.4
+- Mentioned in the help text that USB devices which are
+  no scanners might be detected as a USB scanner
+  (see Suse Bugzilla bug 260991).
+
+-------------------------------------------------------------------
 Thu Jun 21 15:12:27 CEST 2007 - jsmeix@suse.de
 
 - V 2.15.3

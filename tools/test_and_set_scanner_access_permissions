@@ -75,7 +75,7 @@ tr ';' '\n' <$TMP_DATA_RAW | sed -e 's/^hpaio:\/usb\//:hpaio:\/usb\//' | cut -d 
 # Skip this section if hp-makeuri cannot be executed for whatever reason.
 if [ -x /usr/bin/hp-makeuri ]
 then for BusDevice in $( lsusb -d 03f0: | cut -d ' ' -f 2,4 | tr ' :' ': ' )
-     do for URI in $( hp-makeuri -s $BusDevice 2>/dev/null)
+     do for URI in $( hp-makeuri -s $BusDevice 2>/dev/null )
         do if grep -q "^$URI\$" $TMP_DATA
            then grep -q "^libusb:$BusDevice\$" $TMP_DATA || echo libusb:$BusDevice >>$TMP_DATA
            fi

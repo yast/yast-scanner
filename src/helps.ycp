@@ -50,6 +50,8 @@ If your scanner has not been detected, use <b>Add</b> for a manual configuration
 // Do not change or translate "/usr/sbin/lsusb", it is a command name.
 _("<p>
 A normal USB scanner should be detected automatically.
+It might happen that particular USB devices which are no scanners are shown too
+because it is not possible to reliably distinguish a scanner from any other USB device.
 If it was not detected or if there are unexpected results,
 try <b>Other</b> and <b>Restart Detection</b>.
 It may also work to proceed with <b>Add</b>.
