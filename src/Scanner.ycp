@@ -362,18 +362,18 @@ If you really want to install iscan, you must do it manually.
   // Package::Available returns nil if no package source is available.
   boolean package_available = Package::Available( package_name );
   if( nil == package_available )
-  { y2milestone( "Required package %1 is not installed and there is no package installation source available.", package_name );
+  { y2milestone( "Required package %1 is not installed and there is no package repository available.", package_name );
     Report::Error( sformat( // Message of a Report::Error where %1 will be replaced by the package name:
-                            _("Required package %1 is not installed and there is no package installation source available."),
+                            _("Required package %1 is not installed and there is no package repository available."),
                             package_name
                           )
                  );
     return false;
   }
   if( ! package_available )
-  { y2milestone( "Required package %1 is not installed and not available on the installation source.", package_name );
+  { y2milestone( "Required package %1 is not installed and not available in the repository.", package_name );
     Report::Error( sformat( // Message of a Report::Error where %1 will be replaced by the package name:
-                            _("Required package %1 is not installed and not available on the installation source."),
+                            _("Required package %1 is not installed and not available in the repository."),
                             package_name
                           )
                  );
