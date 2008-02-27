@@ -225,11 +225,11 @@ but scanning data is transferred via an additional random port.
 The default <b>Firewall Settings</b> during system installation
 protect your host from external access.
 This is not a problem when using scanners in an internal network
-(when the network interface belongs to the internal network zone)
+(when the network interface belongs to the internal network zone),
 unless you have firewall protection enabled for the internal zone.
 Allowing access from an external network does not make sense
 because scanning documents requires physical scanner access.
-Therefore access from the external zone can only be denied
+Therefore, access from the external zone can only be denied
 if it was accidentally allowed by insecure firewall settings.
 </p>") +
 // ConfigureNetworkScanning dialog help 3/4:
