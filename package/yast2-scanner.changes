@@ -1,7 +1,23 @@
 -------------------------------------------------------------------
+Tue Mar 18 12:48:38 CET 2008 - jsmeix@suse.de
+
+- V 2.16.0
+- Removed the RPM test for "sane-backends" from
+  create_scanner_database because all what matters in this script
+  is whether or not the description files exist.
+  Furthermore the YaST scanner module tests during startup
+  if "sane-backends" is installed (and installs it if not).
+- Skipped "SCSI via USB" scanners in
+  test_and_set_scanner_access_permissions
+  (see Novell/Suse Bugzilla bnc#341565).
+- Added more explanatory text for the proprietary iscan driver
+  on x86_64 (see Novell/Suse Bugzilla bnc#337816).
+
+-------------------------------------------------------------------
 Mon Mar 17 12:43:32 CET 2008 - jsrain@suse.cz
 
-- added 'StartupNotify=true' to the desktop file (bnc #304964)
+- Added 'StartupNotify=true' to the desktop file
+  (see Novell/Suse Bugzilla bnc#304964).
 
 -------------------------------------------------------------------
 Thu Jul 19 15:50:54 CEST 2007 - jsmeix@suse.de
@@ -15,7 +31,7 @@ Wed Jul 18 12:02:31 CEST 2007 - jsmeix@suse.de
 - V 2.15.4
 - Mentioned in the help text that USB devices which are
   no scanners might be detected as a USB scanner
-  (see Suse Bugzilla bug 260991).
+  (see Novell/Suse Bugzilla bnc#260991).
 
 -------------------------------------------------------------------
 Thu Jun 21 15:12:27 CEST 2007 - jsmeix@suse.de
@@ -29,16 +45,17 @@ Wed Jun 13 16:04:30 CEST 2007 - jsmeix@suse.de
 
 - V 2.15.2
 - Adapted test_and_set_scanner_access_permissions according to the
-  currently newest changes in HAL (see Suse Bugzilla bug 250659)
+  currently newest changes in HAL (see Novell Bugzilla bnc#250659)
   and added a test to make sure that the USB verdor and product IDs
-  do not contain only zeroes (see Suse Bugzilla bug 283132).
+  do not contain only zeroes (see Novell/Suse Bugzilla bnc#283132).
 - Adapted setup_hplip_scanner_service to be prepared for
   HPLIP version 2.x (but be backward compatible).
 
 -------------------------------------------------------------------
 Fri May 25 13:30:04 CEST 2007 - jsrain@suse.cz
 
-- removed outdated translations from .desktop-files (#271209)
+- Removed outdated translations from .desktop-files
+  (see Novell/Suse Bugzilla bnc#271209).
 
 -------------------------------------------------------------------
 Tue Apr 17 14:33:29 CEST 2007 - jsmeix@suse.de
@@ -63,7 +80,7 @@ Wed Nov 29 14:42:19 CET 2006 - jsmeix@suse.de
 - Fixed test_and_set_scanner_access_permissions to search only
   in field 2 of the lsscsi output if it is SCSI type "scanner" and
   to search only in field 3 if it is manufactuer "HP" or "EPSON"
-  (see Suse Bugzilla bug 223875).
+  (see Novell/Suse Bugzilla bnc#223875).
 
 -------------------------------------------------------------------
 Mon Nov 20 11:21:55 CET 2006 - jsmeix@suse.de
@@ -127,7 +144,7 @@ Tue Oct 31 15:14:14 CET 2006 - jsmeix@suse.de
   and SetScsiScannerAccessPermissions() functions by a simpler
   test_and_set_scanner_access_permissions script and call this
   script from a simple SetScannerAccessPermissions() function
-  (for background info see Suse Bugzilla bug 160899).
+  (for background info see Novell/Suse Bugzilla bnc#160899).
 - Added user information regarding outdated hpoj driver.
 - Fixed possible tmp races in some scripts (only $TMP_DATA
   was created using mktemp but not $TMP_DATA.raw).
@@ -138,7 +155,7 @@ Mon Sep 11 15:15:02 CEST 2006 - jsmeix@suse.de
 - V 2.14.3
 - Disable showing Progress from SuSEFirewall::Read call and
   SuSEFirewall::Write call to follow "a YaST style"
-  (see Suse Bugzilla #202351).
+  (see Novell/Suse Bugzilla bnc#202351).
 
 -------------------------------------------------------------------
 Fri Aug 18 14:45:47 CEST 2006 - jsmeix@suse.de
@@ -175,7 +192,7 @@ Tue Aug 15 11:40:28 CEST 2006 - jsmeix@suse.de
   because otherwise it is early aborted for some scanners
   which need a long time to warm up the lamp.
 - Test also for "hpfax" in DependantPrintQueueExists() function
-  (see Suse Bugzilla #184824).
+  (see Novell/Suse Bugzilla bnc#184824).
 - Fixed SetScsiScannerAccessPermissions(): First enable sane-dev
   then (re)start it.
 
@@ -198,7 +215,8 @@ Wed Mar  1 15:46:59 CET 2006 - jsmeix@suse.de
 - V 2.13.14
 - Removed the user information to re-plug an USB scanner
   which was added in V 2.13.13, instead added a resmgr call
-  to allow normal user access (see Suse Bugzilla #153705).
+  to allow normal user access
+  (see Novell/Suse Bugzilla bnc#153705).
 
 -------------------------------------------------------------------
 Mon Feb 27 16:36:26 CET 2006 - jsmeix@suse.de
@@ -206,7 +224,7 @@ Mon Feb 27 16:36:26 CET 2006 - jsmeix@suse.de
 - V 2.13.13
 - Add a uers information to re-plug an USB scanner to trigger
   the udev -> HAL -> resmgr chain to allow normal user access
-  (see Suse Bugzilla #153705).
+  (see Novell/Suse Bugzilla bnc#153705).
 
 -------------------------------------------------------------------
 Mon Feb 20 10:13:07 CET 2006 - jsmeix@suse.de
@@ -235,7 +253,7 @@ Thu Jan 26 16:04:44 CET 2006 - jsmeix@suse.de
   used from the natively built "iscan-free" package.
 - Changed "Firewall not running or would not be started." text
   to "Firewall is not or should not be running."
-  (see Suse Bugzilla #145522).
+  (see Novell/Suse Bugzilla bnc#145522).
 
 -------------------------------------------------------------------
 Wed Jan 25 12:15:16 CET 2006 - jsmeix@suse.de
@@ -272,7 +290,7 @@ Mon Jan 16 12:17:56 CET 2006 - jsmeix@suse.de
 - V 2.13.5
 - Changed SetUsbScannerAccessPermissions() to write
   /etc/hal/fdi/policy/10osvendor/80-scanner.fdi
-  (see Suse Bugzilla #142859).
+  (see Novell/Suse Bugzilla bnc#142859).
 
 -------------------------------------------------------------------
 Fri Dec  2 09:51:37 CET 2005 - jsmeix@suse.de
@@ -312,7 +330,8 @@ Fri Aug 26 10:52:53 CEST 2005 - jsmeix@suse.de
   Ignore whether or not an autodetected USB scanner can be
   recognized also as active scanner.
   I.e. simply grant access to all autodetected USB scanners
-  (comment dated 2005-08-26 03:00 MST in bug 100695).
+  (comment dated 2005-08-26 03:00 MST
+   in Novell/Suse Bugzilla bnc#100695).
 
 -------------------------------------------------------------------
 Thu Aug 25 09:59:16 CEST 2005 - jsmeix@suse.de
@@ -320,7 +339,8 @@ Thu Aug 25 09:59:16 CEST 2005 - jsmeix@suse.de
 - V 2.12.15
 - Change the method how USB scanner access is set up for resmgr
   from a generic method (using a fixed entry) to a model-specific
-  method using USB vendor and product IDs (bug 100695).
+  method using USB vendor and product IDs
+  (see Novell/Suse Bugzilla bnc#100695).
 
 -------------------------------------------------------------------
 Thu Aug 18 15:50:50 CEST 2005 - jsmeix@suse.de
