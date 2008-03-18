@@ -30,7 +30,6 @@ Extract()
 # At least the SANE description files must exist:
 PACKAGE="sane-backends"
 DESCRIPTION_FILES="/usr/share/sane/descriptions/*.desc"
-rpm -q $PACKAGE &>/dev/null || { echo "Error: Required package $PACKAGE is not installed." 1>&2 ; exit 2 ; }
 ls $DESCRIPTION_FILES &>/dev/null || { echo "Error: Required SANE description files $DESCRIPTION_FILES not found." 1>&2 ; exit 3 ; }
 # Write the package which is processed:
 echo ":package \"$PACKAGE\"" >>$TMP_DATA

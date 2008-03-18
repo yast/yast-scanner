@@ -23,6 +23,7 @@ import "Package";
 import "Label";
 import "Service";
 import "SuSEFirewall";
+import "Arch";
 
 /**
  * Something was committed to the system?
@@ -325,14 +326,28 @@ boolean TestAndInstallPackage( string package_name )
   // Message of a Report::Error
   // Do not change or translate "iscan", it is a package name.
   // Do not change or translate "i386", it is an architecture name.
-  // Do not change or translate "x86_64", it is an architecture name.
-  // Do not change or translate "AMD", it is a manufacturer name.
 _("The package iscan should be installed
 but it contains proprietary binary-only i386-only software.
-Therefore it is only available for i386-compatible architectures
-and it may cause problems on AMD 64-bit (x86_64) systems.
+Therefore it is only available for i386-compatible architectures.
 Some scanners are also supported by another driver.
 If you really want to install iscan, you must do it manually.
+");
+  string iscan_64bit_message =
+  // Do not change or translate "iscan", it is a package name.
+  // Do not change or translate "x86_64", it is an architecture name.
+  // Do not change or translate "AMD", it is a manufacturer name.
+  // Do not change or translate "scanimage", it is a program name.
+  // Do not change or translate "xscanimage", it is a program name.
+  // Do not change or translate "xsane", it is a program name.
+  // Do not change or translate "kooka", it is a program name.
+_("Iscan is only available as 32-bit software.
+On AMD 64-bit (x86_64) systems the scanner driver in the iscan package
+works only if also the scanning user frontend is 32-bit software.
+You can use the special frontend /usr/bin/iscan for Epson scanners
+which is included in the iscan package.
+If you like to use a standard frontend like scanimage, xscanimage, xsane, or kooka,
+you must explicitely install the 32-bit package version
+(i.e. get the package from the right media or repository).
 ");
   if( Package::Installed( package_name ) )
   { return true;
@@ -355,6 +370,9 @@ If you really want to install iscan, you must do it manually.
     // Finally on x86_64 the 32-bit iscan software cannot be used with the usual scanning frontends.
     // Therefore there is only a message and the user must do the installation manually.
     y2milestone( "No automated installation of proprietary iscan." );
+    if( Arch::x86_64() )
+    { iscan_message = iscan_message + "\n" + iscan_64bit_message;
+    }
     Report::Error( iscan_message );
     return false;
   }

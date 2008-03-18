@@ -112,57 +112,73 @@ do # Test for USB and SCSI scanners and ignore anything else:
    then # It is a USB scanner:
         # Determine the USB vendor and product IDs:
         BUS_DEVICE=$( echo $LINE | cut -d ':' -s -f 2- )
-        VENDOR_PRODUCT=$( lsusb -s $BUS_DEVICE | grep -o 'ID [0-9A-Fa-f]*:[0-9A-Fa-f]*' | cut -b 4- )
+        VENDOR_PRODUCT=$( lsusb -s $BUS_DEVICE | tr '[:upper:]' '[:lower:]' | grep -o 'id [0-9a-f]*:[0-9a-f]*' | cut -b 4- )
         VENDOR=$( echo $VENDOR_PRODUCT | cut -d ':' -s -f 1 )
         PRODUCT=$( echo $VENDOR_PRODUCT | cut -d ':' -s -f 2 )
-        # Make sure that both VENDOR and PRODUCT do not contain only zeroes:
-        if echo $VENDOR | grep -q [1-9A-Fa-f] && echo $PRODUCT | grep -q [1-9A-Fa-f]
-        then # Test if this scanner is not already listed in the global HAL file:
-             if ! grep -i -A 1 "usb_device.vendor_id\" int=\"0x$VENDOR\"" $HAL_GLOBAL_FILE | grep -q -i "usb_device.product_id\" int=\"0x$PRODUCT\""
-             then # Write an entry to the local HAL file:
-                  echo '    <match key="info.bus" string="usb_device">' >>$HAL_LOCAL_FILE
-                  echo "      <match key=\"usb_device.vendor_id\" int=\"0x$VENDOR\">" >>$HAL_LOCAL_FILE
-                  echo "        <match key=\"usb_device.product_id\" int=\"0x$PRODUCT\">" >>$HAL_LOCAL_FILE
-                  echo '          <append key="info.capabilities" type="strlist">scanner</append>' >>$HAL_LOCAL_FILE
-                  echo '        </match>' >>$HAL_LOCAL_FILE
-                  echo '      </match>' >>$HAL_LOCAL_FILE
-                  echo '    </match>' >>$HAL_LOCAL_FILE
-                  echo '' >>$HAL_LOCAL_FILE
-             fi
-        fi
+        # Skip scanners where VENDOR or PRODUCT contains only zeroes:
+        echo $VENDOR | grep -q [1-9a-f] || continue
+        echo $PRODUCT | grep -q [1-9a-f] || continue
+        # Skip scanners which are already listed in the global HAL file:
+        grep -i -A 1 "usb_device.vendor_id\" int=\"0x$VENDOR\"" $HAL_GLOBAL_FILE | grep -q -i "usb_device.product_id\" int=\"0x$PRODUCT\"" && continue
+        # Skip "SCSI via USB" scanners:
+        # There is a small number of USB scanners which are not talked to via libusb.
+        # They talk an unusual protocol which is a derivative of usb storage.
+        # User space should treat them as SCSI scanners.
+        # Furthermore, granting access via libusb here could oops the kernel.
+        # Therefore USB user access for those scanners must not be enabled.
+        # See the Novell/Suse Bugzilla bug
+        # https://bugzilla.novell.com/show_bug.cgi?id=341565
+        [ "04ce:0300" = "$VENDOR_PRODUCT" ] && continue
+        [ "05da:0094" = "$VENDOR_PRODUCT" ] && continue
+        [ "05da:0099" = "$VENDOR_PRODUCT" ] && continue
+        [ "05da:009a" = "$VENDOR_PRODUCT" ] && continue
+        [ "05da:00a0" = "$VENDOR_PRODUCT" ] && continue
+        [ "05da:00a3" = "$VENDOR_PRODUCT" ] && continue
+        [ "05da:80a3" = "$VENDOR_PRODUCT" ] && continue
+        [ "05da:80ac" = "$VENDOR_PRODUCT" ] && continue
+        [ "05da:00b6" = "$VENDOR_PRODUCT" ] && continue
+        # Write an entry to the local HAL file:
+        echo '    <match key="info.bus" string="usb_device">' >>$HAL_LOCAL_FILE
+        echo "      <match key=\"usb_device.vendor_id\" int=\"0x$VENDOR\">" >>$HAL_LOCAL_FILE
+        echo "        <match key=\"usb_device.product_id\" int=\"0x$PRODUCT\">" >>$HAL_LOCAL_FILE
+        echo '          <append key="info.capabilities" type="strlist">scanner</append>' >>$HAL_LOCAL_FILE
+        echo '        </match>' >>$HAL_LOCAL_FILE
+        echo '      </match>' >>$HAL_LOCAL_FILE
+        echo '    </match>' >>$HAL_LOCAL_FILE
+        echo '' >>$HAL_LOCAL_FILE
    fi
    if echo $LINE | grep -q '^/dev/sg[0-9][0-9]*$'
    then # It is a SCSI scanner:
-        # Test if this scanner does not show up as "scanner".
-        # There are two know manufacturers where this happens: "HP" and "EPSON".
-        # Some (all?) of their SCSI scanners show up as as "processor"
+        LSSCSI_LINE=$( lsscsi -g | grep $LINE )
+        # Skip scanners which show up as SCSI type "scanner" because those
+        # match to the generic SCSI entry in the global HAL file.
+        echo $LSSCSI_LINE | tr -s ' ' | cut -d ' ' -f2 | grep -q -i 'scanner' && continue
+        # There are two know manufacturers where SCSI scanners do not show up as "scanner":
+        # "HP" and "EPSON": Some (all?) of their SCSI scanners show up as as "processor"
         # (because those devices do not support the SCSI scanner protocol
         # but only some kind of generic SCSI protocol):
-        LSSCSI_LINE=$( lsscsi -g | grep $LINE )
-        if ! echo $LSSCSI_LINE | tr -s ' ' | cut -d ' ' -f2 | grep -q -i 'scanner'
-        then # Test for the particular manufacturer:
-             if echo $LSSCSI_LINE | tr -s ' ' | cut -d ' ' -f3 | grep -q -i 'HP'
-             then # Write a HP entry to the local HAL file:
-                  echo '    <match key="info.category" string="scsi_generic">' >>$HAL_LOCAL_FILE
-                  echo '      <match key="@info.parent:scsi.type" string="processor">' >>$HAL_LOCAL_FILE
-                  echo '        <match key="@info.parent:scsi.vendor" string="HP">' >>$HAL_LOCAL_FILE
-                  echo '          <append key="info.capabilities" type="strlist">scanner</append>' >>$HAL_LOCAL_FILE
-                  echo '        </match>' >>$HAL_LOCAL_FILE
-                  echo '      </match>' >>$HAL_LOCAL_FILE
-                  echo '    </match>' >>$HAL_LOCAL_FILE
-                  echo '' >>$HAL_LOCAL_FILE
-             fi
-             if echo $LSSCSI_LINE | tr -s ' ' | cut -d ' ' -f3 | grep -q -i 'EPSON'
-             then # Write an EPSON entry to the local HAL file:
-                  echo '    <match key="info.category" string="scsi_generic">' >>$HAL_LOCAL_FILE
-                  echo '      <match key="@info.parent:scsi.type" string="processor">' >>$HAL_LOCAL_FILE
-                  echo '        <match key="@info.parent:scsi.vendor" string="EPSON">' >>$HAL_LOCAL_FILE
-                  echo '          <append key="info.capabilities" type="strlist">scanner</append>' >>$HAL_LOCAL_FILE
-                  echo '        </match>' >>$HAL_LOCAL_FILE
-                  echo '      </match>' >>$HAL_LOCAL_FILE
-                  echo '    </match>' >>$HAL_LOCAL_FILE
-                  echo '' >>$HAL_LOCAL_FILE
-             fi
+        # Test for the particular manufacturer:
+        if echo $LSSCSI_LINE | tr -s ' ' | cut -d ' ' -f3 | grep -q -i 'HP'
+        then # Write a HP entry to the local HAL file:
+             echo '    <match key="info.category" string="scsi_generic">' >>$HAL_LOCAL_FILE
+             echo '      <match key="@info.parent:scsi.type" string="processor">' >>$HAL_LOCAL_FILE
+             echo '        <match key="@info.parent:scsi.vendor" string="HP">' >>$HAL_LOCAL_FILE
+             echo '          <append key="info.capabilities" type="strlist">scanner</append>' >>$HAL_LOCAL_FILE
+             echo '        </match>' >>$HAL_LOCAL_FILE
+             echo '      </match>' >>$HAL_LOCAL_FILE
+             echo '    </match>' >>$HAL_LOCAL_FILE
+             echo '' >>$HAL_LOCAL_FILE
+        fi
+        if echo $LSSCSI_LINE | tr -s ' ' | cut -d ' ' -f3 | grep -q -i 'EPSON'
+        then # Write an EPSON entry to the local HAL file:
+             echo '    <match key="info.category" string="scsi_generic">' >>$HAL_LOCAL_FILE
+             echo '      <match key="@info.parent:scsi.type" string="processor">' >>$HAL_LOCAL_FILE
+             echo '        <match key="@info.parent:scsi.vendor" string="EPSON">' >>$HAL_LOCAL_FILE
+             echo '          <append key="info.capabilities" type="strlist">scanner</append>' >>$HAL_LOCAL_FILE
+             echo '        </match>' >>$HAL_LOCAL_FILE
+             echo '      </match>' >>$HAL_LOCAL_FILE
+             echo '    </match>' >>$HAL_LOCAL_FILE
+             echo '' >>$HAL_LOCAL_FILE
         fi
    fi
 done
