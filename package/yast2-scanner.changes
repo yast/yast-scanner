@@ -1,4 +1,14 @@
 -------------------------------------------------------------------
+Wed Mar 19 16:45:38 CET 2008 - jsmeix@suse.de
+
+- V 2.16.1
+- Added hint how to set up HP all-in-one network scanners
+  to the help text (see Novell/Suse Bugzilla bnc#310476).
+- Replaced the "scanimage -d ... -T" test
+  by "scanimage -d ... -v >/dev/null"
+  (see Novell/Suse Bugzilla bnc#344534).
+
+-------------------------------------------------------------------
 Tue Mar 18 12:48:38 CET 2008 - jsmeix@suse.de
 
 - V 2.16.0

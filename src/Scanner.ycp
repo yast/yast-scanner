@@ -2061,8 +2061,8 @@ global boolean TestBackend( string backend_name )
   Popup::ShowFeedback( sformat( // Header of a Popup::ShowFeedback where %1 will be replaced by the driver name:
                                 _("Testing %1"), backend_name ),
                                 // Body of a Popup::ShowFeedback where %1 will be replaced by the SANE device identifier.
-                                // Do not change or translate "scanimage -d %1 -T", it is a fixed command.
-                       sformat( _("Testing with 'scanimage -d %1 -T'..."),
+                                // Do not change or translate "scanimage -d %1 -v", it is a fixed command.
+                       sformat( _("Testing with 'scanimage -d %1 -v'..."),
                                 sane_device
                               )
                      );
@@ -2072,8 +2072,8 @@ global boolean TestBackend( string backend_name )
                             // %1 will be replaced by the SANE device identifier
                             // %2 will be replaced by the actual test results
                             //    which are usually only available in English.
-                            // Do not change or translate "scanimage -d %1 -T", it is a fixed command.
-                            _("Test with 'scanimage -d %1 -T' failed.\nThe results are:\n\n%2"),
+                            // Do not change or translate "scanimage -d %1 -v", it is a fixed command.
+                            _("Test with 'scanimage -d %1 -v' failed.\nThe results are:\n\n%2"),
                             sane_device,
                             // Fallback message if the real results are missing:
                             result["stderr"]:_("(no results available)")
@@ -2096,8 +2096,8 @@ global boolean TestBackend( string backend_name )
                              // %1 will be replaced by the SANE device identifier
                              // %2 will be replaced by the actual test results
                              //    which are usually only available in English.
-                             // Do not change or translate "scanimage -d %1 -T", it is a fixed command.
-                             _("Test with 'scanimage -d %1 -T' succeeded.\nThe results are:\n\n%2"),
+                             // Do not change or translate "scanimage -d %1 -v", it is a fixed command.
+                             _("Test with 'scanimage -d %1 -v' succeeded.\nThe results are:\n\n%2"),
                              sane_device,
                              // Fallback message if the real results are missing:
                              result["stderr"]:_("(no results available)")
