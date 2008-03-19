@@ -47,7 +47,7 @@ If your scanner has not been detected, use <b>Add</b> for a manual configuration
 // Do not change or translate "HP", it is a manufacturer name.
 // Do not change or translate "OfficeJet", it is a model name.
 // Do not change or translate "PSC", it is a model (Printer Scanner Copier) name.
-// Do not change or translate "/usr/sbin/lsusb", it is a command name.
+// Do not change or translate "lsusb", it is a command name.
 _("<p>
 A normal USB scanner should be detected automatically.
 It might happen that particular USB devices which are no scanners are shown too
@@ -58,7 +58,7 @@ It may also work to proceed with <b>Add</b>.
 In particular, HP all-in-one devices, such as OfficeJets and PSCs,
 are not detected, but can be configured this way.
 If you have difficulties configuring your scanner here,
-check whether it appears in the output of <tt>/usr/sbin/lsusb</tt>.
+check whether it appears in the output of <tt>lsusb</tt>.
 If it is not listed there, the USB system cannot communicate with the scanner.
 </p>") +
 // Overview dialog help 4/8:
@@ -81,13 +81,19 @@ These devices must be configured manually.
 // or with a "remote scanner" (i.e. a scanner which is connected to another host in the network).
 // Do not confuse "scanning via network" (i.e. use a remote scanner via another host in the network)
 // with "scanning the network" (i.e. scan the network for other hosts or services).
+// Do not change or translate "hp-setup", it is a command name.
 _("<p>
-Network scanners cannot be configured with this tool.
-These devices must be configured manually.
+Network scanners cannot be configured with this tool
+except for HP all-in-one devices.
+Network scanners must be configured manually.
 A network scanner is a scanner that has a network interface
 so it is directly accessible in the network.
 In contrast, scanning via network means accessing a remote scanner
 connected to another host in the network.
+To set up the scanner unit in a HP all-in-one device
+which is connected via a built-in network interface,
+first run <tt>hp-setup</tt> as root, then you can configure
+the scanner unit with this tool using <b>Add</b>.
 </p>") +
 // Overview dialog help 7/8:
 // Do not confuse "scanning via network" (i.e. use a remote scanner via another host in the network)

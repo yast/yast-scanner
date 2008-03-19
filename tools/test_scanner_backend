@@ -10,22 +10,30 @@ export LANG="POSIX"
 umask 022
 
 MY_NAME=${0##*/}
-BACKEND="$1"
-[ -z "$BACKEND" ] && { echo -en "\nUsage:\n$MY_NAME backend\n" 1>&2 ; exit 1 ; }
+SANE_DEVICE="$1"
+[ -z "$SANE_DEVICE" ] && { echo -en "\nUsage:\n$MY_NAME SANE_device\n" 1>&2 ; exit 1 ; }
 
-MAXIMUM_WAIT="120"
-# The exit code of "scanimage -d $BACKEND -T" is needed as exit code of this script.
+# The test via "scanimage -d $SANE_DEVICE -T" does not work for any backend
+# because it tries using a variety of buffer sizes during the data transfer,
+# followed by a cancel instead of completing the scan.
+# This might put some scanners/backends into an inconsistent state,
+# when they do not properly implement the cancel, see the Novell/Suse Bugzilla bug
+# https://bugzilla.novell.com/show_bug.cgi?id=344534
+# Therefore the test is done via "scanimage -d $SANE_DEVICE -v >/dev/null"
+# which does a complete scan and "-v" provides some basic info what it does.
+# The exit code of "scanimage" is needed as exit code of this script.
 # Therefore this command must run in the foreground.
 # Therefore a simple time bomb background process is started before it.
-# This time bomb background process process is normally killed at the end.
+# This time bomb background process is normally killed at the end.
 # As a signal is processed not until a "sleep" has finished,
 # it is crucial not to do simply "sleep $MAXIMUM_WAIT"
 # but to do "for i in $( seq $MAXIMUM_WAIT ) ; do sleep 1 ; done"
 # otherwise it would wait in any case until "sleep $MAXIMUM_WAIT" has finished.
+MAXIMUM_WAIT="120"
 if [ -x /usr/bin/scanimage ]
 then ( for i in $( seq $MAXIMUM_WAIT ) ; do sleep 1 ; done ; killall -9 scanimage &>/dev/null ) &
      timebombPID=$!
-     scanimage -d $BACKEND -T
+     scanimage -d $SANE_DEVICE -v >/dev/null
      scanimageEXIT=$?
      # If the timebomb is still running, scanimage has finished
      # and killing the timebomb will be successful.
