@@ -20,16 +20,16 @@ OUTPUT_FORMAT="$1"
 TMP_DATA=$(mktemp -u /tmp/$MY_NAME.XXXXXX)
 TMP_DATA_RAW=$(mktemp -u /tmp/$MY_NAME.XXXXXX)
 
-# Get the raw data
+# Get the raw data for usual scanners via "sane-find-scanner":
 MAXIMUM_WAIT="10"
 if [ -x /usr/bin/sane-find-scanner ]
 then sane-find-scanner -q >$TMP_DATA_RAW &
      sanefindscannerPID=$!
      for i in $( seq $MAXIMUM_WAIT )
-     do ps hp $sanefindscannerPID | grep -q sane-find-scanner || break
+     do ps $sanefindscannerPID &>/dev/null || break
         sleep 1
      done
-     if ps hp $sanefindscannerPID | grep -q sane-find-scanner
+     if ps $sanefindscannerPID &>/dev/null
      then kill -9 $sanefindscannerPID &>/dev/null
      fi
 else echo "Cannot execute /usr/bin/sane-find-scanner" 1>&2
@@ -37,6 +37,42 @@ else echo "Cannot execute /usr/bin/sane-find-scanner" 1>&2
 fi
 # Only USB and SCSI scanners are taken into account:
 egrep '^found SCSI |^found USB ' <$TMP_DATA_RAW | sort -u | sed -e 's/^found //' | tr \" \' >$TMP_DATA
+
+# Append the raw data for HP all-in-one devices via "hp-probe -bcups -escan".
+# Because a CUPS queue is a precondition for scanning
+# (the hpaio backend derives its SANE device from the CUPS DeviceURI),
+# only those devices are taken into account for which a CUPS queue exists.
+# It is no fatal error if /usr/bin/hp-probe is not executable
+# (e.g. when the hplip RPM is not installed because no HP device is used):
+MAXIMUM_WAIT="10"
+if [ -x /usr/bin/hp-probe ]
+then hp-probe -busb -escan | tr -s '[:blank:]' | grep 'hp:/usb/' >$TMP_DATA_RAW &
+     hpprobePID=$!
+     for i in $( seq $MAXIMUM_WAIT )
+     do ps $hpprobePID &>/dev/null || break
+        sleep 1
+     done
+     if ps $hpprobePID &>/dev/null
+     then kill -9 $hpprobePID &>/dev/null
+     fi
+     hp-probe -bcups -escan | tr -s '[:blank:]' | grep 'hp:/net/' >>$TMP_DATA_RAW &
+     hpprobePID=$!
+     for i in $( seq $MAXIMUM_WAIT )
+     do ps $hpprobePID &>/dev/null || break
+        sleep 1
+     done
+     if ps $hpprobePID &>/dev/null
+     then kill -9 $hpprobePID &>/dev/null
+     fi
+     # Remove leading and trailing spaces:
+     sed -i -e 's/^[[:space:]]*//' -e 's/[[:space:]]*$//' $TMP_DATA_RAW
+     # Convert entries with 'hp:/usb/...' DeviceURI to the 'USB scanner' syntax of "sane-find-scanner":
+     sed -i -e 's|^hp:/usb/[^ ]* \(.*\)|USB scanner (vendor=0x03f0 [HP], product=0x0000 [\1])|' $TMP_DATA_RAW
+     # Convert entries with 'hp:/net/...' DeviceURI to a new 'NETWORK scanner' syntax:
+     sed -i -e 's|^hp:/net/[^ ]* \(.*\)|NETWORK scanner (vendor [HP], product [\1])|' $TMP_DATA_RAW
+     # Append the HP all-in-one device entries:
+     sort -u $TMP_DATA_RAW >>$TMP_DATA
+fi
 
 # Output:
 
@@ -49,27 +85,37 @@ fi
 # Output scanner entries:
 exec <$TMP_DATA
 while read DESCRIPTION
-do echo $DESCRIPTION | grep -q '^USB ' && CONNECTION="USB" || CONNECTION="SCSI"
-   DEVICE=$( echo $DESCRIPTION | sed -e 's/.* at \(.*\)/\1/' )
+do echo $DESCRIPTION | grep -q '^USB ' && CONNECTION="USB"
+   echo $DESCRIPTION | grep -q '^SCSI ' && CONNECTION="SCSI"
+   echo $DESCRIPTION | grep -q '^NETWORK ' && CONNECTION="NETWORK"
+   DEVICE=$( echo $DESCRIPTION | sed -n -e 's/.* at \(.*\)/\1/p' )
    MANUFACTURER=""
    MODEL=""
    USB_VENDOR_ID=""
    USB_PRODUCT_ID=""
    if [ "$CONNECTION" = "USB" ]
-   then MODEL=$( echo $DESCRIPTION | tr '[]' '||' | cut -d '|' -s -f 4 )
+   then MODEL=$( echo $DESCRIPTION | tr '[]' '||' | cut -d '|' -s -f 4 | tr '_' ' ' )
         [ -n "$MODEL" ] && MANUFACTURER=$( echo $DESCRIPTION | tr '[]' '||' | cut -d '|' -s -f 2 )
         USB_VENDOR_ID=$( echo $DESCRIPTION | sed -n -e 's/^.*vendor=\(0x[0-9A-Fa-f][0-9A-Fa-f]*\).*$/\1/p' | tr '[:upper:]' '[:lower:]' )
         USB_PRODUCT_ID=$( echo $DESCRIPTION | sed -n -e 's/^.*product=\(0x[0-9A-Fa-f][0-9A-Fa-f]*\).*$/\1/p' | tr '[:upper:]' '[:lower:]' )
-   else # For SCSI: Simply use the first word as manufacturer name.
+   fi
+   if [ "$CONNECTION" = "SCSI" ]
+   then # For SCSI: Simply use the first word as manufacturer name.
         # This is a keep-it-simple attempt because a few SCSI scanners
         # may report a two-word manufacturer name on the SCSI bus
         # (e.g. something like "Across Technologies" or "Linotype Hell").
         # Note that " was changed to ' when TMP_DATA was created above.
         MANUFACTURER=$( echo $DESCRIPTION | cut -d \' -s -f 2 | cut -d ' ' -s -f1 )
-        # For HP set the name which is used in the SANE description files:
-        if [ "$MANUFACTURER" = "HP" -o "$MANUFACTURER" = "hp" ]
-        then MANUFACTURER="Hewlett-Packard"
-        fi
+   fi
+   if [ "$CONNECTION" = "NETWORK" ]
+   then # Currently this connection happens only for HP all-in-one devices
+        # and then the syntax of an entry is like for a USB scanner:
+        MODEL=$( echo $DESCRIPTION | tr '[]' '||' | cut -d '|' -s -f 4 | tr '_' ' ' )
+        [ -n "$MODEL" ] && MANUFACTURER=$( echo $DESCRIPTION | tr '[]' '||' | cut -d '|' -s -f 2 )
+   fi
+   # For HP set the name which is used in the SANE description files:
+   if [ "$MANUFACTURER" = "HP" -o "$MANUFACTURER" = "hp" ]
+   then MANUFACTURER="Hewlett-Packard"
    fi
    if [ "$OUTPUT_FORMAT" = "YCP" ]
    then echo -e "  \$[ \"connection\":\"$CONNECTION\",\n     \"device\":\"$DEVICE\",\n     \"manufacturer\":\"$MANUFACTURER\",\n     \"usb_vendor_id\":\"$USB_VENDOR_ID\",\n     \"model\":\"$MODEL\",\n     \"usb_product_id\":\"$USB_PRODUCT_ID\",\n     \"description\":\"$DESCRIPTION\"\n  ],"

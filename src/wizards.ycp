@@ -66,7 +66,8 @@ any MainSequence()
                     `delete: "overview",
                     `test: "overview",
                     `restart_detection: "overview",
-                    `network_scanning: "network"
+                    `network_scanning: "network",
+                    `run_hpsetup: "overview"
                   ],
      "configure": $[ `abort: `abort,
                      `next: "overview"

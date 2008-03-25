@@ -47,16 +47,22 @@ If your scanner has not been detected, use <b>Add</b> for a manual configuration
 // Do not change or translate "HP", it is a manufacturer name.
 // Do not change or translate "OfficeJet", it is a model name.
 // Do not change or translate "PSC", it is a model (Printer Scanner Copier) name.
+// Do not change or translate "hp-setup", it is a command name.
 // Do not change or translate "lsusb", it is a command name.
 _("<p>
 A normal USB scanner should be detected automatically.
-It might happen that particular USB devices which are no scanners are shown too
-because it is not possible to reliably distinguish a scanner from any other USB device.
-If it was not detected or if there are unexpected results,
+By default only those USB scanners are shown
+for which the UDB vendor and product IDs are known.
+If a USB scanner is not shown or if there are unexpected results,
 try <b>Other</b> and <b>Restart Detection</b>.
+Then it might happen that particular USB devices which are no scanners
+are shown too because then all USB devices which might be scanners are shown.
+The reason is that there is no generic way to reliably distinguish a scanner
+from other USB devices because there is no USB device class for scanners.
 It may also work to proceed with <b>Add</b>.
-In particular, HP all-in-one devices, such as OfficeJets and PSCs,
-are not detected, but can be configured this way.
+For HP all-in-one devices you may have to run <tt>hp-setup</tt>
+via <b>Other</b> and <b>Run hp-setup</b> before it works
+to configure the scanner unit with this tool.
 If you have difficulties configuring your scanner here,
 check whether it appears in the output of <tt>lsusb</tt>.
 If it is not listed there, the USB system cannot communicate with the scanner.
@@ -71,9 +77,15 @@ If not, the SCSI system cannot communicate with the scanner.
 Verify that an appropriate kernel module for the SCSI host adapter has been loaded.
 </p>") +
 // Overview dialog help 5/8:
+// Do not change or translate "hp-setup", it is a command name.
 _("<p>
-Parallel port scanners cannot be configured with this tool.
-These devices must be configured manually.
+Parallel port scanners cannot be configured with this tool
+except for HP all-in-one devices.
+Usual parallel port scanners must be configured manually.
+To set up the scanner unit in a HP all-in-one device
+which is connected to the parallel port,
+you may have to run <tt>hp-setup</tt> via <b>Other</b> and <b>Run hp-setup</b>
+before it works to configure the scanner unit with this tool using <b>Add</b>.
 </p>") +
 // Overview dialog help 6/8:
 // Do not confuse a "network scanner" (i.e. a scanner which is directly accessible in the network)
@@ -92,8 +104,8 @@ In contrast, scanning via network means accessing a remote scanner
 connected to another host in the network.
 To set up the scanner unit in a HP all-in-one device
 which is connected via a built-in network interface,
-first run <tt>hp-setup</tt> as root, then you can configure
-the scanner unit with this tool using <b>Add</b>.
+you may have to run <tt>hp-setup</tt> via <b>Other</b> and <b>Run hp-setup</b>
+before it works to configure the scanner unit with this tool using <b>Add</b>.
 </p>") +
 // Overview dialog help 7/8:
 // Do not confuse "scanning via network" (i.e. use a remote scanner via another host in the network)
@@ -101,12 +113,14 @@ the scanner unit with this tool using <b>Add</b>.
 // It is not possible to modify or remove an active scanner directly.
 // It is only possible to modify or remove a driver and this way
 // all scanners which are associated with this driver are modified or removed.
+// Do not change or translate "hp-setup", it is a command name.
 _("<p>
 The table lists the configured drivers with their associated scanners.
-Press <b>Edit</b> to modify a driver.
-Press <b>Delete</b> to remove a driver.
-If you press <b>Other</b>, you can
-restart the detection, test active scanners, or set up scanning via network.
+Press <b>Add</b> to select model and driver and enable it.
+Press <b>Edit</b> to select and enable a driver.
+Press <b>Delete</b> to disable the driver.
+If you press <b>Other</b>, you can restart the detection, test enabled drivers,
+set up HP all-in-one devices, or set up scanning via network.
 </p>") +
 // Overview dialog help 8/8:
 // The most often problem which is reported by users regarding scanner setup is
@@ -212,9 +226,9 @@ _("<p>
 HP all-in-one devices require a special setup.
 In this case, an appropriate dialog is shown.
 There are two software packages that provide support for HP all-in-one devices:
-the old HPOJ software (package hp-officeJet),
+the outdated HPOJ software (package hp-officeJet),
 which provides the PTAL system (with the ptal service) to access HP all-in-one devices,
-and the new HPLIP software (package hplip),
+and the up-to-date HPLIP software (package hplip),
 which provides the hplip service to access HP all-in-one devices.
 Both software packages can be installed at the same time
 but the services cannot be run together.

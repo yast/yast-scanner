@@ -61,6 +61,23 @@ global boolean Abort()
 // Define all variables needed for configuration of scanner:
 
 /**
+ * Explicite listing of all alphanumeric ASCII characters.
+ * The reason is that in certain special locales for example [a-z] is not equivalent
+ * to "abcdefghijklmnopqrstuvwxyz" because in certain special languages the 'z' is
+ * not the last character in the alphabet, e.g. the Estonian alphabet ends
+ * with ... s ... z ... t u v w ... x y (non-ASCII characters omitted here)
+ * so that [a-z] would exclude t u v w x y in an Estonian locale.
+ * Therefore uppercase and lowercase characters are both explicitely listed
+ * to avoid any unexpected result e.g. of "tolower(uppercase_characters)".
+ */
+global string number_chars = "0123456789";
+global string upper_chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+global string lower_chars = "abcdefghijklmnopqrstuvwxyz";
+global string letter_chars = upper_chars + lower_chars;
+global string alnum_chars = number_chars + letter_chars;
+global string lower_alnum_chars = number_chars + lower_chars;
+
+/**
  * Scanner database:
  * When package version of sane-backends/hplip/hp-officeJet/iscan/iscan-free changes
  * the database is created anew in Scanner::Read() which calls the bash script
@@ -90,6 +107,14 @@ global list< map< string, string > > database = [];
 global list< string > database_manufacturers = [];
 
 /**
+ * Known USB scanner USB IDs list:
+ * List of known USB scanner USB vendor and product IDs.
+ * Derived during startup from the scanner database
+ * (in the Read function stage "Read or create the scanner database").
+ */
+global list< string > database_usbids = [];
+
+/**
  * Active scanners:
  * Determined at runtime via Scanner::DetermineActiveScanners() which calls the bash script
  * "/usr/lib/YaST2/bin/determine_active_scanners YCP"
@@ -116,8 +141,9 @@ global list< string > active_backends = [];
 
 /**
  * Autodetected scanners:
- * Determined at runtime via Scanner::AutodetectScanners() which calls the bash script
- * "/usr/lib/YaST2/bin/autodetect_scanners YCP" which calls "sane-find-scanner"
+ * Determined at runtime via Scanner::AutodetectScanners()
+ * which calls the bash script /usr/lib/YaST2/bin/autodetect_scanners YCP
+ * which calls "sane-find-scanner" and (if available) "hp-probe"
  * which may result for example the description strings in the example below.
  * Only in case of USB an automated extraction of manufacturer is possible.
  * If there are two '[...]' substrings then the first one is the manufacturer
@@ -125,7 +151,7 @@ global list< string > active_backends = [];
  * The result is a YCP list of @ref autodetected_scanner_map
  * where the last list entry is an emtpy map.
  * @struct autodetected_scanner_map
- * $[ "connection":"Either USB or SCSI (required)",
+ * $[ "connection":"Either USB or SCSI or NETWORK (required)",
  *    "device":"The device, e.g. '/dev/sg0' or 'libusb:001:002' (may be the empty string)"
  *    "manufacturer":"The manufacturer name of the scanner (may be the empty string)",
  *    "usb_vendor_id":"The vendor ID (e.g. 0x04b8) of a USB scanner (may be the empty string)",
@@ -139,6 +165,8 @@ global list< string > active_backends = [];
  * USB scanner (vendor=0x03f0 [Hewlett-Packard], product=0x0201 [HP ScanJet 6200C]) at libusb:002:006
  * USB scanner (vendor=0x04a9 [Canon], product=0x220e [CanoScan], chip=LM9832/3) at libusb:001:005
  * USB scanner (vendor=0x04b8 [EPSON], product=0x010b [Perfection1240]) at libusb:001:004
+ * USB scanner (vendor=0x03f0 [HP], product=0x0000 [HP LaserJet 1220])
+ * NETWORK scanner (vendor [HP], product [Officejet 7200 series])
  */
 global list< map< string, string > > autodetected_scanners = [];
 
@@ -215,6 +243,19 @@ global integer selected_model_database_index = -1;
  */
 global integer selected_autodetected_scanners_index = -1;
 
+/**
+ * Ignore unknown USB scanners:
+ * Whether or not unknown USB scanners should be ignored during AutodetectScanners.
+ * As there is no USB device class for scanners (they have the unspecific USB device class 255),
+ * sane-find-scanner can only do some best guess to determine if a USB device is a scanner or not.
+ * Therefore also other USB devices with the device class 255 are reported as possible USB scanners.
+ * Preset to true so that only scanners for which the USB IDs are known by SANE are shown by default.
+ * It changes to false (i.e. show all USB devices with the device class 255 as possible USB scanners)
+ * when the user has explicitely requested a "Restart Detection" in the OverviewDialog.
+ * It is neither somehow automatically reset to true nor can the user reset it manually to true.
+ */
+global boolean ignore_unknown_USB_scanners = true;
+
 /*
  * Local variables:
  */
@@ -253,6 +294,15 @@ map result = $[ "exit":0,
  */
 
 /**
+ * Unify various kind of a hexadecimal string like
+ * "0x01a2", "0x1A2", "0x01A2" to one kind "0x1a2"
+ * so that string comparison is possible:
+ */
+string UnifyHexString( string hexstring )
+{ return tolower( tohexstring( tointeger( hexstring ) ) );
+}
+
+/**
  * Wrapper for SCR::Execute to execute a bash command to increase verbosity via y2milestone.
  * It reports the command via y2milestone in any case and it reports exit code, stdout
  * and stderr via y2milestone in case of non-zero exit code.
@@ -278,7 +328,7 @@ boolean ExecuteBashCommand( string bash_commandline )
  * @return string of a meaningful error message with preceding "The error message is:" or "" otherwise
  */
 string OnlyMeaningfulErrorMessage( string error_message )
-{ if ( "" !=  filterchars( tolower( error_message ), "abcdefghijklmnopqrstuvwxyz" ) )
+{ if( "" !=  filterchars( error_message, letter_chars ) )
   { return sformat( // Only a simple message because it is only used
                     // to add a preceding "The error message is:" comment
                     // to display an error message where
@@ -508,8 +558,9 @@ boolean DetermineActiveBackends()
 }
 
 /**
- * Try to autodetect USB and SCSI scanners by calling a bash script
- * which calls "sane-find-scanner" and processes its output
+ * Try to autodetect USB and SCSI scanners and HP all-in-one USB and NETWORK scanners
+ * by calling a bash script which calls "sane-find-scanner"
+ * and (if available) "hp-probe" and processes its output
  * and stores the results as YCP list in a temporary file
  * and then read the temporary file (SCR::Read)
  * to get the YCP list of @ref autodetected_scanner_map
@@ -549,6 +600,28 @@ boolean AutodetectScanners()
                  );
     autodetected_scanners = [];
     return false;
+  }
+  if( ignore_unknown_USB_scanners )
+  { // Entries in autodetected_scanners are skipped in OverviewContents() if the description is empty.
+    // Therefore for unknown USB scanners the description is set to the empty string.
+    integer autodetected_scanners_index = -1;
+    foreach( map< string, string > autodetected_scanner,
+             autodetected_scanners,
+             { // Set the autodetected_scanners_index to the index number
+               // of the actual autodetected_scanner in autodetected_scanners:
+               autodetected_scanners_index = autodetected_scanners_index + 1;
+               // Use local variables to have shorter variable names:
+               string usb_vendor_id = autodetected_scanner["usb_vendor_id"]:"";
+               string usb_product_id = autodetected_scanner["usb_product_id"]:"";
+               if( "" != usb_vendor_id && "" != usb_product_id )
+               { string usb_id =  UnifyHexString( usb_vendor_id ) + ":" + UnifyHexString( usb_product_id );
+                 if( ! contains( database_usbids, usb_id ) )
+                 { autodetected_scanners[autodetected_scanners_index,"description"] = "";
+                   y2milestone( "No USB ID in database for %1", autodetected_scanner );
+                 }
+               }
+             }
+           );
   }
   y2milestone( "Autodetected scanners: %1", autodetected_scanners );
   return true;
@@ -634,7 +707,7 @@ boolean DependantPrintQueueExists( string backend_name )
  * - Read or create the scanner database
  * - Determine active scanners
  * - Determine active backends
- * - Try to autodetect USB and SCSI scanners
+ * - Try to autodetect USB and SCSI scanners and HP all-in-one USB and NETWORK scanners
  * @return true on success
  */
 global boolean Read()
@@ -652,7 +725,7 @@ global boolean Read()
                    // 4. progress stage name of a Progress::New:
                    _("Determine active drivers"),
                    // 5. progress stage name of a Progress::New:
-                   _("Detect USB and SCSI scanners")
+                   _("Detect scanners")
                  ],
                  [ // 1. progress step progress bar title of a Progress::New:
                    _("Checking installed packages..."),
@@ -663,7 +736,7 @@ global boolean Read()
                    // 4. progress step progress bar title of a Progress::New:
                    _("Determining active drivers..."),
                    // 5. progress step progress bar title of a Progress::New:
-                   _("Detecting USB and SCSI scanners..."),
+                   _("Detecting scanners..."),
                    // Last progress step progress bar title of a Progress::New:
                    _("Finished")
                  ],
@@ -742,13 +815,25 @@ global boolean Read()
                  );
     return false;
   }
-  // Extract a (sorted) list of unique manufacturer names from the scanner database:
+  // Extract a (sorted) list of unique manufacturer names and
+  // another list of known USB scanner USB vendor and product IDs
+  // from the scanner database.
+  // The latter makes sense because it is needed in AutodetectScanners
+  // because ignore_unknown_USB_scanners is set to true by default.
+  string usbid = "";
+  list< string > ids = [];
   foreach( map< string, string > database_entry,
            database,
            { database_manufacturers = add( database_manufacturers, database_entry["manufacturer"]:"unknown" );
+             usbid = tolower( database_entry["usbid"]:"" );
+             if( regexpmatch( usbid, "0x[0-9a-f]+:0x[0-9a-f]+" ) )
+             { ids = splitstring( usbid, ":" );
+               database_usbids = add( database_usbids, UnifyHexString( ids[0]:"" ) + ":" + UnifyHexString( ids[1]:"" ) );
+             }
            }
          );
   database_manufacturers = toset( database_manufacturers );
+  database_usbids = toset( database_usbids );
   // Progress 3. stage (Determine active scanners):
   if( Abort() ) return false;
   Progress::NextStage();
@@ -761,7 +846,7 @@ global boolean Read()
   if( ! DetermineActiveBackends() )
   { active_backends = [];
   }
-  // Progress 5. stage (Detect USB and SCSI scanners):
+  // Progress 5. stage (Detect scanners):
   if( Abort() ) return false;
   Progress::NextStage();
   if( ! AutodetectScanners() )
@@ -783,7 +868,7 @@ global boolean Read()
                            "",
                            // Busy message:
                            // Body of a Popup::ShowFeedback:
-                           _("Detecting USB and SCSI scanners...")
+                           _("Detecting scanners...")
                          );
       // Wait 10 seconds:
       sleep( 10000 );
@@ -857,7 +942,7 @@ global boolean RestartDetection()
                        "",
                        // Busy message:
                        // Body of a Popup::ShowFeedback:
-                       _("Detecting USB and SCSI scanners...")
+                       _("Detecting scanners...")
                      );
   if( ! DetermineActiveScanners() )
   { active_scanners = [];
@@ -868,6 +953,24 @@ global boolean RestartDetection()
   if( ! AutodetectScanners() )
   { autodetected_scanners = [];
   }
+  Popup::ClearFeedback();
+  return true;
+}
+
+/**
+ * Run hp-setup:
+ * @return true in any case because there is no usable exit code of hp-setup
+ * (always zero even in case of error).
+ */
+global boolean RunHpsetup()
+{ Popup::ShowFeedback( // No title for a simple busy message:
+                       "",
+                       // Busy message:
+                       // Body of a Popup::ShowFeedback.
+                       // Do not change or translate "hp-setup", it is a program name:
+                       _("Running hp-setup...")
+                     );
+  ExecuteBashCommand( "/usr/bin/hp-setup" );
   Popup::ClearFeedback();
   return true;
 }
@@ -916,15 +1019,39 @@ global list< map< string, any > > OverviewContents()
              if( "" != description )
              { // Test whether the autodetected_scanner is one of the active_scanners
                // except remote active scanners which are accessed via the "net" meta-backend.
-               // If yes, then there is no need to set it up again
+               // For HP all-in-one devices the device entry is empty
+               // (therefore the test for non-empty device before the substring test)
+               // but here the model entry is a substring of the sane_device, for example
+               // "HP LaserJet 1220" in "hpaio:/usb/HP_LaserJet_1220?serial=00XXXXXXXXXX"
+               // "Officejet 7200 series" in "hpaio:/net/Officejet_7200_series?ip=10.10.100.100"
+               // which shows that it is crucial to unify both strings before the substring test.
+               // Even if there are two "HP_LaserJet_1220" connected to the USB
+               // or two "Officejet_7200_series" with different IP addresses,
+               // this should work correctly because once the hpaio driver is activated
+               // it recognizes all HP all-in-one devices which have a CUPS queue
+               // but only those are autodetected, see the autodetect_scanners script.
+               // If an autodetected_scanner is one of the active_scanners,
+               // there is no need to set it up again
                // and then don't show it in the list of detected_scanners:
                boolean show_as_detected_scanner = true;
                foreach( map< string, string > active_scanner,
                         active_scanners,
-                        { if( issubstring( active_scanner["sane_device"]:"unknown", device )
-                              && "net" != active_scanner["backend"]:""
-                            )
-                          { show_as_detected_scanner = false;
+                        { string backend = active_scanner["backend"]:"";
+                          string sane_device = active_scanner["sane_device"]:"unknown";
+                          if( "net" != backend )
+                          { if( ( "hpaio" != backend
+                                  && "" != device
+                                  && issubstring( sane_device, device )
+                                )
+                                || ( "hpaio" == backend
+                                     && "" != model
+                                     && issubstring( filterchars( tolower( sane_device ), alnum_chars ),
+                                                     filterchars( tolower( model ), alnum_chars )
+                                                   )
+                                   )
+                              )
+                            { show_as_detected_scanner = false;
+                            }
                           }
                         }
                       );
