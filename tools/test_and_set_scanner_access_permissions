@@ -24,7 +24,8 @@ TMP_DATA_RAW=$(mktemp -u /tmp/$MY_NAME.XXXXXX)
 # Get the raw data (i.e. the SANE devices for the active scanners).
 # Either it is specified as command line parameter $1
 # (this is how YaST calls it to avoid duplicate time-consuming "scanimage" calls
-# because it knows the SANE devices from its determine_active_scanners call)
+# because it knows the SANE devices from its determine_active_scanners call
+# note that YaST calls it with all SANE devices just like "scanimage -f '%d;'")
 # or (if $1 is empty) then run "scanimage" to determine the SANE devices:
 if [ -n "$1" ]
 then echo "$1" >$TMP_DATA_RAW

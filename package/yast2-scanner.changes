@@ -1,4 +1,14 @@
 -------------------------------------------------------------------
+Tue Mar 25 14:42:30 CET 2008 - jsmeix@suse.de
+
+- V 2.16.2
+- Added much better HP all-in-one device support.
+  Those devices are now autodetected at the USB and if there
+  is already a CUPS queue (the latter in particular for network
+  HP all-in-one devices which do not work without a CUPS queue)
+  and additionally hp-setup can be launched.
+
+-------------------------------------------------------------------
 Wed Mar 19 16:45:38 CET 2008 - jsmeix@suse.de
 
 - V 2.16.1
