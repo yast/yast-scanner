@@ -1,6 +1,6 @@
 #! /bin/bash
 #
-# Johannes Meixner <jsmeix@suse.de>, 2004, 2005, 2006
+# Johannes Meixner <jsmeix@suse.de>, 2004, 2005, 2006, 2007, 2008
 
 #set -x
 
@@ -38,10 +38,13 @@ fi
 # Only USB and SCSI scanners are taken into account:
 egrep '^found SCSI |^found USB ' <$TMP_DATA_RAW | sort -u | sed -e 's/^found //' | tr \" \' >$TMP_DATA
 
-# Append the raw data for HP all-in-one devices via "hp-probe -bcups -escan".
-# Because a CUPS queue is a precondition for scanning
-# (the hpaio backend derives its SANE device from the CUPS DeviceURI),
-# only those devices are taken into account for which a CUPS queue exists.
+# Append the raw data for HP all-in-one devices via "hp-probe".
+# The scanner unit in HP all-in-one USB devices works even without a CUPS queue
+# (at least the scanner in my LaserJet 1220 works without a "hp:/usb/..." queue)
+# so that for HP all-in-one USB devices "hp-probe -busb -escan" is used.
+# The scanner unit in HP all-in-one network devices works only with a CUPS queue
+# (the hpaio backend derives its SANE device from the "hp:/net/..." DeviceURI)
+# so that for HP all-in-one network devices "hp-probe -bcups -escan" is used.
 # It is no fatal error if /usr/bin/hp-probe is not executable
 # (e.g. when the hplip RPM is not installed because no HP device is used):
 MAXIMUM_WAIT="10"

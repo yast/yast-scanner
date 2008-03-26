@@ -1,4 +1,16 @@
 -------------------------------------------------------------------
+Wed Mar 26 12:34:13 CET 2008 - jsmeix@suse.de
+
+- V 2.16.3
+- Let "Restart Detection" toggle the autodetection behaviour
+  (see Novell/Suse Bugzilla bnc#310518).
+- Enhanced how hp-setup is launched to be more fail-safe.
+  In particular added a small C program displaytest which tests
+  with XOpenDisplay whether or not a X window can be opened
+  (there is no such tool available in xorg-x11) which makes
+  yast2-scanner no longer a noarch RPM.
+
+-------------------------------------------------------------------
 Tue Mar 25 14:42:30 CET 2008 - jsmeix@suse.de
 
 - V 2.16.2
@@ -7,6 +19,9 @@ Tue Mar 25 14:42:30 CET 2008 - jsmeix@suse.de
   is already a CUPS queue (the latter in particular for network
   HP all-in-one devices which do not work without a CUPS queue)
   and additionally hp-setup can be launched.
+- Initially show only USB scanners with known USB IDs.
+  Show all USB devices which look like scanners only after
+  "Restart Detection" (see Novell/Suse Bugzilla bnc#310518).
 
 -------------------------------------------------------------------
 Wed Mar 19 16:45:38 CET 2008 - jsmeix@suse.de

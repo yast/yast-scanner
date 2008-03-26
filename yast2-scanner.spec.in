@@ -2,10 +2,8 @@
 
 
 @HEADER@
-BuildRequires:	docbook-xsl-stylesheets doxygen libxslt perl-XML-Writer sgml-skel update-desktop-files yast2 yast2-devtools yast2-testsuite
+BuildRequires:	docbook-xsl-stylesheets doxygen libxslt perl-XML-Writer sgml-skel update-desktop-files xorg-x11-libX11-devel yast2 yast2-devtools yast2-testsuite
 Requires:	yast2
-
-BuildArchitectures:	noarch
 
 Summary:	Configuration of scanner
 
@@ -28,4 +26,5 @@ Summary:	Configuration of scanner
 @moduledir@/Scanner.*
 @desktopdir@/scanner.desktop
 @ybindir@/*scanner*
+@ybindir@/displaytest
 %doc @docdir@
