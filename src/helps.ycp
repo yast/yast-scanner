@@ -219,8 +219,7 @@ In this case, an appropriate explanatory text is shown.
 // Do not change or translate "HPLIP", it is a project name.
 // Do not change or translate "hplip", it is a package name.
 // Do not change or translate "hplip", it is a service name.
-// Note that the "all" is crucial in
-// "either ptal or hplip must be used to access all HP all-in-one devices".
+// The "for all" is crucial in "either ptal or hplip must be used for all HP all-in-one devices".
 _("<p>
 <b><big>HP All-in-One Devices</big></b><br>
 HP all-in-one devices require a special setup.
@@ -229,11 +228,11 @@ There are two software packages that provide support for HP all-in-one devices:
 the outdated HPOJ software (package hp-officeJet),
 which provides the PTAL system (with the ptal service) to access HP all-in-one devices,
 and the up-to-date HPLIP software (package hplip),
-which provides the hplip service to access HP all-in-one devices.
+which provides the hplip service for device status of HP all-in-one devices.
 Both software packages can be installed at the same time
 but the services cannot be run together.
 Because a running service is required to access the device,
-either ptal or hplip must be used to access all HP all-in-one devices.
+either ptal or hplip must be used for all HP all-in-one devices.
 </p>"),
 
 "configure_network_scanning" :

@@ -470,8 +470,15 @@ any OverviewDialog()
     }
     /* restart the whole autodetection */
     if( ret == `restart_detection )
-    { // Show all USB devices with the device class 255 as possible USB scanners:
-      Scanner::ignore_unknown_USB_scanners = false;
+    { // Toggle autodetection behaviour (initially ignore_unknown_USB_scanners == true):
+      if( Scanner::ignore_unknown_USB_scanners )
+      { // Show all USB devices with the device class 255 as possible USB scanners:
+        Scanner::ignore_unknown_USB_scanners = false;
+      }
+      else
+      { // Show only USB scanners for which the USB IDs are known in the database:
+        Scanner::ignore_unknown_USB_scanners = true;
+      }
       // Scanner::RestartDetection results true in any case, see the function comment.
       Scanner::RestartDetection();
       // Exit this dialog and run it again via the sequencer in wizards.ycp
@@ -481,10 +488,20 @@ any OverviewDialog()
     /* run hp-setup */
     if( ret == `run_hpsetup )
     { // Run hp-setup and wait until it is finished before the autodetection is restarted.
-      // There is no usable exit code of hp-setup (always zero even in case of error).
+      // Scanner::RunHpsetup() returns false only if hp-setup cannot be run.
+      // It returns true in any other case because there is no usable exit code of hp-setup
+      // (always zero even in case of error).
       // The hp-setup exit code does not matter because the autodetection will show
       // an appropriate result (e.g. no HP all-in-one device if hp-setup failed):
-      Scanner::RunHpsetup();
+      if( ! Scanner::RunHpsetup() )
+      { Popup::Error( // Message of a Popup::Error.
+                      // Only a simple message because before the function Scanner::RunHpsetup
+                      // was called and this function would have shown more specific messages.
+                      // Do not change or translate "hp-setup", it is a program name:
+                      _("Failed to run hp-setup.")
+                    );
+        continue;
+      }
       // Scanner::RestartDetection results true in any case, see the function comment.
       Scanner::RestartDetection();
       // Exit this dialog and run it again via the sequencer in wizards.ycp

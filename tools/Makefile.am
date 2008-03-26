@@ -15,3 +15,8 @@ ybin_SCRIPTS =					\
 	test_and_set_scanner_access_permissions
 
 EXTRA_DIST = $(ybin_SCRIPTS)
+
+ybin_PROGRAMS = displaytest
+displaytest_SOURCES = displaytest.c
+displaytest_LDADD = -lX11
+
