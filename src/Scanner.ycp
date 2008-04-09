@@ -1022,7 +1022,7 @@ You must finish hp-setup before you can proceed with the scanner configuration.
     return false;
   }
   if( ! ExecuteBashCommand( "/usr/lib/YaST2/bin/displaytest" ) )
-  { // The file location is the same on i386, x86_64, ppc, ppc64, and ia64 (nowhere "lib64" or "lib32").
+  { // The file location is the same on i386, x86_64, ppc, ppc64, ia64, s390x (nowhere "lib64" or "lib32").
     // In particular when YaST runs in text-only mode, hp-setup must not be launched
     // because it would run without any contact to the user "in the background"
     // while in the foreground YaST waits for hp-setup to be finished

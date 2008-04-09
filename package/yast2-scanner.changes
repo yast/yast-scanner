@@ -1,4 +1,20 @@
 -------------------------------------------------------------------
+Wed Apr  9 14:21:43 CEST 2008 - jsmeix@suse.de
+
+- V 2.16.4
+- Modified yast2-scanner.spec.in to exclude displaytest from the
+  files which are sent to /usr/lib/rpm/find-requires so that the
+  yast2-scanner RPM does no longer require X libraries (libX11,
+  libXau, libxcb, and libxcb-xlib) so that it can be installed
+  in a system without X.
+  Nevertheless it is still architecture dependant because of its
+  displaytest binary.
+  It does not matter if displaytest fails orderly because its
+  XOpenDisplay call fails or if it crashes because of missing
+  libraries. All what matters is that displaytest finds out
+  if a graphical window can be opened or not.
+
+-------------------------------------------------------------------
 Wed Mar 26 12:34:13 CET 2008 - jsmeix@suse.de
 
 - V 2.16.3

@@ -4,6 +4,9 @@
 @HEADER@
 BuildRequires:	docbook-xsl-stylesheets doxygen libxslt perl-XML-Writer sgml-skel update-desktop-files xorg-x11-libX11-devel yast2 yast2-devtools yast2-testsuite
 Requires:	yast2
+# Used to exclude libX11, libXau, libxcb, and libxcb-xlib from the requires list
+# which are pulled in by Autoreqprov because of the displaytest tool:
+%define my_requires /tmp/my-requires
 
 Summary:	Configuration of scanner
 
@@ -15,6 +18,13 @@ Summary:	Configuration of scanner
 @BUILD@
 
 @INSTALL@
+# Exclude libX11, libXau, libxcb, and libxcb-xlib from the requires list
+# which are pulled in by Autoreqprov because of the displaytest tool:
+cat << EOF > %{my_requires}
+grep -v 'displaytest' | %{__find_requires}
+EOF
+chmod 755 %{my_requires}
+%define __find_requires %{my_requires}
 
 @CLEAN@
 
