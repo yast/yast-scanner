@@ -1524,11 +1524,26 @@ global list ModelItems( string filter_string )
                                              + autodetected_scanners[selected_autodetected_scanners_index,"usb_product_id"]:"";
                  // There is no false match when one or both USB-IDs are missing
                  // because autodetected_usbid is not the empty string but at least ":"
-                 // and usbid is either a complete "0x0a1b:0x2c3d" USB-ID or the empty string:
+                 // and usbid is either a complete "0x0a1b:0x2c3d" USB-ID or the empty string.
+                 // There is a special magic USB ID "0x03f0:0x0000" in hpaio.desc
+                 // for the following fallback entry for HP all-in-one devices:
+                 //   :model "Any all-in-one device"
+                 //   :usbid "0x03f0" "0x0000"
+                 //   :status :untested
+                 //   :comment "fallback entry for HP all-in-one devices"
+                 // This USB ID is used as fallback by the YaST scanner autodetection
+                 // via /usr/lib/YaST2/bin/autodetect_scanners which calls "hp-probe -busb -escan"
+                 // because hp-probe does not show the USB ID.
+                 // Therefore this fallback entry matches to any autodetected HPLIP
+                 // USB all-in-one device (the "-escan" excludes plain printers)
+                 // so that the usually right driver (hpaio) is preselected.
+                 // Nevertheless, to be on the safe side, the support status is set to "untested"
+                 // which requires the special exceptional test for this particular USB ID here:
                  if( autodetected_usbid == usbid
                      && firmware != "required"
                      && ( status == "complete"
                           || status == "good"
+                          || usbid == "0x03f0:0x0000"
                         )
                    )
                  { if( -1 == selected_model_database_index )
@@ -1682,19 +1697,6 @@ After you get the firmware file, you must configure the driver manually.
 The man page of the driver describes how to configure it for firmware upload.
 The following command shows the man page for your driver:
 ");
-  string hpaio_message =
-  // Message of a Popup::YesNo for scanners which should be set up with the hpaio driver.
-  // Do not change or translate "hpaio", it is a driver name.
-  // Do not change or translate "hplip", it is a service name.
-  // Do not change or translate "PTAL", it is a subsystem name.
-_("The hpaio driver needs the hplip service to be up and running to show the device status.
-Additionally, the hplip service should be configured to start when booting.
-The hplip service and the PTAL system exclude each other.
-Therefore a running PTAL system would be stopped and deactivated
-before the the hplip service is activated and started.
-
-Should the hplip service be activated and started now?
-");
   string ptal_in_use_conflict_message =
   // Message of a Popup::ContinueCancel for scanners which should be set up with the hpaio driver.
   // Do not change or translate "ptal", it is a service name.
@@ -1847,28 +1849,9 @@ Alternatively proceed and change the printer configuration to use the ptal servi
   // so that the hplip service (since HPLIP 2.7.6 only hpssd) is still recommended to run:
   // This makes only sense if user confirmation is requested.
   // Otherwise skip this section.
-  if( "hpaio" == backend_name
-      && user_confirmation
-    )
-  { if( ! Popup::YesNo( hpaio_message ) )
-    { // The user has decided not to activate/start the hplip service:
-      // Don't abort (i.e. return false) in this case because it is no error
-      // when the user has decided not to activate/start the hplip service
-      // because it may be already up and running or the user may want to set it up manually.
-      // Regardless of the state of the hplip service the backend can be activated in /etc/sane.d/dll.conf
-      Report::Warning(
-                       // Message of a Report::Warning for scanners which should be set up with the hpaio backend.
-                       // Only a simple message because before there was a Popup::YesNo
-                       // which asked the user whether he wants to let YaST activate the hplip service
-                       // so that this message is shown if the user has explicitely rejected to do it.
-                       // Do not change or translate "hplip", it is a service name.
-                       // Do not change or translate "hp-toolbox", it is a program name.
-                       _("If the hplip service is not running, no device status can be shown in hp-toolbox.")
-                     );
-    }
-    else
-    { // The user has decided to activate/start the hplip service:
-      // It may happen that the conflicting service ptal is in use by the printing system.
+  if( "hpaio" == backend_name )
+  { if( user_confirmation )
+    { // It may happen that the conflicting service ptal is in use by the printing system.
       // The ptal service is associated with the hpoj backend.
       if( DependantPrintQueueExists( "hpoj" ) )
       { // There is at least one conflicting print queue:
@@ -1881,24 +1864,18 @@ Alternatively proceed and change the printer configuration to use the ptal servi
           return false;
         }
       }
-      // No conflicting print queue was found or
-      // a conflicting print queue was found but the user forced to proceed:
-      if( ! ExecuteBashCommand( setup_hplip_scanner_service_commandline ) )
-      { Report::Error( sformat( // Message of a Report::Error where %1 can be replaced by an error message
-                                // if such an error message exists.
-                                // Only a simple message because this error does not happen on a normal system
-                                // (i.e. a system which is not totally broken or totally messed up).
-                                // Do not change or translate "hplip", it is a service name.
-                                _("Failed to set up the hplip service.\n%1"),
-                                OnlyMeaningfulErrorMessage( result["stderr"]:"" )
-                              )
-                     );
-        Progress::Title( // Last progress step progress bar title when the Progress was aborted:
-                         _("Aborted")
-                       );
-        return false;
-      }
     }
+    // No conflicting print queue was found or
+    // a conflicting print queue was found but the user forced to proceed.
+    // Since HPLIP version 2.8.4 there are no longer any startup daemons.
+    // The hplip init script was adapted to provide backward compatibility:
+    // It still exists to avoid that printer/scanner setup tools fail
+    // when they try to enable the "hplip" service but all it does
+    // is to stop a possibly running hpssd.
+    // All what /usr/lib/YaST2/bin/setup_hplip_scanner_service still does
+    // is to disable both ptal and hplip completely if such a service exists.
+    // There is no need to care about the exit code because it exits successfully in any case:
+    ExecuteBashCommand( setup_hplip_scanner_service_commandline );
   }
   // The hpoj backend (from the package hp-officeJet) requires the PTAL service to be up and running.
   // Before starting the PTAL service works it must have been initialized.
@@ -2085,56 +2062,6 @@ global boolean DeactivateBackend( string backend_name, integer database_index, b
   }
   // Unset the special requirements for particular backends (e.g. "hpaio", "hpoj")
   // if they are not needed otherwise (i.e. by the printing system):
-  if( "hpaio" == backend_name )
-  { // Stop and disable the hplip service if it is not needed by the printing system
-    // (i.e. if there is no print queue which uses the hplip service).
-    // The hplip service is associated with the hpaio backend.
-    if( DependantPrintQueueExists( "hpaio" ) )
-    { // There is at least one print queue which uses the hplip service:
-      // Don't abort (i.e. return false) in this case because it is perfectly o.k.
-      // but show a user notification why the hplip service must be still active.
-      if( user_confirmation )
-      { Popup::Notify ( // Message of a Popup::Notify after the hpaio driver was deactivated.
-                        // Only a simple message because everything is perfectly o.k.
-                        // but the user should get a notification
-                        // why the hplip service must be still active.
-                        // This works only if the CUPS printing system is used.
-                        // Do not change or translate "hpaio", it is a driver name.
-                        // Do not change or translate "hplip", it is a service name.
-                        // Do not change or translate "CUPS", it is a subsystem name.
-                        _("The driver hpaio is deactivated but the associated service hplip is not deactivated because it is needed by the CUPS printing system.")
-                      );
-      }
-    }
-    else
-    { // There is no print queue which uses the hplip service:
-      // Therefore the hplip service will be stopped and disabled if it exists.
-      // Don't abort (i.e. return false) if this fails but show an error message to the user.
-      if( Service::Status( "hplip" ) >= 0 )
-      { // The hplip service exists:
-        if( ! Service::Stop( "hplip" ) )
-        { y2milestone( "Service::Stop('hplip') failed." );
-          if( user_confirmation )
-          { Report::Error( // Only a simple message because this error does not happen on a normal system
-                           // (i.e. a system which is not totally broken or totally messed up).
-                           // Do not change or translate "hplip", it is a service name.
-                           _("Failed to stop the hplip service.")
-                         );
-          }
-        }
-        if( ! Service::Disable( "hplip" ) )
-        { y2milestone( "Service::Disable('hplip') failed." );
-          if( user_confirmation )
-          { Report::Error( // Only a simple message because this error does not happen on a normal system
-                           // (i.e. a system which is not totally broken or totally messed up).
-                           // Do not change or translate "hplip", it is a service name.
-                           _("Failed to disable the hplip service.")
-                         );
-          }
-        }
-      }
-    }
-  }
   if( "hpoj" == backend_name )
   { // Stop and disable the ptal service if it is not needed by the printing system
     // (i.e. if there is no print queue which uses the ptal service).
