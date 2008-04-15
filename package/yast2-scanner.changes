@@ -1,4 +1,23 @@
 -------------------------------------------------------------------
+Tue Apr 15 15:43:55 CEST 2008 - jsmeix@suse.de
+
+- V 2.16.5
+- Add an exception to Scanner.ycp so that the fallback entry
+  for the hpaio driver with the special USB ID "0x03f0:0x0000"
+  is preselected for all HPLIP USB all-in-one devices
+  which are autodetected by "hp-probe -busb -escan"
+  in /usr/lib/YaST2/bin/autodetect_scanners.
+- Since HPLIP version 2.8.4 there is no longer any startup daemon.
+  I.e. the hpaio driver is now just a normal driver.
+  The hplip init script still exists and was adapted to provide
+  backward compatibility but all it does is to stop a possibly
+  running hplip daemon.
+  Accordingly the setup_hplip_scanner_service script was adapted
+  to only disable both ptal and hplip completely.
+  As a consequence some special popups regarding the hplip service
+  were removed and the help text was simplified.
+
+-------------------------------------------------------------------
 Wed Apr  9 14:21:43 CEST 2008 - jsmeix@suse.de
 
 - V 2.16.4
