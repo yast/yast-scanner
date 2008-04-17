@@ -1,4 +1,12 @@
 -------------------------------------------------------------------
+Thu Apr 17 13:17:35 CEST 2008 - jsmeix@suse.de
+
+- V 2.16.6
+- In the test_and_set_scanner_access_permissions script
+  use info.subsystem instead of the deprecated info.bus
+  for the HAL 80-scanner.fdi file.
+
+-------------------------------------------------------------------
 Tue Apr 15 15:43:55 CEST 2008 - jsmeix@suse.de
 
 - V 2.16.5
