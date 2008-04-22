@@ -30,7 +30,7 @@ TMP_DATA_RAW=$(mktemp -u /tmp/$MY_NAME.XXXXXX)
 if [ -n "$1" ]
 then echo "$1" >$TMP_DATA_RAW
 else MAXIMUM_WAIT="60"
-     if [ -x /usr/bin/scanimage ]
+     if [ -x $( type -p scanimage || echo qqq ) ]
      then scanimage -f '%d;' >$TMP_DATA_RAW &
           scanimagePID=$!
           for i in $( seq $MAXIMUM_WAIT )
@@ -74,7 +74,7 @@ tr ';' '\n' <$TMP_DATA_RAW | sed -e 's/^hpaio:\/usb\//:hpaio:\/usb\//' | cut -d 
 # the BusDevice values are unique (because the lsusb output is unique)
 # because another backend might have already reported a HP USB scanner.
 # Skip this section if hp-makeuri cannot be executed for whatever reason.
-if [ -x /usr/bin/hp-makeuri ]
+if [ -x $( type -p hp-makeuri || echo qqq ) ]
 then for BusDevice in $( lsusb -d 03f0: | cut -d ' ' -f 2,4 | tr ' :' ': ' )
      do for URI in $( hp-makeuri -s $BusDevice 2>/dev/null )
         do if grep -q "^$URI\$" $TMP_DATA
@@ -105,6 +105,17 @@ echo '"1a2b" and "3c4d" stand for the USB device IDs' >>$HAL_LOCAL_FILE
 echo 'as displayed by the command /usr/sbin/lsusb -->' >>$HAL_LOCAL_FILE
 echo '' >>$HAL_LOCAL_FILE
 
+# Setting extglob is required to remove an arbitrary number
+# of leading zeroes from a varaiable via ${varaiable##*(0)}
+shopt -s extglob
+
+# Get the HAL UDIs:
+KNOWN_HAL_SCANNER_UDIs=""
+if [ -x $( type -p hal-find-by-capability || echo qqq ) ]
+then KNOWN_HAL_SCANNER_UDIs="$( hal-find-by-capability --capability scanner )"
+fi
+UNKNOWN_TO_HAL=""
+
 # Test and set scanner access permissions:
 exec <$TMP_DATA
 while read LINE
@@ -119,8 +130,6 @@ do # Test for USB and SCSI scanners and ignore anything else:
         # Skip scanners where VENDOR or PRODUCT contains only zeroes:
         echo $VENDOR | grep -q [1-9a-f] || continue
         echo $PRODUCT | grep -q [1-9a-f] || continue
-        # Skip scanners which are already listed in the global HAL file:
-        grep -i -A 1 "usb_device.vendor_id\" int=\"0x$VENDOR\"" $HAL_GLOBAL_FILE | grep -q -i "usb_device.product_id\" int=\"0x$PRODUCT\"" && continue
         # Skip "SCSI via USB" scanners:
         # There is a small number of USB scanners which are not talked to via libusb.
         # They talk an unusual protocol which is a derivative of usb storage.
@@ -138,6 +147,20 @@ do # Test for USB and SCSI scanners and ignore anything else:
         [ "05da:80a3" = "$VENDOR_PRODUCT" ] && continue
         [ "05da:80ac" = "$VENDOR_PRODUCT" ] && continue
         [ "05da:00b6" = "$VENDOR_PRODUCT" ] && continue
+        # Scanners which are not skipped above must have an entry in a HAL fdi file.
+        # If the "scanner" capability is already known to HAL, everything is already o.k
+        # regardless if it is listed in the global or local HAL file or elsewhere.
+        # If there are several scanners with the same USB IDs connected,
+        # it is assumed that when HAL knows one, it knows all of them.
+        # If KNOWN_HAL_SCANNER_UDIs is emptly e.g. because HAL does not run or is not installed
+        # it is perfectly right to collect the models in UNKNOWN_TO_HAL
+        # so that YaST can show an appropriate message to the user.
+        HAL_UDI_VENDOR_PRODUCT=${VENDOR##*(0)}_${PRODUCT##*(0)}
+        echo "$KNOWN_HAL_SCANNER_UDIs" | grep -q -i "/usb_device_$HAL_UDI_VENDOR_PRODUCT" && continue
+        # The "scanner" capability is not yet known to HAL:
+        UNKNOWN_TO_HAL="$UNKNOWN_TO_HAL USB-ID(hex)=$VENDOR_PRODUCT"
+        # Skip scanners which are already listed in the global HAL file:
+        grep -i -A 1 "usb_device.vendor_id\" int=\"0x$VENDOR\"" $HAL_GLOBAL_FILE | grep -q -i "usb_device.product_id\" int=\"0x$PRODUCT\"" && continue
         # Write an entry to the local HAL file:
         echo '    <match key="info.subsystem" string="usb_device">' >>$HAL_LOCAL_FILE
         echo "      <match key=\"usb_device.vendor_id\" int=\"0x$VENDOR\">" >>$HAL_LOCAL_FILE
@@ -150,9 +173,19 @@ do # Test for USB and SCSI scanners and ignore anything else:
    fi
    if echo $LINE | grep -q '^/dev/sg[0-9][0-9]*$'
    then # It is a SCSI scanner:
-        LSSCSI_LINE=$( lsscsi -g | grep $LINE )
+        # If the "scanner" capability is already known to HAL, everything is already o.k
+        # regardless if it is listed in the global or local HAL file or elsewhere.
+        # If KNOWN_HAL_SCANNER_UDIs is emptly e.g. because HAL does not run or is not installed
+        # it is perfectly right to collect the models in UNKNOWN_TO_HAL
+        # so that YaST can show an appropriate message to the user.
+        for u in $( echo "$KNOWN_HAL_SCANNER_UDIs" )
+        do hal-get-property --udi "$u" --key linux.device_file
+        done | grep -q "$LINE" && continue
+        # The "scanner" capability is not yet known to HAL:
+        UNKNOWN_TO_HAL="$UNKNOWN_TO_HAL SCSI-device=$LINE"
         # Skip scanners which show up as SCSI type "scanner" because those
         # match to the generic SCSI entry in the global HAL file.
+        LSSCSI_LINE=$( lsscsi -g | grep $LINE )
         echo $LSSCSI_LINE | tr -s ' ' | cut -d ' ' -f2 | grep -q -i 'scanner' && continue
         # There are two know manufacturers where SCSI scanners do not show up as "scanner":
         # "HP" and "EPSON": Some (all?) of their SCSI scanners show up as as "processor"
@@ -190,5 +223,36 @@ echo '</deviceinfo>' >>$HAL_LOCAL_FILE
 
 # Remove the temporary files:
 rm $TMP_DATA $TMP_DATA_RAW
+
+# If the scanner is not yet known to HAL, a re-plug of the USB scanner might help
+# otherwise a reboot of the computer should be done to restart the whole udev/HAL machinery
+# and if even a reboot doesn't help, the saned+net workaround should be used.
+# The exit code 10 indicates this case so that YaST can show an appropriate message to the user.
+if [ -n "$UNKNOWN_TO_HAL" ]
+then echo "The following models are currently not known to HAL:" 1>&2
+     for m in $UNKNOWN_TO_HAL
+     do echo "  $m" 1>&2
+     done
+     echo "" 1>&2
+     echo "To access the scanner as normal user," 1>&2
+     echo "udev, HAL, and hal-resmgr are needed to grant" 1>&2
+     echo "appropriate access permissions automatically." 1>&2
+     echo "Therefore the scanner model must be known to HAL." 1>&2
+     echo "If the scanner is not known to HAL, a re-plug" 1>&2
+     echo "of a USB scanner should help." 1>&2
+     echo "Otherwise a reboot should be done to restart" 1>&2
+     echo "the whole udev/HAL/hal-resmgr machinery." 1>&2
+     echo "Check if the scanner is listed in the 'lshal' output." 1>&2
+     echo "If a SCSI scanner which was switched on during boot" 1>&2
+     echo "is not listed in the 'lshal' output, the usual reason" 1>&2
+     echo "is that the kernel module for the scanner's SCSI host" 1>&2
+     echo "adapter does not notify HAL about the scanner device." 1>&2
+     echo "If even a reboot does not help, you could access" 1>&2
+     echo "the scanner via the 'saned' as a workaround." 1>&2
+     echo "For this workaround choose 'scanning via network'" 1>&2
+     echo "and select the 'local host configuration'." 1>&2
+     exit 10
+fi
+
 exit 0
 

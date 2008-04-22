@@ -1,4 +1,17 @@
 -------------------------------------------------------------------
+Tue Apr 22 15:27:55 CEST 2008 - jsmeix@suse.de
+
+- V 2.16.7
+- Added tests to test_and_set_scanner_access_permissions
+  if HAL knows about the scanner and show an explanatory
+  error message if not. The error message is only shown
+  when a driver is activated but not if a driver is
+  deactivated. Because of the YaST 'text freeze' this
+  error message cannot be translated for openSUSE 11.0
+  so that currently it is only a simple stderr message, 
+  (see Novell/Suse Bugzilla bnc#340173).
+
+-------------------------------------------------------------------
 Thu Apr 17 13:17:35 CEST 2008 - jsmeix@suse.de
 
 - V 2.16.6

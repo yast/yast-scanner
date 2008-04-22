@@ -2120,18 +2120,7 @@ global boolean DeactivateBackend( string backend_name, integer database_index, b
   { active_scanners = [];
   }
   else
-  { if( ! SetScannerAccessPermissions()
-        && user_confirmation
-      )
-    { Report::Warning( sformat( // Message of a Report::Warning when setting scanner access permissions failed
-                                // where %1 can be replaced by an error message if such an error message exists.
-                                // Only a simple message because this error does not happen on a normal system
-                                // (i.e. a system which is not totally broken or totally messed up).
-                                _("Failed to set scanner access permissions.\n%1"),
-                                OnlyMeaningfulErrorMessage( result["stderr"]:"" )
-                              )
-                     );
-    }
+  { SetScannerAccessPermissions();
   }
   if( ! DetermineActiveBackends() )
   { active_backends = [];
