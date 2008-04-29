@@ -1,4 +1,11 @@
 -------------------------------------------------------------------
+Tue Apr 29 11:52:18 CEST 2008 - jsmeix@suse.de
+
+- V 2.16.8
+- Skipped "SCSI via USB" scanners in autodetect_scanners
+  (see Novell/Suse Bugzilla bnc#382744).
+
+-------------------------------------------------------------------
 Tue Apr 22 15:27:55 CEST 2008 - jsmeix@suse.de
 
 - V 2.16.7
