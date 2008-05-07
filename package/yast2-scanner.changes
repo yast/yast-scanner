@@ -1,4 +1,14 @@
 -------------------------------------------------------------------
+Wed May  7 15:40:27 CEST 2008 - jsmeix@suse.de
+
+- V 2.16.9
+- Added an explanatory error message to determine_active_scanners
+  if there is no response from the 'scanimage' command.
+  Because of the YaST 'text freeze' this error message cannot be
+  translated for openSUSE 11.0 so that currently it is only a
+  simple stderr message, (see Novell/Suse Bugzilla bnc#387555).
+
+-------------------------------------------------------------------
 Tue Apr 29 11:52:18 CEST 2008 - jsmeix@suse.de
 
 - V 2.16.8
