@@ -493,6 +493,8 @@ boolean DetermineActiveScanners()
                    // Do not confuse this error with the case when no active scanner was determined.
                    // The latter results no error.
                    _("Failed to determine the active scanners.")
+                   + "\n"
+                   + OnlyMeaningfulErrorMessage( result["stderr"]:"" )
                  );
     return false;
   }

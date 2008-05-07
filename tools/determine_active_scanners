@@ -30,7 +30,27 @@ then scanimage -f '%d,%v,%m;' >$TMP_DATA_RAW &
         sleep 1
      done
      if ps $scanimagePID &>/dev/null
-     then kill -9 $scanimagePID &>/dev/null
+     then [ "$OUTPUT_FORMAT" = "YCP" ] && echo "[]"
+          # I do not know how to suppress the "...Killed..." notification on stderr
+          # which disturbs my error message.
+          # Therefore the error message is output before the kill command is executed.
+          # This has also the advantage that usually the "...Killed..." notification
+          # happens after the "exit" so that it is nicely lost in the middle of nowhere:
+          echo "There is no response from the 'scanimage -L' command." 1>&2
+          echo "Therefore it was aborted after $MAXIMUM_WAIT seconds timeout." 1>&2
+          if grep -q '^net$' /etc/sane.d/dll.conf
+          then echo "" 1>&2
+               echo "When the 'net' metadriver is activated and something is wrong" 1>&2
+               echo "in the network, it can happen that there is no response from" 1>&2
+               echo "the 'scanimage -L' command. For example when the communication" 1>&2
+               echo "with a server which should be used by the 'net' metadriver" 1>&2
+               echo "gets distorted because a firewall drops some network traffic." 1>&2
+               echo "In this case it should help to disable the 'net' metadriver" 1>&2
+               echo "as a workaround until the issue in the network is fixed." 1>&2
+          fi
+          echo "" 1>&2
+          kill -9 $scanimagePID &>/dev/null
+          exit 10
      fi
 else 
     echo "Cannot execute /usr/bin/scanimage" 1>&2
