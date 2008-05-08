@@ -1,4 +1,12 @@
 -------------------------------------------------------------------
+Thu May  8 16:58:51 CEST 2008 - jsmeix@suse.de
+
+- V 2.16.10
+- Implemented a progress bar while creating the scanner database
+  without any new or changed text because of the 'text freeze'
+  (see Novell/Suse Bugzilla bnc#388144).
+
+-------------------------------------------------------------------
 Wed May  7 15:40:27 CEST 2008 - jsmeix@suse.de
 
 - V 2.16.9

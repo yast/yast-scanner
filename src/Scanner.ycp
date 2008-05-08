@@ -798,14 +798,37 @@ global boolean Read()
       || -1 == SCR::Read( .target.size, database_filename )
     )
   { // Show feedback because creating the scanner database takes a few seconds:
-    Popup::ShowFeedback( // No title for a simple busy message:
-                         "",
-                         // Busy message:
-                         // Body of a Popup::ShowFeedback:
-                         _("Creating scanner database...")
-                       );
+    string feedback_message = _("Creating scanner database...");
+    boolean progress_feedback = UI::HasSpecialWidget( `DownloadProgress );
+    if( progress_feedback )
+    { // Show nice self-updating feedback:
+      // Empty an existing database file so that the DownloadProgress starts at the beginning.
+      ExecuteBashCommand( "cat /dev/null >" + database_filename );
+      UI::OpenDialog( `MinSize( 60, 3,
+                                `ReplacePoint( `id(`create_database_progress_replace_point),
+                                               `DownloadProgress( feedback_message,
+                                                                  database_filename,
+                                                                  // On my openSUSE 10.3 the size is about 538000 bytes:
+                                                                  600000
+                                                                )
+                                             )
+                              )
+                    );
+    }
+    else
+    { // Show a simple static busy message:
+      Popup::ShowFeedback( // No title for a simple busy message:
+                           "",
+                           feedback_message
+                         );
+    }
     if( ! ExecuteBashCommand( create_database_commandline ) )
-    { Popup::ClearFeedback();
+    { if( progress_feedback )
+      { UI::CloseDialog();
+      }
+      else
+      { Popup::ClearFeedback();
+      }
       Report::Error( // Message of a Report::Error.
                      // Only a simple message because this error does not happen on a normal system
                      // (i.e. a system which is not totally broken or totally messed up).
@@ -813,7 +836,33 @@ global boolean Read()
                    );
       return false;
     }
-    Popup::ClearFeedback();
+    if( progress_feedback )
+    { // Setting the DownloadProgress to 100% by setting its property
+      // ExpectedSize to 1 (setting it to 0 results wrong output) by calling
+      // UI::ChangeWidget( `id(`create_database_progress), `ExpectedSize, 1 )
+      // results bad looking output because the DownloadProgress widget is visible re-drawn
+      // first with a small 1% initially starting progress bar which then jumps up to 100%
+      // but what is intended is that the current progress bar jumps directly up to 100%.
+      // Therefore DownloadProgress is not used at all but replaced by a 100% ProgressBar.
+      // Because ProgressBar has a different default width than DownloadProgress,
+      // a MinWidth which is sufficient for both is set above.
+      // The size is measured in units roughly equivalent to the size of a character
+      // in the respective UI (1/80 of the full screen width horizontally,
+      // 1/25 of the full screen width vertically) where full screen size
+      // is 640x480 pixels (y2qt) or 80x25 characters (y2ncurses).
+      UI::ReplaceWidget( `id(`create_database_progress_replace_point),
+                         `ProgressBar( feedback_message,
+                                       100,
+                                       100
+                                     )
+                       );
+      // Sleep half a second to let the user notice that the progress is finished:
+      sleep( 500 );
+      UI::CloseDialog();
+    }
+    else
+    { Popup::ClearFeedback();
+    }
   }
   database = (list< map< string, string > >)SCR::Read( .target.ycp, database_filename );
   if( database == nil )
