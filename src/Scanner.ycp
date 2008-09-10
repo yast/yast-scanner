@@ -2255,7 +2255,39 @@ global boolean DeactivateBackend( string backend_name, integer database_index, b
  * @return true on success
  */
 global boolean TestBackend( string backend_name )
-{ string sane_device = "";
+{ // First of all the multi-line strings because such strings cannot be indented:
+  string hal_does_not_know_scanner_message =
+  // Message of a Popup::Error when HAL does not know a scanner.
+  // Do not change or translate "udev", it is a subsystem name.
+  // Do not change or translate "HAL", it is a subsystem name.
+  // Do not change or translate "hal-resmgr", it is a service name.
+  // Do not change or translate "lshal", it is a command name.
+  // Do not change or translate "saned", it is a program (sane daemon) name.
+  // Do not confuse "scanning via network" (i.e. use a remote scanner via another host in the network)
+  // with "scanning the network" (i.e. scan the network for other hosts or services).
+  // Translate the entry "Scanning via Network" in the "Other" drop down menue
+  // and the button label "Local Host Configuration" so that it matches
+  // exactly to what is actually shown in your language in your dialogs.
+_("The scanner is not known to HAL.
+To access the scanner as normal user,
+udev, HAL, and hal-resmgr are needed to grant
+appropriate access permissions automatically.
+Therefore the scanner model must be known to HAL.
+If the scanner is not known to HAL, a re-plug
+of a USB scanner should help.
+Otherwise a reboot should be done to restart
+the whole udev/HAL/hal-resmgr machinery.
+Check if the scanner is listed in the lshal output.
+If a SCSI scanner which was switched on during boot
+is not listed in the lshal output, the usual reason
+is that the kernel module for the scanner's SCSI host
+adapter does not notify HAL about the scanner device.
+If even a reboot does not help, you could access
+the scanner via the saned as a workaround.
+For this workaround choose 'Scanning via Network'
+and select the 'Local Host Configuration'.
+");
+  string sane_device = "";
   // It is not possible to test a backend without a matching active scanner.
   // Build the table of active scanners of the backend (see ModelItems above):
   list< term > scanners_to_be_tested = [];
@@ -2361,6 +2393,28 @@ global boolean TestBackend( string backend_name )
                              result["stderr"]:_("(no results available)")
                            )
                   );
+  // Test if HAL knows the particular SANE device.
+  // This writes also /etc/hal/fdi/policy/10osvendor/80-scanner.fdi
+  // if the scanner is not listed in /etc/hal/fdi/policy/10osvendor/70-scanner.fdi
+  // which is perfectly o.k. because this could solve access permission issues
+  // automatically only by testing the device:
+  if( ! ExecuteBashCommand( test_and_set_scanner_access_permissions_commandline + " " + sane_device ) )
+  { if( 10 == result["exit"]:9999 )
+    { // Special handling when the exit code is 10 which indicates
+      // that HAL does not know the scanner.
+      // Show only the error message but return true nevertheless
+      // because the actual test via "scanimage" was successful.
+      Popup::ErrorDetails( hal_does_not_know_scanner_message,
+                           sformat( // Popup::ErrorDetails details where
+                                    // %1 will be replaced by the SANE device identifier:
+                                    _("The following SANE device is not know to HAL: '%1'"),
+                                    sane_device
+                                  )
+                         );
+    }
+    // Ignore any other errors of test_and_set_scanner_access_permissions
+    // e.g. when it fails because HAL stuff is not installed or whatever.
+  }
   return true;
 }
 
