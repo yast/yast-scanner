@@ -325,6 +325,8 @@ string UnifyHexString( string hexstring )
  */
 boolean ExecuteBashCommand( string bash_commandline )
 { y2milestone( "Executing bash commandline: %1", bash_commandline );
+  // Enforce a hopefully sane environment before running the actual command:
+  bash_commandline = "export PATH='/sbin:/usr/sbin:/usr/bin:/bin' ; export LC_ALL='POSIX' ; export LANG='POSIX' ; umask 022 ; " + bash_commandline;
   result = (map)SCR::Execute( .target.bash_output, bash_commandline );
   if( result["exit"]:9999 != 0 )
   { y2milestone( "'%1' exit code is: %2", bash_commandline, result["exit"]:9999 );
@@ -486,8 +488,32 @@ you must explicitely install the 32-bit package version
  * @return true on success
  */
 boolean DetermineActiveScanners()
-{ if( ! ExecuteBashCommand( determine_active_scanners_commandline ) )
-  { Report::Error( // Message of a Report::Error.
+{ // First of all the multi-line strings because such strings cannot be indented:
+  string no_response_from_scanimage_message =
+  // Message of a Report::Error when there is no response from the 'scanimage' command.
+  // Do not change or translate "net", it is a metadriver name.
+  // Do not simply use "driver" because net is no normal driver but a metadriver.
+  // Do not change or translate "scanimage -L", it is a fixed command.
+_("Failed to determine the active scanners.
+When the net metadriver is activated and something is wrong
+in the network, it can happen that there is no response from
+the 'scanimage -L' command. For example when the communication
+with a server which should be used by the net metadriver
+gets distorted because a firewall drops some network traffic.
+In this case it should help to disable the net metadriver
+as a workaround until the issue in the network is fixed.
+");
+  if( ! ExecuteBashCommand( determine_active_scanners_commandline ) )
+  { if( 10 == result["exit"]:9999 )
+    { // Special handling when the exit code is 10 which indicates
+      // that there was no response from the 'scanimage' command
+      // so that it was killed after a timeout (usually 60 seconds).
+      // Do not show result["stderr"] which is the same as
+      // the no_response_from_scanimage_message but untranslated:
+      Report::Error( no_response_from_scanimage_message );
+      return false;
+    }
+    Report::Error( // Message of a Report::Error.
                    // Only a simple message because this error does not happen on a normal system
                    // (i.e. a system which is not totally broken or totally messed up).
                    // Do not confuse this error with the case when no active scanner was determined.
@@ -1032,7 +1058,7 @@ global boolean RunHpsetup()
   // Do not change or translate "HPLIP", it is a subsystem name.
 _("There is at least one printer configuration that uses the ptal service.
 It is possible to proceed but then the running ptal service could prevent
-that hp-setup works correctly.
+ hp-setup from working correctly.
 It is recommended to abort the scanner configuration now,
 stop the ptal service, change the printer configuration to use HPLIP,
 and start the scanner configuration again afterwards.
@@ -1792,6 +1818,37 @@ If the scanner is also supported by the hpaio driver, do not proceed.
 Instead use hpaio to set up the scanner.
 Alternatively proceed and change the printer configuration to use the ptal service.
 ");
+  string hal_does_not_know_scanner_message =
+  // Message of a Popup::Error when HAL does not know a scanner.
+  // Do not change or translate "udev", it is a subsystem name.
+  // Do not change or translate "HAL", it is a subsystem name.
+  // Do not change or translate "hal-resmgr", it is a service name.
+  // Do not change or translate "lshal", it is a command name.
+  // Do not change or translate "saned", it is a program (sane daemon) name.
+  // Do not confuse "scanning via network" (i.e. use a remote scanner via another host in the network)
+  // with "scanning the network" (i.e. scan the network for other hosts or services).
+  // Translate the entry "Scanning via Network" in the "Other" drop down menue
+  // and the button label "Local Host Configuration" so that it matches
+  // exactly to what is actually shown in your language in your dialogs.
+_("A scanner is not known to HAL.
+To access the scanner as normal user,
+udev, HAL, and hal-resmgr are needed to grant
+appropriate access permissions automatically.
+Therefore the scanner model must be known to HAL.
+If the scanner is not known to HAL, a re-plug
+of a USB scanner should help.
+Otherwise a reboot should be done to restart
+the whole udev/HAL/hal-resmgr machinery.
+Check if the scanner is listed in the lshal output.
+If a SCSI scanner which was switched on during boot
+is not listed in the lshal output, the usual reason
+is that the kernel module for the scanner's SCSI host
+adapter does not notify HAL about the scanner device.
+If even a reboot does not help, you could access
+the scanner via the saned as a workaround.
+For this workaround choose 'Scanning via Network'
+and select the 'Local Host Configuration'.
+");
   // Here the real code starts with proper indentation:
   if( backend_name == "" )
   { if( database_index < 0 )
@@ -2011,14 +2068,27 @@ Alternatively proceed and change the printer configuration to use the ptal servi
     if( ! SetScannerAccessPermissions()
         && user_confirmation
       )
-    { Report::Warning( sformat( // Message of a Report::Warning when setting scanner access permissions failed
-                                // where %1 can be replaced by an error message if such an error message exists.
-                                // Only a simple message because this error does not happen on a normal system
-                                // (i.e. a system which is not totally broken or totally messed up).
-                                _("Failed to set scanner access permissions.\n%1"),
-                                OnlyMeaningfulErrorMessage( result["stderr"]:"" )
-                              )
-                     );
+    { if( 10 == result["exit"]:9999 )
+      { // Special handling when the exit code is 10 which indicates
+        // that HAL does not know all active scanners.
+        Popup::ErrorDetails( hal_does_not_know_scanner_message,
+                             // Only the stderr message shows exact information
+                             // which scanners are unknown to HAL which is of interest
+                             // when there is more than one scanner connected:
+                             result["stderr"]:""
+                           );
+      }
+      else
+      { // Whatever other error:
+        Report::Warning( sformat( // Message of a Report::Warning when setting scanner access permissions failed
+                                  // where %1 can be replaced by an error message if such an error message exists.
+                                  // Only a simple message because this error does not happen on a normal system
+                                  // (i.e. a system which is not totally broken or totally messed up).
+                                  _("Failed to set scanner access permissions.\n%1"),
+                                  OnlyMeaningfulErrorMessage( result["stderr"]:"" )
+                                )
+                       );
+      }
     }
   }
   if( ! DetermineActiveBackends() )

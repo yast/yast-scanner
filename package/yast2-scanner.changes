@@ -1,4 +1,17 @@
 -------------------------------------------------------------------
+Wed Sep 10 14:49:11 CEST 2008 - jsmeix@suse.de
+
+- V 2.17.0
+- Applied proofread texts.
+- Enforce a safe environment for ExecuteBashCommand.
+- Added an translateble error message to DetermineActiveScanners
+  if there is no response from the 'scanimage' command
+  (see V 2.16.9 and Novell/Suse Bugzilla bnc#387555).
+- Added an translateble message to SetScannerAccessPermissions
+  if HAL does not know about the scanner
+  (see V 2.16.7 and Novell/Suse Bugzilla bnc#340173).
+
+-------------------------------------------------------------------
 Fri May 16 16:40:22 CEST 2008 - jsrain@suse.cz
 
 - added categories Settings and System into desktop file

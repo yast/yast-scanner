@@ -55,18 +55,19 @@ By default only those USB scanners are shown
 for which the UDB vendor and product IDs are known.
 If a USB scanner is not shown or if there are unexpected results,
 try <b>Other</b> and <b>Restart Detection</b>.
-Then it might happen that particular USB devices which are no scanners
+Then it might happen that particular USB devices which are not scanners
 are shown too because then all USB devices which might be scanners are shown.
 The reason is that there is no generic way to reliably distinguish a scanner
 from other USB devices because there is no USB device class for scanners.
 It may also work to proceed with <b>Add</b>.
 For HP all-in-one devices you may have to run <tt>hp-setup</tt>
-via <b>Other</b> and <b>Run hp-setup</b> before it works
-to configure the scanner unit with this tool.
+via <b>Other</b> and <b>Run hp-setup</b> before you can 
+configure the scanner unit with this tool.
 If you have difficulties configuring your scanner here,
 check whether it appears in the output of <tt>lsusb</tt>.
 If it is not listed there, the USB system cannot communicate with the scanner.
-</p>") +
+</p>
+") +
 // Overview dialog help 4/8:
 // Do not change or translate "lsscsi", it is a command name.
 _("<p>
@@ -85,7 +86,7 @@ Usual parallel port scanners must be configured manually.
 To set up the scanner unit in a HP all-in-one device
 which is connected to the parallel port,
 you may have to run <tt>hp-setup</tt> via <b>Other</b> and <b>Run hp-setup</b>
-before it works to configure the scanner unit with this tool using <b>Add</b>.
+before you can configure the scanner unit with this tool using <b>Add</b>.
 </p>") +
 // Overview dialog help 6/8:
 // Do not confuse a "network scanner" (i.e. a scanner which is directly accessible in the network)
