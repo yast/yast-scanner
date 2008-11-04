@@ -1,4 +1,16 @@
 -------------------------------------------------------------------
+Tue Nov  4 09:17:52 CET 2008 - jsmeix@suse.de
+
+- V 2.17.2
+- Removed the "Back" button from the Overview dialog
+  and renamed other buttons according to new style guide
+  by manually overwriting the Wizard module defaults
+  (see Novell/Suse Bugzilla bnc#440560 comment #5).
+- Replaced Report with Popup and used Popup::ErrorDetails
+  to show stderr when commands failed (without any change
+  for translated texts).
+
+-------------------------------------------------------------------
 Wed Sep 10 16:20:00 CEST 2008 - jsmeix@suse.de
 
 - V 2.17.1
@@ -12,10 +24,10 @@ Wed Sep 10 14:49:11 CEST 2008 - jsmeix@suse.de
 - V 2.17.0
 - Applied proofread texts.
 - Enforce a safe environment for ExecuteBashCommand.
-- Added an translateble error message to DetermineActiveScanners
+- Added an translatable error message to DetermineActiveScanners
   if there is no response from the 'scanimage' command
   (see V 2.16.9 and Novell/Suse Bugzilla bnc#387555).
-- Added an translateble message to SetScannerAccessPermissions
+- Added an translatable message to SetScannerAccessPermissions
   if HAL does not know about the scanner
   (see V 2.16.7 and Novell/Suse Bugzilla bnc#340173).
 
