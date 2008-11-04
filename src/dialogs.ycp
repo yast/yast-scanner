@@ -62,6 +62,14 @@ symbol ReadDialog()
   // Otherwise the user is asked for confirmation whether he want's to continue
   // despite the fact that the module might not work correctly
   if( ! Confirm::MustBeRoot() ) return `abort;
+  // According to http://en.opensuse.org/YaST/Style_Guide#Single_Configuration.2FOverview.2FEdit_Dialog
+  // the "abort" button in a single configuration dialog must now be named "cancel":
+  Wizard::SetAbortButton( `abort, Label::CancelButton() );
+  // No "back" or "next" button at all makes any sense here
+  // because there is no dialog where to go "back"
+  // and the "next" dialog (i.e. the Overview dialog) is launced automatically
+  Wizard::HideBackButton();
+  Wizard::HideNextButton();
   Wizard::RestoreHelp( HELPS["read"]:"" );
   boolean ret = Scanner::Read();
   return ret ? `next : `abort;
@@ -72,7 +80,11 @@ symbol ReadDialog()
  * @return `abort if aborted and `next otherwise
  */
 symbol WriteDialog()
-{ Wizard::RestoreHelp(HELPS["write"]:"");
+{ // No "abort" or "back" or "next" button at all makes any sense here:
+  Wizard::HideAbortButton();
+  Wizard::HideBackButton();
+  Wizard::HideNextButton();
+  Wizard::RestoreHelp(HELPS["write"]:"");
   boolean ret = Scanner::Write();
   return ret ? `next : `abort;
 }
@@ -87,7 +99,6 @@ any OverviewDialog()
 { // Caption of the OverviewDialog
   // (the same as the caption of the matching help text)
   string caption = _("Scanner Configuration");
-
   WizardHW::CreateHWDialog( caption,
                             HELPS["overview"]:"",
                             [ // Header for a column of the overview table
@@ -120,11 +131,18 @@ any OverviewDialog()
                               ]
                             ]
                           );
-
-  Wizard::SetNextButton( `next, Label::FinishButton() );
-
   WizardHW::SetContents( Scanner::OverviewContents() );
-
+  // In the Overview dialog the "next" button is used to finish the whole module.
+  // According to http://en.opensuse.org/YaST/Style_Guide#Single_Configuration.2FOverview.2FEdit_Dialog
+  // the "finish" button in an Overview dialog must now be named "OK":
+  Wizard::SetNextButton( `next, Label::OKButton() );
+  // Do not have a "Back" button in the Overview dialog
+  // because in the Overview dialog there is nothing where to go back,
+  // see http://en.opensuse.org/YaST/Style_Guide#Single_Configuration.2FOverview.2FEdit_Dialog
+  Wizard::HideBackButton();
+  // According to http://en.opensuse.org/YaST/Style_Guide#Single_Configuration.2FOverview.2FEdit_Dialog
+  // the "abort" button in an Overview dialog must now be named "cancel":
+  Wizard::SetAbortButton( `abort, Label::CancelButton() );
   any ret = nil;
   while(true)
   { // UI::UserInput returns the label of the button which was cklicked:
@@ -512,6 +530,12 @@ any OverviewDialog()
     continue;
   }
   y2milestone( "OverviewDialog returns: %1", ret );
+  // Re-set the default ID and label for the button with the "next" functionality for further wizard dialogs:
+  Wizard::SetNextButton( `next, Label::NextButton() );
+  // Restore the above hidden button with "back" functionality for other wizard dialogs:
+  Wizard::RestoreBackButton();
+  // Re-set the default ID and label for the button with the "abort" functionality for further wizard dialogs:
+  Wizard::SetAbortButton( `abort, Label::AbortButton() );
   return ret;
 }
 
@@ -598,15 +622,19 @@ any SelectModelDialog()
                               Label::BackButton(),
                               Label::NextButton()
                             );
+  // According to http://en.opensuse.org/YaST/Style_Guide#Configuration_Wizard
+  // there is no longer a "abort" functionality which exits the whole module.
+  // Instead this button is now named "Cancel" and its functionality is
+  // to go back to the Overview dialog (i.e. what the "back" button would do)
+  // because it reads "Cancel - Closes the window and returns to the overview."
+  Wizard::SetAbortButton( `back, Label::CancelButton() );
+  // According to http://en.opensuse.org/YaST/Style_Guide#Configuration_Wizard
+  // the button with the "back" functionality must be disabled
+  // when it is the first dialog of a wizard stlye dialog sequence.
+  Wizard::DisableBackButton();
   any ret = nil;
   while(true)
   { ret = UI::UserInput();
-    if( ret == `abort
-        || ret == `cancel
-      )
-    { if( ! ReallyAbort() ) continue;
-      break;
-    }
     if ( ret == `back )
     { break;
     }
@@ -734,6 +762,10 @@ any SelectModelDialog()
     y2milestone( "Ignoring unexpected returncode in SelectModelDialog: %1", ret );
     continue;
   }
+  // Re-set the default ID and label for the button with the "abort" functionality for further wizard dialogs:
+  Wizard::SetAbortButton( `abort, Label::AbortButton() );
+  // Re-enable the above disabled button with the "back" functionality for further wizard dialogs:
+  Wizard::EnableBackButton();
   return ret;
 }
 
@@ -749,12 +781,29 @@ any ConfigureBackendDialog()
   // The content here is only a dummy.
   // The real content is what the "Progress:..." shows in ActivateBackend().
   term contents = `Label( "" );
+  // According to http://en.opensuse.org/YaST/Style_Guide#Configuration_Wizard
+  // the button with the "back" functionality is unchanged
+  // when it is not the first dialog of a wizard stlye dialog sequence.
+  // According to http://en.opensuse.org/YaST/Style_Guide#Configuration_Wizard
+  // the last "next" button of a wizard-style dialog sequence must be named "finish":
   Wizard::SetContentsButtons( caption,
                               contents,
                               HELPS["configure_backend"]:"",
                               Label::BackButton(),
-                              Label::NextButton()
+                              Label::FinishButton()
                             );
+  // According to http://en.opensuse.org/YaST/Style_Guide#Configuration_Wizard
+  // there is no longer a "abort" functionality which exits the whole module
+  // for a wizard stlye dialog sequence.
+  // Instead within a wizard stlye dialog sequence the button with the
+  // "abort" functionality is now named "Cancel" and it does not abort the whole module
+  // but goes back to the Overvied dialog because it reads
+  // "Cancel - Closes the window and returns to the overview."
+  // But in this special case it does not make sense to just return to the overview
+  // because it is not clear if the right now enabled backend should be disabled
+  // (the same backend could be already used for another scanner)
+  // so that I do not show any "abort"/"cancel" button here at all:
+  Wizard::HideAbortButton();
   Wizard::DisableBackButton();
   Wizard::DisableAbortButton();
   Wizard::DisableNextButton();
@@ -770,12 +819,6 @@ any ConfigureBackendDialog()
   any ret = nil;
   while(true)
   { ret = UI::UserInput();
-    /* abort or cancel */
-    if( ret == `abort
-        || ret == `cancel )
-    { if( ! ReallyAbort() ) continue;
-      break;
-    }
     if( ret == `back )
     { Wizard::DisableBackButton();
       Wizard::DisableAbortButton();
@@ -797,6 +840,8 @@ any ConfigureBackendDialog()
     y2milestone( "Ignoring unexpected returncode in ConfigureBackendDialog: %1", ret );
     continue;
   }
+  // Restore the above hidden button with "abort" functionality for other wizard dialogs:
+  Wizard::RestoreAbortButton();
   return ret;
 }
 
@@ -979,21 +1024,25 @@ any ConfigureNetworkScanningDialog()
                                ),
                          `VStretch()
                        );
+  // According to http://en.opensuse.org/YaST/Style_Guide#Single_Configuration.2FOverview.2FEdit_Dialog
+  // there is no longer a "abort" functionality which exits the whole module.
+  // Instead this button is now named "Cancel" and its functionality is
+  // to go back to the Overview dialog (i.e. what the "back" button would do)
+  // because it reads "Cancel - Closes the window and returns to the overview."
+  // Therefore the button with the "abort" functionality is not shown at all
+  // and the button with the "back" functionality is named "Cancel".
+  // According to http://en.opensuse.org/YaST/Style_Guide#Single_Configuration.2FOverview.2FEdit_Dialog
+  // the "finish" button in a single (step) configuration dialog must now be named "OK".
   Wizard::SetContentsButtons( caption,
                               contents,
                               HELPS["configure_network_scanning"]:"",
-                              Label::BackButton(),
-                              Label::NextButton()
+                              Label::CancelButton(),
+                              Label::OKButton()
                             );
+  Wizard::HideAbortButton();
   any ret = nil;
   while(true)
   { ret = UI::UserInput();
-    /* abort or cancel */
-    if( ret == `abort
-        || ret == `cancel )
-    { if( ! ReallyAbort() ) continue;
-      break;
-    }
     /* local host configuration */
     if( ret == `local_host_config )
     { UI::ChangeWidget( `id(`saned_hosts_input),
@@ -1106,6 +1155,8 @@ any ConfigureNetworkScanningDialog()
     y2milestone( "Ignoring unexpected returncode in ConfigureBackendDialog: %1", ret );
     continue;
   }
+  // Restore the above hidden button with "abort" functionality for other wizard dialogs:
+  Wizard::RestoreAbortButton();
   return ret;
 }
 

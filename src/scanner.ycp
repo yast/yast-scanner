@@ -21,9 +21,6 @@ textdomain "scanner";
 y2milestone ("----------------------------------------");
 y2milestone ("Scanner module started");
 
-import "Progress";
-import "Report";
-import "Summary";
 import "CommandLine";
 import "Scanner";
 

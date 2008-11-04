@@ -16,8 +16,6 @@ module "Scanner";
 textdomain "scanner";
 
 import "Progress";
-import "Report";
-import "Summary";
 import "Popup";
 import "Package";
 import "Label";
@@ -366,10 +364,13 @@ string InstalledPackageVersion( string package_name )
   { return "not installed";
   }
   if( ! ExecuteBashCommand( "/bin/rpm -q " + package_name + " | /usr/bin/tr -d '\n'" ) )
-  { Report::Error( sformat( // Message of a Report::Error where %1 will be replaced by the package name.
-                            // Only a simple message because this error does not happen on a normal system
-                            // (i.e. a system which is not totally broken or totally messed up).
-                            _("Failed to determine the version of package %1."), package_name ) );
+  { Popup::ErrorDetails( sformat( // Message of a Popup::ErrorDetails where %1 will be replaced by the package name.
+                                  // Only a simple message because this error does not happen on a normal system
+                                  // (i.e. a system which is not totally broken or totally messed up).
+                                  _("Failed to determine the version of package %1."), package_name
+                                ),
+                         result["stderr"]:""
+                       );
   }
   return result["stdout"]:"failed to determine";
 }
@@ -389,7 +390,7 @@ string InstalledPackageVersion( string package_name )
 boolean TestAndInstallPackage( string package_name )
 { // First of all the multi-line string because such strings cannot be indented:
   string iscan_message =
-  // Message of a Report::Error
+  // Message of a Popup::Error
   // Do not change or translate "iscan", it is a package name.
   // Do not change or translate "i386", it is an architecture name.
 _("The package iscan should be installed
@@ -439,7 +440,7 @@ you must explicitely install the 32-bit package version
     if( Arch::x86_64() )
     { iscan_message = iscan_message + "\n" + iscan_64bit_message;
     }
-    Report::Error( iscan_message );
+    Popup::Error( iscan_message );
     return false;
   }
   // Is the package available to be installed?
@@ -447,33 +448,33 @@ you must explicitely install the 32-bit package version
   boolean package_available = Package::Available( package_name );
   if( nil == package_available )
   { y2milestone( "Required package %1 is not installed and there is no package repository available.", package_name );
-    Report::Error( sformat( // Message of a Report::Error where %1 will be replaced by the package name:
-                            _("Required package %1 is not installed and there is no package repository available."),
-                            package_name
-                          )
+    Popup::Error( sformat( // Message of a Popup::Error where %1 will be replaced by the package name:
+                           _("Required package %1 is not installed and there is no package repository available."),
+                           package_name
+                         )
                  );
     return false;
   }
   if( ! package_available )
   { y2milestone( "Required package %1 is not installed and not available in the repository.", package_name );
-    Report::Error( sformat( // Message of a Report::Error where %1 will be replaced by the package name:
-                            _("Required package %1 is not installed and not available in the repository."),
-                            package_name
-                          )
+    Popup::Error( sformat( // Message of a Popup::Error where %1 will be replaced by the package name:
+                           _("Required package %1 is not installed and not available in the repository."),
+                           package_name
+                         )
                  );
     return false;
   }
   if( ! Package::Install( package_name ) )
   { y2milestone( "Failed to install required package %1.", package_name );
-    Report::Error( // Message of a Report::Error where %1 will be replaced by the package name.
-                   // Only a simple message because:
-                   // Either the user has explicitely rejected to install the package,
-                   // or this error does not happen on a normal system
-                   // (i.e. a system which is not totally broken or totally messed up).
-                   sformat( _("Failed to install required package %1."),
-                              package_name
-                          )
-                 );
+    Popup::Error( // Message of a Popup::Error where %1 will be replaced by the package name.
+                  // Only a simple message because:
+                  // Either the user has explicitely rejected to install the package,
+                  // or this error does not happen on a normal system
+                  // (i.e. a system which is not totally broken or totally messed up).
+                  sformat( _("Failed to install required package %1."),
+                             package_name
+                         )
+                );
     return false;
   }
   return true;
@@ -490,7 +491,7 @@ you must explicitely install the 32-bit package version
 boolean DetermineActiveScanners()
 { // First of all the multi-line strings because such strings cannot be indented:
   string no_response_from_scanimage_message =
-  // Message of a Report::Error when there is no response from the 'scanimage' command.
+  // Message of a Popup::Error when there is no response from the 'scanimage' command.
   // Do not change or translate "net", it is a metadriver name.
   // Do not simply use "driver" because net is no normal driver but a metadriver.
   // Do not change or translate "scanimage -L", it is a fixed command.
@@ -510,40 +511,39 @@ as a workaround until the issue in the network is fixed.
       // so that it was killed after a timeout (usually 60 seconds).
       // Do not show result["stderr"] which is the same as
       // the no_response_from_scanimage_message but untranslated:
-      Report::Error( no_response_from_scanimage_message );
+      Popup::Error( no_response_from_scanimage_message );
       return false;
     }
-    Report::Error( // Message of a Report::Error.
-                   // Only a simple message because this error does not happen on a normal system
-                   // (i.e. a system which is not totally broken or totally messed up).
-                   // Do not confuse this error with the case when no active scanner was determined.
-                   // The latter results no error.
-                   _("Failed to determine the active scanners.")
-                   + "\n"
-                   + OnlyMeaningfulErrorMessage( result["stderr"]:"" )
-                 );
+    Popup::ErrorDetails( // Message of a Popup::ErrorDetails.
+                         // Only a simple message because this error does not happen on a normal system
+                         // (i.e. a system which is not totally broken or totally messed up).
+                         // Do not confuse this error with the case when no active scanner was determined.
+                         // The latter results no error.
+                         _("Failed to determine the active scanners."),
+                         result["stderr"]:""
+                       );
     return false;
   }
   if( -1 == SCR::Read( .target.size, active_scanners_filename ) )
   { y2milestone( "Error: %1: file does not exist.", active_scanners_filename );
-    Report::Error( sformat( // Message of a Report::Error where %1 will be replaced by the file name.
-                            // Only a simple message because this error does not happen on a normal system
-                            // (i.e. a system which is not totally broken or totally messed up).
-                            _("File %1 does not exist."),
-                            active_scanners_filename
-                          )
+    Popup::Error( sformat( // Message of a Popup::Error where %1 will be replaced by the file name.
+                           // Only a simple message because this error does not happen on a normal system
+                           // (i.e. a system which is not totally broken or totally messed up).
+                           _("File %1 does not exist."),
+                           active_scanners_filename
+                         )
                  );
     return false;
   }
   active_scanners = (list< map< string, string > >)SCR::Read( .target.ycp, active_scanners_filename );
   if( nil == active_scanners )
   { y2milestone( "Error: Failed to read %1", active_scanners_filename );
-    Report::Error( sformat( // Message of a Report::Error where %1 will be replaced by the file name.
-                            // Only a simple message because this error does not happen on a normal system
-                            // (i.e. a system which is not totally broken or totally messed up).
-                            _("Failed to read %1."),
-                            active_scanners_filename
-                          )
+    Popup::Error( sformat( // Message of a Popup::Error where %1 will be replaced by the file name.
+                           // Only a simple message because this error does not happen on a normal system
+                           // (i.e. a system which is not totally broken or totally messed up).
+                           _("Failed to read %1."),
+                           active_scanners_filename
+                         )
                  );
     active_scanners = [];
     return false;
@@ -562,35 +562,36 @@ as a workaround until the issue in the network is fixed.
  */
 boolean DetermineActiveBackends()
 { if( ! ExecuteBashCommand( determine_active_scanner_backends_commandline ) )
-  { Report::Error( // Message of a Report::Error.
-                   // Only a simple message because this error does not happen on a normal system
-                   // (i.e. a system which is not totally broken or totally messed up).
-                   // Do not confuse this error with the case when no active driver was determined.
-                   // The latter results no error.
-                   _("Failed to determine the active drivers.")
-                 );
+  { Popup::ErrorDetails( // Message of a Popup::ErrorDetails.
+                         // Only a simple message because this error does not happen on a normal system
+                         // (i.e. a system which is not totally broken or totally messed up).
+                         // Do not confuse this error with the case when no active driver was determined.
+                         // The latter results no error.
+                         _("Failed to determine the active drivers."),
+                         result["stderr"]:""
+                       );
     return false;
   }
   if( -1 == SCR::Read( .target.size, active_backends_filename ) )
   { y2milestone( "Error: %1: file does not exist.", active_backends_filename );
-    Report::Error( sformat( // Message of a Report::Error where %1 will be replaced by the file name.
-                            // Only a simple message because this error does not happen on a normal system
-                            // (i.e. a system which is not totally broken or totally messed up).
-                            _("File %1 does not exist."),
-                            active_backends_filename
-                          )
+    Popup::Error( sformat( // Message of a Popup::Error where %1 will be replaced by the file name.
+                           // Only a simple message because this error does not happen on a normal system
+                           // (i.e. a system which is not totally broken or totally messed up).
+                           _("File %1 does not exist."),
+                           active_backends_filename
+                         )
                  );
     return false;
   }
   active_backends = (list< string >)SCR::Read( .target.ycp, active_backends_filename );
   if( nil == active_backends )
   { y2milestone( "Error: Failed to read %1", active_backends_filename );
-    Report::Error( sformat( // Message of a Report::Error where %1 will be replaced by the file name.
-                            // Only a simple message because this error does not happen on a normal system
-                            // (i.e. a system which is not totally broken or totally messed up).
-                            _("Failed to read %1."),
-                            active_backends_filename
-                          )
+    Popup::Error( sformat( // Message of a Popup::Error where %1 will be replaced by the file name.
+                           // Only a simple message because this error does not happen on a normal system
+                           // (i.e. a system which is not totally broken or totally messed up).
+                           _("Failed to read %1."),
+                           active_backends_filename
+                         )
                  );
     active_backends = [];
     return false;
@@ -610,35 +611,36 @@ boolean DetermineActiveBackends()
  */
 boolean AutodetectScanners()
 { if( ! ExecuteBashCommand( autodetect_scanners_commandline ) )
-  { Report::Error( // Message of a Report::Error.
-                   // Only a simple message because this error does not happen on a normal system
-                   // (i.e. a system which is not totally broken or totally messed up).
-                   // Do not confuse this error with the case when no scanner was autodetected.
-                   // The latter results no error.
-                   _("Failed to detect scanners automatically.")
-                 );
+  { Popup::ErrorDetails( // Message of a Popup::ErrorDetails.
+                         // Only a simple message because this error does not happen on a normal system
+                         // (i.e. a system which is not totally broken or totally messed up).
+                         // Do not confuse this error with the case when no scanner was autodetected.
+                         // The latter results no error.
+                         _("Failed to detect scanners automatically."),
+                         result["stderr"]:""
+                       );
     return false;
   }
   if( -1 == SCR::Read( .target.size, autodetected_scanners_filename ) )
   { y2milestone( "Error: %1: file does not exist.", autodetected_scanners_filename );
-    Report::Error( sformat( // Message of a Report::Error where %1 will be replaced by the file name.
-                            // Only a simple message because this error does not happen on a normal system
-                            // (i.e. a system which is not totally broken or totally messed up).
-                            _("File %1 does not exist."),
-                            autodetected_scanners_filename
-                          )
+    Popup::Error( sformat( // Message of a Popup::Error where %1 will be replaced by the file name.
+                           // Only a simple message because this error does not happen on a normal system
+                           // (i.e. a system which is not totally broken or totally messed up).
+                           _("File %1 does not exist."),
+                           autodetected_scanners_filename
+                         )
                  );
     return false;
   }
   autodetected_scanners = (list< map< string, string > >)SCR::Read( .target.ycp, autodetected_scanners_filename );
   if( nil == autodetected_scanners )
   { y2milestone( "Error: Failed to read %1", autodetected_scanners_filename );
-    Report::Error( sformat( // Message of a Report::Error where %1 will be replaced by the file name.
-                            // Only a simple message because this error does not happen on a normal system
-                            // (i.e. a system which is not totally broken or totally messed up).
-                            _("Failed to read %1."),
-                            autodetected_scanners_filename
-                          )
+    Popup::Error( sformat( // Message of a Popup::Error where %1 will be replaced by the file name.
+                           // Only a simple message because this error does not happen on a normal system
+                           // (i.e. a system which is not totally broken or totally messed up).
+                           _("Failed to read %1."),
+                           autodetected_scanners_filename
+                         )
                  );
     autodetected_scanners = [];
     return false;
@@ -855,11 +857,12 @@ global boolean Read()
       else
       { Popup::ClearFeedback();
       }
-      Report::Error( // Message of a Report::Error.
-                     // Only a simple message because this error does not happen on a normal system
-                     // (i.e. a system which is not totally broken or totally messed up).
-                     _("Aborting: Failed to create the scanner database.")
-                   );
+      Popup::ErrorDetails( // Message of a Popup::ErrorDetails.
+                           // Only a simple message because this error does not happen on a normal system
+                           // (i.e. a system which is not totally broken or totally messed up).
+                           _("Aborting: Failed to create the scanner database."),
+                           result["stderr"]:""
+                         );
       return false;
     }
     if( progress_feedback )
@@ -893,12 +896,12 @@ global boolean Read()
   database = (list< map< string, string > >)SCR::Read( .target.ycp, database_filename );
   if( database == nil )
   { y2milestone( "Aborting: Failed to read %1", database_filename );
-    Report::Error( sformat( // Message of a Report::Error where %1 will be replaced by the file name.
-                            // Only a simple message because this error does not happen on a normal system
-                            // (i.e. a system which is not totally broken or totally messed up).
-                            _("Aborting: Failed to read %1."),
-                            database_filename
-                          )
+    Popup::Error( sformat( // Message of a Popup::Error where %1 will be replaced by the file name.
+                           // Only a simple message because this error does not happen on a normal system
+                           // (i.e. a system which is not totally broken or totally messed up).
+                           _("Aborting: Failed to read %1."),
+                           database_filename
+                         )
                  );
     return false;
   }
@@ -1052,7 +1055,7 @@ global boolean RestartDetection()
 global boolean RunHpsetup()
 { // First of all the multi-line strings because such strings cannot be indented:
   string ptal_in_use_conflict_message =
-  // Message of a Report::Error when hp-setup should be run.
+  // Message of a Popup::Error when hp-setup should be run.
   // Do not change or translate "ptal", it is a service name.
   // Do not change or translate "hp-setup", it is a program name.
   // Do not change or translate "HPLIP", it is a subsystem name.
@@ -1064,7 +1067,7 @@ stop the ptal service, change the printer configuration to use HPLIP,
 and start the scanner configuration again afterwards.
 ");
   string displaytest_failed_message =
-  // Message of a Report::Error when hp-setup should be run.
+  // Message of a Popup::Error when hp-setup should be run.
   // Do not change or translate "hp-setup", it is a program name:
 _("Cannot run hp-setup because no graphical display can be opened.
 This happens in particular when YaST runs in text-only mode,
@@ -1081,7 +1084,7 @@ _("It seems hplip is not installed which is required to run hp-setup.
 Should the hplip package be installed?
 ");
   string hpsetup_not_executable_message =
-  // Message of a Report::Error when hp-setup should be run.
+  // Message of a Popup::Error when hp-setup should be run.
   // Do not change or translate "hp-setup", it is a program name:
 _("Cannot run hp-setup because
 /usr/bin/hp-setup is not executable
@@ -1095,7 +1098,7 @@ You must finish hp-setup before you can proceed with the scanner configuration.
 ");
   if( DependantPrintQueueExists( "hpoj" ) )
   { y2milestone( "Error: hp-setup is not launched because of conflict: PTAL is in use by a CUPS queue." );
-    Report::Error( ptal_in_use_conflict_message );
+    Popup::Error( ptal_in_use_conflict_message );
     return false;
   }
   if( ! ExecuteBashCommand( "/usr/lib/YaST2/bin/displaytest" ) )
@@ -1113,7 +1116,7 @@ You must finish hp-setup before you can proceed with the scanner configuration.
     // so that a few xorg-x11-lib* packages (xorg-x11-libX11, xorg-x11-libxcb, xorg-x11-libXau)
     // are enforced by RPM to be installed.
     y2milestone( "Error: hp-setup is not launched because /usr/lib/YaST2/bin/displaytest failed." );
-    Report::Error( displaytest_failed_message );
+    Popup::Error( displaytest_failed_message );
     return false;
   }
   if( "not installed" == actual_environment["hplip_version"]:"not installed"
@@ -1131,7 +1134,7 @@ You must finish hp-setup before you can proceed with the scanner configuration.
   }
   if( ! ExecuteBashCommand( "test -x /usr/bin/hp-setup" ) )
   { y2milestone( "Error: /usr/bin/hp-setup not executable or does not exist." );
-    Report::Error( hpsetup_not_executable_message );
+    Popup::Error( hpsetup_not_executable_message );
     return false;
   }
   Popup::ShowFeedback( // No title for a simple busy message:
@@ -1999,14 +2002,14 @@ and select the 'Local Host Configuration'.
       // when the user has decided not to initialize/activate/start the PTAL system
       // because it may be already up and running or the user may want to set it up manually.
       // Regardless of the state of the PTAL system the backend can be activated in /etc/sane.d/dll.conf
-      Report::Warning(
-                       // Message of a Report::Warning for scanners which should be set up with the hpoj backend.
-                       // Only a simple message because before there was a Popup::YesNo
-                       // which asked the user whether he wants to let YaST activate the ptal service
-                       // so that this message is shown if the user has explicitely rejected to do it.
-                       // Do not change or translate "ptal", it is a service name.
-                       _("If the ptal service is not running, the scanner cannot work.")
-                     );
+      Popup::Warning(
+                      // Message of a Popup::Warning for scanners which should be set up with the hpoj backend.
+                      // Only a simple message because before there was a Popup::YesNo
+                      // which asked the user whether he wants to let YaST activate the ptal service
+                      // so that this message is shown if the user has explicitely rejected to do it.
+                      // Do not change or translate "ptal", it is a service name.
+                      _("If the ptal service is not running, the scanner cannot work.")
+                    );
     }
     else
     { // The user has decided to initialize/activate/start the PTAL system:
@@ -2026,15 +2029,13 @@ and select the 'Local Host Configuration'.
       // No conflicting print queue was found or
       // a conflicting print queue was found but the user forced to proceed:
       if( ! ExecuteBashCommand( setup_ptal_scanner_service_commandline ) )
-      { Report::Error( sformat( // Message of a Report::Error where %1 can be replaced by an error message
-                                // if such an error message exists.
-                                // Only a simple message because this error does not happen on a normal system
-                                // (i.e. a system which is not totally broken or totally messed up).
-                                // Do not change or translate "PTAL", it is a subsystem name.
-                                _("Failed to set up the PTAL system.\n%1"),
-                                OnlyMeaningfulErrorMessage( result["stderr"]:"" )
-                              )
-                     );
+      { Popup::ErrorDetails( // Message of a Popup::ErrorDetails.
+                             // Only a simple message because this error does not happen on a normal system
+                             // (i.e. a system which is not totally broken or totally messed up).
+                             // Do not change or translate "PTAL", it is a subsystem name.
+                             _("Failed to set up the PTAL system."),
+                             result["stderr"]:""
+                           );
         Progress::Title( // Last progress step progress bar title when the Progress was aborted:
                          _("Aborted")
                        );
@@ -2080,14 +2081,12 @@ and select the 'Local Host Configuration'.
       }
       else
       { // Whatever other error:
-        Report::Warning( sformat( // Message of a Report::Warning when setting scanner access permissions failed
-                                  // where %1 can be replaced by an error message if such an error message exists.
-                                  // Only a simple message because this error does not happen on a normal system
-                                  // (i.e. a system which is not totally broken or totally messed up).
-                                  _("Failed to set scanner access permissions.\n%1"),
-                                  OnlyMeaningfulErrorMessage( result["stderr"]:"" )
-                                )
-                       );
+        Popup::WarningDetails( // Message of a Popup::WarningDetails when setting scanner access permissions failed.
+                               // Only a simple message because this error does not happen on a normal system
+                               // (i.e. a system which is not totally broken or totally messed up).
+                               _("Failed to set scanner access permissions.\n%1"),
+                               result["stderr"]:""
+                             );
       }
     }
   }
@@ -2175,10 +2174,13 @@ global boolean DeactivateBackend( string backend_name, integer database_index, b
   }
   // Deactivate the backend via bash script:
   if( ! ExecuteBashCommand( deactivate_backend_commandline + " " + backend_name ) )
-  { Report::Error( sformat( // Message of a Report::Error where %1 will be replaced by the driver name.
-                            // Only a simple message because this error does not happen on a normal system
-                            // (i.e. a system which is not totally broken or totally messed up).
-                            _("Failed to deactivate %1."), backend_name ) );
+  { Popup::ErrorDetails( sformat( // Message of a Popup::ErrorDetails where %1 will be replaced by the driver name.
+                                  // Only a simple message because this error does not happen on a normal system
+                                  // (i.e. a system which is not totally broken or totally messed up).
+                                  _("Failed to deactivate %1."), backend_name
+                                ),
+                         result["stderr"]:""
+                       );
     return false;
   }
   // Unset the special requirements for particular backends (e.g. "hpaio", "hpoj")
@@ -2213,21 +2215,23 @@ global boolean DeactivateBackend( string backend_name, integer database_index, b
         if( ! Service::Stop( "ptal" ) )
         { y2milestone( "Service::Stop('ptal') failed." );
           if( user_confirmation )
-          { Report::Error( // Only a simple message because this error does not happen on a normal system
-                           // (i.e. a system which is not totally broken or totally messed up).
-                           // Do not change or translate "ptal", it is a service name.
-                           _("Failed to stop the ptal service.")
-                         );
+          { Popup::ErrorDetails( // Only a simple message because this error does not happen on a normal system
+                                 // (i.e. a system which is not totally broken or totally messed up).
+                                 // Do not change or translate "ptal", it is a service name.
+                                 _("Failed to stop the ptal service."),
+                                 Service::Error()
+                               );
           }
         }
         if( ! Service::Disable( "ptal" ) )
         { y2milestone( "Service::Disable('ptal') failed." );
           if( user_confirmation )
-          { Report::Error( // Only a simple message because this error does not happen on a normal system
-                           // (i.e. a system which is not totally broken or totally messed up).
-                           // Do not change or translate "ptal", it is a service name.
-                           _("Failed to disable the ptal service.")
-                         );
+          { Popup::ErrorDetails( // Only a simple message because this error does not happen on a normal system
+                                 // (i.e. a system which is not totally broken or totally messed up).
+                                 // Do not change or translate "ptal", it is a service name.
+                                 _("Failed to disable the ptal service."),
+                                 Service::Error()
+                               );
           }
         }
       }
@@ -2315,9 +2319,9 @@ and select the 'Local Host Configuration'.
   // then show a message but exit successfully because
   // it is no error when there is no active scanner for the backend:
   if( size( scanners_to_be_tested ) < 1 )
-  { Report::ShowText( sformat( // Header of a Report::ShowText where %1 will be replaced by the driver name:
+  { Popup::AnyMessage( sformat( // Header of a Popup::AnyMessage where %1 will be replaced by the driver name:
                                _("No Scanner for %1"), backend_name ),
-                               // Body of a Report::ShowText:
+                               // Body of a Popup::AnyMessage:
                                _("It is not possible to test without a matching active scanner.") );
     return true;
   }
@@ -2358,16 +2362,16 @@ and select the 'Local Host Configuration'.
                      );
   if( ! ExecuteBashCommand( test_backend_commandline + " " + sane_device ) )
   { Popup::ClearFeedback();
-    Report::Error( sformat( // Message of a Report::Error where
-                            // %1 will be replaced by the SANE device identifier
-                            // %2 will be replaced by the actual test results
-                            //    which are usually only available in English.
-                            // Do not change or translate "scanimage -d %1 -v", it is a fixed command.
-                            _("Test with 'scanimage -d %1 -v' failed.\nThe results are:\n\n%2"),
-                            sane_device,
-                            // Fallback message if the real results are missing:
-                            result["stderr"]:_("(no results available)")
-                          )
+    Popup::Error( sformat( // Message of a Popup::Error where
+                           // %1 will be replaced by the SANE device identifier
+                           // %2 will be replaced by the actual test results
+                           //    which are usually only available in English.
+                           // Do not change or translate "scanimage -d %1 -v", it is a fixed command.
+                           _("Test with 'scanimage -d %1 -v' failed.\nThe results are:\n\n%2"),
+                           sane_device,
+                           // Fallback message if the real results are missing:
+                           result["stderr"]:_("(no results available)")
+                         )
                  );
     // If the test failed, do the whole autodetection anew.
     // Even if normally nothing should have changed because of a failed test,
@@ -2379,20 +2383,20 @@ and select the 'Local Host Configuration'.
     return false;
   }
   Popup::ClearFeedback();
-  Report::ShowText( sformat( // Header of a Report::ShowText where %1 will be replaced by the driver name:
-                             _("Successfully Tested %1"), backend_name
-                           ),
-                    sformat( // Body of a Report::ShowText where
-                             // %1 will be replaced by the SANE device identifier
-                             // %2 will be replaced by the actual test results
-                             //    which are usually only available in English.
-                             // Do not change or translate "scanimage -d %1 -v", it is a fixed command.
-                             _("Test with 'scanimage -d %1 -v' succeeded.\nThe results are:\n\n%2"),
-                             sane_device,
-                             // Fallback message if the real results are missing:
-                             result["stderr"]:_("(no results available)")
-                           )
-                  );
+  Popup::AnyMessage( sformat( // Header of a Popup::AnyMessage where %1 will be replaced by the driver name:
+                              _("Successfully Tested %1"), backend_name
+                            ),
+                     sformat( // Body of a Popup::AnyMessage where
+                              // %1 will be replaced by the SANE device identifier
+                              // %2 will be replaced by the actual test results
+                              //    which are usually only available in English.
+                              // Do not change or translate "scanimage -d %1 -v", it is a fixed command.
+                              _("Test with 'scanimage -d %1 -v' succeeded.\nThe results are:\n\n%2"),
+                              sane_device,
+                              // Fallback message if the real results are missing:
+                              result["stderr"]:_("(no results available)")
+                            )
+                   );
   // Test if HAL knows the particular SANE device.
   // This writes also /etc/hal/fdi/policy/10osvendor/80-scanner.fdi
   // if the scanner is not listed in /etc/hal/fdi/policy/10osvendor/70-scanner.fdi
@@ -2429,36 +2433,37 @@ and select the 'Local Host Configuration'.
  */
 global boolean DetermineNetworkScanningConfig()
 { if( ! ExecuteBashCommand( determine_network_scanning_config_commandline ) )
-  { Report::Error( // Message of a Report::Error.
-                   // Only a simple message because this error does not happen on a normal system
-                   // (i.e. a system which is not totally broken or totally messed up).
-                   // Do not confuse this error with the case when no scanning via network was configured.
-                   // The latter results no error.
-                   _("Failed to determine the configuration for scanning via network.")
-                 );
+  { Popup::ErrorDetails( // Message of a Popup::ErrorDetails.
+                         // Only a simple message because this error does not happen on a normal system
+                         // (i.e. a system which is not totally broken or totally messed up).
+                         // Do not confuse this error with the case when no scanning via network was configured.
+                         // The latter results no error.
+                         _("Failed to determine the configuration for scanning via network."),
+                         result["stderr"]:""
+                       );
     return false;
   }
   if( -1 == SCR::Read( .target.size, network_scanning_config_filename ) )
   { y2milestone( "Error: %1: file does not exist.", network_scanning_config_filename );
-    Report::Error( sformat( // Message of a Report::Error where %1 will be replaced by the file name.
-                            // Only a simple message because this error does not happen on a normal system
-                            // (i.e. a system which is not totally broken or totally messed up).
-                            _("File %1 does not exist."),
-                            network_scanning_config_filename
-                          )
-                 );
+    Popup::Error( sformat( // Message of a Popup::Error where %1 will be replaced by the file name.
+                           // Only a simple message because this error does not happen on a normal system
+                           // (i.e. a system which is not totally broken or totally messed up).
+                           _("File %1 does not exist."),
+                           network_scanning_config_filename
+                         )
+                );
     return false;
   }
   network_scanning_config = (map< string, string >)SCR::Read( .target.ycp, network_scanning_config_filename );
   if( nil == network_scanning_config )
   { y2milestone( "Error: Failed to read %1", network_scanning_config_filename );
-    Report::Error( sformat( // Message of a Report::Error where %1 will be replaced by the file name.
-                            // Only a simple message because this error does not happen on a normal system
-                            // (i.e. a system which is not totally broken or totally messed up).
-                            _("Failed to read %1."),
-                            network_scanning_config_filename
-                          )
-                 );
+    Popup::Error( sformat( // Message of a Popup::Error where %1 will be replaced by the file name.
+                           // Only a simple message because this error does not happen on a normal system
+                           // (i.e. a system which is not totally broken or totally messed up).
+                           _("Failed to read %1."),
+                           network_scanning_config_filename
+                         )
+                );
     network_scanning_config = $[];
     return false;
   }
@@ -2558,13 +2563,14 @@ global boolean SetupNetworkScanningConfig()
                        + network_scanning_config["saned_hosts"]:""
                        + "'";
   if( ! ExecuteBashCommand( commandline ) )
-  { Report::Error( // Message of a Report::Error.
-                   // Only a simple message because this error does not happen on a normal system
-                   // (i.e. a system which is not totally broken or totally messed up).
-                   // Do not confuse this error with the case when no scanning via network is to be set up.
-                   // The latter results no error.
-                   _("Failed to set up scanning via network.")
-                 );
+  { Popup::ErrorDetails( // Message of a Popup::ErrorDetails.
+                         // Only a simple message because this error does not happen on a normal system
+                         // (i.e. a system which is not totally broken or totally messed up).
+                         // Do not confuse this error with the case when no scanning via network is to be set up.
+                         // The latter results no error.
+                         _("Failed to set up scanning via network."),
+                         result["stderr"]:""
+                       );
     return false;
   }
   // If the Suse Firewall is used and
@@ -2599,13 +2605,13 @@ global boolean SetupNetworkScanningConfig()
           || ! SuSEFirewall::RemoveService( "sane-port", "UDP", "EXT" )
         )
       { y2milestone( "Error: SuSEFirewall::AddService(sane-port,TCP+UDP,EXT) failed." );
-        Report::Error( // Message of a Report::Error.
-                       // Only a simple message because this error does not happen on a normal system
-                       // (i.e. a system which is not totally broken or totally messed up).
-                       // Do not confuse this error with the case when no firewall stuff is to be set up.
-                       // The latter results no error.
-                       _("Failed to deny saned access from external zone in firewall.")
-                     );
+        Popup::Error( // Message of a Popup::Error.
+                      // Only a simple message because this error does not happen on a normal system
+                      // (i.e. a system which is not totally broken or totally messed up).
+                      // Do not confuse this error with the case when no firewall stuff is to be set up.
+                      // The latter results no error.
+                      _("Failed to deny saned access from external zone in firewall.")
+                    );
         return false;
       }
       y2milestone( "Success: SuSEFirewall::RemoveService(sane-port,TCP+UDP,EXT)" );
@@ -2616,13 +2622,13 @@ global boolean SetupNetworkScanningConfig()
     boolean progress_previous_state = Progress::set( false );
     if( ! SuSEFirewall::Write() )
     { y2milestone( "Error: SuSEFirewall::Write failed to commit firewall settings regarding scanning via network." );
-      Report::Error( // Message of a Report::Error.
-                     // Only a simple message because this error does not happen on a normal system
-                     // (i.e. a system which is not totally broken or totally messed up).
-                     // Do not confuse this error with the case when no firewall stuff is to be set up.
-                     // The latter results no error.
-                     _("Failed to write firewall settings regarding scanning via network.")
-                   );
+      Popup::Error( // Message of a Popup::Error.
+                    // Only a simple message because this error does not happen on a normal system
+                    // (i.e. a system which is not totally broken or totally messed up).
+                    // Do not confuse this error with the case when no firewall stuff is to be set up.
+                    // The latter results no error.
+                    _("Failed to write firewall settings regarding scanning via network.")
+                  );
       // Restore previous Progress state:
       Progress::set( progress_previous_state );
       return false;
