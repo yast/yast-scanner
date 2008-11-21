@@ -1,4 +1,15 @@
 -------------------------------------------------------------------
+Fri Nov 21 11:46:49 CET 2008 - jsmeix@suse.de
+
+- V 2.17.3
+- Removed the "Cancel" button from the Overview dialog
+  because there is nothing to "Cancel" here.
+  Do no longer restore the outdated default button names
+  when a dialog is closed to avoid too many visible
+  changes of button names.
+  (See Novell/Suse Bugzilla bnc#440560).
+
+-------------------------------------------------------------------
 Tue Nov  4 09:17:52 CET 2008 - jsmeix@suse.de
 
 - V 2.17.2
