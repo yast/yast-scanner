@@ -136,13 +136,33 @@ any OverviewDialog()
   // According to http://en.opensuse.org/YaST/Style_Guide#Single_Configuration.2FOverview.2FEdit_Dialog
   // the "finish" button in an Overview dialog must now be named "OK":
   Wizard::SetNextButton( `next, Label::OKButton() );
-  // Do not have a "Back" button in the Overview dialog
-  // because in the Overview dialog there is nothing where to go back,
-  // see http://en.opensuse.org/YaST/Style_Guide#Single_Configuration.2FOverview.2FEdit_Dialog
+  // In the Overview dialog it does not make sense to have a button with "back" functionality
+  // which is named "Cancel" according to the new YaST style guide at
+  // http://en.opensuse.org/YaST/Style_Guide#Single_Configuration.2FOverview.2FEdit_Dialog
+  // because there is nothing to "cancel" in the Overview dialog because it
+  // only shows information about the current state of the configuration
+  // but the Overview dialog itself does not do any change of the configuration.
+  // The Overview dialog has actually the same meaning for the user
+  // as a plain notification popup which has only a "OK" button.
+  // If the user does not agree to what is shown in the Overview dialog
+  // he must launch a configuration sub-dialog to change the configuration.
+  // If the user accepted in such a configuration sub-dialog what he changed
+  // via the "OK" button there, the change is applied and the Overview dialog
+  // shows the new current state of the configuration, see
+  // http://en.opensuse.org/YaST/Development/Printer_Enhancement#Basic_Implementation_Principles:
+  // so that it is not possible to "cancel" the change in the Overview dialog.
+  // Any change of the configuration is done in sub-dialogs which are called
+  // from the Overview dialog (even the "Confirm Deletion" popup is such a sub-dialog)
+  // and in all those sub-dialogs there is a button with "cancel" functionality.
   Wizard::HideBackButton();
   // According to http://en.opensuse.org/YaST/Style_Guide#Single_Configuration.2FOverview.2FEdit_Dialog
-  // the "abort" button in an Overview dialog must now be named "cancel":
-  Wizard::SetAbortButton( `abort, Label::CancelButton() );
+  // there is no longer a "abort" functionality which exits the whole module.
+  // Instead this button is now named "Cancel" and its functionality is
+  // to go back to the Overview dialog (i.e. what the "back" button would do)
+  // because it reads "Cancel - Closes the window and returns to the overview."
+  // In this case this does not make sense because this is already the "overview".
+  // Therefore the button with the "abort" functionality is not shown at all:
+  Wizard::HideAbortButton();
   any ret = nil;
   while(true)
   { // UI::UserInput returns the label of the button which was cklicked:
@@ -365,8 +385,6 @@ any OverviewDialog()
                                    _("Deactivate %1?"), backend_name ) ) )
       { continue;
       }
-      Wizard::DisableBackButton();
-      Wizard::DisableAbortButton();
       Wizard::DisableNextButton();
       if( ! Scanner::DeactivateBackend( backend_name, -1, true ) )
       { Popup::Error( // Message of a Popup::Error
@@ -375,8 +393,6 @@ any OverviewDialog()
                       // was called and this function would have shown more specific messages.
                       sformat( _("Failed to deactivate %1."), backend_name ) );
       }
-      Wizard::EnableBackButton();
-      Wizard::EnableAbortButton();
       Wizard::EnableNextButton();
       // Exit this dialog and run it again via the sequencer in wizards.ycp
       // to get it updated after the delete via calling OverviewContents():
@@ -530,12 +546,6 @@ any OverviewDialog()
     continue;
   }
   y2milestone( "OverviewDialog returns: %1", ret );
-  // Re-set the default ID and label for the button with the "next" functionality for further wizard dialogs:
-  Wizard::SetNextButton( `next, Label::NextButton() );
-  // Restore the above hidden button with "back" functionality for other wizard dialogs:
-  Wizard::RestoreBackButton();
-  // Re-set the default ID and label for the button with the "abort" functionality for further wizard dialogs:
-  Wizard::SetAbortButton( `abort, Label::AbortButton() );
   return ret;
 }
 
@@ -762,10 +772,6 @@ any SelectModelDialog()
     y2milestone( "Ignoring unexpected returncode in SelectModelDialog: %1", ret );
     continue;
   }
-  // Re-set the default ID and label for the button with the "abort" functionality for further wizard dialogs:
-  Wizard::SetAbortButton( `abort, Label::AbortButton() );
-  // Re-enable the above disabled button with the "back" functionality for further wizard dialogs:
-  Wizard::EnableBackButton();
   return ret;
 }
 
@@ -805,7 +811,6 @@ any ConfigureBackendDialog()
   // so that I do not show any "abort"/"cancel" button here at all:
   Wizard::HideAbortButton();
   Wizard::DisableBackButton();
-  Wizard::DisableAbortButton();
   Wizard::DisableNextButton();
   if( ! Scanner::ActivateBackend( "", Scanner::selected_model_database_index, true ) )
   { Popup::Error( sformat( // Message of a Popup::Error where %1 will be replaced by the driver (backend) name.
@@ -814,14 +819,12 @@ any ConfigureBackendDialog()
                            _("Failed to activate %1."), backend_name ) );
   }
   Wizard::EnableBackButton();
-  Wizard::EnableAbortButton();
   Wizard::EnableNextButton();
   any ret = nil;
   while(true)
   { ret = UI::UserInput();
     if( ret == `back )
     { Wizard::DisableBackButton();
-      Wizard::DisableAbortButton();
       Wizard::DisableNextButton();
       if( ! Scanner::DeactivateBackend( "", Scanner::selected_model_database_index, false ) )
       { Popup::Error( sformat( // Message of a Popup::Error where %1 will be replaced by the driver (backend) name.
@@ -830,7 +833,6 @@ any ConfigureBackendDialog()
                                _("Failed to deactivate %1."), backend_name ) );
       }
       Wizard::EnableBackButton();
-      Wizard::EnableAbortButton();
       Wizard::EnableNextButton();
       break;
     }
@@ -840,8 +842,6 @@ any ConfigureBackendDialog()
     y2milestone( "Ignoring unexpected returncode in ConfigureBackendDialog: %1", ret );
     continue;
   }
-  // Restore the above hidden button with "abort" functionality for other wizard dialogs:
-  Wizard::RestoreAbortButton();
   return ret;
 }
 
@@ -1136,16 +1136,13 @@ any ConfigureNetworkScanningDialog()
         }
       }
       Wizard::DisableBackButton();
-      Wizard::DisableAbortButton();
       Wizard::DisableNextButton();
       if( ! Scanner::SetupNetworkScanningConfig() )
       { Wizard::EnableBackButton();
-        Wizard::EnableAbortButton();
         Wizard::EnableNextButton();
         continue;
       }
       Wizard::EnableBackButton();
-      Wizard::EnableAbortButton();
       Wizard::EnableNextButton();
       break;
     }
@@ -1155,8 +1152,6 @@ any ConfigureNetworkScanningDialog()
     y2milestone( "Ignoring unexpected returncode in ConfigureBackendDialog: %1", ret );
     continue;
   }
-  // Restore the above hidden button with "abort" functionality for other wizard dialogs:
-  Wizard::RestoreAbortButton();
   return ret;
 }
 
