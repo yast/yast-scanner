@@ -2398,8 +2398,9 @@ and select the 'Local Host Configuration'.
                             )
                    );
   // Test if HAL knows the particular SANE device.
-  // This writes also /etc/hal/fdi/policy/10osvendor/80-scanner.fdi
-  // if the scanner is not listed in /etc/hal/fdi/policy/10osvendor/70-scanner.fdi
+  // This writes also /etc/hal/fdi/information/20thirdparty/80-scanner.fdi
+  // if the scanner is not listed in /usr/share/hal/fdi/information/20thirdparty/70-scanner.fdi
+  // (compare https://bugzilla.novell.com/show_bug.cgi?id=438867)
   // which is perfectly o.k. because this could solve access permission issues
   // automatically only by testing the device:
   if( ! ExecuteBashCommand( test_and_set_scanner_access_permissions_commandline + " " + sane_device ) )

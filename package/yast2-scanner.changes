@@ -1,4 +1,14 @@
 -------------------------------------------------------------------
+Wed Dec  3 11:37:38 CET 2008 - jsmeix@suse.de
+
+- V 2.17.4
+- Using /usr/share/hal/fdi/information/20thirdparty/70-scanner.fdi
+  instead of /etc/hal/fdi/policy/10osvendor/70-scanner.fdi
+  and /etc/hal/fdi/information/20thirdparty/80-scanner.fdi
+  instead of /etc/hal/fdi/policy/10osvendor/80-scanner.fdi
+  (see Novell/Suse Bugzilla bnc#438867).
+
+-------------------------------------------------------------------
 Fri Nov 21 11:46:49 CET 2008 - jsmeix@suse.de
 
 - V 2.17.3
