@@ -9,12 +9,35 @@ export LC_ALL="POSIX"
 export LANG="POSIX"
 umask 022
 
-# When the package "sane" is installed, this file is created
-# which lists all known USB scanners:
-HAL_GLOBAL_FILE="/etc/hal/fdi/policy/10osvendor/70-scanner.fdi"
-# This file is written by this script for those scanners
-# which are not listed in HAL_GLOBAL_FILE:
-HAL_LOCAL_FILE="/etc/hal/fdi/policy/10osvendor/80-scanner.fdi"
+# When the package "sane" is installed, the HAL_GLOBAL_FILE is created
+# which lists all known USB scanners.
+# Up to openSUSE 11.0 it is /etc/hal/fdi/policy/10osvendor/70-scanner.fdi
+# since openSUSE 11.1 it is /usr/share/hal/fdi/information/20thirdparty/70-scanner.fdi
+# (see https://bugzilla.novell.com/show_bug.cgi?id=438867):
+HAL_GLOBAL_FILE="/dev/null"
+if test -r /usr/share/hal/fdi/information/20thirdparty/70-scanner.fdi
+then HAL_GLOBAL_FILE="/usr/share/hal/fdi/information/20thirdparty/70-scanner.fdi"
+else if test -r /etc/hal/fdi/policy/10osvendor/70-scanner.fdi
+     then HAL_GLOBAL_FILE="/etc/hal/fdi/policy/10osvendor/70-scanner.fdi"
+     fi
+fi
+# The HAL_LOCAL_FILE is written by this script for those scanners
+# which are not listed in HAL_GLOBAL_FILE.
+# Up to openSUSE 11.0 it was /etc/hal/fdi/policy/10osvendor/80-scanner.fdi
+# since openSUSE 11.1 it is /etc/hal/fdi/information/20thirdparty/80-scanner.fdi
+# (see https://bugzilla.novell.com/show_bug.cgi?id=438867).
+# Because /etc/hal/fdi/information/20thirdparty/80-scanner.fdi
+# should also work for openSUSE 11.0 it is used here in any case.
+# The directory /etc/hal/fdi/information/20thirdparty/ is not provided by the hal RPM
+# so that it is created with the usual default permissions "drwxr-xr-x  root root"
+# as the directories in /etc/hal/fdi/ which are already provided by the hal RPM:
+HAL_LOCAL_FILE="/dev/null"
+if test -d /etc/hal/fdi/information/20thirdparty/
+then HAL_LOCAL_FILE="/etc/hal/fdi/information/20thirdparty/80-scanner.fdi"
+else if mkdir -m 755 -p /etc/hal/fdi/information/20thirdparty
+     then HAL_LOCAL_FILE="/etc/hal/fdi/information/20thirdparty/80-scanner.fdi"
+     fi
+fi
 
 # Create temporary file names:
 MY_NAME=${0##*/}
@@ -88,6 +111,7 @@ fi
 # Write header to HAL_LOCAL_FILE
 # and exit silently if this fails for whatever reason
 # (e.g. no hal package installed):
+[ "$HAL_LOCAL_FILE" = "/dev/null" ] && exit 0
 cat /dev/null >$HAL_LOCAL_FILE || exit 0
 echo '<?xml version="1.0" encoding="ISO-8859-1"?>' >>$HAL_LOCAL_FILE
 echo '<deviceinfo version="0.2">' >>$HAL_LOCAL_FILE
