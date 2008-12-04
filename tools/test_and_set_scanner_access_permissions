@@ -118,15 +118,19 @@ echo '<deviceinfo version="0.2">' >>$HAL_LOCAL_FILE
 echo '  <device>' >>$HAL_LOCAL_FILE
 echo '' >>$HAL_LOCAL_FILE
 echo '<!-- To grant access to USB scanners create entries like:' >>$HAL_LOCAL_FILE
-echo '    <match key="info.subsystem" string="usb_device">' >>$HAL_LOCAL_FILE
-echo '      <match key="usb_device.vendor_id" int="0x1a2b">' >>$HAL_LOCAL_FILE
-echo '        <match key="usb_device.product_id" int="0x3c4d">' >>$HAL_LOCAL_FILE
+echo '    <match key="info.subsystem" string="usb">' >>$HAL_LOCAL_FILE
+echo '      <match key="usb.vendor_id" int="0x1a2b">' >>$HAL_LOCAL_FILE
+echo '        <match key="usb.product_id" int="0x3c4d">' >>$HAL_LOCAL_FILE
 echo '          <append key="info.capabilities" type="strlist">scanner</append>' >>$HAL_LOCAL_FILE
 echo '        </match>' >>$HAL_LOCAL_FILE
 echo '      </match>' >>$HAL_LOCAL_FILE
 echo '    </match>' >>$HAL_LOCAL_FILE
 echo '"1a2b" and "3c4d" stand for the USB device IDs' >>$HAL_LOCAL_FILE
-echo 'as displayed by the command /usr/sbin/lsusb -->' >>$HAL_LOCAL_FILE
+echo 'as displayed by the command /usr/sbin/lsusb' >>$HAL_LOCAL_FILE
+echo 'Up to openSUSE 11.0 replace "usb" with "usb_device" i.e. use' >>$HAL_LOCAL_FILE
+echo 'string="usb_device", usb_device.vendor_id, usb_device.product_id' >>$HAL_LOCAL_FILE
+echo 'Since openSUSE 11.1 "usb_device" is replaced by "usb"' >>$HAL_LOCAL_FILE
+echo 'see https://bugzilla.novell.com/show_bug.cgi?id=438867 -->' >>$HAL_LOCAL_FILE
 echo '' >>$HAL_LOCAL_FILE
 
 # Setting extglob is required to remove an arbitrary number
@@ -184,11 +188,14 @@ do # Test for USB and SCSI scanners and ignore anything else:
         # The "scanner" capability is not yet known to HAL:
         UNKNOWN_TO_HAL="$UNKNOWN_TO_HAL USB-ID(hex)=$VENDOR_PRODUCT"
         # Skip scanners which are already listed in the global HAL file:
+        # Up to openSUSE 11.0 the keys were usb_device.vendor_id and usb_device.product_id in HAL_GLOBAL_FILE
+        # since openSUSE 11.1 the keys are usb.vendor_id and usb.product_id in HAL_GLOBAL_FILE:
+        grep -i -A 1 "usb.vendor_id\" int=\"0x$VENDOR\"" $HAL_GLOBAL_FILE | grep -q -i "usb.product_id\" int=\"0x$PRODUCT\"" && continue
         grep -i -A 1 "usb_device.vendor_id\" int=\"0x$VENDOR\"" $HAL_GLOBAL_FILE | grep -q -i "usb_device.product_id\" int=\"0x$PRODUCT\"" && continue
         # Write an entry to the local HAL file:
-        echo '    <match key="info.subsystem" string="usb_device">' >>$HAL_LOCAL_FILE
-        echo "      <match key=\"usb_device.vendor_id\" int=\"0x$VENDOR\">" >>$HAL_LOCAL_FILE
-        echo "        <match key=\"usb_device.product_id\" int=\"0x$PRODUCT\">" >>$HAL_LOCAL_FILE
+        echo '    <match key="info.subsystem" string="usb">' >>$HAL_LOCAL_FILE
+        echo "      <match key=\"usb.vendor_id\" int=\"0x$VENDOR\">" >>$HAL_LOCAL_FILE
+        echo "        <match key=\"usb.product_id\" int=\"0x$PRODUCT\">" >>$HAL_LOCAL_FILE
         echo '          <append key="info.capabilities" type="strlist">scanner</append>' >>$HAL_LOCAL_FILE
         echo '        </match>' >>$HAL_LOCAL_FILE
         echo '      </match>' >>$HAL_LOCAL_FILE
@@ -258,14 +265,15 @@ then echo "The following models are currently not known to HAL:" 1>&2
      do echo "  $m" 1>&2
      done
      echo "" 1>&2
-     echo "To access the scanner as normal user," 1>&2
-     echo "udev, HAL, and hal-resmgr are needed to grant" 1>&2
+     echo "To access a scanner as normal user," 1>&2
+     echo "udev and HAL are needed to grant" 1>&2
      echo "appropriate access permissions automatically." 1>&2
+     echo "(Up to openSUSE 11.0 hal-resmgr is also needed.)" 1>&2
      echo "Therefore the scanner model must be known to HAL." 1>&2
      echo "If the scanner is not known to HAL, a re-plug" 1>&2
      echo "of a USB scanner should help." 1>&2
      echo "Otherwise a reboot should be done to restart" 1>&2
-     echo "the whole udev/HAL/hal-resmgr machinery." 1>&2
+     echo "the whole udev and HAL machinery." 1>&2
      echo "Check if the scanner is listed in the 'lshal' output." 1>&2
      echo "If a SCSI scanner which was switched on during boot" 1>&2
      echo "is not listed in the 'lshal' output, the usual reason" 1>&2
