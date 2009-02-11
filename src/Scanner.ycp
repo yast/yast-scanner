@@ -65,7 +65,7 @@ global boolean Abort()
  * not the last character in the alphabet, e.g. the Estonian alphabet ends
  * with ... s ... z ... t u v w ... x y (non-ASCII characters omitted here)
  * so that [a-z] would exclude t u v w x y in an Estonian locale.
- * Therefore uppercase and lowercase characters are both explicitely listed
+ * Therefore uppercase and lowercase characters are both explicitly listed
  * to avoid any unexpected result e.g. of "tolower(uppercase_characters)".
  */
 global string number_chars = "0123456789";
@@ -246,7 +246,7 @@ global integer selected_autodetected_scanners_index = -1;
  * Therefore also other USB devices with the device class 255 are reported as possible USB scanners.
  * Preset to true so that initially only scanners for which the USB IDs are known by SANE are shown.
  * It changes to false (i.e. show all USB devices with the device class 255 as possible USB scanners)
- * when the user explicitely requests a "Restart Detection" in the OverviewDialog.
+ * when the user explicitly requests a "Restart Detection" in the OverviewDialog.
  * A second "Restart Detection" changes it back to true so that "Restart Detection" toggles it.
  * The idea behind is that the user can simply "Restart Detection" as often as he likes
  * until the result is o.k. for him because "Restart Detection" does not cause harm and
@@ -413,7 +413,7 @@ works only if also the scanning user frontend is 32-bit software.
 You can use the special frontend /usr/bin/iscan for Epson scanners
 which is included in the iscan package.
 If you like to use a standard frontend like scanimage, xscanimage, xsane, or kooka,
-you must explicitely install the 32-bit package version
+you must explicitly install the 32-bit package version
 (i.e. get the package from the right media or repository).
 ");
   if( Package::Installed( package_name ) )
@@ -468,7 +468,7 @@ you must explicitely install the 32-bit package version
   { y2milestone( "Failed to install required package %1.", package_name );
     Popup::Error( // Message of a Popup::Error where %1 will be replaced by the package name.
                   // Only a simple message because:
-                  // Either the user has explicitely rejected to install the package,
+                  // Either the user has explicitly rejected to install the package,
                   // or this error does not happen on a normal system
                   // (i.e. a system which is not totally broken or totally messed up).
                   sformat( _("Failed to install required package %1."),
@@ -1924,7 +1924,7 @@ and select the 'Local Host Configuration'.
                          // %2 will be replaced by the package name
                          // Only a simple message because before there was a dialog
                          // which let the user install the package so that this message is shown
-                         // if the user has explicitely rejected to install it.
+                         // if the user has explicitly rejected to install it.
                          sformat( _("The driver %1 requires the package %2."), backend_name, package_name )
                        );
       Progress::Title( // Last progress step progress bar title when the Progress was aborted:
@@ -2006,7 +2006,7 @@ and select the 'Local Host Configuration'.
                       // Message of a Popup::Warning for scanners which should be set up with the hpoj backend.
                       // Only a simple message because before there was a Popup::YesNo
                       // which asked the user whether he wants to let YaST activate the ptal service
-                      // so that this message is shown if the user has explicitely rejected to do it.
+                      // so that this message is shown if the user has explicitly rejected to do it.
                       // Do not change or translate "ptal", it is a service name.
                       _("If the ptal service is not running, the scanner cannot work.")
                     );
