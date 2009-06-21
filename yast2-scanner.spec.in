@@ -8,7 +8,7 @@ Requires:	yast2
 # which are pulled in by Autoreqprov because of the displaytest tool:
 %define my_requires /tmp/my-requires
 
-Summary:	Configuration of scanner
+Summary:	YaST2 - Scanner Configuration
 
 %description
 -
