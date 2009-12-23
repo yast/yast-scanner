@@ -235,7 +235,7 @@ must be used for all HP all-in-one devices.
 </p>"),
 
 "configure_network_scanning" :
-// ConfigureNetworkScanning dialog help 1/4:
+// ConfigureNetworkScanning dialog help 1/5:
 // Do not confuse "scanning via network" (i.e. use a remote scanner via another host in the network)
 // with "scanning the network" (i.e. scan the network for other hosts or services).
 _("<p>
@@ -243,16 +243,11 @@ _("<p>
 Enter the appropriate information and press <b>Next</b>
 to set up scanning via network.
 </p>") +
-// ConfigureNetworkScanning dialog help 2/4:
+// ConfigureNetworkScanning dialog help 2/5:
 // Do not change or translate "saned", it is a program (sane daemon) name.
 // Do not change or translate "CIDR", it is a (sub)-network notation name.
 // Do not change or translate "192.168.1.0/24", it is an intentionally selected actually working example.
 // Do not change or translate "xinetd", it is a program (daemon) name.
-// Do not change or translate "sane-port", it is a port name (see /etc/services).
-// Be careful when you change or translate "external", "internal", and "zone"
-// to keep the relationship to the matching terms in the YaST firewall setup module
-// where also "external zone", and "internal zone" is used.
-// Keep the information that external access is useless and insecure (see "man saned").
 _("<p>
 <b><big>Server Settings</big></b><br>
 If you have locally connected scanners and want to make them accessible via the network,
@@ -262,19 +257,60 @@ Enter a comma-separated list of client hosts (hostnames or IP addresses)
 or subnets (CIDR notation, such as 192.168.1.0/24).
 If no client hosts are permitted, saned is not activated.
 If saned is activated, xinetd is also activated and set up for saned.
-Clients contact saned via the sane-port (TCP port 6566)
-but scanning data is transferred via an additional random port.
-The default <b>Firewall Settings</b> during system installation
-protect your host from external access.
-This is not a problem when using scanners in an internal network
-(when the network interface belongs to the internal network zone)
-unless you have firewall protection enabled for the internal zone.
-Allowing access from an external network does not make sense
-because scanning documents requires physical scanner access.
-Therefore access from the external zone can only be denied
-if it was accidentally allowed by insecure firewall settings.
 </p>") +
-// ConfigureNetworkScanning dialog help 3/4:
+// ConfigureNetworkScanning dialog help 3/5:
+// Do not change or translate "saned", it is a program (sane daemon) name.
+// Do not change or translate "sane-port", it is a port name (see /etc/services).
+// Be careful when you change or translate "external", "internal", and "zone"
+// to keep the relationship to the matching terms in the YaST firewall setup module
+// where also "external zone", and "internal zone" is used.
+// Keep the information that external access is useless and insecure (see "man saned").
+_("<p>
+<b><big>Regarding Firewall</big></b><br>
+Clients contact the saned via the sane-port (TCP port 6566)
+but scanning data is transferred via an additional random port.
+Therefore is is not sufficient for scanning via network
+to open only port 6566 in the firewall.<br>
+You can specify a port range for the data connection
+in the saned config file /etc/sane.d/saned.conf
+via an entry like 'data_portrange = 30000 - 30100'
+and then open port 6566 and the port range 30000:30100
+in the firewall.<br>
+The default firewall settings protect your host from external access.
+Allowing access from the external network (i.e. for the external zone)
+does not make sense because scanning documents requires
+physical scanner access by trusted users.<br>
+On the other hand the default firewall settings allow
+any access from an internal (i.e. trusted) network
+unless you have firewall protection enabled for the internal zone.
+But an active firewall for the internal zone (i.e. for the
+trusted network zone) does usually also not make much sense
+because this makes the internal zone effectively the same
+as the external zone.<br>
+The simplest and most secure way to do scanning via network
+is when the trusted network has a well separated network interface
+to have the trusted network well separated from the rest.
+Then those network interface can be assigned to the internal zone
+via the YaST Firewall setup module and scanning via network
+will work without any further firewall setup.<br>
+Anything else may result a problematic mix-up of trusted and
+non-trusted network traffic in one same network environment.
+For example when both the internal network and the connection
+to the Internet happens via one same 'router-box' device.
+In such a case the 'router-box' device is the crucial point
+(in particular the crucial point of possible failure)
+regarding network security.<br>
+In any case a plain opening of a port for the external zone
+is dangerous because it allows access from any foreign host
+to those port but does not provide any protection for
+the service which is accessed via this port (e.g. the saned).
+Instead of plain opening of ports for arbitrary access
+one should additionally specify in the firewall setup
+from which hosts and networks the access is allowed.
+The YaST Firewall setup module can also be used
+for such kind of more sophisticated firewall setup.
+</p>") +
+// ConfigureNetworkScanning dialog help 4/5:
 // Do not change or translate "net", it is a metadriver name.
 // Do not simply use "driver" because net is no normal driver but a metadriver.
 // Do not change or translate "saned", it is a program (sane daemon) name.
@@ -287,7 +323,7 @@ In <b>Servers Used</b>, enter which servers should be used.
 Enter a comma-separated list of servers (server names or IP addresses).
 If no servers are entered, net is not activated.
 </p>") +
-// ConfigureNetworkScanning dialog help 4/4:
+// ConfigureNetworkScanning dialog help 5/5:
 // Be careful when you change or translate "local host configuration"
 // because this term is used also in a message of a Popup::ContinueCancel
 // and as label of a PushButton for a predefined configuration.

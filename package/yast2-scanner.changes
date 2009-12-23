@@ -1,4 +1,21 @@
 -------------------------------------------------------------------
+Wed Dec 23 15:21:13 CET 2009 - jsmeix@suse.de
+
+- V 2.19.0
+- Replaced overcomplicated but nevertheless mostly useless code
+  for using the YaST SuSEFirewall module by simple generic code
+  in a ShowFirewallPopup function in the same way as it works
+  for yast2-printer (compare Novell/Suse Bugzilla bnc#549065)
+  and enhanced the help text "Regarding Firewall",
+  (see Novell/Suse Bugzilla bnc#551282).
+- Fixed duplicate button widget with ID `back by
+  calling Wizard::HideBackButton() before calling
+  Wizard::SetAbortButton(`back,Label::CancelButton()), see
+  http://lists.opensuse.org/opensuse-factory/2009-10/msg00528.html
+- Added X-KDE-SubstituteUID=true to src/scanner.desktop 
+  (see Novell/Suse Bugzilla bnc#550073).
+
+-------------------------------------------------------------------
 Wed Feb 11 16:04:35 CET 2009 - jsmeix@suse.de
 
 - V 2.18.0
