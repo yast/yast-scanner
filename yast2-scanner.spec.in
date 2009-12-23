@@ -2,8 +2,6 @@
 
 
 @HEADER@
-Group:	System/YaST
-License: GPL v2 or later
 BuildRequires:	docbook-xsl-stylesheets doxygen libxslt perl-XML-Writer sgml-skel update-desktop-files xorg-x11-libX11-devel yast2 yast2-devtools yast2-testsuite
 Requires:	yast2
 # Used to exclude libX11, libXau, libxcb, and libxcb-xlib from the requires list
@@ -49,3 +47,6 @@ chmod 755 %{my_requires}
 @ybindir@/*scanner*
 @ybindir@/displaytest
 %doc @docdir@
+
+%changelog
+
