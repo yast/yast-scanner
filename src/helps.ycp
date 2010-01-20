@@ -267,48 +267,32 @@ If saned is activated, xinetd is also activated and set up for saned.
 // Keep the information that external access is useless and insecure (see "man saned").
 _("<p>
 <b><big>Regarding Firewall</big></b><br>
-Clients contact the saned via the sane-port (TCP port 6566)
+A firewall is used to protect running server processes
+on your host against unwanted access via network.
+For using scanners via network the SANE network daemon (the saned)
+is the server process which must run so that remote clients
+can access scanners which are connected to your local host. 
+Client hosts contact the saned via the sane-port (TCP port 6566)
 but scanning data is transferred via an additional random port.
-Therefore is is not sufficient for scanning via network
-to open only port 6566 in the firewall.<br>
-You can specify a port range for the data connection
-in the saned config file /etc/sane.d/saned.conf
-via an entry like 'data_portrange = 30000 - 30100'
-and then open port 6566 and the port range 30000:30100
-in the firewall.<br>
-The default firewall settings protect your host from external access.
+Therefore only port 6566 is not sufficient for scanning via network.<br>
+Do not open the sane-port 6566 or any other port
+regarding using scanners for the external zone in the firewall.
+This is dangerous because it allows access to the saned from foreign hosts
+so that the firewall does no longer provide any protection for the saned.
 Allowing access from the external network (i.e. for the external zone)
 does not make sense because scanning documents requires
 physical scanner access by trusted users.<br>
 On the other hand the default firewall settings allow
-any access from an internal (i.e. trusted) network
-unless you have firewall protection enabled for the internal zone.
-But an active firewall for the internal zone (i.e. for the
-trusted network zone) does usually also not make much sense
-because this makes the internal zone effectively the same
-as the external zone.<br>
-The simplest and most secure way to do scanning via network
-is when the trusted network has a well separated network interface
-to have the trusted network well separated from the rest.
-Then those network interface can be assigned to the internal zone
-via the YaST Firewall setup module and scanning via network
+any access from an internal (i.e. trusted) network.
+To make the saned on your server accessible from an internal network,
+assign the network interface which belongs to the internal network
+to the internal zone of the firewall.
+Use the YaST Firewall setup module to do this fundamental setup
+regarding network security and firewall and scanning via network
 will work without any further firewall setup.<br>
-Anything else may result a problematic mix-up of trusted and
-non-trusted network traffic in one same network environment.
-For example when both the internal network and the connection
-to the Internet happens via one same 'router-box' device.
-In such a case the 'router-box' device is the crucial point
-(in particular the crucial point of possible failure)
-regarding network security.<br>
-In any case a plain opening of a port for the external zone
-is dangerous because it allows access from any foreign host
-to those port but does not provide any protection for
-the service which is accessed via this port (e.g. the saned).
-Instead of plain opening of ports for arbitrary access
-one should additionally specify in the firewall setup
-from which hosts and networks the access is allowed.
-The YaST Firewall setup module can also be used
-for such kind of more sophisticated firewall setup.
+For details see the openSUSE support database
+article 'CUPS and SANE Firewall settings' at<br>
+http://en.opensuse.org/SDB:CUPS_and_SANE_Firewall_settings
 </p>") +
 // ConfigureNetworkScanning dialog help 4/5:
 // Do not change or translate "net", it is a metadriver name.
@@ -318,7 +302,7 @@ _("<p>
 <b><big>Client Settings</big></b><br>
 If you want to access scanners connected to other hosts (servers) in the network,
 set up the net metadriver to access them via the daemon running on the servers.
-saned and firewall on the servers must permit the access.
+The saned and the firewall on the servers must permit the access.
 In <b>Servers Used</b>, enter which servers should be used.
 Enter a comma-separated list of servers (server names or IP addresses).
 If no servers are entered, net is not activated.
