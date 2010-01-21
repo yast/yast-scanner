@@ -707,9 +707,13 @@ any SelectModelDialog()
         }
         continue;
       }
-      // The epkowa backend in the package iscan is only available for i386-compatible architectures.
       // The epkowa backend in the package iscan-free is available for all architectures.
-      // Some scanners require additionally proprietary libraries which are only in iscan.
+      // In contrast the epkowa backend in the package iscan which is provided by Avasys
+      // is only available for i386-compatible architectures:
+      // True 32-bit i386 and also 64-bit x86_64.
+      // For some models it might be only available for 32-bit i386 architecture.
+      // Some scanners require additionally proprietary libraries which are
+      // provided by Avasys as additional model dependant iscan-plugin-<model-name> RPMs.
       // For those scanners there is in the database "backend"="epkowa" and "package"="iscan".
       // The scanners which work with iscan-free have "backend"="epkowa" and "package"="iscan-free".
       // It would be possible to test for non-i386-compatible architecture in the ModelItems function
@@ -731,9 +735,8 @@ any SelectModelDialog()
                              // Body of a Popup::AnyMessage when the epkowa driver was selected
                              // on a non-i386-compatible architecture (i.e. neither i386 nor x86_64).
                              // Do not change or translate "epkowa", it is a driver name.
-                             // Do not change or translate "iscan", it is a package name.
                              // Do not change or translate "i386", it is an architecture name.
-                             _("The epkowa driver (package iscan) is only available for i386-compatible architectures.")
+                             _("The epkowa driver is only available for i386-compatible architectures (32-bit i386 and also 64-bit x86_64).")
                            );
           continue;
         }
@@ -743,7 +746,7 @@ any SelectModelDialog()
                                              // Body of a Popup::ContinueCancelHeadline
                                              // when the epkowa driver was selected on x86_64.
                                              // Do not change or translate "epkowa", it is a driver name.
-                                             _("The epkowa driver may cause problems on 64-bit architectures.\nSee our support database for details.")
+                                             _("The epkowa driver may cause problems on 64-bit x86_64 architecture.")
                                            )
           )
         { // The user has decided to cancel the set up of the epkowa backend on x86_64:

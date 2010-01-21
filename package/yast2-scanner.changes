@@ -1,9 +1,26 @@
+-------------------------------------------------------------------
+Thu Jan 21 17:36:27 CET 2010 - jsmeix@suse.de
+
+- V 2.19.1
+- Adapted to no longer try to install the proprietary packages
+  iscan, iscan-proprietary-drivers, and iscan-firmware.
+  Instead show a meaningful user information
+  when one of those Epson models is to be set up
+  which require the proprietary Iscan software
+  so that the user can download and install
+  the right packages from Avasys on his own
+  (see Novell/Suse Bugzilla bnc#569917).
+- Reduced too long help text 'regarding firewall' but
+  added a link to 'SDB:CUPS and SANE Firewall settings' at
+  http://en.opensuse.org/SDB:CUPS_and_SANE_Firewall_settings
+  (see Novell/Suse Bugzilla bnc#551282).
+
 ------------------------------------------------------------------
 Wed Jan 13 18:56:03 CET 2010 - kmachalkova@suse.cz
 
 - Adjusted .desktop file(s) to wrap /sbin/yast2/ calls in xdg-su
   where root privileges are needed, removed X-KDE-SubstituteUID key 
-  (bnc#540627)
+  (see Novell/Suse Bugzilla bnc#540627 and bnc#550073).
 
 -------------------------------------------------------------------
 Wed Dec 23 15:21:13 CET 2009 - jsmeix@suse.de
