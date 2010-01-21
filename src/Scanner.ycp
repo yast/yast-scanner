@@ -361,42 +361,29 @@ string InstalledPackageVersion( string package_name )
  * Test whether the package is installed (Package::Installed) and
  * if not then test whether the package is available to be installed (Package::Available) and
  * if yes then install it (Package::Install).
- * The packages iscan and iscan-free require special handling:
- * iscan and iscan-free conflict with each other,
- * iscan is only available on i386 compatible architectures
- * because iscan contains proprietary binary-only i386-only software,
- * some scanners require the non-free software.
  * @param package_name string of the package name
  * @return true on success
  */
 boolean TestAndInstallPackage( string package_name )
 { // First of all the multi-line string because such strings cannot be indented:
   string iscan_message =
-  // Message of a Popup::Error
-  // Do not change or translate "iscan", it is a package name.
-  // Do not change or translate "i386", it is an architecture name.
-_("The package iscan should be installed
-but it contains proprietary binary-only i386-only software.
-Therefore it is only available for i386-compatible architectures.
-Some scanners are also supported by another driver.
-If you really want to install iscan, you must do it manually.
-");
-  string iscan_64bit_message =
-  // Do not change or translate "iscan", it is a package name.
-  // Do not change or translate "x86_64", it is an architecture name.
-  // Do not change or translate "AMD", it is a manufacturer name.
-  // Do not change or translate "scanimage", it is a program name.
-  // Do not change or translate "xscanimage", it is a program name.
-  // Do not change or translate "xsane", it is a program name.
-  // Do not change or translate "kooka", it is a program name.
-_("Iscan is only available as 32-bit software.
-On AMD 64-bit (x86_64) systems the scanner driver in the iscan package
-works only if also the scanning user frontend is 32-bit software.
-You can use the special frontend /usr/bin/iscan for Epson scanners
-which is included in the iscan package.
-If you like to use a standard frontend like scanimage, xscanimage, xsane, or kooka,
-you must explicitly install the 32-bit package version
-(i.e. get the package from the right media or repository).
+  // Message of a Popup::Error for models which require
+  // the third-party Image Scan (IScan) driver software from Epson/Avasys.
+  // Do not change or translate "Image Scan", it is a driver software name.
+  // Do not change or translate "Avasys, it is a manufacturer name.
+_("The third-party Image Scan driver software from Avasys is required.
+The Image Scan driver software is made and provided by Avasys
+http://avasys.jp/eng/linux_driver/
+where RPM packages for 32-bit (i386) and 64-bit (x86_64) architecture
+can be downloaded (if you accept the Avasys and Epson license agreements).
+The Image Scan driver contains proprietary binary-only software.
+For some models it is only available for 32-bit (i386) architecture
+which does not work when you have a 64-bit system installation.
+Some scanners are also supported by another (free-software) driver.
+When your scanner model requires a DFSG non-free (proprietary) module,
+you have to download and install two packages from Avasys:
+The 'iscan' package for the base software and an additional
+model dependant 'iscan-plugin' package with the proprietary module.
 ");
   if( Package::Installed( package_name ) )
   { return true;
@@ -405,23 +392,16 @@ you must explicitly install the 32-bit package version
       && Package::Installed( "iscan" )
     )
   { // Each scanner which is supported by iscan-free is also supported by iscan.
+    // 'iscan' is the package name of the primary RPM which is provided by Avasys
+    // (there are also additional iscan-plugin-<model-name> provided by Avasys).
     // If iscan is already installed, there is no need to switch to iscan-free.
-    // Because iscan contains proprietary software it is not installed by default.
-    // Therefore the user must have had installed iscan intentionally.
+    // Because iscan contains proprietary software it is not provided by openSUSE.
+    // Therefore the user must have had downloaded it from Avasys
+    // and then installed intentionally and manually.
     return true;
   }
   if( "iscan" == package_name )
-  { // Some scanners which are supported by iscan are not supported by iscan-free.
-    // If iscan-free is already installed, it would have to be replaced by iscan.
-    // Because iscan contains proprietary software this would be a replacement of free software
-    // by proprietary software and this cannot be done in an automated way (as it would happen here).
-    // Furthermore iscan is only available on i386 compatible architectures (on x86_64 only as 32-bit).
-    // Finally on x86_64 the 32-bit iscan software cannot be used with the usual scanning frontends.
-    // Therefore there is only a message and the user must do the installation manually.
-    y2milestone( "No automated installation of proprietary iscan." );
-    if( Arch::x86_64() )
-    { iscan_message = iscan_message + "\n" + iscan_64bit_message;
-    }
+  { y2milestone( "Third-party Image Scan driver software from Avasys required." );
     Popup::Error( iscan_message );
     return false;
   }
@@ -1376,9 +1356,15 @@ global list ModelItems( string filter_string )
   integer database_index = -1;
   string model_string = "";
   string interface_and_usbid_string = "";
+  string package_string = "";
   string status_string = "";
   // Scanner model list firmware entry for models which require a firmware upload:
   string firmware_string = _("Firmware upload required.");
+  // Scanner model list entry for models which require
+  // the third-party Image Scan (IScan) driver software from Epson/Avasys.
+  // Do not change or translate "Image Scan", it is a driver software name.
+  // Do not change or translate "Avasys, it is a manufacturer name.
+  string iscan_string = _("Third-party Image Scan driver software from Avasys required.");
   list< term > model_items = [];
   foreach( map< string, string > database_entry,
            database,
@@ -1446,6 +1432,19 @@ global list ModelItems( string filter_string )
                if( "" != comment )
                { comment = "[" + comment + "]";
                }
+               // Build a translatable package_string:
+               if( "iscan" == package )
+               { package_string = iscan_string;
+               }
+               else
+               { package_string = sformat( // Scanner model list package name entry:
+                                           // %1 will be replaced by the RPM package name
+                                           // which provides the driver for the particular model:
+                                           _("Package %1"),
+                                           package
+                                         );
+                 package_string = "(" + package_string + ")";
+               }
                // Build a translatable status_string:
                // These are the exiting status values according to the *desc files in sane-1.0.15 (9.3)
                // and how often each value apppears:
@@ -1460,10 +1459,8 @@ global list ModelItems( string filter_string )
                if( "good" == status )
                { status_string = sformat( // Scanner model list status entry for "good" supported models:
                                           // %1 will be replaced by the backend (scanner driver) name
-                                          // %2 will be replaced by the package name which provides the backend
-                                          _("Driver %1 (package %2) provides good functionality."),
-                                          backend,
-                                          package
+                                          _("Driver %1 provides good functionality."),
+                                          backend
                                         );
                }
                else
@@ -1476,10 +1473,8 @@ global list ModelItems( string filter_string )
                    { status_string = sformat( // Scanner model list status entry for models
                                               // which are listed as "unsupported" for a particular driver:
                                               // %1 will be replaced by the backend (scanner driver) name
-                                              // %2 will be replaced by the package name which provides the backend
-                                              _("This scanner is not supported by the driver %1 (package %2)."),
-                                              backend,
-                                              package
+                                              _("This scanner is not supported by the driver %1."),
+                                              backend
                                             );
                    }
                  }
@@ -1487,50 +1482,40 @@ global list ModelItems( string filter_string )
                  { if( "complete" == status )
                    { status_string = sformat( // Scanner model list status entry for "complete" supported models:
                                               // %1 will be replaced by the backend (scanner driver) name
-                                              // %2 will be replaced by the package name which provides the backend
-                                              _("Driver %1 (package %2) provides complete functionality."),
-                                              backend,
-                                              package
+                                              _("Driver %1 provides complete functionality."),
+                                              backend
                                             );
                    }
                    else
                    { if( "untested" == status )
                      { status_string = sformat( // Scanner model list status entry for "untested" models:
                                                 // %1 will be replaced by the backend (scanner driver) name
-                                                // %2 will be replaced by the package name which provides the backend
-                                                _("Driver %1 (package %2) may work, but was not tested."),
-                                                backend,
-                                                package
+                                                _("Driver %1 may work, but was not tested."),
+                                                backend
                                               );
                      }
                      else
                      { if( "basic" == status )
                        { status_string = sformat( // Scanner model list status entry for "basic" supported models:
                                                   // %1 will be replaced by the backend (scanner driver) name
-                                                  // %2 will be replaced by the package name which provides the backend
-                                                  _("Driver %1 (package %2) provides basic functionality."),
-                                                  backend,
-                                                  package
+                                                  _("Driver %1 provides basic functionality."),
+                                                  backend
                                                 );
                        }
                        else
                        { if( "minimal" == status )
                          { status_string = sformat( // Scanner model list status entry for "minimal" supported models:
                                                     // %1 will be replaced by the backend (scanner driver) name
-                                                    // %2 will be replaced by the package name which provides the backend
-                                                    _("Driver %1 (package %2) provides minimal functionality."),
-                                                    backend,
-                                                    package
+                                                    _("Driver %1 provides minimal functionality."),
+                                                    backend
                                                   );
                          }
                          else
                          { status_string = sformat( // Fallback scanner model list status entry for models
                                                     // which are listed but without a known support status:
                                                     // %1 will be replaced by the backend (scanner driver) name
-                                                    // %2 will be replaced by the package name which provides the backend
-                                                    _("Driver %1 (package %2) may work, but the functionality is unknown."),
-                                                    backend,
-                                                    package
+                                                    _("Driver %1 may work, but the functionality is unknown."),
+                                                    backend
                                                   );
                          }
                        }
@@ -1540,10 +1525,11 @@ global list ModelItems( string filter_string )
                }
                if( "required" == firmware )
                { // The model_string for supported models which require a firmware upload:
-                 model_string = sformat( "%1 %2 : %3 %4 %5 %6",
+                 model_string = sformat( "%1 %2 : %3 %4 %5 %6 %7",
                                          manufacturer,
                                          model,
                                          firmware_string,
+                                         package_string,
                                          status_string,
                                          interface_and_usbid_string,
                                          comment
@@ -1551,9 +1537,10 @@ global list ModelItems( string filter_string )
                }
                else
                { // The model_string for all other supported and unsupported models:
-                 model_string = sformat( "%1 %2 : %3 %4 %5",
+                 model_string = sformat( "%1 %2 : %3 %4 %5 %6",
                                          manufacturer,
                                          model,
+                                         package_string,
                                          status_string,
                                          interface_and_usbid_string,
                                          comment
@@ -1750,9 +1737,9 @@ Without firmware, the scanner cannot work.
 
 Because firmware is licensed by the scanner manufacturer, we cannot distribute it.
 Usually the firmware file is stored somewhere on the manufacturer's CD.
-Alternatively, it may be possible to download it from the manufacturer's Web site.
+Alternatively, it may be possible to download it from the manufacturer's web site.
 Ask the manufacturer how to get the firmware file for your particular scanner.
-Find additional useful information on the SANE Web site at
+Find additional useful information on the SANE web site at
 http://www.sane-project.org/.
 
 After you get the firmware file, you must configure the driver manually.
@@ -1899,16 +1886,20 @@ and select the 'Local Host Configuration'.
       && user_confirmation
     )
   { if( ! TestAndInstallPackage( package_name ) )
-    { Popup::AnyMessage( // Header of a Popup::AnyMessage:
-                         _("Required Package Not Installed"),
-                         // Body of a Popup::AnyMessage where
-                         // %1 will be replaced by the backend name
-                         // %2 will be replaced by the package name
-                         // Only a simple message because before there was a dialog
-                         // which let the user install the package so that this message is shown
-                         // if the user has explicitly rejected to install it.
-                         sformat( _("The driver %1 requires the package %2."), backend_name, package_name )
-                       );
+    { // There is already sufficient user information regarding
+      // the third-party Image Scan driver software from Avasys:
+      if( package_name != "iscan" )
+      { Popup::AnyMessage( // Header of a Popup::AnyMessage:
+                           _("Required Package Not Installed"),
+                           // Body of a Popup::AnyMessage where
+                           // %1 will be replaced by the backend name
+                           // %2 will be replaced by the package name
+                           // Only a simple message because before there was a dialog
+                           // which let the user install the package so that this message is shown
+                           // if the user has explicitly rejected to install it.
+                           sformat( _("The driver %1 requires the package %2."), backend_name, package_name )
+                         );
+      }
       Progress::Title( // Last progress step progress bar title when the Progress was aborted:
                        _("Aborted")
                      );

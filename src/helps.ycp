@@ -196,14 +196,11 @@ This may take a few seconds, so you must wait until you can press <b>Next</b>.
 If you press <b>Back</b>, the driver is deactivated.
 </p>") +
 // ConfigureBackend dialog help 2/4:
-// Do not change or translate "iscan", it is a package name.
-// Do not change or translate "i386", it is an architecture name.
 _("<p>
 <b><big>Additional Packages</big></b><br>
 If the package that provides the driver is not yet installed,
 an appropriate dialog is shown to install the package.
-Such packages may not be available for all architectures
-(for example, the iscan package is only available for i386 architectures).
+Such packages may not be available for all architectures.
 </p>") +
 // ConfigureBackend dialog help 3/4:
 _("<p>
@@ -271,7 +268,7 @@ A firewall is used to protect running server processes
 on your host against unwanted access via network.
 For using scanners via network the SANE network daemon (the saned)
 is the server process which must run so that remote clients
-can access scanners which are connected to your local host. 
+can access scanners which are connected to your local host.
 Client hosts contact the saned via the sane-port (TCP port 6566)
 but scanning data is transferred via an additional random port.
 Therefore only port 6566 is not sufficient for scanning via network.<br>
