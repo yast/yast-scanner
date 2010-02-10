@@ -251,7 +251,14 @@ any OverviewDialog()
         break;
       }
       if( issubstring( selected_item_id, "active_backend:" ) )
-      { // A selected active backend (without a matching active scanner) cannot be edited.
+      { integer active_backends_index = tointeger( filterchars( selected_item_id, "0123456789" ) );
+        // Test if the active backend is the 'net' meta-backend:
+        if( "net" == Scanner::active_backends[active_backends_index]:"" )
+        { // Exit this dialog and run the ConfigureNetworkScanningDialog via the sequencer in wizards.ycp:
+          ret = `network_scanning;
+          break;
+        }
+        // A selected active backend (without a matching active scanner) cannot be edited.
         // A selected active backend (without a matching active scanner) can only be deleted.
         Popup::AnyMessage( // Header of a Popup::AnyMessage when an active driver
                            // without a matching active scanner was selected
