@@ -1,6 +1,24 @@
 #! /bin/bash
+
+# Johannes Meixner <jsmeix@suse.de>, 2004, 2005, 2006, 2007, 2008, 2010
 #
-# Johannes Meixner <jsmeix@suse.de>, 2004, 2005, 2006, 2007, 2008
+# Copyright (c) 2010 Novell, Inc.
+# All Rights Reserved.
+#
+# This program is free software; you can redistribute it and/or
+# modify it under the terms of version 2 of the GNU General Public License as
+# published by the Free Software Foundation.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program; if not, contact Novell, Inc.
+#
+# To contact Novell about this file by physical or electronic mail,
+# you may find current contact information at www.novell.com
 
 #set -x
 
@@ -23,7 +41,7 @@ cat /dev/null >$TMP_DATA
 # Function to extract entries from a description file with SANE syntax.
 # Quoted quotation marks '\"' (happens in comments) are replaced by ' ':
 Extract()
-{ cat $1 | sed -e 's/\\"/ /g' | egrep -o '^[[:space:]]*:backend[[:space:]]*"[^"]*"|^[[:space:]]*:mfg[[:space:]]*"[^"]*"|^[[:space:]]*:model[[:space:]]*"[^"]*"|^[[:space:]]*:firmware[[:space:]]*"[^"]*"|^[[:space:]]*:interface[[:space:]]*"[^"]*"|^[[:space:]]*:usbid[[:space:]]*"0x[0-9A-Fa-f]*"[[:space:]]*"0x[0-9A-Fa-f]*"|^[[:space:]]*:status[[:space:]]*:[a-z]*|^[[:space:]]*:comment[[:space:]]*"[^"]*"'
+{ cat $1 | sed -e 's/\\"/ /g' | egrep -o '^[[:space:]]*:backend[[:space:]]*"[^"]*"|^[[:space:]]*:version[[:space:]]*"[^"]*"|^[[:space:]]*:mfg[[:space:]]*"[^"]*"|^[[:space:]]*:model[[:space:]]*"[^"]*"|^[[:space:]]*:firmware[[:space:]]*"[^"]*"|^[[:space:]]*:interface[[:space:]]*"[^"]*"|^[[:space:]]*:usbid[[:space:]]*"0x[0-9A-Fa-f]*"[[:space:]]*"0x[0-9A-Fa-f]*"|^[[:space:]]*:status[[:space:]]*:[a-z]*|^[[:space:]]*:comment[[:space:]]*"[^"]*"'
 }
 
 # Process the SANE description files:
@@ -95,13 +113,14 @@ sed -i -e 's/see link/see http:\/\/www.sane-project.org/g' \
 # Output header:
 if [ "$OUTPUT_FORMAT" = "YCP" ]
 then echo "[" 
-else echo "PACKAGE|BACKEND|MANUFACTURER|MODEL|FIRMWARE|INTERFACE|USBID|STATUS|COMMENT"
+else echo "PACKAGE|BACKEND|VERSION|MANUFACTURER|MODEL|FIRMWARE|INTERFACE|USBID|STATUS|COMMENT"
 fi
 
 # Function to output one scanner entry:
 Output()
 { if [ -n "$PACKAGE" -a -n "$BACKEND" -a -n "$MANUFACTURER" -a -n "$MODEL" -a -n "$STATUS" ]
-  then [ -z "$FIRMWARE" ] && FIRMWARE='""'
+  then [ -z "$VERSION" ] && VERSION='""'
+       [ -z "$FIRMWARE" ] && FIRMWARE='""'
        [ -z "$INTERFACE" ] && INTERFACE='""'
        [ -z "$USBID" ] && USBID='""'
        [ -z "$COMMENT" ] && COMMENT='""'
@@ -112,8 +131,8 @@ Output()
             fi
        fi
        if [ "$OUTPUT_FORMAT" = "YCP" ]
-       then echo -e "  \$[ \"package\":$PACKAGE,\n     \"backend\":$BACKEND,\n     \"manufacturer\":$MANUFACTURER,\n     \"model\":$MODEL,\n     \"firmware\":$FIRMWARE,\n     \"interface\":$INTERFACE,\n     \"usbid\":$USBID,\n     \"status\":$STATUS,\n     \"comment\":$COMMENT\n  ],"
-       else echo "$PACKAGE|$BACKEND|$MANUFACTURER|$MODEL|$FIRMWARE|$INTERFACE|$USBID|$STATUS|$COMMENT" | tr -d '"'
+       then echo -e "  \$[ \"package\":$PACKAGE,\n     \"backend\":$BACKEND,\n     \"version\":$VERSION,\n     \"manufacturer\":$MANUFACTURER,\n     \"model\":$MODEL,\n     \"firmware\":$FIRMWARE,\n     \"interface\":$INTERFACE,\n     \"usbid\":$USBID,\n     \"status\":$STATUS,\n     \"comment\":$COMMENT\n  ],"
+       else echo "$PACKAGE|$BACKEND|$VERSION|$MANUFACTURER|$MODEL|$FIRMWARE|$INTERFACE|$USBID|$STATUS|$COMMENT" | tr -d '"'
        fi
   fi
 }
@@ -131,6 +150,7 @@ do expr "$VALUE" : '"[^"]*"$' &>/dev/null || { echo "Ignoring $VALUE because it 
         :package) Output
                   PACKAGE="$VALUE"
                   BACKEND=""
+                  VERSION=""
                   MANUFACTURER=""
                   MODEL=""
                   FIRMWARE=""
@@ -140,6 +160,16 @@ do expr "$VALUE" : '"[^"]*"$' &>/dev/null || { echo "Ignoring $VALUE because it 
                   COMMENT="" ;;
         :backend) Output
                   BACKEND=$( echo "$VALUE" | tr '[:upper:]' '[:lower:]' )
+                  VERSION=""
+                  MANUFACTURER=""
+                  MODEL=""
+                  FIRMWARE=""
+                  INTERFACE=""
+                  USBID=""
+                  STATUS=""
+                  COMMENT="" ;;
+        :version) Output
+                  VERSION=$( echo "$VALUE" | tr '[:upper:]' '[:lower:]' )
                   MANUFACTURER=""
                   MODEL=""
                   FIRMWARE=""
