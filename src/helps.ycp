@@ -1,3 +1,24 @@
+
+/*
+ * Copyright (c) 2010 Novell, Inc.
+ * All Rights Reserved.
+ *
+ * This program is free software; you can redistribute it and/or
+ * modify it under the terms of version 2 of the GNU General Public License as
+ * published by the Free Software Foundation.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, contact Novell, Inc.
+ *
+ * To contact Novell about this file by physical or electronic mail,
+ * you may find current contact information at www.novell.com
+ */
+
 /**
  * File:	include/scanner/helps.ycp
  * Package:	Configuration of scanner
@@ -156,11 +177,16 @@ The information is based on data of the SANE project at
 <tt>http://www.sane-project.org/</tt>.
 </p>") +
 // SelectModel dialog help 2/5:
+// Do not change or translate "SANE", it is a project name.
 // Do not change or translate "sane-backends", it is a package name.
 _("<p>
 A model is supported if there is at least one appropriate scanner driver available.
-Most scanner drivers are provided by the sane-backends package.
-The support status varies from minimal to complete.
+Most scanner drivers are from the SANE project and provided in the sane-backends package.
+The support status for a particular model varies from minimal to complete.<br>
+When a driver is shown as 'unmaintained', it does not mean that the driver does not work.
+Even an unmaintained driver could work perfectly well.
+But it means that there is no longer someone who knows about the driver internals
+so that there is usually no help if there are issues with an unmaintained driver.
 </p>") +
 // SelectModel dialog help 3/5:
 _("<p>

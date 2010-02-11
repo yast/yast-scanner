@@ -1,3 +1,24 @@
+
+/*
+ * Copyright (c) 2010 Novell, Inc.
+ * All Rights Reserved.
+ *
+ * This program is free software; you can redistribute it and/or
+ * modify it under the terms of version 2 of the GNU General Public License as
+ * published by the Free Software Foundation.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, contact Novell, Inc.
+ *
+ * To contact Novell about this file by physical or electronic mail,
+ * you may find current contact information at www.novell.com
+ */
+
 /**
  * File:        modules/Scanner.ycp
  * Package:     Configuration of scanner
@@ -84,6 +105,7 @@ global string lower_alnum_chars = number_chars + lower_chars;
  * @struct scanner_model_map
  * $[ "package":"The package which provides the backend: sane-backends/hplip/iscan/iscan-free (required)",
  *    "backend":"The name of the backend (required)",
+ *    "version":"The backend's arbitrary version string or 'unmaintained' (may be the empty string)",
  *    "manufacturer":"The manufacturer name of the scanner (required)",
  *    "model":"The model name of the scanner (required)",
  *    "firmware":"Whether or not firmware upload is required (value is 'required' or the empty string)",
@@ -1374,6 +1396,7 @@ global list ModelItems( string filter_string )
              string manufacturer = database_entry["manufacturer"]:"unknown manufacturer";
              string model = database_entry["model"]:"unknown model";
              string backend = database_entry["backend"]:"unknown";
+             string version = database_entry["version"]:"";
              string package = database_entry["package"]:"unknown";
              string status = database_entry["status"]:"unknown";
              string interface = database_entry["interface"]:"";
@@ -1457,16 +1480,26 @@ global list ModelItems( string filter_string )
                // Enclose the backend name and the package name in single quotes to seperate them
                // from the rest of the model_string because they are untranslatable English words.
                if( "good" == status )
-               { status_string = sformat( // Scanner model list status entry for "good" supported models:
-                                          // %1 will be replaced by the backend (scanner driver) name
-                                          _("Driver %1 provides good functionality."),
-                                          backend
-                                        );
+               { if( "unmaintained" == version )
+                 { status_string = sformat( // Scanner model list status entry for "good" supported models
+                                            // but where the backend (scanner driver) is unmaintained:
+                                            // %1 will be replaced by the backend (scanner driver) name
+                                            _("Unmaintained driver %1 may provide good functionality."),
+                                            backend
+                                          );
+                 }
+                 else
+                 { status_string = sformat( // Scanner model list status entry for "good" supported models:
+                                            // %1 will be replaced by the backend (scanner driver) name
+                                            _("Driver %1 should provide good functionality."),
+                                            backend
+                                          );
+                 }
                }
                else
                { if( "unsupported" == status )
                  { if( "unsupported" == backend )
-                   { // Scanner model list status entry for unsupported models
+                   { // Scanner model list status entry for unsupported models:
                      status_string = _("This scanner is not supported.");
                    }
                    else
@@ -1480,11 +1513,21 @@ global list ModelItems( string filter_string )
                  }
                  else
                  { if( "complete" == status )
-                   { status_string = sformat( // Scanner model list status entry for "complete" supported models:
-                                              // %1 will be replaced by the backend (scanner driver) name
-                                              _("Driver %1 provides complete functionality."),
-                                              backend
-                                            );
+                   { if( "unmaintained" == version )
+                     { status_string = sformat( // Scanner model list status entry for "complete" supported models
+                                                // but where the backend (scanner driver) is unmaintained:
+                                                // %1 will be replaced by the backend (scanner driver) name
+                                                _("Unmaintained driver %1 may provide complete functionality."),
+                                                backend
+                                              );
+                     }
+                     else
+                     { status_string = sformat( // Scanner model list status entry for "complete" supported models:
+                                                // %1 will be replaced by the backend (scanner driver) name
+                                                _("Driver %1 should provide complete functionality."),
+                                                backend
+                                              );
+                     }
                    }
                    else
                    { if( "untested" == status )
@@ -1496,19 +1539,39 @@ global list ModelItems( string filter_string )
                      }
                      else
                      { if( "basic" == status )
-                       { status_string = sformat( // Scanner model list status entry for "basic" supported models:
-                                                  // %1 will be replaced by the backend (scanner driver) name
-                                                  _("Driver %1 provides basic functionality."),
-                                                  backend
-                                                );
+                       { if( "unmaintained" == version )
+                         { status_string = sformat( // Scanner model list status entry for "basic" supported models
+                                                    // but where the backend (scanner driver) is unmaintained:
+                                                    // %1 will be replaced by the backend (scanner driver) name
+                                                    _("Unmaintained driver %1 may provide basic functionality."),
+                                                    backend
+                                                  );
+                         }
+                         else
+                         { status_string = sformat( // Scanner model list status entry for "basic" supported models:
+                                                    // %1 will be replaced by the backend (scanner driver) name
+                                                    _("Driver %1 should provide basic functionality."),
+                                                    backend
+                                                  );
+                         }
                        }
                        else
                        { if( "minimal" == status )
-                         { status_string = sformat( // Scanner model list status entry for "minimal" supported models:
-                                                    // %1 will be replaced by the backend (scanner driver) name
-                                                    _("Driver %1 provides minimal functionality."),
-                                                    backend
-                                                  );
+                         { if( "unmaintained" == version )
+                           { status_string = sformat( // Scanner model list status entry for "minimal" supported models
+                                                      // but where the backend (scanner driver) is unmaintained:
+                                                      // %1 will be replaced by the backend (scanner driver) name
+                                                      _("Unmaintained driver %1 may provide minimal functionality."),
+                                                      backend
+                                                    );
+                           }
+                           else
+                           { status_string = sformat( // Scanner model list status entry for "minimal" supported models:
+                                                      // %1 will be replaced by the backend (scanner driver) name
+                                                      _("Driver %1 should provide minimal functionality."),
+                                                      backend
+                                                    );
+                           }
                          }
                          else
                          { status_string = sformat( // Fallback scanner model list status entry for models
