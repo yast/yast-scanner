@@ -656,31 +656,6 @@ boolean AutodetectScanners()
 }
 
 /**
- * Test and set scanner access permissions for USB scanners and SCSI scanners
- * for resmgr via HAL by calling a bash script which does all the work.
- * @return true on success
- */
-boolean SetScannerAccessPermissions()
-{ // Build the command line parameter:
-  string sane_devices = "";
-  foreach( map< string, string > active_scanner,
-           active_scanners,
-           { sane_devices = sane_devices + active_scanner["sane_device"]:"unknown" + ";";
-           }
-         );
-  // Execute the command line:
-  if( ! ExecuteBashCommand( test_and_set_scanner_access_permissions_commandline
-                            + " '"
-                            + sane_devices
-                            + "'"
-                          )
-    )
-  { return false;
-  }
-  return true;
-}
-
-/**
  * Test whether there exist a print queue which depends on the specified SANE backend.
  * Examples:
  * hpaio (package hplip):
@@ -1853,37 +1828,6 @@ If the scanner is also supported by the hpaio driver, do not proceed.
 Instead use hpaio to set up the scanner.
 Alternatively proceed and change the printer configuration to use the ptal service.
 ");
-  string hal_does_not_know_scanner_message =
-  // Message of a Popup::Error when HAL does not know a scanner.
-  // Do not change or translate "udev", it is a subsystem name.
-  // Do not change or translate "HAL", it is a subsystem name.
-  // Do not change or translate "hal-resmgr", it is a service name.
-  // Do not change or translate "lshal", it is a command name.
-  // Do not change or translate "saned", it is a program (sane daemon) name.
-  // Do not confuse "scanning via network" (i.e. use a remote scanner via another host in the network)
-  // with "scanning the network" (i.e. scan the network for other hosts or services).
-  // Translate the entry "Scanning via Network" in the "Other" drop down menue
-  // and the button label "Local Host Configuration" so that it matches
-  // exactly to what is actually shown in your language in your dialogs.
-_("A scanner is not known to HAL.
-To access the scanner as normal user,
-udev, HAL, and hal-resmgr are needed to grant
-appropriate access permissions automatically.
-Therefore the scanner model must be known to HAL.
-If the scanner is not known to HAL, a re-plug
-of a USB scanner should help.
-Otherwise a reboot should be done to restart
-the whole udev/HAL/hal-resmgr machinery.
-Check if the scanner is listed in the lshal output.
-If a SCSI scanner which was switched on during boot
-is not listed in the lshal output, the usual reason
-is that the kernel module for the scanner's SCSI host
-adapter does not notify HAL about the scanner device.
-If even a reboot does not help, you could access
-the scanner via the saned as a workaround.
-For this workaround choose 'Scanning via Network'
-and select the 'Local Host Configuration'.
-");
   // Here the real code starts with proper indentation:
   if( backend_name == "" )
   { if( database_index < 0 )
@@ -1906,7 +1850,7 @@ and select the 'Local Host Configuration'.
                           backend_name
                         ),
                  " ",
-                 6,
+                 5,
                  [ // 1. progress stage name of a Progress::New:
                    _("Check whether additional packages must be installed"),
                    // 2. progress stage name of a Progress::New:
@@ -1916,9 +1860,7 @@ and select the 'Local Host Configuration'.
                    // 4. progress stage name of a Progress::New:
                    _("Activate the driver"),
                    // 5. progress stage name of a Progress::New:
-                   _("Determine active scanners"),
-                   // 6. progress stage name of a Progress::New:
-                   _("Test and set USB and SCSI scanner access permissions")
+                   _("Determine active scanners")
                  ],
                  [ // 1. progress step progress bar title of a Progress::New:
                    _("Checking whether additional packages must be installed..."),
@@ -1930,8 +1872,6 @@ and select the 'Local Host Configuration'.
                    _("Activating the driver..."),
                    // 5. progress step progress bar title of a Progress::New:
                    _("Determining active scanners..."),
-                   // 6. progress step progress bar title of a Progress::New:
-                   _("Testing and setting USB and SCSI scanner access permissions..."),
                    // Last progress step progress bar title of a Progress::New:
                    _("Finished")
                  ],
@@ -2094,37 +2034,6 @@ and select the 'Local Host Configuration'.
   Progress::NextStage();
   if( ! DetermineActiveScanners() )
   { active_scanners = [];
-    // This Progress::NextStage makes sure that
-    // the stage "Test and set USB and SCSI scanner access permissions"
-    // is shown to the user even if it is not actually executed.
-    // But because of the word "Test" it is not wrong to show it.
-    Progress::NextStage();
-  }
-  else
-  { Progress::NextStage();
-    if( ! SetScannerAccessPermissions()
-        && user_confirmation
-      )
-    { if( 10 == result["exit"]:9999 )
-      { // Special handling when the exit code is 10 which indicates
-        // that HAL does not know all active scanners.
-        Popup::ErrorDetails( hal_does_not_know_scanner_message,
-                             // Only the stderr message shows exact information
-                             // which scanners are unknown to HAL which is of interest
-                             // when there is more than one scanner connected:
-                             result["stderr"]:""
-                           );
-      }
-      else
-      { // Whatever other error:
-        Popup::WarningDetails( // Message of a Popup::WarningDetails when setting scanner access permissions failed.
-                               // Only a simple message because this error does not happen on a normal system
-                               // (i.e. a system which is not totally broken or totally messed up).
-                               _("Failed to set scanner access permissions.\n%1"),
-                               result["stderr"]:""
-                             );
-      }
-    }
   }
   if( ! DetermineActiveBackends() )
   { active_backends = [];
@@ -2280,9 +2189,6 @@ global boolean DeactivateBackend( string backend_name, integer database_index, b
   if( ! DetermineActiveScanners() )
   { active_scanners = [];
   }
-  else
-  { SetScannerAccessPermissions();
-  }
   if( ! DetermineActiveBackends() )
   { active_backends = [];
   }
@@ -2295,39 +2201,7 @@ global boolean DeactivateBackend( string backend_name, integer database_index, b
  * @return true on success
  */
 global boolean TestBackend( string backend_name )
-{ // First of all the multi-line strings because such strings cannot be indented:
-  string hal_does_not_know_scanner_message =
-  // Message of a Popup::Error when HAL does not know a scanner.
-  // Do not change or translate "udev", it is a subsystem name.
-  // Do not change or translate "HAL", it is a subsystem name.
-  // Do not change or translate "hal-resmgr", it is a service name.
-  // Do not change or translate "lshal", it is a command name.
-  // Do not change or translate "saned", it is a program (sane daemon) name.
-  // Do not confuse "scanning via network" (i.e. use a remote scanner via another host in the network)
-  // with "scanning the network" (i.e. scan the network for other hosts or services).
-  // Translate the entry "Scanning via Network" in the "Other" drop down menue
-  // and the button label "Local Host Configuration" so that it matches
-  // exactly to what is actually shown in your language in your dialogs.
-_("The scanner is not known to HAL.
-To access the scanner as normal user,
-udev, HAL, and hal-resmgr are needed to grant
-appropriate access permissions automatically.
-Therefore the scanner model must be known to HAL.
-If the scanner is not known to HAL, a re-plug
-of a USB scanner should help.
-Otherwise a reboot should be done to restart
-the whole udev/HAL/hal-resmgr machinery.
-Check if the scanner is listed in the lshal output.
-If a SCSI scanner which was switched on during boot
-is not listed in the lshal output, the usual reason
-is that the kernel module for the scanner's SCSI host
-adapter does not notify HAL about the scanner device.
-If even a reboot does not help, you could access
-the scanner via the saned as a workaround.
-For this workaround choose 'Scanning via Network'
-and select the 'Local Host Configuration'.
-");
-  string sane_device = "";
+{ string sane_device = "";
   // It is not possible to test a backend without a matching active scanner.
   // Build the table of active scanners of the backend (see ModelItems above):
   list< term > scanners_to_be_tested = [];
@@ -2433,29 +2307,6 @@ and select the 'Local Host Configuration'.
                               result["stderr"]:_("(no results available)")
                             )
                    );
-  // Test if HAL knows the particular SANE device.
-  // This writes also /etc/hal/fdi/information/20thirdparty/80-scanner.fdi
-  // if the scanner is not listed in /usr/share/hal/fdi/information/20thirdparty/70-scanner.fdi
-  // (compare https://bugzilla.novell.com/show_bug.cgi?id=438867)
-  // which is perfectly o.k. because this could solve access permission issues
-  // automatically only by testing the device:
-  if( ! ExecuteBashCommand( test_and_set_scanner_access_permissions_commandline + " " + sane_device ) )
-  { if( 10 == result["exit"]:9999 )
-    { // Special handling when the exit code is 10 which indicates
-      // that HAL does not know the scanner.
-      // Show only the error message but return true nevertheless
-      // because the actual test via "scanimage" was successful.
-      Popup::ErrorDetails( hal_does_not_know_scanner_message,
-                           sformat( // Popup::ErrorDetails details where
-                                    // %1 will be replaced by the SANE device identifier:
-                                    _("The following SANE device is not know to HAL: '%1'"),
-                                    sane_device
-                                  )
-                         );
-    }
-    // Ignore any other errors of test_and_set_scanner_access_permissions
-    // e.g. when it fails because HAL stuff is not installed or whatever.
-  }
   return true;
 }
 

@@ -11,8 +11,7 @@ ybin_SCRIPTS =					\
 	setup_ptal_scanner_service		\
 	setup_hplip_scanner_service		\
 	determine_network_scanner_config	\
-	setup_network_scanner_config		\
-	test_and_set_scanner_access_permissions
+	setup_network_scanner_config
 
 EXTRA_DIST = $(ybin_SCRIPTS)
 

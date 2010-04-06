@@ -1,4 +1,22 @@
 -------------------------------------------------------------------
+Tue Apr  6 17:43:24 CEST 2010 - jsmeix@suse.de
+
+- V 2.19.2
+- HAL is deprecated and does no longer support to grant read/write
+  device access permissions for scanners to the currently logged
+  in "desktop" user. Therefore the HAL related code was removed
+  (see Novell/Suse Bugzilla bnc#593946).
+- Implemented Novell/Suse Bugzilla bnc#578203 enhancement
+  to show in the model selection list  "unmaintained driver"
+  and added info to the help text so that the user knows
+  in advance whether or not he could expect some help
+  if there are issues with an unmaintained driver.
+- In case of the "net" meta-backend, the [Edit] button in the
+  OverviewDialog now also launches the "Scanning via Network"
+  dialog even when the "net" meta-backend did not recognize
+  a scanner (see Novell/Suse Bugzilla bnc#578104).
+
+-------------------------------------------------------------------
 Thu Jan 21 17:36:27 CET 2010 - jsmeix@suse.de
 
 - V 2.19.1
