@@ -40,7 +40,7 @@ TMP_DATA=$(mktemp -u /tmp/$MY_NAME.XXXXXX)
 # Get the raw data
 # The 'sort -u' is crucial because the YaST scanner module requires
 # a list of unique backend names (e.g. in Scanner::Overview ):
-grep '^[[:alnum:]][[:alnum:]]*$' /etc/sane.d/dll.conf | sort -u >$TMP_DATA
+grep '^[[:alnum:]][[:alnum:]_-]*$' /etc/sane.d/dll.conf | sort -u >$TMP_DATA
 
 # Output:
 

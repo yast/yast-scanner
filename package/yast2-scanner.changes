@@ -1,4 +1,15 @@
 -------------------------------------------------------------------
+Thu Sep 23 15:27:40 CEST 2010 - jsmeix@suse.de
+
+- V 2.20.0
+- Let the ConfigureBackendDialog automatically proceed to the next
+  dialog (i.e. to the overview dialog) after successful backend
+  activation (see openSUSE/Novell Bugzilla bnc#636083).
+- Fix determine_active_scanner_backends so that it also detects
+  active backends with '_' or '-' characters in the backend name
+  (see openSUSE/Novell Bugzilla bnc#641111).
+
+-------------------------------------------------------------------
 Tue Apr  6 17:43:24 CEST 2010 - jsmeix@suse.de
 
 - V 2.19.2

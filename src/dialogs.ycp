@@ -848,9 +848,20 @@ any ConfigureBackendDialog()
                            // Only a simple message because before the function Scanner::ActivateBackend
                            // was called and this function would have shown more specific messages.
                            _("Failed to activate %1."), backend_name ) );
+    Wizard::EnableBackButton();
+    Wizard::EnableNextButton();
   }
-  Wizard::EnableBackButton();
-  Wizard::EnableNextButton();
+  else
+  { // Wait two seconds so that the user can notice that Scanner::ActivateBackend(...) was successful
+    // and then automatically proceed to the 'next' dialog which is the overview dialog.
+    // Therefore there is no way 'back' when Scanner::ActivateBackend(...) was successful
+    // (which makes sense because why should the user undo right now what was successful)
+    // so that 'back' is only possible if Scanner::ActivateBackend(...) failed or when it
+    // was aborted by the user (e.g. when the user aborted to install a required package):
+    Wizard::EnableNextButton();
+    sleep( 2000 );
+    UI::FakeUserInput( `next );
+  }
   any ret = nil;
   while(true)
   { ret = UI::UserInput();
