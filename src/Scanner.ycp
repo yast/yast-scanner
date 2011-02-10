@@ -795,8 +795,10 @@ global boolean Read()
                                 `ReplacePoint( `id(`create_database_progress_replace_point),
                                                `DownloadProgress( feedback_message,
                                                                   database_filename,
-                                                                  // On my openSUSE 10.3 the size is about 538000 bytes:
-                                                                  600000
+                                                                  // On my openSUSE 11.4 the size is about 891000 bytes.
+                                                                  // The number 921600 results exactly "900.0 KB" in the
+                                                                  // YaST Gtk user inteface for a DownloadProgress:
+                                                                  921600
                                                                 )
                                              )
                               )
