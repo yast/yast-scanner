@@ -1,4 +1,14 @@
 -------------------------------------------------------------------
+Thu Feb 10 14:38:49 CET 2011 - jsmeix@suse.de
+
+- V 2.20.1
+- Changed the number for DownloadProgress to multiple of 1024
+  to get nicer looking "nnn.0 KB" texts in the Gtk UI.
+  Using 921600 because /var/lib/YaST2/scanner_database.ycp
+  is about 890000 bytes in openSUSE 11.4
+  (see openSUSE/Novell Bugzilla bnc#670675).
+
+-------------------------------------------------------------------
 Thu Sep 23 15:27:40 CEST 2010 - jsmeix@suse.de
 
 - V 2.20.0
