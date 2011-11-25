@@ -2,7 +2,7 @@
 
 
 @HEADER@
-BuildRequires:	docbook-xsl-stylesheets doxygen libxslt perl-XML-Writer sgml-skel update-desktop-files xorg-x11-libX11-devel yast2 yast2-devtools yast2-testsuite
+BuildRequires:	docbook-xsl-stylesheets doxygen libxslt perl-XML-Writer sgml-skel update-desktop-files xorg-x11-libX11-devel yast2 yast2-devtools yast2-testsuite libtool
 Requires:	yast2
 # Used to exclude libX11, libXau, libxcb, and libxcb-xlib from the requires list
 # which are pulled in by Autoreqprov because of the displaytest tool:

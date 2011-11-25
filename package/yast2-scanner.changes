@@ -1,4 +1,9 @@
 -------------------------------------------------------------------
+Fri Nov 25 12:24:56 UTC 2011 - coolo@suse.com
+
+- add libtool as buildrequire to avoid implicit dependency
+
+-------------------------------------------------------------------
 Fri Aug  5 12:35:01 CEST 2011 - tgoettlicher@suse.de
 
 - fixed .desktop file (bnc #681249)
