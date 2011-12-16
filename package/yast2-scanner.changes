@@ -1,4 +1,9 @@
 -------------------------------------------------------------------
+Fri Dec 16 08:49:24 UTC 2011 - coolo@suse.com
+
+- it's actually GPL 2.0 only
+
+-------------------------------------------------------------------
 Fri Nov 25 12:24:56 UTC 2011 - coolo@suse.com
 
 - add libtool as buildrequire to avoid implicit dependency
