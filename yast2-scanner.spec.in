@@ -9,6 +9,7 @@ Requires:	yast2
 %define my_requires /tmp/my-requires
 
 Summary:	YaST2 - Scanner Configuration
+License:        GPL-2.0
 
 %description
 This package provides support for the configuration of USB scanners,
