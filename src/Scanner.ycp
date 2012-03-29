@@ -480,13 +480,11 @@ boolean DetermineActiveScanners()
   // Do not simply use "driver" because net is no normal driver but a metadriver.
   // Do not change or translate "scanimage -L", it is a fixed command.
 _("Failed to determine the active scanners.
-When the net metadriver is activated and something is wrong
-in the network, it can happen that there is no response from
-the 'scanimage -L' command. For example when the communication
-with a server which should be used by the net metadriver
+If the net metadriver is activated while there is a problem
+with the network, the 'scanimage -L' command may not respond. For example,
+this may happen if communication with a server used by the net metadriver
 gets distorted because a firewall drops some network traffic.
-In this case it should help to disable the net metadriver
-as a workaround until the issue in the network is fixed.
+In this case, disable the net metadriver until the issue in the network is fixed.
 ");
   if( ! ExecuteBashCommand( determine_active_scanners_commandline ) )
   { if( 10 == result["exit"]:9999 )
@@ -1030,18 +1028,18 @@ and start the scanner configuration again afterwards.
   string displaytest_failed_message =
   // Message of a Popup::Error when hp-setup should be run.
   // Do not change or translate "hp-setup", it is a program name:
-_("Cannot run hp-setup because no graphical display can be opened.
-This happens in particular when YaST runs in text-only mode,
-or when the user who runs YaST has no DISPLAY environment variable set,
-or when the YaST process is not allowed to access the graphical display.
-In this case you should abort the scanner configuration now,
-run hp-setup manually, and start the scanner configuration again afterwards.
+_("Cannot run hp-setup because no graphical display can be opened.  
+This happens if YaST runs in text-only mode, or the user who runs YaST 
+has no DISPLAY environment variable set, or if the YaST process is not 
+allowed to access the graphical display.  In this case, abort the scanner 
+configuration, run hp-setup manually, and start the scanner configuration
+again afterwards.
 ");
   string install_hplip_message =
   // Message of a Popup::YesNo when hplip should be installed.
   // Do not change or translate "hp-setup", it is a program name.
   // Do not change or translate "hplip", it is a package name:
-_("It seems hplip is not installed which is required to run hp-setup.
+_("It seems hplip is not installed, which is required to run hp-setup.
 Should the hplip package be installed?
 ");
   string hpsetup_not_executable_message =
@@ -1793,7 +1791,7 @@ The following command shows the man page for your driver:
 _("There is at least one printer configuration that uses the ptal service.
 It is possible to proceed but then the ptal service would be stopped
 and all print queues that use the ptal service would no longer work.
-When you proceed, change the printer configuration to use HPLIP.
+If you proceed, change the printer configuration to use HPLIP.
 ");
   string hpoj_message =
   // Message of a Popup::YesNo for scanners which should be set up with the hpoj driver
