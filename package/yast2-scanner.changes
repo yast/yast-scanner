@@ -1,4 +1,15 @@
 -------------------------------------------------------------------
+Tue May  8 15:14:57 CEST 2012 - jsmeix@suse.de
+
+- V 2.23.0
+- Third party driver "epkowa" responsibility transferred
+  from Avasys to Epson (bnc#746038).
+- Use ButtonBox widget in src/Scanner.ycp (bnc#701263).
+- Fixed typo in help text "UDB" -> "USB" (bnc#703235).
+- Replaced the HTTP URLs to the Style Guide with the plain text
+  "YaST Style Guide (dated Tue, 04 Nov 2008)" (bnc#732272).
+
+-------------------------------------------------------------------
 Thu Mar 29 15:58:34 CEST 2012 - jsuchome@suse.cz
 
 - merge proofread texts 

@@ -390,20 +390,23 @@ boolean TestAndInstallPackage( string package_name )
 { // First of all the multi-line string because such strings cannot be indented:
   string iscan_message =
   // Message of a Popup::Error for models which require
-  // the third-party Image Scan (IScan) driver software from Epson/Avasys.
+  // the third-party Image Scan (IScan) driver software from Epson
+  // (formerly Avasys, see https://bugzilla.novell.com/show_bug.cgi?id=746038).
   // Do not change or translate "Image Scan", it is a driver software name.
-  // Do not change or translate "Avasys, it is a manufacturer name.
-_("The third-party Image Scan driver software from Avasys is required.
-The Image Scan driver software is made and provided by Avasys
-http://avasys.jp/eng/linux_driver/
+  // Do not change or translate "Avasys", it is a manufacturer name.
+  // Do not change or translate "Epson", it is a manufacturer name.
+_("The third-party Image Scan driver software from Epson/Avasys is required.
+The Image Scan driver software is made and provided by Epson (formerly Avasys)
+http://download.ebz.epson.net/dsc/search/01/search/?OSC=LXEpson
+(formerly Avasys http://avasys.jp/eng/linux_driver/)
 where RPM packages for 32-bit (i386) and 64-bit (x86_64) architecture
-can be downloaded (if you accept the Avasys and Epson license agreements).
+can be downloaded (if you accept the Epson/Avasys license agreements).
 The Image Scan driver contains proprietary binary-only software.
 For some models it is only available for 32-bit (i386) architecture
 which does not work when you have a 64-bit system installation.
 Some scanners are also supported by another (free-software) driver.
 When your scanner model requires a DFSG non-free (proprietary) module,
-you have to download and install two packages from Avasys:
+you have to download and install two packages from Epson/Avasys:
 The 'iscan' package for the base software and an additional
 model dependant 'iscan-plugin' package with the proprietary module.
 ");
@@ -414,16 +417,16 @@ model dependant 'iscan-plugin' package with the proprietary module.
       && Package::Installed( "iscan" )
     )
   { // Each scanner which is supported by iscan-free is also supported by iscan.
-    // 'iscan' is the package name of the primary RPM which is provided by Avasys
-    // (there are also additional iscan-plugin-<model-name> provided by Avasys).
+    // 'iscan' is the package name of the primary RPM which is provided by Epson/Avasys
+    // (there are also additional iscan-plugin-<model-name> provided by Epson/Avasys).
     // If iscan is already installed, there is no need to switch to iscan-free.
     // Because iscan contains proprietary software it is not provided by openSUSE.
-    // Therefore the user must have had downloaded it from Avasys
+    // Therefore the user must have had downloaded it from Epson/Avasys
     // and then installed intentionally and manually.
     return true;
   }
   if( "iscan" == package_name )
-  { y2milestone( "Third-party Image Scan driver software from Avasys required." );
+  { y2milestone( "Third-party Image Scan driver software from Epson/Avasys required." );
     Popup::Error( iscan_message );
     return false;
   }
@@ -793,10 +796,10 @@ global boolean Read()
                                 `ReplacePoint( `id(`create_database_progress_replace_point),
                                                `DownloadProgress( feedback_message,
                                                                   database_filename,
-                                                                  // On my openSUSE 11.4 the size is about 891000 bytes.
-                                                                  // The number 921600 results exactly "900.0 KB" in the
+                                                                  // On my openSUSE 11.4 the size is about 930000 bytes.
+                                                                  // The number 1024000 results exactly "1000.0 KB" in the
                                                                   // YaST Gtk user inteface for a DownloadProgress:
-                                                                  921600
+                                                                  1024000
                                                                 )
                                              )
                               )
@@ -1360,8 +1363,9 @@ global list ModelItems( string filter_string )
   // Scanner model list entry for models which require
   // the third-party Image Scan (IScan) driver software from Epson/Avasys.
   // Do not change or translate "Image Scan", it is a driver software name.
-  // Do not change or translate "Avasys, it is a manufacturer name.
-  string iscan_string = _("Third-party Image Scan driver software from Avasys required.");
+  // Do not change or translate "Avasys", it is a manufacturer name.
+  // Do not change or translate "Epson", it is a manufacturer name.
+  string iscan_string = _("Third-party Image Scan driver software from Epson/Avasys required.");
   list< term > model_items = [];
   foreach( map< string, string > database_entry,
            database,
@@ -1890,7 +1894,7 @@ Alternatively proceed and change the printer configuration to use the ptal servi
     )
   { if( ! TestAndInstallPackage( package_name ) )
     { // There is already sufficient user information regarding
-      // the third-party Image Scan driver software from Avasys:
+      // the third-party Image Scan driver software from Epson/Avasys:
       if( package_name != "iscan" )
       { Popup::AnyMessage( // Header of a Popup::AnyMessage:
                            _("Required Package Not Installed"),
@@ -2246,9 +2250,9 @@ global boolean TestBackend( string backend_name )
                                           _("&Scanner to Test"),
                                           scanners_to_be_tested
                                         ),
-                           `HBox( `PushButton( `id(`cancel_button), Label::CancelButton() ),
-                                  `PushButton( `id(`ok_button), `opt(`default), Label::OKButton() )
-                                )
+                           `ButtonBox( `PushButton( `id(`cancel_button), Label::CancelButton() ),
+                                       `PushButton( `id(`ok_button), `opt(`default), Label::OKButton() )
+                                     )
                          )
                   );
     if( UI::UserInput() != `ok_button )
