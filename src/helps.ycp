@@ -73,7 +73,7 @@ If your scanner has not been detected, use <b>Add</b> for a manual configuration
 _("<p>
 A normal USB scanner should be detected automatically.
 By default, only those USB scanners are shown
-for which the UDB vendor and product IDs are known.
+for which the USB vendor and product IDs are known.
 If a USB scanner is not shown or if there are unexpected results,
 try <b>Other</b> and <b>Restart Detection</b>.
 It might happen that particular USB devices which are not scanners
