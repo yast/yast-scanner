@@ -8,6 +8,8 @@ Requires:	yast2
 # which are pulled in by Autoreqprov because of the displaytest tool:
 %define my_requires /tmp/my-requires
 
+Requires:       yast2-ruby-bindings >= 1.0.0
+
 Summary:	YaST2 - Scanner Configuration
 License:        GPL-2.0
 
@@ -42,7 +44,7 @@ chmod 755 %{my_requires}
 %defattr(-,root,root)
 %dir @yncludedir@/scanner
 @yncludedir@/scanner/*
-@clientdir@/scanner.ycp
+@clientdir@/scanner.rb
 @moduledir@/Scanner.*
 @desktopdir@/scanner.desktop
 @ybindir@/*scanner*
