@@ -2,7 +2,7 @@ aclocal.m4
 autom4te.cache
 config.*
 configure
-configure.in
+configure.ac
 install-sh
 Makefile
 Makefile.am*
@@ -10,4 +10,5 @@ Makefile.in
 missing
 scanner.pot
 yast2-scanner.changes
-yast2-scanner.spec
+*.ami
+*.m4
