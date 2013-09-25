@@ -2628,7 +2628,7 @@ module Yast
     end
 
     # Return packages needed to be installed and removed during
-    # autoinstallation to insure module has all needed software installed.
+    # autoinstallation to ensure module has all needed software installed.
     # @return [Hash] with 2 lists.
     def AutoPackages
       { "install" => [], "remove" => [] }
