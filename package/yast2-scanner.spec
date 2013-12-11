@@ -25,7 +25,7 @@ BuildRoot:      %{_tmppath}/%{name}-%{version}-build
 Source0:        %{name}-%{version}.tar.bz2
 
 BuildRequires:	docbook-xsl-stylesheets doxygen libxslt perl-XML-Writer sgml-skel update-desktop-files xorg-x11-libX11-devel yast2 yast2-testsuite libtool
-BuildRequires:  yast2-devtools >= 3.0.6
+BuildRequires:  yast2-devtools >= 3.1.10
 Requires:	yast2
 # Used to exclude libX11, libXau, libxcb, and libxcb-xlib from the requires list
 # which are pulled in by Autoreqprov because of the displaytest tool:
