@@ -1,4 +1,10 @@
 -------------------------------------------------------------------
+Tue Dec  2 14:19:04 CET 2014 - jsmeix@suse.de
+
+- enhancement for /usr/lib/YaST2/bin/setup_network_scanner_config
+  that provides additional support for systemd (bnc#859353).
+
+-------------------------------------------------------------------
 Tue Dec  2 13:55:14 CET 2014 - jsmeix@suse.de
 
 - replace slow Builtins.add() with fast '<<' append operator
