@@ -1794,20 +1794,14 @@ module Yast
           end
           # Take the filter_string into account:
           if "" == filter_string
-            model_items = Builtins.add(
-              model_items,
-              Item(Id(database_index), model_string)
-            )
+            model_items << Item(Id(database_index), model_string)
           else
             # test whether the model_string matches to the filter_string:
             if Builtins.regexpmatch(
                 Builtins.tolower(model_string),
                 Builtins.tolower(filter_string)
               )
-              model_items = Builtins.add(
-                model_items,
-                Item(Id(database_index), model_string)
-              )
+              model_items << Item(Id(database_index), model_string)
             end
           end
         end
