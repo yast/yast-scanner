@@ -1,4 +1,18 @@
 -------------------------------------------------------------------
+Tue May 27 14:27:36 CEST 2014 - jsmeix@suse.de
+
+- setup_network_scanner_config.with_systemd_support is an
+  enhancement for /usr/lib/YaST2/bin/setup_network_scanner_config
+  that provides additional support for systemd (bnc#859353).
+
+-------------------------------------------------------------------
+Thu May 15 16:45:07 CEST 2014 - jsmeix@suse.de
+
+- use_fast_append_instead_of_slow_add.diff replaces
+  slow Builtins.add() with fast '<<' append operator
+  where needed to avoid "hang up impression" (bnc#877516).
+
+-------------------------------------------------------------------
 Wed Nov 13 15:56:18 UTC 2013 - jreidinger@suse.com
 
 - Add explicit COPYING file
