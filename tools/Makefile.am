@@ -8,8 +8,6 @@ ybin_SCRIPTS =					\
 	activate_scanner_backend		\
 	deactivate_scanner_backend		\
 	test_scanner_backend			\
-	setup_ptal_scanner_service		\
-	setup_hplip_scanner_service		\
 	determine_network_scanner_config	\
 	setup_network_scanner_config
 
