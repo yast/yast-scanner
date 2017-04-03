@@ -266,8 +266,6 @@ module Yast
       @activate_backend_commandline = "/usr/lib/YaST2/bin/activate_scanner_backend"
       @deactivate_backend_commandline = "/usr/lib/YaST2/bin/deactivate_scanner_backend"
       @test_backend_commandline = "/usr/lib/YaST2/bin/test_scanner_backend"
-      @setup_ptal_scanner_service_commandline = "/usr/lib/YaST2/bin/setup_ptal_scanner_service"
-      @setup_hplip_scanner_service_commandline = "/usr/lib/YaST2/bin/setup_hplip_scanner_service"
       @network_scanning_config_filename = "/var/lib/YaST2/network_scanning_config.ycp"
       @determine_network_scanning_config_commandline = Ops.add(
         "/usr/lib/YaST2/bin/determine_network_scanner_config YCP >",
@@ -2077,17 +2075,6 @@ module Yast
             end
           end
         end
-        # No conflicting print queue was found or
-        # a conflicting print queue was found but the user forced to proceed.
-        # Since HPLIP version 2.8.4 there are no longer any startup daemons.
-        # The hplip init script was adapted to provide backward compatibility:
-        # It still exists to avoid that printer/scanner setup tools fail
-        # when they try to enable the "hplip" service but all it does
-        # is to stop a possibly running hpssd.
-        # All what /usr/lib/YaST2/bin/setup_hplip_scanner_service still does
-        # is to disable both ptal and hplip completely if such a service exists.
-        # There is no need to care about the exit code because it exits successfully in any case:
-        ExecuteBashCommand(@setup_hplip_scanner_service_commandline)
       end
       # The hpoj backend (from the package hp-officeJet) requires the PTAL service to be up and running.
       # Before starting the PTAL service works it must have been initialized.
@@ -2119,19 +2106,6 @@ module Yast
               Progress.Title(_("Aborted"))
               return false
             end
-          end
-          # No conflicting print queue was found or
-          # a conflicting print queue was found but the user forced to proceed:
-          if !ExecuteBashCommand(@setup_ptal_scanner_service_commandline)
-            Popup.ErrorDetails(
-              # Only a simple message because this error does not happen on a normal system
-              # (i.e. a system which is not totally broken or totally messed up).
-              # Do not change or translate "PTAL", it is a subsystem name.
-              _("Failed to set up the PTAL system."),
-              Ops.get_string(@result, "stderr", "")
-            )
-            Progress.Title(_("Aborted"))
-            return false
           end
         end
       end
