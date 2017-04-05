@@ -38,7 +38,6 @@ SANED_CONFIG="$2"
 ACTIVATE_BACKEND=${0%/*}/activate_scanner_backend
 DEACTIVATE_BACKEND=${0%/*}/deactivate_scanner_backend
 XINETD_CONFIG_FILE="/etc/xinetd.d/sane-port"
-XINETD_INIT_SCRIPT="/etc/init.d/xinetd"
 XINETD_SYSTEMD_UNIT="xinetd.service"
 XINETD_SYSTEMD_UNIT_FILE="/usr/lib/systemd/system/$XINETD_SYSTEMD_UNIT"
 
@@ -71,14 +70,6 @@ fi
 # and do the appropriate stuff regarding the xinetd:
 if [ -n "$SANED_CONFIG" ]
 then sed -i -e 's/^.*disable.*$/\tdisable     = no/' $XINETD_CONFIG_FILE || { echo "Failed to enable saned in $XINETD_CONFIG_FILE" 1>&2 ; exit 6 ; }
-     if test -e $XINETD_INIT_SCRIPT
-     then if $XINETD_INIT_SCRIPT status &>/dev/null
-          then $XINETD_INIT_SCRIPT reload || { echo "Failed to reload xinetd" 1>&2 ; exit 7 ; }
-          else $XINETD_INIT_SCRIPT start || { echo "Failed to start xinetd" 1>&2 ; exit 8 ; }
-               insserv xinetd || { echo "Failed to insserv xinetd" 1>&2 ; exit 9 ; }
-          fi
-          exit 0
-     fi
      if test -e $XINETD_SYSTEMD_UNIT_FILE
      then if systemctl --quiet is-active $XINETD_SYSTEMD_UNIT && systemctl --quiet is-enabled $XINETD_SYSTEMD_UNIT
           then systemctl --quiet reload $XINETD_SYSTEMD_UNIT || { echo "Failed to reload xinetd" 1>&2 ; exit 7 ; }
@@ -87,22 +78,16 @@ then sed -i -e 's/^.*disable.*$/\tdisable     = no/' $XINETD_CONFIG_FILE || { ec
           fi
           exit 0
      fi
-     echo "Cannot reload or start and enable xinetd (neither $XINETD_INIT_SCRIPT nor $XINETD_SYSTEMD_UNIT_FILE)" 1>&2
+     echo "Cannot reload or start and enable xinetd (no $XINETD_SYSTEMD_UNIT_FILE)." 1>&2
      exit 11
 else sed -i -e 's/^.*disable.*$/\tdisable     = yes/' $XINETD_CONFIG_FILE || { echo "Failed to disable saned in $XINETD_CONFIG_FILE" 1>&2 ; exit 10 ; }
-     if test -e $XINETD_INIT_SCRIPT
-     then if $XINETD_INIT_SCRIPT status &>/dev/null
-          then $XINETD_INIT_SCRIPT reload || { echo "Failed to reload xinetd" 1>&2 ; exit 7 ; }
-          fi
-          exit 0
-     fi
      if test -e $XINETD_SYSTEMD_UNIT_FILE
      then if systemctl --quiet is-active $XINETD_SYSTEMD_UNIT
           then systemctl --quiet reload $XINETD_SYSTEMD_UNIT || { echo "Failed to reload xinetd" 1>&2 ; exit 7 ; }
           fi
           exit 0
      fi
-     echo "Cannot reload xinetd (neither $XINETD_INIT_SCRIPT nor $XINETD_SYSTEMD_UNIT_FILE)" 1>&2
+     echo "Cannot reload xinetd (no $XINETD_SYSTEMD_UNIT_FILE)." 1>&2
      exit 11
 fi
 
