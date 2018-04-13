@@ -17,7 +17,7 @@
 
 
 Name:           yast2-scanner
-Version:        4.0.0
+Version:        4.0.1
 Release:        0
 Group:		System/YaST
 

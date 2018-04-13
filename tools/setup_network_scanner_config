@@ -1,6 +1,6 @@
 #! /bin/bash
 
-# Johannes Meixner <jsmeix@suse.de>, 2004, 2005, 2006, 2007, 2008, 2010, 2014
+# Johannes Meixner <jsmeix@suse.de>, 2004, 2005, 2006, 2007, 2008, 2010, 2014, 2018
 #
 # Copyright (c) 2010 Novell, Inc.
 # All Rights Reserved.
@@ -40,6 +40,8 @@ DEACTIVATE_BACKEND=${0%/*}/deactivate_scanner_backend
 XINETD_CONFIG_FILE="/etc/xinetd.d/sane-port"
 XINETD_SYSTEMD_UNIT="xinetd.service"
 XINETD_SYSTEMD_UNIT_FILE="/usr/lib/systemd/system/$XINETD_SYSTEMD_UNIT"
+SANED_SYSTEMD_UNIT="saned.socket"
+SANED_SYSTEMD_UNIT_FILE="/usr/lib/systemd/system/$SANED_SYSTEMD_UNIT"
 
 # Function to remove old entries and append new entries to a SANE config file:
 ReWrite()
@@ -69,25 +71,47 @@ fi
 # Enable the saned if "$SANED_CONFIG" is not the empty string otherwise disable the saned
 # and do the appropriate stuff regarding the xinetd:
 if [ -n "$SANED_CONFIG" ]
-then sed -i -e 's/^.*disable.*$/\tdisable     = no/' $XINETD_CONFIG_FILE || { echo "Failed to enable saned in $XINETD_CONFIG_FILE" 1>&2 ; exit 6 ; }
+then # First try the newest way (i.e. reload or start and enable SANED_SYSTEMD_UNIT)
+     # otherwise fall back to the older ways (i.e via xinetd):
+     if test -e $SANED_SYSTEMD_UNIT_FILE
+     then if systemctl --quiet is-active $SANED_SYSTEMD_UNIT && systemctl --quiet is-enabled $SANED_SYSTEMD_UNIT
+          then systemctl --quiet reload $SANED_SYSTEMD_UNIT || { echo "Failed to reload $SANED_SYSTEMD_UNIT" 1>&2 ; exit 7 ; }
+          else systemctl --quiet start $SANED_SYSTEMD_UNIT || { echo "Failed to start $SANED_SYSTEMD_UNIT" 1>&2 ; exit 8 ; }
+               systemctl --quiet enable $SANED_SYSTEMD_UNIT || { echo "Failed to enable $SANED_SYSTEMD_UNIT" 1>&2 ; exit 9 ; }
+          fi
+          exit 0
+     fi
+     echo "Cannot reload or start and enable $SANED_SYSTEMD_UNIT (no $SANED_SYSTEMD_UNIT_FILE)." 1>&2
+     echo "Falling back to reload or start and enable $XINETD_SYSTEMD_UNIT." 1>&2
+     sed -i -e 's/^.*disable.*$/\tdisable     = no/' $XINETD_CONFIG_FILE || { echo "Failed to enable saned in $XINETD_CONFIG_FILE" 1>&2 ; exit 6 ; }
      if test -e $XINETD_SYSTEMD_UNIT_FILE
      then if systemctl --quiet is-active $XINETD_SYSTEMD_UNIT && systemctl --quiet is-enabled $XINETD_SYSTEMD_UNIT
-          then systemctl --quiet reload $XINETD_SYSTEMD_UNIT || { echo "Failed to reload xinetd" 1>&2 ; exit 7 ; }
-          else systemctl --quiet start $XINETD_SYSTEMD_UNIT || { echo "Failed to start xinetd" 1>&2 ; exit 8 ; }
-               systemctl --quiet enable $XINETD_SYSTEMD_UNIT || { echo "Failed to enable xinetd" 1>&2 ; exit 9 ; }
+          then systemctl --quiet reload $XINETD_SYSTEMD_UNIT || { echo "Failed to reload $XINETD_SYSTEMD_UNIT" 1>&2 ; exit 7 ; }
+          else systemctl --quiet start $XINETD_SYSTEMD_UNIT || { echo "Failed to start $XINETD_SYSTEMD_UNIT" 1>&2 ; exit 8 ; }
+               systemctl --quiet enable $XINETD_SYSTEMD_UNIT || { echo "Failed to enable $XINETD_SYSTEMD_UNIT" 1>&2 ; exit 9 ; }
           fi
           exit 0
      fi
-     echo "Cannot reload or start and enable xinetd (no $XINETD_SYSTEMD_UNIT_FILE)." 1>&2
+     echo "Cannot reload or start and enable $XINETD_SYSTEMD_UNIT (no $XINETD_SYSTEMD_UNIT_FILE)." 1>&2
      exit 11
-else sed -i -e 's/^.*disable.*$/\tdisable     = yes/' $XINETD_CONFIG_FILE || { echo "Failed to disable saned in $XINETD_CONFIG_FILE" 1>&2 ; exit 10 ; }
+else # First try the newest way (i.e. stop and disable SANED_SYSTEMD_UNIT)
+     # otherwise fall back to the older ways (i.e via xinetd):
+     if test -e $SANED_SYSTEMD_UNIT_FILE
+     then # Do not error out if stop and/or disable SANED_SYSTEMD_UNIT does not work, perhaps it is already stopped and/or disabled:
+          systemctl --quiet stop $SANED_SYSTEMD_UNIT || echo "Could not stop $SANED_SYSTEMD_UNIT" 1>&2
+          systemctl --quiet disable $SANED_SYSTEMD_UNIT || echo "Could not disable $SANED_SYSTEMD_UNIT" 1>&2
+          exit 0
+     fi
+     echo "Cannot stop and disable $SANED_SYSTEMD_UNIT (no $SANED_SYSTEMD_UNIT_FILE)." 1>&2
+     echo "Falling back to disable saned for xinetd and reload $XINETD_SYSTEMD_UNIT." 1>&2
+     sed -i -e 's/^.*disable.*$/\tdisable     = yes/' $XINETD_CONFIG_FILE || { echo "Failed to disable saned in $XINETD_CONFIG_FILE" 1>&2 ; exit 10 ; }
      if test -e $XINETD_SYSTEMD_UNIT_FILE
      then if systemctl --quiet is-active $XINETD_SYSTEMD_UNIT
-          then systemctl --quiet reload $XINETD_SYSTEMD_UNIT || { echo "Failed to reload xinetd" 1>&2 ; exit 7 ; }
+          then systemctl --quiet reload $XINETD_SYSTEMD_UNIT || { echo "Failed to reload $XINETD_SYSTEMD_UNIT" 1>&2 ; exit 7 ; }
           fi
           exit 0
      fi
-     echo "Cannot reload xinetd (no $XINETD_SYSTEMD_UNIT_FILE)." 1>&2
+     echo "Cannot reload $XINETD_SYSTEMD_UNIT (no $XINETD_SYSTEMD_UNIT_FILE)." 1>&2
      exit 11
 fi
 
