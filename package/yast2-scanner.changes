@@ -1,4 +1,10 @@
 -------------------------------------------------------------------
+Thu Jun 28 09:23:41 CEST 2018 - schubi@suse.de
+
+- Added additional searchkeys to desktop file (fate#321043).
+- 4.0.2
+
+-------------------------------------------------------------------
 Thu Apr 12 06:21:10 UTC 2018 - knut.anderssen@suse.com
 
 - bnc#859353
