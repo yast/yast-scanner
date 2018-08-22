@@ -34,7 +34,7 @@ Requires:	yast2
 Requires:       yast2-ruby-bindings >= 1.0.0
 
 Summary:	YaST2 - Scanner Configuration
-License:        GPL-2.0
+License:        GPL-2.0-only
 
 %description
 This package provides support for the configuration of USB scanners,
