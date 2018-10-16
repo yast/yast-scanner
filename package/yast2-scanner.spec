@@ -76,6 +76,7 @@ chmod 755 %{my_requires}
 %{yast_ybindir}/*scanner*
 %{yast_ybindir}/displaytest
 %doc %{yast_docdir}
+%license COPYING
 
 %changelog
 
