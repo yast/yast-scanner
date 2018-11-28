@@ -75,7 +75,7 @@ chmod 755 %{my_requires}
 %{yast_desktopdir}/scanner.desktop
 %{yast_ybindir}/*scanner*
 %{yast_ybindir}/displaytest
-%{_datadir}/icons/*
+%{yast_icondir}
 %doc %{yast_docdir}
 %license COPYING
 

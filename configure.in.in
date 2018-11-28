@@ -17,8 +17,8 @@ fi
 @YAST2-CHECKS-YCP@
 @YAST2-CHECKS-PROGRAM@
 
-icondir=/usr/share/icons
-AC_SUBST(icondir)
+
+
 
 ## and generate the output...
 @YAST2-OUTPUT@
