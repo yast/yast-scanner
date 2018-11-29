@@ -17,7 +17,7 @@
 
 
 Name:           yast2-scanner
-Version:        4.0.2
+Version:        4.0.3
 Release:        0
 Group:		System/YaST
 
@@ -75,6 +75,7 @@ chmod 755 %{my_requires}
 %{yast_desktopdir}/scanner.desktop
 %{yast_ybindir}/*scanner*
 %{yast_ybindir}/displaytest
+%{yast_icondir}
 %doc %{yast_docdir}
 %license COPYING
 

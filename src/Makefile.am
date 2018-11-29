@@ -15,6 +15,14 @@ ynclude_DATA = \
 desktop_DATA = \
   desktop/scanner.desktop
 
-EXTRA_DIST = $(module_DATA) $(client_DATA) $(ynclude_DATA) $(desktop_DATA)
+symbolicdir = @icondir@/hicolor/symbolic/apps
+symbolic_DATA = \
+  icons/hicolor/symbolic/apps/yast-scanner-symbolic.svg
+
+scalabledir = @icondir@/hicolor/scalable/apps
+scalable_DATA = \
+  icons/hicolor/scalable/apps/yast-scanner.svg
+
+EXTRA_DIST = $(module_DATA) $(client_DATA) $(ynclude_DATA) $(desktop_DATA) $(symbolic_DATA) $(scalable_DATA)
 
 include $(top_srcdir)/Makefile.am.common
