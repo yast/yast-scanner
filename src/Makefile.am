@@ -13,7 +13,7 @@ ynclude_DATA = \
   include/scanner/helps.rb
 
 desktop_DATA = \
-  desktop/scanner.desktop
+  desktop/org.openSUSE.YaST.Scanner.desktop
 
 symbolicdir = @icondir@/hicolor/symbolic/apps
 symbolic_DATA = \
