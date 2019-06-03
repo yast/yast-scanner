@@ -26,8 +26,17 @@ Url:            https://github.com/yast/yast-scanner
 
 Source0:        %{name}-%{version}.tar.bz2
 
-BuildRequires:	docbook-xsl-stylesheets doxygen libxslt perl-XML-Writer sgml-skel update-desktop-files xorg-x11-libX11-devel yast2 yast2-testsuite libtool
-BuildRequires:  yast2-devtools >= 3.1.10
+BuildRequires:  docbook-xsl-stylesheets
+BuildRequires:  doxygen
+BuildRequires:  libxslt
+BuildRequires:  perl-XML-Writer
+BuildRequires:  sgml-skel
+BuildRequires:  update-desktop-files
+BuildRequires:  xorg-x11-libX11-devel
+BuildRequires:  yast2
+BuildRequires:  yast2-testsuite
+BuildRequires:  libtool
+BuildRequires:  yast2-devtools >= 4.2.2
 
 Requires:       yast2
 # Used to exclude libX11, libXau, libxcb, and libxcb-xlib from the requires list
