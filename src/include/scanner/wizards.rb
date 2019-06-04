@@ -101,7 +101,7 @@ module Yast
         "write"    => { :abort => :abort, :next => :next }
       }
       Wizard.CreateDialog
-      Wizard.SetDesktopIcon("scanner")
+      Wizard.SetDesktopIcon("org.opensuse.yast.Scanner")
       ret = Sequencer.Run(aliases, sequence)
       UI.CloseDialog
       deep_copy(ret)
@@ -122,7 +122,7 @@ module Yast
         Label.BackButton,
         Label.NextButton
       )
-      Wizard.SetDesktopIcon("scanner")
+      Wizard.SetDesktopIcon("org.opensuse.yast.Scanner")
       ret = MainSequence()
       UI.CloseDialog
       deep_copy(ret)
