@@ -34,7 +34,6 @@ BuildRequires:  sgml-skel
 BuildRequires:  update-desktop-files
 BuildRequires:  xorg-x11-libX11-devel
 BuildRequires:  yast2
-BuildRequires:  yast2-testsuite
 BuildRequires:  libtool
 BuildRequires:  yast2-devtools >= 4.2.2
 
