@@ -1,5 +1,6 @@
 # YaST - The Scanner Configuration Module #
 
-[![Travis Build](https://travis-ci.org/yast/yast-scanner.svg?branch=master)](https://travis-ci.org/yast/yast-scanner)
-[![Jenkins Build](http://img.shields.io/jenkins/s/https/ci.opensuse.org/yast-scanner-master.svg)](https://ci.opensuse.org/view/Yast/job/yast-scanner-master/)
-
+[![Workflow Status](https://github.com/yast/yast-scanner/workflows/CI/badge.svg?branch=master)](
+https://github.com/yast/yast-scanner/actions?query=branch%3Amaster)
+[![Jenkins Status](https://ci.opensuse.org/buildStatus/icon?job=yast-yast-scanner-master)](
+https://ci.opensuse.org/view/Yast/job/yast-yast-scanner-master/)
