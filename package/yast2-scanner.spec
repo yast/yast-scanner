@@ -1,7 +1,7 @@
 #
 # spec file for package yast2-scanner
 #
-# Copyright (c) 2013 SUSE LINUX Products GmbH, Nuernberg, Germany.
+# Copyright (c) 2021 SUSE LLC
 #
 # All modifications and additions to the file contributed by third parties
 # remain the property of their copyright owners, unless otherwise agreed
@@ -16,31 +16,28 @@
 #
 
 
+# Used to exclude libX11, libXau, libxcb, and libxcb-xlib from the requires list
+# which are pulled in by Autoreqprov because of the displaytest tool:
+%define my_requires /tmp/my-requires
 Name:           yast2-scanner
-Version:        4.4.0
+Version:        4.4.1
 Release:        0
-Group:          System/YaST
 Summary:        YaST2 - Scanner Configuration
 License:        GPL-2.0-only
-Url:            https://github.com/yast/yast-scanner
-
+Group:          System/YaST
+URL:            https://github.com/yast/yast-scanner
 Source0:        %{name}-%{version}.tar.bz2
-
 BuildRequires:  docbook-xsl-stylesheets
 BuildRequires:  doxygen
+BuildRequires:  libtool
 BuildRequires:  libxslt
 BuildRequires:  perl-XML-Writer
 BuildRequires:  sgml-skel
 BuildRequires:  update-desktop-files
 BuildRequires:  xorg-x11-libX11-devel
 BuildRequires:  yast2
-BuildRequires:  libtool
-BuildRequires:  yast2-devtools >= 4.2.2
-
+BuildRequires:  yast2-devtools >= 4.4.0
 Requires:       yast2
-# Used to exclude libX11, libXau, libxcb, and libxcb-xlib from the requires list
-# which are pulled in by Autoreqprov because of the displaytest tool:
-%define my_requires /tmp/my-requires
 Requires:       yast2-ruby-bindings >= 1.0.0
 
 %description
@@ -73,8 +70,8 @@ chmod 755 %{my_requires}
 %define __find_requires %{my_requires}
 %yast_metainfo
 
-
 %files
+%license COPYING
 %{yast_yncludedir}
 %{yast_clientdir}
 %{yast_moduledir}
@@ -83,7 +80,5 @@ chmod 755 %{my_requires}
 %{yast_ybindir}
 %{yast_ybindir}
 %{yast_icondir}
-%doc %{yast_docdir}
-%license COPYING
 
 %changelog
