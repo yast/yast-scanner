@@ -17,7 +17,7 @@
 
 
 Name:           yast2-scanner
-Version:        4.2.0
+Version:        4.4.0
 Release:        0
 Group:          System/YaST
 Summary:        YaST2 - Scanner Configuration
