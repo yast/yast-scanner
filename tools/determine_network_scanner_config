@@ -37,7 +37,7 @@ SANED_CONFIG_FILE="/etc/sane.d/saned.conf"
 
 # Function to extract entries from a SANE config file:
 Extract()
-{ egrep -v '^#|^[[:space:]]*$' $1 | tr -d '[:blank:]' | sort -u | tr -s '\n' ',' 
+{ grep -E -v '^#|^[[:space:]]*$' $1 | tr -d '[:blank:]' | sort -u | tr -s '\n' ',' 
 }
 
 # Get and output the hosts in $NET_BACKEND_CONFIG_FILE

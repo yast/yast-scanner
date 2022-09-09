@@ -54,7 +54,7 @@ else echo "Cannot execute /usr/bin/sane-find-scanner" 1>&2
      exit 2
 fi
 # Only USB and SCSI scanners are taken into account:
-egrep '^found SCSI |^found USB ' <$TMP_DATA_RAW | sort -u | sed -e 's/^found //' | tr \" \' >$TMP_DATA
+grep -E '^found SCSI |^found USB ' <$TMP_DATA_RAW | sort -u | sed -e 's/^found //' | tr \" \' >$TMP_DATA
 
 # Append the raw data for HP all-in-one devices via "hp-probe".
 # The scanner unit in HP all-in-one USB devices works even without a CUPS queue
