@@ -41,7 +41,7 @@ cat /dev/null >$TMP_DATA
 # Function to extract entries from a description file with SANE syntax.
 # Quoted quotation marks '\"' (happens in comments) are replaced by ' ':
 Extract()
-{ cat $1 | sed -e 's/\\"/ /g' | egrep -o '^[[:space:]]*:backend[[:space:]]*"[^"]*"|^[[:space:]]*:version[[:space:]]*"[^"]*"|^[[:space:]]*:mfg[[:space:]]*"[^"]*"|^[[:space:]]*:model[[:space:]]*"[^"]*"|^[[:space:]]*:firmware[[:space:]]*"[^"]*"|^[[:space:]]*:interface[[:space:]]*"[^"]*"|^[[:space:]]*:usbid[[:space:]]*"0x[0-9A-Fa-f]*"[[:space:]]*"0x[0-9A-Fa-f]*"|^[[:space:]]*:status[[:space:]]*:[a-z]*|^[[:space:]]*:comment[[:space:]]*"[^"]*"'
+{ cat $1 | sed -e 's/\\"/ /g' | grep -E -o '^[[:space:]]*:backend[[:space:]]*"[^"]*"|^[[:space:]]*:version[[:space:]]*"[^"]*"|^[[:space:]]*:mfg[[:space:]]*"[^"]*"|^[[:space:]]*:model[[:space:]]*"[^"]*"|^[[:space:]]*:firmware[[:space:]]*"[^"]*"|^[[:space:]]*:interface[[:space:]]*"[^"]*"|^[[:space:]]*:usbid[[:space:]]*"0x[0-9A-Fa-f]*"[[:space:]]*"0x[0-9A-Fa-f]*"|^[[:space:]]*:status[[:space:]]*:[a-z]*|^[[:space:]]*:comment[[:space:]]*"[^"]*"'
 }
 
 # Process the SANE description files:
@@ -125,7 +125,7 @@ Output()
        [ -z "$USBID" ] && USBID='""'
        [ -z "$COMMENT" ] && COMMENT='""'
        if [ "$PACKAGE" = '"iscan"' -o "$PACKAGE" = '"iscan-free"' ]
-       then if echo "$COMMENT" | egrep -q 'requires a DFSG non-free module|requires DFSG non-free'
+       then if echo "$COMMENT" | grep -E -q 'requires a DFSG non-free module|requires DFSG non-free'
             then PACKAGE='"iscan"'
             else PACKAGE='"iscan-free"'
             fi

@@ -738,7 +738,7 @@ module Yast
       # is required by a print queue for LPRng or for a third-party printing system.
       if "hpaio" == backend_name
         return ExecuteBashCommand(
-          "/usr/bin/lpstat -v | /bin/egrep -q ': hp:/|: hpfax:/'"
+          "/usr/bin/lpstat -v | /bin/grep -E -q ': hp:/|: hpfax:/'"
         )
       end
       if "hpoj" == backend_name
@@ -2547,10 +2547,10 @@ module Yast
     end
 
     # Determine if any kind of firewall seems to be active by calling
-    # "iptables -n -L | egrep -q 'DROP|REJECT'"
+    # "iptables -n -L | grep -E -q 'DROP|REJECT'"
     # to find out if there are currently dropping or rejecting packet filter rules.
     # One might use a more specific test via
-    # "iptables -n -L | grep -v '^LOG' | egrep -q '^DROP|^REJECT'"
+    # "iptables -n -L | grep -v '^LOG' | grep -E -q '^DROP|^REJECT'"
     # to match only for DROP and REJECT targets and exclude LOG targets
     # but it does not cause real problems when there is a false positive result here
     # because all what happens it that then a needless firewall info popup would be shown.
@@ -2558,7 +2558,7 @@ module Yast
     # regarding scanning via network and firewall.
     # @return true if any kind of firewall seems to be active
     def ShowFirewallPopup
-      if ExecuteBashCommand("iptables -n -L | egrep -q 'DROP|REJECT'")
+      if ExecuteBashCommand("iptables -n -L | grep -E -q 'DROP|REJECT'")
         Builtins.y2milestone("A firewall seems to be active.")
         Popup.MessageDetails(
           _("Check that your firewall allows scanning via network."),
