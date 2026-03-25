@@ -20,7 +20,7 @@
 # which are pulled in by Autoreqprov because of the displaytest tool:
 %define my_requires /tmp/my-requires
 Name:           yast2-scanner
-Version:        5.0.0
+Version:        5.0.1
 Release:        0
 Summary:        YaST2 - Scanner Configuration
 License:        GPL-2.0-only
@@ -33,7 +33,6 @@ BuildRequires:  libtool
 BuildRequires:  libxslt
 BuildRequires:  perl-XML-Writer
 BuildRequires:  sgml-skel
-BuildRequires:  update-desktop-files
 BuildRequires:  xorg-x11-libX11-devel
 BuildRequires:  yast2
 BuildRequires:  yast2-devtools >= 4.4.0
